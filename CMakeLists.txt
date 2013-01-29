@@ -5,22 +5,64 @@ cmake_minimum_required(VERSION 2.6)
 
 project(CBC)
 
-function(add_coin_library_internal name path)
-  set(sources )
-  foreach (arg ${ARGN})
-    set(sources ${sources} ${path}/${arg})
-  endforeach ()
-  include_directories(${path})
-  add_library(${name} ${sources})
-  string(TOUPPER ${name} uppercase_name)
-  add_definitions(-D${uppercase_name}_BUILD)
+# Parses an automake input processing conditional parts such as:
+#   if VAR
+#   ...
+#   else
+#   ...
+#   endif
+function(parse_am filename index keep)
+  set(lines )
+  while (1)
+    list(LENGTH in_lines length)
+    if (NOT (index LESS length))
+      break()
+    endif ()
+    list(GET in_lines ${index} line)
+    if (line MATCHES "^[ \t]*endif")
+      break ()
+    elseif (line MATCHES "^[ \t]*else")
+      break ()
+    elseif (line MATCHES "^[ \t]*if[ \t]*([^ \t]*)")
+      set(keep_then FALSE)
+      set(keep_else TRUE)
+      if (${CMAKE_MATCH_1})
+        set(keep_then TRUE)
+        set(keep_else FALSE)
+      endif ()
+      message("if (${CMAKE_MATCH_1}): ${keep_then}")
+      math(EXPR index "${index} + 1")
+      parse_am(${filename} ${index} ${keep_then})
+      set(index ${out_index})
+      set(lines ${lines} ${out_lines})
+      list(GET in_lines ${index} line)
+      if (line MATCHES "^[ \t]*else")
+        math(EXPR index "${index} + 1")
+        parse_am(${filename} ${index} ${keep_else})
+        set(index ${out_index})
+        set(lines ${lines} ${out_lines})
+        list(GET in_lines ${index} line)
+      endif ()
+      if (NOT (line MATCHES "^[ \t]*endif"))
+        message(WARNING "${filename}:${index}: expected 'else' or 'endif'")
+      endif ()
+    elseif (keep)
+      set(lines ${lines} "${line}")
+    endif ()
+    math(EXPR index "${index} + 1")
+  endwhile ()
+  set(out_index ${index} PARENT_SCOPE)
+  set(out_lines ${lines} PARENT_SCOPE)
 endfunction()
 
-function(read_automake filename var)
+# Reads an automake file (Makefile.am).
+function(read_am_file filename var)
+  message("Parsing ${filename}")
   file(READ ${filename} text)
   string(REPLACE "\\\n" "" text "${text}")
-  string(REGEX MATCHALL "[^\n]+" lines "${text}")
-  set(${var} ${lines} PARENT_SCOPE)
+  string(REGEX MATCHALL "[^\n]+" in_lines "${text}")
+  parse_am(${filename} 0 TRUE)
+  set(${var} ${out_lines} PARENT_SCOPE)
 endfunction()
 
 # Adds a COIN-OR library located at the specified path.
@@ -48,22 +90,23 @@ function(add_coin_library path)
   endforeach ()
   # Extract the source list from Makefile.am.
   set(sources )
-  read_automake(${src_path}/Makefile.am LINES)
+  read_am_file(${src_path}/Makefile.am LINES)
   foreach (line ${LINES})
     if (line MATCHES "^lib${name}_la_SOURCES [+]?= (.*)")
       string(REGEX MATCHALL "[^ \t]+" src "${CMAKE_MATCH_1}")
-      set(sources ${sources} ${src})
+      foreach (s ${src})
+        set(sources ${sources} ${src_path}/${s})
+      endforeach ()
     endif ()
   endforeach ()
-  add_coin_library_internal(${name} ${src_path} ${sources})
+  # Add a library.
+  add_library(${name} ${sources})
+  include_directories(${src_path})
+  string(TOUPPER ${name} uppercase_name)
+  add_definitions(-D${uppercase_name}_BUILD)
+  set(COIN_HAS_${uppercase_name} 1 PARENT_SCOPE)
   target_link_libraries(${name} ${dependencies})
 endfunction()
-
-macro(add_coin_package name)
-  add_coin_library_internal(${name} ${name}/src ${ARGN})
-  string(TOUPPER ${name} uppercase_name)
-  set(COIN_HAS_${uppercase_name} 1)
-endmacro()
 
 # Process config.h using autoconf rules.
 function(configure file)
@@ -155,60 +198,8 @@ set(${UPPERCASE_PACKAGE}_VERSION ${VERSION})
 set(PACKAGE_STRING "${PACKAGE} ${VERSION}")
 
 add_coin_library(CoinUtils)
-
-add_coin_package(Clp
-  ClpConfig.h
-  ClpCholeskyBase.cpp ClpCholeskyBase.hpp
-  ClpCholeskyDense.cpp ClpCholeskyDense.hpp
-  ClpConstraint.cpp ClpConstraint.hpp
-  ClpConstraintLinear.cpp ClpConstraintLinear.hpp
-  ClpConstraintQuadratic.cpp ClpConstraintQuadratic.hpp
-  Clp_C_Interface.cpp Clp_C_Interface.h
-  ClpDualRowDantzig.cpp ClpDualRowDantzig.hpp
-  ClpDualRowPivot.cpp ClpDualRowPivot.hpp
-  ClpDualRowSteepest.cpp ClpDualRowSteepest.hpp
-  ClpDummyMatrix.cpp ClpDummyMatrix.hpp
-  ClpDynamicExampleMatrix.cpp ClpDynamicExampleMatrix.hpp
-  ClpDynamicMatrix.cpp ClpDynamicMatrix.hpp
-  ClpEventHandler.cpp ClpEventHandler.hpp
-  ClpFactorization.cpp ClpFactorization.hpp
-  ClpGubDynamicMatrix.cpp ClpGubDynamicMatrix.hpp
-  ClpGubMatrix.cpp ClpGubMatrix.hpp
-  ClpHelperFunctions.cpp ClpHelperFunctions.hpp
-  ClpInterior.cpp ClpInterior.hpp
-  ClpLinearObjective.cpp ClpLinearObjective.hpp
-  ClpMatrixBase.cpp ClpMatrixBase.hpp
-  ClpMessage.cpp ClpMessage.hpp
-  ClpModel.cpp ClpModel.hpp
-  ClpNetworkBasis.cpp ClpNetworkBasis.hpp
-  ClpNetworkMatrix.cpp ClpNetworkMatrix.hpp
-  ClpNonLinearCost.cpp ClpNonLinearCost.hpp
-  ClpNode.cpp ClpNode.hpp
-  ClpObjective.cpp ClpObjective.hpp
-  ClpPackedMatrix.cpp ClpPackedMatrix.hpp
-  ClpParameters.hpp
-  ClpPlusMinusOneMatrix.cpp ClpPlusMinusOneMatrix.hpp
-  ClpPredictorCorrector.cpp ClpPredictorCorrector.hpp
-  ClpPdco.cpp ClpPdco.hpp
-  ClpPdcoBase.cpp ClpPdcoBase.hpp
-  ClpLsqr.cpp ClpLsqr.hpp
-  ClpPresolve.cpp ClpPresolve.hpp
-  ClpPrimalColumnDantzig.cpp ClpPrimalColumnDantzig.hpp
-  ClpPrimalColumnPivot.cpp ClpPrimalColumnPivot.hpp
-  ClpPrimalColumnSteepest.cpp ClpPrimalColumnSteepest.hpp
-  ClpQuadraticObjective.cpp ClpQuadraticObjective.hpp
-  ClpSimplex.cpp ClpSimplex.hpp
-  ClpSimplexDual.cpp ClpSimplexDual.hpp
-  ClpSimplexNonlinear.cpp ClpSimplexNonlinear.hpp
-  ClpSimplexOther.cpp ClpSimplexOther.hpp
-  ClpSimplexPrimal.cpp ClpSimplexPrimal.hpp
-  ClpSolve.cpp ClpSolve.hpp
-  Idiot.cpp Idiot.hpp
-  IdiSolve.cpp)
-target_link_libraries(Clp CoinUtils)
-
+add_coin_library(Clp CoinUtils)
 add_coin_library(Clp/src/OsiClp Osi Clp)
-
 add_coin_library(Osi/src/Osi)
 
 add_coin_library(Cgl)
