@@ -5,19 +5,43 @@ cmake_minimum_required(VERSION 2.6)
 
 project(CBC)
 
-macro(add_coin_library name path)
+macro(add_coin_library_internal name path)
   set(sources )
   foreach (arg ${ARGN})
     set(sources ${sources} ${path}/${arg})
   endforeach ()
   include_directories(${path})
   add_library(${name} ${sources})
+  string(TOUPPER ${name} uppercase_name)
+  add_definitions(-D${uppercase_name}_BUILD)
 endmacro()
 
-macro(add_coin_library_auto path)
+# Adds a COIN-OR library located at the specified path.
+# Additional arguments specify library dependencies.
+# By default the last path component is used as a library name.
+# This can be overriden with NAME <libname> in arguments.
+macro(add_coin_library path)
   get_filename_component(name ${path} NAME)
+  set(src_path ${path})
+  if (EXISTS ${path}/src)
+    set(src_path ${path}/src)
+  endif ()
+  # Process optional arguments.
+  set(dependencies )
+  set(expect_name False)
+  foreach (arg ${ARGN})
+    if (expect_name)
+      set(name ${arg})
+      set(expect_name False)
+    elseif (arg STREQUAL "NAME")
+      set(expect_name True)
+    else ()
+      set(dependencies ${dependencies} ${arg})
+    endif ()
+  endforeach ()
+  # Extract the source list from Makefile.am.
   set(sources )
-  file(STRINGS ${path}/Makefile.am LINES)
+  file(STRINGS ${src_path}/Makefile.am LINES)
   set(continued False)
   foreach (line ${LINES})
     if (continued)
@@ -38,19 +62,14 @@ macro(add_coin_library_auto path)
       set(sources ${sources} ${src})
     endif ()
   endforeach ()
-  add_coin_library(${name} ${path} ${sources})
-  set(dependencies )
-  foreach (arg ${ARGN})
-    set(dependencies ${dependencies} ${arg})
-  endforeach ()
+  add_coin_library_internal(${name} ${src_path} ${sources})
   target_link_libraries(${name} ${dependencies})
 endmacro()
 
 macro(add_coin_package name)
-  add_coin_library(${name} ${name}/src ${ARGN})
+  add_coin_library_internal(${name} ${name}/src ${ARGN})
   string(TOUPPER ${name} uppercase_name)
   set(COIN_HAS_${uppercase_name} 1)
-  add_definitions(-D${uppercase_name}_BUILD)
 endmacro()
 
 # Process config.h using autoconf rules.
@@ -142,80 +161,7 @@ string(TOUPPER ${PACKAGE} UPPERCASE_PACKAGE)
 set(${UPPERCASE_PACKAGE}_VERSION ${VERSION})
 set(PACKAGE_STRING "${PACKAGE} ${VERSION}")
 
-add_coin_package(CoinUtils
-  config_coinutils.h
-  CoinUtilsConfig.h
-  Coin_C_defines.h
-  CoinAlloc.cpp CoinAlloc.hpp
-  CoinBuild.cpp CoinBuild.hpp
-  CoinDenseVector.cpp CoinDenseVector.hpp
-  CoinDistance.hpp
-  CoinError.cpp CoinError.hpp
-  CoinFactorization.hpp
-  CoinFactorization1.cpp
-  CoinFactorization2.cpp
-  CoinFactorization3.cpp
-  CoinFactorization4.cpp
-  CoinSimpFactorization.hpp
-  CoinSimpFactorization.cpp
-  CoinDenseFactorization.hpp
-  CoinDenseFactorization.cpp
-  CoinOslFactorization.hpp
-  CoinOslFactorization.cpp
-  CoinOslFactorization2.cpp
-  CoinOslFactorization3.cpp
-  CoinOslC.h
-  CoinFileIO.cpp CoinFileIO.hpp
-  CoinFinite.cpp CoinFinite.hpp
-  CoinFloatEqual.hpp
-  CoinHelperFunctions.hpp
-  CoinIndexedVector.cpp CoinIndexedVector.hpp
-  CoinLpIO.cpp CoinLpIO.hpp
-  CoinMessage.cpp CoinMessage.hpp
-  CoinMessageHandler.cpp CoinMessageHandler.hpp
-  CoinModel.cpp CoinModel.hpp
-  CoinStructuredModel.cpp CoinStructuredModel.hpp
-  CoinModelUseful.cpp CoinModelUseful.hpp
-  CoinModelUseful2.cpp
-  CoinMpsIO.cpp CoinMpsIO.hpp
-  CoinPackedMatrix.cpp CoinPackedMatrix.hpp
-  CoinPackedVector.cpp CoinPackedVector.hpp
-  CoinPackedVectorBase.cpp CoinPackedVectorBase.hpp
-  CoinParam.cpp CoinParamUtils.cpp CoinParam.hpp
-  CoinPostsolveMatrix.cpp
-  CoinPragma.hpp
-  CoinPrePostsolveMatrix.cpp
-  CoinPresolveDoubleton.cpp CoinPresolveDoubleton.hpp
-  CoinPresolveDual.cpp CoinPresolveDual.hpp
-  CoinPresolveDupcol.cpp CoinPresolveDupcol.hpp
-  CoinPresolveEmpty.cpp CoinPresolveEmpty.hpp
-  CoinPresolveFixed.cpp CoinPresolveFixed.hpp
-  CoinPresolveForcing.cpp CoinPresolveForcing.hpp
-  CoinPresolveHelperFunctions.cpp
-  CoinPresolveImpliedFree.cpp CoinPresolveImpliedFree.hpp
-  CoinPresolveIsolated.cpp CoinPresolveIsolated.hpp
-  CoinPresolveMatrix.cpp CoinPresolveMatrix.hpp
-  CoinPresolvePsdebug.cpp CoinPresolvePsdebug.hpp
-  CoinPresolveSingleton.cpp CoinPresolveSingleton.hpp
-  CoinPresolveSubst.cpp CoinPresolveSubst.hpp
-  CoinPresolveTighten.cpp CoinPresolveTighten.hpp
-  CoinPresolveTripleton.cpp CoinPresolveTripleton.hpp
-  CoinPresolveUseless.cpp CoinPresolveUseless.hpp
-  CoinPresolveZeros.cpp CoinPresolveZeros.hpp
-  CoinSearchTree.cpp CoinSearchTree.hpp
-  CoinShallowPackedVector.cpp CoinShallowPackedVector.hpp
-  CoinSignal.hpp
-  CoinSmartPtr.hpp
-  CoinSnapshot.cpp CoinSnapshot.hpp
-  CoinSort.hpp
-  CoinTime.hpp
-  CoinTypes.hpp
-  CoinUtility.hpp
-  CoinWarmStart.hpp
-  CoinWarmStartBasis.cpp CoinWarmStartBasis.hpp
-  CoinWarmStartVector.cpp CoinWarmStartVector.hpp
-  CoinWarmStartDual.cpp CoinWarmStartDual.hpp
-  CoinWarmStartPrimalDual.cpp CoinWarmStartPrimalDual.hpp)
+add_coin_library(CoinUtils)
 
 add_coin_package(Clp
   ClpConfig.h
@@ -268,137 +214,30 @@ add_coin_package(Clp
   IdiSolve.cpp)
 target_link_libraries(Clp CoinUtils)
 
-add_coin_library(OsiClp Clp/src/OsiClp
-  OsiClpSolverInterface.cpp OsiClpSolverInterface.hpp)
-target_link_libraries(OsiClp Osi Clp)
+add_coin_library(Clp/src/OsiClp Osi Clp)
 
-include_directories(Osi/src/Osi)
+add_coin_library(Osi/src/Osi)
 
-add_coin_library(Osi Osi/src/Osi
-  OsiConfig.h
-  OsiAuxInfo.cpp OsiAuxInfo.hpp
-  OsiBranchingObject.cpp OsiBranchingObject.hpp
-  OsiChooseVariable.cpp OsiChooseVariable.hpp
-  OsiColCut.cpp OsiColCut.hpp
-  OsiCollections.hpp
-  OsiCut.cpp OsiCut.hpp
-  OsiCuts.cpp OsiCuts.hpp
-  OsiNames.cpp
-  OsiPresolve.cpp OsiPresolve.hpp
-  OsiRowCut.cpp OsiRowCut.hpp
-  OsiRowCutDebugger.cpp OsiRowCutDebugger.hpp
-  OsiSolverBranch.cpp OsiSolverBranch.hpp
-  OsiSolverInterface.cpp OsiSolverInterface.hpp
-  OsiSolverParameters.hpp)
+add_coin_library(Cgl)
+add_coin_library(Cgl/src/CglClique)
+add_coin_library(Cgl/src/CglDuplicateRow)
+add_coin_library(Cgl/src/CglFlowCover)
+add_coin_library(Cgl/src/CglGomory)
+add_coin_library(Cgl/src/CglKnapsackCover)
+add_coin_library(Cgl/src/CglLandP)
+add_coin_library(Cgl/src/CglMixedIntegerRounding2)
+add_coin_library(Cgl/src/CglOddHole)
+add_coin_library(Cgl/src/CglPreProcess CglClique CglDuplicateRow)
+add_coin_library(Cgl/src/CglProbing)
+add_coin_library(Cgl/src/CglRedSplit)
+add_coin_library(Cgl/src/CglResidualCapacity)
+add_coin_library(Cgl/src/CglTwomir)
 
-add_coin_package(Cgl
-  CglConfig.h
-  CglCutGenerator.cpp CglCutGenerator.hpp
-  CglMessage.cpp CglMessage.hpp
-  CglStored.cpp CglStored.hpp
-  CglParam.cpp CglParam.hpp
-  CglTreeInfo.cpp CglTreeInfo.hpp)
-
-add_coin_library_auto(Cgl/src/CglClique)
-add_coin_library_auto(Cgl/src/CglDuplicateRow)
-add_coin_library_auto(Cgl/src/CglFlowCover)
-add_coin_library_auto(Cgl/src/CglGomory)
-add_coin_library_auto(Cgl/src/CglKnapsackCover)
-add_coin_library_auto(Cgl/src/CglLandP)
-add_coin_library_auto(Cgl/src/CglMixedIntegerRounding2)
-add_coin_library_auto(Cgl/src/CglOddHole)
-add_coin_library_auto(Cgl/src/CglPreProcess CglClique CglDuplicateRow)
-add_coin_library_auto(Cgl/src/CglProbing)
-add_coin_library_auto(Cgl/src/CglRedSplit)
-add_coin_library_auto(Cgl/src/CglResidualCapacity)
-add_coin_library_auto(Cgl/src/CglTwomir)
-
-add_coin_package(Cbc
-  Cbc_C_Interface.cpp Cbc_C_Interface.h
-  CbcConfig.h
-  CbcBranchActual.hpp
-  CbcBranchAllDifferent.cpp CbcBranchAllDifferent.hpp
-  CbcBranchBase.hpp
-  CbcBranchCut.cpp CbcBranchCut.hpp
-  CbcBranchDecision.cpp CbcBranchDecision.hpp
-  CbcBranchDefaultDecision.cpp CbcBranchDefaultDecision.hpp
-  CbcBranchDynamic.cpp CbcBranchDynamic.hpp
-  CbcBranchingObject.cpp CbcBranchingObject.hpp
-  CbcBranchLotsize.cpp CbcBranchLotsize.hpp
-  CbcBranchToFixLots.cpp CbcBranchToFixLots.hpp
-  CbcCompareActual.hpp
-  CbcCompareBase.hpp
-  CbcCompareDefault.cpp CbcCompareDefault.hpp
-  CbcCompareDepth.cpp CbcCompareDepth.hpp
-  CbcCompareEstimate.cpp CbcCompareEstimate.hpp
-  CbcCompareObjective.cpp CbcCompareObjective.hpp
-  CbcConsequence.cpp CbcConsequence.hpp
-  CbcClique.cpp CbcClique.hpp
-  CbcCompare.hpp
-  CbcCountRowCut.cpp CbcCountRowCut.hpp
-  CbcCutGenerator.cpp CbcCutGenerator.hpp
-  CbcCutModifier.cpp CbcCutModifier.hpp
-  CbcCutSubsetModifier.cpp CbcCutSubsetModifier.hpp
-  CbcDummyBranchingObject.cpp CbcDummyBranchingObject.hpp
-  CbcEventHandler.cpp CbcEventHandler.hpp
-  CbcFathom.cpp CbcFathom.hpp
-  CbcFathomDynamicProgramming.cpp CbcFathomDynamicProgramming.hpp
-  CbcFeasibilityBase.hpp
-  CbcFixVariable.cpp CbcFixVariable.hpp
-  CbcFullNodeInfo.cpp CbcFullNodeInfo.hpp
-  CbcFollowOn.cpp CbcFollowOn.hpp
-  CbcGeneral.cpp CbcGeneral.hpp
-  CbcGeneralDepth.cpp CbcGeneralDepth.hpp
-  CbcHeuristic.cpp CbcHeuristic.hpp
-  CbcHeuristicDINS.cpp CbcHeuristicDINS.hpp
-  CbcHeuristicDive.cpp CbcHeuristicDive.hpp
-  CbcHeuristicDiveCoefficient.cpp CbcHeuristicDiveCoefficient.hpp
-  CbcHeuristicDiveFractional.cpp CbcHeuristicDiveFractional.hpp
-  CbcHeuristicDiveGuided.cpp CbcHeuristicDiveGuided.hpp
-  CbcHeuristicDiveLineSearch.cpp CbcHeuristicDiveLineSearch.hpp
-  CbcHeuristicDivePseudoCost.cpp CbcHeuristicDivePseudoCost.hpp
-  CbcHeuristicDiveVectorLength.cpp CbcHeuristicDiveVectorLength.hpp
-  CbcHeuristicFPump.cpp CbcHeuristicFPump.hpp
-  CbcHeuristicGreedy.cpp CbcHeuristicGreedy.hpp
-  CbcHeuristicLocal.cpp CbcHeuristicLocal.hpp
-  CbcHeuristicPivotAndFix.cpp CbcHeuristicPivotAndFix.hpp
-  CbcHeuristicRandRound.cpp CbcHeuristicRandRound.hpp
-  CbcHeuristicRENS.cpp CbcHeuristicRENS.hpp
-  CbcHeuristicRINS.cpp CbcHeuristicRINS.hpp
-  CbcHeuristicVND.cpp CbcHeuristicVND.hpp
-  CbcMessage.cpp CbcMessage.hpp
-  CbcModel.cpp CbcModel.hpp
-  CbcNode.cpp CbcNode.hpp
-  CbcNodeInfo.cpp CbcNodeInfo.hpp
-  CbcNWay.cpp CbcNWay.hpp
-  CbcObject.cpp CbcObject.hpp
-  CbcObjectUpdateData.cpp CbcObjectUpdateData.hpp
-  CbcPartialNodeInfo.cpp CbcPartialNodeInfo.hpp
-  CbcSimpleInteger.cpp CbcSimpleInteger.hpp
-  CbcSimpleIntegerDynamicPseudoCost.cpp
-  CbcSimpleIntegerDynamicPseudoCost.hpp
-  CbcSimpleIntegerPseudoCost.cpp
-  CbcSimpleIntegerPseudoCost.hpp
-  CbcSOS.cpp CbcSOS.hpp
-  CbcStatistics.cpp CbcStatistics.hpp
-  CbcStrategy.cpp CbcStrategy.hpp
-  CbcSubProblem.cpp CbcSubProblem.hpp
-  CbcThread.cpp CbcThread.hpp
-  CbcTree.cpp CbcTree.hpp
-  CbcTreeLocal.cpp CbcTreeLocal.hpp)
-target_link_libraries(Cbc
+add_coin_library(Cbc
   OsiClp CglFlowCover CglGomory CglKnapsackCover
   CglMixedIntegerRounding2 CglPreProcess CglProbing)
 
-add_coin_library(CbcSolver Cbc/src
-  CbcCbcParam.cpp
-  Cbc_ampl.cpp Cbc_ampl.h
-  CbcLinked.cpp CbcLinked.hpp CbcLinkedUtils.cpp
-  unitTestClp.cpp CbcSolver.cpp
-  CbcSolverHeuristics.cpp CbcSolverHeuristics.hpp
-  CbcSolverAnalyze.cpp CbcSolverAnalyze.hpp
-  CbcSolverExpandKnapsack.cpp CbcSolverExpandKnapsack.hpp)
-target_link_libraries(CbcSolver
+add_coin_library(Cbc NAME CbcSolver
   Cbc Cgl CglLandP CglRedSplit CglResidualCapacity CglTwomir)
 
 add_executable(cbc Cbc/src/CoinSolve.cpp)
