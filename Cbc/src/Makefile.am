@@ -63,7 +63,7 @@ libCbc_la_SOURCES = \
 	CbcHeuristicDiveGuided.cpp CbcHeuristicDiveGuided.hpp \
 	CbcHeuristicDiveLineSearch.cpp CbcHeuristicDiveLineSearch.hpp \
 	CbcHeuristicDivePseudoCost.cpp CbcHeuristicDivePseudoCost.hpp \
-	CbcHeuristicDiveVectorLength.cpp CbcHeuristicDiveLength.hpp \
+	CbcHeuristicDiveVectorLength.cpp CbcHeuristicDiveVectorLength.hpp \
 	CbcHeuristicFPump.cpp CbcHeuristicFPump.hpp \
 	CbcHeuristicGreedy.cpp CbcHeuristicGreedy.hpp \
 	CbcHeuristicLocal.cpp CbcHeuristicLocal.hpp \
