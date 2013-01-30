@@ -280,14 +280,18 @@ else ()
   endif ()
 endif ()
 
+set(COINUTILS_LIBS )
+
 find_package(ZLIB)
 if (ZLIB_FOUND)
   set(COIN_HAS_ZLIB 1)
+  set(COINUTILS_LIBS ${COINUTILS_LIBS} ${ZLIB_LIBRARIES})
 endif ()
 
 find_package(BZip2)
 if (BZIP2_FOUND)
   set(COIN_HAS_BZLIB 1)
+  set(COINUTILS_LIBS ${COINUTILS_LIBS} ${BZIP2_LIBRARIES})
 endif ()
 
 include(CheckTypeSize)
@@ -328,7 +332,7 @@ set(GLPK_HAS_INTOPT 1)
 
 enable_testing()
 
-add_coin_library(CoinUtils ${ZLIB_LIBRARIES} ${BZIP2_LIBRARIES})
+add_coin_library(CoinUtils ${COINUTILS_LIBS})
 add_coin_library(Clp CoinUtils)
 add_coin_library(Clp/src/OsiClp Osi Clp)
 add_coin_library(Osi/src/Osi CoinUtils)
