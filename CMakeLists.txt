@@ -270,8 +270,9 @@ check_cxx_source_compiles("
 if (COIN_HAS_FINITE)
   set(COIN_C_ISNAN_C isnan)
 endif ()
-find_library(ZLIB z)
-if (ZLIB)
+
+find_package(ZLIB)
+if (ZLIB_FOUND)
   set(COIN_HAS_ZLIB 1)
 endif ()
 
@@ -313,7 +314,7 @@ set(GLPK_HAS_INTOPT 1)
 
 enable_testing()
 
-add_coin_library(CoinUtils ${ZLIB})
+add_coin_library(CoinUtils ${ZLIB_LIBRARIES})
 add_coin_library(Clp CoinUtils)
 add_coin_library(Clp/src/OsiClp Osi Clp)
 add_coin_library(Osi/src/Osi CoinUtils)
