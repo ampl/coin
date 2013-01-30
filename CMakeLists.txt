@@ -349,7 +349,7 @@ target_link_libraries(Cbc-osiUnitTest OsiCbc)
 target_link_libraries(Cbc-gamsTest CbcSolver)
 
 add_coin_library(Cbc NAME CbcSolver NOTESTS
-  Cbc Cgl CglLandP CglRedSplit CglResidualCapacity CglTwomir)
+  Cbc Cgl CglLandP CglRedSplit CglResidualCapacity CglTwomir ${ASL_LIBRARIES})
 set_target_properties(CbcSolver PROPERTIES COMPILE_DEFINITIONS CBC_BUILD)
 
 add_executable(cbc Cbc/src/CoinSolve.cpp)
