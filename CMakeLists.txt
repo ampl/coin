@@ -371,7 +371,10 @@ add_executable(cbc Cbc/src/CoinSolve.cpp)
 target_link_libraries(cbc CbcSolver)
 add_test(Cbc-unitTest cbc -dirSample Data/Sample -unitTest)
 
-add_definitions(-DHAVE_CONFIG_H)
+if (NOT MSVC)
+  add_definitions(-DHAVE_CONFIG_H)
+endif ()
+
 configure(CoinUtils src/config.h src/config_coinutils.h)
 configure(Osi src/Osi/config.h src/Osi/config_osi.h)
 configure(Clp src/config.h src/config_clp.h)
