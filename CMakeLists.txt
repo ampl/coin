@@ -233,9 +233,10 @@ ${CONFIG_OUT}")
   endforeach ()
 endfunction()
 
+# Check C headers.
 include(CheckIncludeFiles)
-foreach (header dlfcn endian inttypes memory stdlib stdint
-                strings string sys/stat sys/types unistd zlib)
+foreach (header bzlib dlfcn endian inttypes memory stdlib stdint
+                strings string sys/stat sys/types unistd windows zlib)
   string(TOUPPER ${header} var)
   string(REPLACE "/" "_" var ${var})
   check_include_files(${header}.h HAVE_${var}_H)
@@ -244,6 +245,7 @@ if (HAVE_STDLIB_H)
   set(STDC_HEADERS 1)
 endif ()
 
+# Check C++ headers.
 include(CheckIncludeFileCXX)
 check_include_file_cxx(cfloat HAVE_CFLOAT)
 check_include_file_cxx(cmath HAVE_CMATH)
@@ -265,15 +267,27 @@ else ()
   endif ()
 endif ()
 check_cxx_source_compiles("
-  #include <math.h>
-  int main() { isnan(4.2); }" COIN_HAS_ISNAN)
-if (COIN_HAS_FINITE)
-  set(COIN_C_ISNAN_C isnan)
+  #include <cmath>
+  int main() { std::isnan(4.2); }" COIN_HAS_STD_ISNAN)
+if (COIN_HAS_STD_ISNAN)
+  set(COIN_C_ISNAN_C std::isnan)
+else ()
+  check_cxx_source_compiles("
+    #include <math.h>
+    int main() { isnan(4.2); }" COIN_HAS_ISNAN)
+  if (COIN_HAS_FINITE)
+    set(COIN_C_ISNAN_C isnan)
+  endif ()
 endif ()
 
 find_package(ZLIB)
 if (ZLIB_FOUND)
   set(COIN_HAS_ZLIB 1)
+endif ()
+
+find_package(BZip2)
+if (BZIP2_FOUND)
+  set(COIN_HAS_BZLIB 1)
 endif ()
 
 include(CheckTypeSize)
@@ -314,7 +328,7 @@ set(GLPK_HAS_INTOPT 1)
 
 enable_testing()
 
-add_coin_library(CoinUtils ${ZLIB_LIBRARIES})
+add_coin_library(CoinUtils ${ZLIB_LIBRARIES} ${BZIP2_LIBRARIES})
 add_coin_library(Clp CoinUtils)
 add_coin_library(Clp/src/OsiClp Osi Clp)
 add_coin_library(Osi/src/Osi CoinUtils)
