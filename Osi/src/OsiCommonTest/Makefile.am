@@ -19,7 +19,6 @@ lib_LTLIBRARIES = libOsiCommonTests.la
 # List all source files for this library, including headers
 
 libOsiCommonTests_la_SOURCES = \
-    OsiCommonTests.hpp \
 	OsiColCutTest.cpp \
 	OsiCutsTest.cpp \
 	OsiRowCutDebuggerTest.cpp \
