@@ -358,9 +358,9 @@ add_cgl_library(Cgl/src/CglResidualCapacity)
 add_cgl_library(Cgl/src/CglSimpleRounding)
 add_cgl_library(Cgl/src/CglTwomir)
 target_link_libraries(Cgl-unitTest
-  OsiClp CglClique CglFlowCover CglGomory CglLandP CglMixedIntegerRounding
-  CglMixedIntegerRounding2 CglOddHole CglProbing CglRedSplit
-  CglResidualCapacity CglSimpleRounding CglTwomir)
+  OsiClp CglClique CglFlowCover CglGomory CglKnapsackCover CglLandP
+  CglMixedIntegerRounding CglMixedIntegerRounding2 CglOddHole CglProbing
+  CglRedSplit CglResidualCapacity CglSimpleRounding CglTwomir)
 
 add_coin_library(Cbc
   OsiClp CglFlowCover CglGomory CglKnapsackCover
@@ -373,9 +373,10 @@ add_coin_library(Cbc NAME CbcSolver NOTESTS
   Cbc Cgl CglLandP CglRedSplit CglResidualCapacity CglTwomir ${ASL_LIBRARIES})
 set_target_properties(CbcSolver PROPERTIES COMPILE_DEFINITIONS CBC_BUILD)
 
-add_executable(cbc Cbc/src/CoinSolve.cpp)
-target_link_libraries(cbc CbcSolver)
-add_test(Cbc-unitTest cbc -dirSample Data/Sample -unitTest)
+add_executable(cbc-executable Cbc/src/CoinSolve.cpp)
+set_target_properties(cbc-executable PROPERTIES OUTPUT_NAME cbc)
+target_link_libraries(cbc-executable CbcSolver)
+add_test(Cbc-unitTest cbc-executable -dirSample Data/Sample -unitTest)
 
 if (NOT MSVC)
   add_definitions(-DHAVE_CONFIG_H)
