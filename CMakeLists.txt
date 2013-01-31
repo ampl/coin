@@ -5,6 +5,10 @@ cmake_minimum_required(VERSION 2.6)
 
 project(CBC)
 
+# Output binaries to bin/ to avoid name clash between "Cbc" (directory)
+# and "cbc" (executable) on case-insensitive filesystems (on Mac OS X).
+set(CMAKE_RUNTIME_OUTPUT_DIRECTORY "bin/")
+
 # Parses an automake input processing conditional parts such as:
 #   if VAR
 #   ...
@@ -143,9 +147,9 @@ function(add_coin_library path)
           target_link_libraries(${test} OsiCommonTests)
         endif ()
         if (test MATCHES "^Cgl-")
-          add_test(${test} ${test} Data/Sample Data/Netlib)
+          add_test(${test} bin/${test} Data/Sample Data/Netlib)
         else ()
-          add_test(${test} ${test} -mpsDir=Data/Sample -netlibDir=Data/Netlib)
+          add_test(${test} bin/${test} -mpsDir=Data/Sample -netlibDir=Data/Netlib)
         endif ()
       endif ()
     endforeach ()
@@ -376,7 +380,7 @@ set_target_properties(CbcSolver PROPERTIES COMPILE_DEFINITIONS CBC_BUILD)
 add_executable(cbc-executable Cbc/src/CoinSolve.cpp)
 set_target_properties(cbc-executable PROPERTIES OUTPUT_NAME cbc)
 target_link_libraries(cbc-executable CbcSolver)
-add_test(Cbc-unitTest cbc-executable -dirSample Data/Sample -unitTest)
+add_test(Cbc-unitTest bin/cbc -dirSample Data/Sample -unitTest)
 
 if (NOT MSVC)
   add_definitions(-DHAVE_CONFIG_H)
