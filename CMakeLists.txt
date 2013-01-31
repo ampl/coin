@@ -332,6 +332,8 @@ set(GLPK_HAS_INTOPT 1)
 
 enable_testing()
 
+include_directories(BuildTools/headers)
+
 add_coin_library(CoinUtils ${COINUTILS_LIBS})
 add_coin_library(Clp CoinUtils)
 add_coin_library(Clp/src/OsiClp Osi Clp)
