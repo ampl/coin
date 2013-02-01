@@ -17,7 +17,11 @@ if (COIN_DISABLE_WARNINGS)
     add_definitions(-Wno-overloaded-virtual)
     add_definitions(-Wno-uninitialized)
     add_definitions(-Wno-unused-parameter)
-    add_definitions(-Wno-unused-but-set-parameter)
+    check_cxx_compiler_flag(
+      -Wno-unused-but-set-parameter HAVE_WNO_UNUSED_BUT_SET_PARAMETER_FLAG)
+    if (HAVE_WNO_UNUSED_BUT_SET_PARAMETER_FLAG)
+      add_definitions(-Wno-unused-but-set-parameter)
+    endif ()
     check_cxx_compiler_flag(
       -Wno-unused-but-set-variable HAVE_WNO_UNUSED_BUT_SET_VARIABLE_FLAG)
     if (HAVE_WNO_UNUSED_BUT_SET_VARIABLE_FLAG)
