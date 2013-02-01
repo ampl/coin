@@ -13,10 +13,10 @@ include(CheckCXXCompilerFlag)
 if (COIN_DISABLE_WARNINGS)
   # Disable warnings.
   if (CMAKE_COMPILER_IS_GNUCXX)
-    add_definitions(-Wno-format-security)
-    add_definitions(-Wno-overloaded-virtual)
-    add_definitions(-Wno-uninitialized)
-    add_definitions(-Wno-unused-parameter)
+    add_definitions(
+      -Wno-format-security -Wno-overloaded-virtual -Wno-uninitialized
+      -Wno-unused-parameter -Wno-unused-variable -Wno-int-to-pointer-cast
+      -Wno-empty-body -Wno-type-limits)
     check_cxx_compiler_flag(
       -Wno-unused-but-set-parameter HAVE_WNO_UNUSED_BUT_SET_PARAMETER_FLAG)
     if (HAVE_WNO_UNUSED_BUT_SET_PARAMETER_FLAG)
