@@ -13,20 +13,15 @@ include(CheckCXXCompilerFlag)
 if (COIN_DISABLE_WARNINGS)
   # Disable warnings.
   if (CMAKE_COMPILER_IS_GNUCXX)
-    add_definitions(
-      -Wno-format-security -Wno-overloaded-virtual -Wno-uninitialized
-      -Wno-unused-parameter -Wno-unused-variable -Wno-int-to-pointer-cast
-      -Wno-empty-body -Wno-type-limits)
-    check_cxx_compiler_flag(
-      -Wno-unused-but-set-parameter HAVE_WNO_UNUSED_BUT_SET_PARAMETER_FLAG)
-    if (HAVE_WNO_UNUSED_BUT_SET_PARAMETER_FLAG)
-      add_definitions(-Wno-unused-but-set-parameter)
-    endif ()
-    check_cxx_compiler_flag(
-      -Wno-unused-but-set-variable HAVE_WNO_UNUSED_BUT_SET_VARIABLE_FLAG)
-    if (HAVE_WNO_UNUSED_BUT_SET_VARIABLE_FLAG)
-      add_definitions(-Wno-unused-but-set-variable)
-    endif ()
+    foreach(flag -Wno-format-security -Wno-overloaded-virtual
+                 -Wno-uninitialized -Wno-unused-parameter -Wno-unused-variable
+                 -Wno-int-to-pointer-cast -Wno-empty-body -Wno-type-limits
+                 -Wno-unused-but-set-parameter -Wno-unused-but-set-variable)
+      check_cxx_compiler_flag(${flag} have_flag)
+      if (have_flag)
+        add_definitions(${flag})
+      endif ()
+    endforeach ()
   elseif (MSVC)
     foreach (flag_var
              CMAKE_CXX_FLAGS CMAKE_CXX_FLAGS_DEBUG CMAKE_CXX_FLAGS_RELEASE
