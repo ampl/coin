@@ -10,6 +10,9 @@
 #ifndef OSISOLVERINTERFACETEST_HPP_
 #define OSISOLVERINTERFACETEST_HPP_
 
+#include <cstdio>
+#include <cstdlib>
+#include <iostream>
 #include <string>
 #include <sstream>
 #include <vector>
@@ -229,6 +232,38 @@ class TestOutcomes : public std::list<TestOutcome> {
 /// Convert to string with one level of expansion of the parameter
 #define OSIUNITTEST_QUOTEME(x) OSIUNITTEST_QUOTEME_(x)
 
+template <typename Component>
+bool OsiUnitTestAssertSeverityExpected(
+    bool condition, const char * condition_str, const char *filename,
+    int line, const Component& component, const std::string& testname,
+    TestOutcome::SeverityLevel severity, bool expected)
+{
+  if (condition) {
+    OsiUnitTest::outcomes.add(component, testname, condition_str,
+        OsiUnitTest::TestOutcome::PASSED, filename, line, false);
+    if (OsiUnitTest::verbosity >= 2) {
+      std::ostringstream successmsg;
+      successmsg << __FILE__ << ":" << __LINE__ << ": " << testname
+          << " (condition \'" << condition_str << "\') passed.\n";
+      OsiUnitTest::testingMessage(successmsg.str().c_str());
+    }
+    return true;
+  }
+  OsiUnitTest::outcomes.add(component, testname, condition_str,
+      severity, filename, line, expected);
+  OsiUnitTest::failureMessage(component, testname, condition_str);
+  switch (OsiUnitTest::haltonerror) {
+    case 2:
+    { if (severity >= OsiUnitTest::TestOutcome::ERROR ) std::abort(); break; }
+    case 1:
+    { std::cout << std::endl << "press any key to continue..." << std::endl;
+      std::getchar();
+      break ; }
+    default: ;
+  }
+  return false;
+}
+
 /// Add a test outcome to the list held in OsiUnitTest::outcomes
 #define OSIUNITTEST_ADD_OUTCOME(component,testname,testcondition,severity,expected) \
     OsiUnitTest::outcomes.add(component,testname,testcondition,severity,\
@@ -246,27 +281,8 @@ class TestOutcomes : public std::list<TestOutcome> {
 #define OSIUNITTEST_ASSERT_SEVERITY_EXPECTED(condition,failurecode,component,\
 					     testname, severity, expected) \
 { \
-  if (condition) { \
-    OSIUNITTEST_ADD_OUTCOME(component,testname,#condition,\
-    			    OsiUnitTest::TestOutcome::PASSED, false); \
-    if (OsiUnitTest::verbosity >= 2) { \
-      std::string successmsg(__FILE__ ":" OSIUNITTEST_QUOTEME(__LINE__) ": "); \
-      successmsg = successmsg + testname; \
-      successmsg = successmsg + " (condition \'" #condition "\') passed.\n"; \
-      OsiUnitTest::testingMessage(successmsg.c_str()); \
-    } \
-  } else { \
-    OSIUNITTEST_ADD_OUTCOME(component,testname,#condition,severity,expected); \
-    OsiUnitTest::failureMessage(component,testname,#condition); \
-    switch (OsiUnitTest::haltonerror) { \
-      case 2: \
-      { if (severity >= OsiUnitTest::TestOutcome::ERROR ) abort(); break; } \
-      case 1: \
-      { std::cout << std::endl << "press any key to continue..." << std::endl; \
-        getchar(); \
-	break ; } \
-      default: ; \
-    } \
+  if (!OsiUnitTestAssertSeverityExpected(condition, #condition, \
+      __FILE__, __LINE__, component, testname, severity, expected)) { \
     failurecode; \
   } \
 }
