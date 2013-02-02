@@ -17,9 +17,10 @@ if (COIN_DISABLE_WARNINGS)
                  -Wno-uninitialized -Wno-unused-parameter -Wno-unused-variable
                  -Wno-int-to-pointer-cast -Wno-empty-body -Wno-type-limits
                  -Wno-unused-but-set-parameter -Wno-unused-but-set-variable)
-      set(have_flag 0)
-      check_cxx_compiler_flag(${flag} have_flag)
-      if (have_flag)
+      set(var HAVE${flag})
+      string(REPLACE "-" "_" var ${var})
+      check_cxx_compiler_flag(${flag} ${var})
+      if (${var})
         add_definitions(${flag})
       endif ()
     endforeach ()
