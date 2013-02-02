@@ -13,10 +13,13 @@ include(CheckCXXCompilerFlag)
 if (COIN_DISABLE_WARNINGS)
   # Disable warnings.
   if (CMAKE_COMPILER_IS_GNUCXX)
+    # Removing -Wextra seems to be the only way to disable warnings
+    # "base class 'C' should be explicitly initialized in the copy constructor"
+    # in older GCC.
+    string(REPLACE "-Wextra" "" CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS}")
     foreach(flag -Wno-format-security -Wno-overloaded-virtual
-                 -Wno-uninitialized -Wno-unused-parameter -Wno-unused-variable
-                 -Wno-int-to-pointer-cast -Wno-empty-body -Wno-type-limits
-                 -Wno-unused-but-set-parameter -Wno-unused-but-set-variable)
+                 -Wno-unused-variable -Wno-unused-but-set-variable
+                 -Wno-int-to-pointer-cast)
       set(var HAVE${flag})
       string(REPLACE "-" "_" var ${var})
       check_cxx_compiler_flag(${flag} ${var})
