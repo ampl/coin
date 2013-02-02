@@ -17,6 +17,7 @@ if (COIN_DISABLE_WARNINGS)
                  -Wno-uninitialized -Wno-unused-parameter -Wno-unused-variable
                  -Wno-int-to-pointer-cast -Wno-empty-body -Wno-type-limits
                  -Wno-unused-but-set-parameter -Wno-unused-but-set-variable)
+      set(have_flag 0)
       check_cxx_compiler_flag(${flag} have_flag)
       if (have_flag)
         add_definitions(${flag})
