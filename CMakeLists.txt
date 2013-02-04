@@ -28,6 +28,7 @@ if (COIN_DISABLE_WARNINGS)
       endif ()
     endforeach ()
   elseif (MSVC)
+    add_definitions(-D_SCL_SECURE_NO_WARNINGS)
     foreach (flag_var
              CMAKE_CXX_FLAGS CMAKE_CXX_FLAGS_DEBUG CMAKE_CXX_FLAGS_RELEASE
              CMAKE_CXX_FLAGS_MINSIZEREL CMAKE_CXX_FLAGS_RELWITHDEBINFO)
