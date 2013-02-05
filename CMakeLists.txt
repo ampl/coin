@@ -366,6 +366,10 @@ enable_testing()
 
 include_directories(BuildTools/headers)
 
+if (COIN_HAS_ASL)
+  add_definitions(-DCOIN_HAS_ASL)
+endif ()
+
 add_coin_library(CoinUtils ${COINUTILS_LIBS})
 add_coin_library(Clp CoinUtils)
 add_coin_library(Clp/src/OsiClp Osi Clp)
@@ -406,7 +410,8 @@ add_coin_library(Cbc NAME CbcSolver NOTESTS
 set_target_properties(CbcSolver PROPERTIES COMPILE_DEFINITIONS CBC_BUILD)
 
 add_executable(cbc-executable Cbc/src/CoinSolve.cpp)
-set_target_properties(cbc-executable PROPERTIES OUTPUT_NAME cbc)
+set_target_properties(cbc-executable
+  PROPERTIES OUTPUT_NAME cbc IMPORT_PREFIX imp)
 target_link_libraries(cbc-executable CbcSolver)
 add_test(Cbc-unitTest bin/cbc -dirSample Data/Sample -unitTest)
 
