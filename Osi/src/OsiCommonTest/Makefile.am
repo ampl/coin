@@ -2,7 +2,7 @@
 # All Rights Reserved.
 # This file is distributed under the Eclipse Public License.
 
-## $Id: Makefile.am 1465 2010-02-07 16:36:26Z stefan $
+## $Id: Makefile.am 1881 2013-01-28 00:05:47Z stefan $
 
 # Author:  Lou Hafer	SFU	2010-11-20
 
@@ -19,6 +19,7 @@ lib_LTLIBRARIES = libOsiCommonTests.la
 # List all source files for this library, including headers
 
 libOsiCommonTests_la_SOURCES = \
+    OsiCommonTests.hpp \
 	OsiColCutTest.cpp \
 	OsiCutsTest.cpp \
 	OsiRowCutDebuggerTest.cpp \

@@ -1,4 +1,4 @@
-// $Id$
+// $Id: CbcCompareDefault.cpp 1902 2013-04-10 16:58:16Z stefan $
 // Copyright (C) 2002, International Business Machines
 // Corporation and others.  All Rights Reserved.
 // This code is licensed under the terms of the Eclipse Public License (EPL).
@@ -138,6 +138,14 @@ CbcCompareDefault::test (CbcNode * x, CbcNode * y)
                 return equalityTest(x, y); // so ties will be broken in consistent manner
         }
     }
+    if (!weight_) {
+      double testX =  x->objectiveValue() + 1.0e-9 * x->numberUnsatisfied();
+      double testY = y->objectiveValue() + 1.0e-9 * y->numberUnsatisfied();
+      if (testX != testY)
+	return testX > testY;
+      else
+	return equalityTest(x, y); // so ties will be broken in consistent manner
+    }
     //weight_=0.0;
     if ((weight_ == -1.0 && (y->depth() > breadthDepth_ && x->depth() > breadthDepth_)) || weight_ == -3.0 || weight_ == -2.0) {
         int adjust =  (weight_ == -3.0) ? 10000 : 0;
@@ -171,7 +179,7 @@ CbcCompareDefault::test (CbcNode * x, CbcNode * y)
                 }
             } else {
                 assert (depthX != depthY) ;
-                return depthX > depthY;
+                return depthX < depthY;
             }
         }
         // after solution ?

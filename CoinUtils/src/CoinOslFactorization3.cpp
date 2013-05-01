@@ -1,4 +1,4 @@
-/* $Id: CoinOslFactorization3.cpp 1448 2011-06-19 15:34:41Z stefan $ */
+/* $Id: CoinOslFactorization3.cpp 1585 2013-04-06 20:42:02Z stefan $ */
 /*
   Copyright (C) 1987, 2009, International Business Machines
   Corporation and others.  All Rights Reserved.
@@ -880,7 +880,7 @@ int c_ekkcmfd(EKKfactinfo *fact,
   double dpivx, dsave;
   double dpivxx[8];
   double multip;
-  int lstart, ndense, krlast, ifirst, krfirst, kcount, idense, ipivot,
+  int lstart, ndense, krlast, kcount, idense, ipivot,
     jdense, kchunk, jpivot;
   
   const int nrow	= fact->nrow;
@@ -913,8 +913,6 @@ int c_ekkcmfd(EKKfactinfo *fact,
     /*     Use HCOLI just for last row */
     ilast = maction[1];
     krlast = mrstrt[ilast];
-    ifirst = maction[ndense];
-    krfirst = mrstrt[ifirst];
     /*     put list of columns in last HCOLI */
     iput = 0;
     for (i = 1; i <= nrow; ++i) {
@@ -1348,11 +1346,7 @@ static void c_ekkmltf(const EKKfactinfo *fact,double *dluval, int *hcoli,
   int *hpivco	= fact->kcpadr;
 #endif
   int i, j, k;
-#ifndef NDEBUG
   int koff=-1;
-#else
-  int koff;
-#endif
   const int nrow	= fact->nrow;
   
   
@@ -2144,11 +2138,9 @@ void c_ekkshfv(EKKfactinfo *fact,
     int ninbas=0;
     int ilast; /* last available entry */
     int spareSpace;
-    int * hcoli2;
     double * dluval2;
     /*int * hlink2 = ihlink+nrow;
       int * mrstrt2 = hlink2+nrow;*/
-    int extraSpace=10000;
     /* mwork has order of row copy */
     EKKHlink *mwork	= (reinterpret_cast<EKKHlink*>(fact->kw1adr))-1;
     fact->rows_ok = true;
@@ -2161,14 +2153,8 @@ void c_ekkshfv(EKKfactinfo *fact,
     }
     spareSpace=ilast-nnentu;
     need_more_space=false;
-    hcoli2 = hcoli+spareSpace;
     /*     save clean row copy if enough room */
     nroom = (spareSpace) / nrow;
-    if ((nnentu<<3)>150*maxinv) {
-      extraSpace=150*maxinv;
-    } else {
-      extraSpace=nnentu<<3;
-    }
     if (nrow<10000) {
       if (nroom < 10) {
 	need_more_space=true;

@@ -1,4 +1,4 @@
-// $Id: CbcBranchLink.hpp 1574 2011-01-05 01:13:55Z lou $
+// $Id: CbcBranchLink.hpp 1902 2013-04-10 16:58:16Z stefan $
 // Copyright (C) 2005, International Business Machines
 // Corporation and others.  All Rights Reserved.
 // This code is licensed under the terms of the Eclipse Public License (EPL).
@@ -57,7 +57,7 @@ public:
   /// This looks at solution and sets bounds to contain solution
   virtual void feasibleRegion();
   /// Creates a branching object
-  virtual CbcBranchingObject * createBranch(int way) ;
+  virtual CbcBranchingObject * createCbcBranch(OsiSolverInterface * solver, const OsiBranchingInformation * info, int way) ;
 
   /// Number of members
   inline int numberMembers() const

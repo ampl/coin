@@ -1,4 +1,4 @@
-/* $Id: CoinOslC.h 1374 2011-01-04 00:08:33Z lou $ */
+/* $Id: CoinOslC.h 1585 2013-04-06 20:42:02Z stefan $ */
 #ifndef COIN_OSL_C_INCLUDE
 /*
   Copyright (C) 1987, 2009, International Business Machines Corporation
@@ -185,13 +185,14 @@ void clp_free(void * oldArray);
   int kipie, kcpiv, knprs, knpre;
   bool cancel;
   double multip, elemnt;
-  int ipivot, jpivot, epivro, epivco, lstart, ifdens, nfirst;
+  int ipivot, jpivot, epivro, epivco, lstart, nfirst;
   int nzpivj, kfill, kstart;
   int nmove, ileft;
 #ifndef C_EKKCMFY
   int iput, nspare;
   int noRoomForDense=0;
   int if_sparse_update=fact->if_sparse_update;
+  int ifdens = 0;
 #endif
   int irtcod	= 0;
   const int nrow	= fact->nrow;
@@ -204,7 +205,6 @@ void clp_free(void * oldArray);
   for (i = lstart; i <= nnetas; ++i) {
       hrowi[i] = SHIFT_INDEX(hcoli[i]);
   }
-  ifdens = 0;
 
   for (i = 1; i <= nrow; ++i) {
     maction[i] = 0;

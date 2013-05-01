@@ -24,9 +24,6 @@
 /* Define to 1 if the CoinUtils package is available */
 #undef COIN_HAS_COINUTILS
 
-/* Define to 1 if the Netlib package is available */
-#undef COIN_HAS_NETLIB
-
 /* Define to 1 if the Osi package is available */
 #undef COIN_HAS_OSI
 

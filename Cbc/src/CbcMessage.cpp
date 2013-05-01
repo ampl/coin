@@ -1,4 +1,4 @@
-/* $Id: CbcMessage.cpp 1790 2012-06-08 14:59:51Z stefan $ */
+/* $Id: CbcMessage.cpp 1916 2013-04-26 16:21:11Z tkr $ */
 // Copyright (C) 2002, International Business Machines
 // Corporation and others.  All Rights Reserved.
 // This code is licensed under the terms of the Eclipse Public License (EPL).
@@ -23,15 +23,15 @@ static Cbc_message us_english[] = {
     {CBC_SOLUTION, 4, 1, "Integer solution of %g found after %d iterations and %d nodes (%.2f seconds)"},
     {CBC_END, 5, 1, "Partial search - best objective %g (best possible %g), took %d iterations and %d nodes (%.2f seconds)"},
     {CBC_INFEAS, 6, 1, "The LP relaxation is infeasible or too expensive"},
-    {CBC_STRONG, 7, 3, "Strong branching on %d (%d), down %g (%d) up %g (%d) value %g"},
+    {CBC_STRONG, 7, 4, "Strong branching on %d (%d), down %g (%d) up %g (%d) value %g"},
     {CBC_SOLINDIVIDUAL, 8, 2, "%d has value %g"},
-    {CBC_INTEGERINCREMENT, 9, 1, "Objective coefficients multiple of %g"},
+    {CBC_INTEGERINCREMENT, 9, 3, "Objective coefficients multiple of %g"},
     {CBC_STATUS, 10, 1, "After %d nodes, %d on tree, %g best solution, best possible %g (%.2f seconds)"},
     {CBC_GAP, 11, 1, "Exiting as integer gap of %g less than %g or %g%%"},
     {CBC_ROUNDING, 12, 1, "Integer solution of %g found by %s after %d iterations and %d nodes (%.2f seconds)"},
     {CBC_ROOT, 13, 1, "At root node, %d cuts changed objective from %g to %g in %d passes"},
     {CBC_GENERATOR, 14, 1, "Cut generator %d (%s) - %d row cuts average %.1f elements, %d column cuts (%d active) %? in %.3f seconds - new frequency is %d"},
-    {CBC_BRANCH, 15, 2, "Node %d Obj %g Unsat %d depth %d"},
+    {CBC_BRANCH, 15, 3, "Node %d Obj %g Unsat %d depth %d"},
     {CBC_STRONGSOL, 16, 1, "Integer solution of %g found by strong branching after %d iterations and %d nodes (%.2f seconds)"},
     {CBC_VUB_PASS, 17, 1, "%d solved, %d variables fixed, %d tightened"},
     {CBC_VUB_END, 18, 1, "After tightenVubs, %d variables fixed, %d tightened"},

@@ -2,7 +2,7 @@
 # All Rights Reserved.
 # This file is distributed under the Eclipse Public License.
 
-## $Id: Makefile.am 2310 2011-06-19 14:23:22Z stefan $
+## $Id: Makefile.am 2639 2012-11-20 15:30:18Z stefan $
 
 AUTOMAKE_OPTIONS = foreign
 
@@ -32,6 +32,8 @@ $(GLPKDIR)/src/glpapi16.c \
 $(GLPKDIR)/src/glpapi17.c \
 $(GLPKDIR)/src/glpapi18.c \
 $(GLPKDIR)/src/glpapi19.c \
+$(GLPKDIR)/src/glpapi20.c \
+$(GLPKDIR)/src/glpapi21.c \
 $(GLPKDIR)/src/glpavl.c \
 $(GLPKDIR)/src/glpbfd.c \
 $(GLPKDIR)/src/glpbfx.c \
@@ -95,6 +97,7 @@ $(GLPKDIR)/src/glpnpp02.c \
 $(GLPKDIR)/src/glpnpp03.c \
 $(GLPKDIR)/src/glpnpp04.c \
 $(GLPKDIR)/src/glpnpp05.c \
+$(GLPKDIR)/src/glpnpp06.c \
 $(GLPKDIR)/src/glpqmd.c \
 $(GLPKDIR)/src/glprgr.c \
 $(GLPKDIR)/src/glprng01.c \
@@ -120,20 +123,38 @@ $(GLPKDIR)/src/amd/amd_postorder.c \
 $(GLPKDIR)/src/amd/amd_post_tree.c \
 $(GLPKDIR)/src/amd/amd_preprocess.c \
 $(GLPKDIR)/src/amd/amd_valid.c \
-$(GLPKDIR)/src/colamd/colamd.c
+$(GLPKDIR)/src/colamd/colamd.c \
+$(GLPKDIR)/src/minisat/minisat.c \
+$(GLPKDIR)/src/zlib/adler32.c \
+$(GLPKDIR)/src/zlib/compress.c \
+$(GLPKDIR)/src/zlib/crc32.c \
+$(GLPKDIR)/src/zlib/deflate.c \
+$(GLPKDIR)/src/zlib/gzclose.c \
+$(GLPKDIR)/src/zlib/gzlib.c \
+$(GLPKDIR)/src/zlib/gzread.c \
+$(GLPKDIR)/src/zlib/gzwrite.c \
+$(GLPKDIR)/src/zlib/infback.c \
+$(GLPKDIR)/src/zlib/inffast.c \
+$(GLPKDIR)/src/zlib/inflate.c \
+$(GLPKDIR)/src/zlib/inftrees.c \
+$(GLPKDIR)/src/zlib/trees.c \
+$(GLPKDIR)/src/zlib/uncompr.c \
+$(GLPKDIR)/src/zlib/zio.c \
+$(GLPKDIR)/src/zlib/zutil.c
 
 DEFAULT_INCLUDES = -I. -I`$(CYGPATH_W) $(srcdir)`
 
-AM_CPPFLAGS = -I`$(CYGPATH_W) $(srcdir)/$(GLPKDIR)/include` \
+AM_CPPFLAGS = \
   -I`$(CYGPATH_W) $(srcdir)/$(GLPKDIR)/src` \
   -I`$(CYGPATH_W) $(srcdir)/$(GLPKDIR)/src/amd` \
   -I`$(CYGPATH_W) $(srcdir)/$(GLPKDIR)/src/colamd` \
+  -I`$(CYGPATH_W) $(srcdir)/$(GLPKDIR)/src/minisat` \
   -I$(GLPKDIR)
 
 libcoinglpk_la_LDFLAGS = $(LT_LDFLAGS)
 
 thirdpartyincludedir = $(includedir)/coin/ThirdParty
-thirdpartyinclude_HEADERS = $(GLPKDIR)/include/glpk.h $(GLPKDIR)/src/amd/amd.h
+thirdpartyinclude_HEADERS = $(GLPKDIR)/src/glpk.h $(GLPKDIR)/src/amd/amd.h
 
 pkgconfiglibdir = $(libdir)/pkgconfig
 pkgconfiglib_DATA = coinglpk.pc

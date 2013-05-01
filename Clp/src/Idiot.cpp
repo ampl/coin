@@ -1,4 +1,4 @@
-/* $Id: Idiot.cpp 1753 2011-06-19 16:27:26Z stefan $ */
+/* $Id: Idiot.cpp 1931 2013-04-06 20:44:29Z stefan $ */
 // Copyright (C) 2002, International Business Machines
 // Corporation and others.  All Rights Reserved.
 // This code is licensed under the terms of the Eclipse Public License (EPL).
@@ -14,6 +14,7 @@
 #include "CoinSort.hpp"
 #include "CoinMessageHandler.hpp"
 #include "CoinHelperFunctions.hpp"
+#include "AbcCommon.hpp"
 // Redefine stuff for Clp
 #ifndef OSI_IDIOT
 #include "ClpMessage.hpp"
@@ -209,14 +210,15 @@ Idiot::cleanIteration(int iteration, int ordinaryStart, int ordinaryEnd,
                     // slide all slack down
                     double rowValue = rowsol[i];
                     CoinBigIndex j = columnStart[iCol];
-                    rowSave += (colsol[iCol] - lower[iCol]) * element[j];
-                    colsol[iCol] = lower[iCol];
-                    assert (lower[iCol] > -1.0e20);
+                    double lowerValue = CoinMax(CoinMin(colsol[iCol], 0.0) - 1000.0, lower[iCol]);
+                    rowSave += (colsol[iCol] - lowerValue) * element[j];
+                    colsol[iCol] = lowerValue;
                     while (nextSlack[iCol] >= 0) {
                          iCol = nextSlack[iCol];
                          j = columnStart[iCol];
-                         rowSave += (colsol[iCol] - lower[iCol]) * element[j];
-                         colsol[iCol] = lower[iCol];
+			 double lowerValue = CoinMax(CoinMin(colsol[iCol], 0.0) - 1000.0, lower[iCol]);
+                         rowSave += (colsol[iCol] - lowerValue) * element[j];
+                         colsol[iCol] = lowerValue;
                     }
                     iCol = negSlack[i];
                     while (rowValue > rowUpper[i] && iCol >= 0) {
@@ -420,7 +422,7 @@ Idiot::solve2(CoinMessageHandler * handler, const CoinMessages * messages)
      double fakeSmall = smallInfeas;
      double firstInfeas;
      int badIts = 0;
-     int slackStart, slackEnd, ordStart, ordEnd;
+     int slackStart, ordStart, ordEnd;
      int checkIteration = 0;
      int lambdaIteration = 0;
      int belowReasonable = 0; /* set if ever gone below reasonable infeas */
@@ -614,7 +616,6 @@ Idiot::solve2(CoinMessageHandler * handler, const CoinMessages * messages)
      slackStart = countCostedSlacks(model_);
      if (slackStart >= 0) {
        COIN_DETAIL_PRINT(printf("This model has costed slacks\n"));
-          slackEnd = slackStart + nrows;
           if (slackStart) {
                ordStart = 0;
                ordEnd = slackStart;
@@ -623,7 +624,6 @@ Idiot::solve2(CoinMessageHandler * handler, const CoinMessages * messages)
                ordEnd = ncols;
           }
      } else {
-          slackEnd = slackStart;
           ordStart = 0;
           ordEnd = ncols;
      }
@@ -829,11 +829,13 @@ Idiot::solve2(CoinMessageHandler * handler, const CoinMessages * messages)
                }
 #endif
           }
-          if (iteration > 50 && n == numberAway && result.infeas < 1.0e-4) {
+          if (iteration > 50 && n == numberAway ) {
+	    if((result.infeas < 1.0e-4 && majorIterations_<200)||result.infeas<1.0e-8) {
 #ifdef CLP_INVESTIGATE
                printf("infeas small %g\n", result.infeas);
 #endif
                break; // not much happening
+	    }
           }
           if (lightWeight_ == 1 && iteration > 10 && result.infeas > 1.0 && maxIts != 7) {
                if (lastInfeas != bestInfeas && CoinMin(result.infeas, lastInfeas) > 0.95 * bestInfeas)
@@ -873,6 +875,15 @@ Idiot::solve2(CoinMessageHandler * handler, const CoinMessages * messages)
           } else {
           }
           bestInfeas = CoinMin(bestInfeas, result.infeas);
+	  if (majorIterations_>100&&majorIterations_<200) {
+	    if (iteration==majorIterations_-100) {
+	      // redo
+	      double muX=mu*10.0;
+	      bestInfeas=1.0e3;
+	      mu=muX;
+	      nTry=0;
+	    }
+	  }
           if (iteration) {
                /* this code is in to force it to terminate sometime */
                double changeMu = factor;
@@ -1701,20 +1712,33 @@ Idiot::crossOver(int mode)
           if (model_) {
                if (!wantVector) {
                     //#define TWO_GOES
+#ifdef ABC_INHERIT
+#ifndef TWO_GOES
+                    model_->dealWithAbc(1,justValuesPass ? 2 : 1);
+#else
+                    model_->dealWithAbc(1,1 + 11);
+#endif
+#else
 #ifndef TWO_GOES
                     model_->primal(justValuesPass ? 2 : 1);
 #else
                     model_->primal(1 + 11);
+#endif
 #endif
                } else {
                     ClpMatrixBase * matrix = model_->clpMatrix();
                     ClpPackedMatrix * clpMatrix = dynamic_cast< ClpPackedMatrix*>(matrix);
                     assert (clpMatrix);
                     clpMatrix->makeSpecialColumnCopy();
+#ifdef ABC_INHERIT
+                    model_->dealWithAbc(1,1);
+#else
                     model_->primal(1);
+#endif
                     clpMatrix->releaseSpecialColumnCopy();
                }
                if (presolve) {
+		 model_->primal();
                     pinfo.postsolve(true);
                     delete model_;
                     model_ = saveModel;
@@ -1727,7 +1751,11 @@ Idiot::crossOver(int mode)
                model_ = saveModel;
                saveModel = NULL;
                if (justValuesPass)
+#ifdef ABC_INHERIT
+                    model_->dealWithAbc(1,2);
+#else
                     model_->primal(2);
+#endif
           }
           if (allowInfeasible) {
                CoinMemcpyN(saveRowUpper, nrows, model_->rowUpper());
@@ -1779,13 +1807,21 @@ Idiot::crossOver(int mode)
                     presolve = 0;
                }
                if (!wantVector) {
+#ifdef ABC_INHERIT
+                    model_->dealWithAbc(1,1);
+#else
                     model_->primal(1);
+#endif
                } else {
                     ClpMatrixBase * matrix = model_->clpMatrix();
                     ClpPackedMatrix * clpMatrix = dynamic_cast< ClpPackedMatrix*>(matrix);
                     assert (clpMatrix);
                     clpMatrix->makeSpecialColumnCopy();
+#ifdef ABC_INHERIT
+                    model_->dealWithAbc(1,1);
+#else
                     model_->primal(1);
+#endif
                     clpMatrix->releaseSpecialColumnCopy();
                }
                if (presolve) {
@@ -1819,13 +1855,21 @@ Idiot::crossOver(int mode)
                     presolve = 0;
                }
                if (!wantVector) {
+#ifdef ABC_INHERIT
+                    model_->dealWithAbc(1,1);
+#else
                     model_->primal(1);
+#endif
                } else {
                     ClpMatrixBase * matrix = model_->clpMatrix();
                     ClpPackedMatrix * clpMatrix = dynamic_cast< ClpPackedMatrix*>(matrix);
                     assert (clpMatrix);
                     clpMatrix->makeSpecialColumnCopy();
+#ifdef ABC_INHERIT
+                    model_->dealWithAbc(1,1);
+#else
                     model_->primal(1);
+#endif
                     clpMatrix->releaseSpecialColumnCopy();
                }
                if (presolve) {

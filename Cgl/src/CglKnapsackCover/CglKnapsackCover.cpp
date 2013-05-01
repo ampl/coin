@@ -1,12 +1,8 @@
-// $Id: CglKnapsackCover.cpp 1033 2011-06-19 16:49:13Z stefan $
+// $Id: CglKnapsackCover.cpp 1123 2013-04-06 20:47:24Z stefan $
 // Copyright (C) 2000, International Business Machines
 // Corporation and others.  All Rights Reserved.
 // This code is licensed under the terms of the Eclipse Public License (EPL).
 
-#if defined(_MSC_VER)
-// Turn off compiler warning about long names
-#  pragma warning(disable:4786)
-#endif
 #include <cstdlib>
 #include <cstdio>
 #include <cmath>
@@ -14,6 +10,7 @@
 #include <cfloat>
 #include <iostream>
 
+#include "CoinPragma.hpp"
 #include "CoinHelperFunctions.hpp"
 #include "CglKnapsackCover.hpp"
 #include "CoinPackedVector.hpp"
@@ -27,7 +24,7 @@
 // Generate knapsack cover cuts
 //------------------------------------------------------------------- 
 void CglKnapsackCover::generateCuts(const OsiSolverInterface& si, OsiCuts& cs,
-				    const CglTreeInfo info) const
+				    const CglTreeInfo info)
 {
   // Get basic problem information
   int nRows=si.getNumRows(); 
@@ -144,8 +141,10 @@ void CglKnapsackCover::generateCuts(const OsiSolverInterface& si, OsiCuts& cs,
     int iCont=-1;
     double sum = 0.0;
     double valueContinuous=0.0;
+#ifdef PRINT_DEBUG
     double valueBinary=0.0;
     int iBinary=-1;
+#endif
     int j;
     for (j=start;j<end;j++) {
       int iColumn=column[j];
@@ -155,13 +154,17 @@ void CglKnapsackCover::generateCuts(const OsiSolverInterface& si, OsiCuts& cs,
 	if (vubRow[iColumn]==-2&&value*multiplier>0.0) {
 	  // binary
 	  numberBinary++;
+#ifdef PRINT_DEBUG
 	  valueBinary=value;
 	  iBinary=iColumn;
+#endif
 	} else if (vlbRow[iColumn]==-2&&value*multiplier<0.0) {
 	  // binary
 	  numberBinary++;
+#ifdef PRINT_DEBUG
 	  valueBinary=value;
-	  iBinary=iColumn;
+     iBinary=iColumn;
+#endif
 	} else if (vubRow[iColumn]==-1) {
 	  // only use if not at bound
           //	  if (colsol[iColumn]<colUpper[iColumn]-1.0e-6&&
@@ -793,7 +796,7 @@ CglKnapsackCover::liftAndUncomplementAndAdd(
          int /*row*/,
          CoinPackedVector & cover,
          CoinPackedVector & remainder,
-         OsiCuts & cs ) const
+         OsiCuts & cs )
 {
   CoinPackedVector cut;
   double cutRhs = cover.getNumElements() - 1.0;
@@ -889,7 +892,7 @@ CglKnapsackCover::deriveAKnapsack(
        int /*rowIndex*/,
        int numberElements,
        const int * index,
-       const double * element) const
+       const double * element)
 {
 
   // Fix to https://projects.coin-or.org/Cbc/ticket/30
@@ -1118,7 +1121,7 @@ CglKnapsackCover::deriveAKnapsack(
        int *  complement,
        double *  xstar,
        int rowIndex,
-       const CoinPackedVectorBase & matrixRow ) const
+       const CoinPackedVectorBase & matrixRow )
 {
   // Get the sense of the row
   const char  rowsense = si.getRowSense()[rowIndex];
@@ -1152,7 +1155,7 @@ CglKnapsackCover::findLPMostViolatedMinCover(
       double & b,
       double * xstar, 
       CoinPackedVector & cover,
-      CoinPackedVector & remainder) const
+      CoinPackedVector & remainder)
 {
   
   // Assumes krow and b describe a knapsack inequality in canonical form
@@ -1364,7 +1367,7 @@ CglKnapsackCover::findExactMostViolatedMinCover(
         double b, 
         double *  xstar, 
         CoinPackedVector & cover,
-        CoinPackedVector & remainder) const 
+        CoinPackedVector & remainder)
 {
   
   // assumes the row is in canonical knapsack form 
@@ -1537,7 +1540,7 @@ CglKnapsackCover::findPseudoJohnAndEllisCover(
      double & b,
      double * xstar, 
      CoinPackedVector & cover,  
-     CoinPackedVector & remainder) const
+     CoinPackedVector & remainder)
 
 {
   // semi-mimic of John&Ellis's approach without taking advantage of SOS info
@@ -1785,7 +1788,7 @@ CglKnapsackCover::findJohnAndEllisCover(
      double * xstar, 
      CoinPackedVector & fracCover,  
      CoinPackedVector & atOne,
-     CoinPackedVector & remainder) const
+     CoinPackedVector & remainder)
 
 {
   // John Forrest and Ellis Johnson's approach as I see it.
@@ -2031,7 +2034,7 @@ CglKnapsackCover::findGreedyCover(
      double * xstar,
      CoinPackedVector & cover,
      CoinPackedVector & remainder
-     ) const
+     )
   // the row argument is a hold over from debugging
   // ToDo: move the print cover statement out to the mainprogram 
   // and remove the row argument
@@ -2138,7 +2141,7 @@ CglKnapsackCover::liftUpDownAndUncomplementAndAdd(
          CoinPackedVector & atOne,
 	 // and together with fracCover form minimal (?) cover. 
          CoinPackedVector & remainder,
-         OsiCuts & cs ) const
+         OsiCuts & cs )
 {
   CoinPackedVector cut;
 
@@ -3003,7 +3006,7 @@ CglKnapsackCover::seqLiftAndUncomplementAndAdd(
                                      //     inequality derived from row 
       CoinPackedVector & cover,       // need not be violated
       CoinPackedVector & remainder,
-      OsiCuts & cs) const
+      OsiCuts & cs)
 {
   CoinPackedVector cut;
   
@@ -3264,7 +3267,7 @@ CglKnapsackCover::liftCoverCut(
       int nRowElem,
       CoinPackedVector & cover,
       CoinPackedVector & remainder,
-      CoinPackedVector & cut) const
+      CoinPackedVector & cut)
 {
   int i;
   int  goodCut=1;
@@ -3495,7 +3498,7 @@ CglKnapsackCover::exactSolveKnapsack(
        double const *pp, 
        double const *ww, 
        double & z, 
-       int * x) const
+       int * x)
 {
   // The knapsack problem is to find:
 
@@ -3643,6 +3646,7 @@ expensiveCuts_(false)
   zeroFixStart_=NULL;
   endFixStart_=NULL;
   whichClique_=NULL;
+  canDoGlobalCuts_=true;
 }
 
 //-------------------------------------------------------------------
@@ -3678,6 +3682,7 @@ CglKnapsackCover::CglKnapsackCover (const CglKnapsackCover & source) :
     CoinMemcpyN(source.zeroFixStart_,numberColumns_,zeroFixStart_);
     endFixStart_ = new int [numberColumns_];
     CoinMemcpyN(source.endFixStart_,numberColumns_,endFixStart_);
+#ifndef NDEBUG
     int n2=-1;
     for (int i=numberColumns_-1;i>=0;i--) {
       if (oneFixStart_[i]>=0) {
@@ -3686,6 +3691,7 @@ CglKnapsackCover::CglKnapsackCover (const CglKnapsackCover & source) :
       }
     }
     assert (n==n2);
+#endif
     whichClique_ = new int [n];
     CoinMemcpyN(source.whichClique_,n,whichClique_);
   } else {
@@ -3755,6 +3761,7 @@ CglKnapsackCover::operator=(const CglKnapsackCover& rhs)
 	CoinMemcpyN(rhs.zeroFixStart_,numberColumns_,zeroFixStart_);
 	endFixStart_ = new int [numberColumns_];
 	CoinMemcpyN(rhs.endFixStart_,numberColumns_,endFixStart_);
+#ifndef NDEBUG
 	int n2=-1;
 	for (int i=numberColumns_-1;i>=0;i--) {
 	  if (oneFixStart_[i]>=0) {
@@ -3763,6 +3770,7 @@ CglKnapsackCover::operator=(const CglKnapsackCover& rhs)
 	  }
 	}
 	assert (n==n2);
+#endif
 	whichClique_ = new int [n];
 	CoinMemcpyN(rhs.whichClique_,n,whichClique_);
       }
@@ -3849,9 +3857,6 @@ CglKnapsackCover::createCliques( OsiSolverInterface & si,
   const CoinBigIndex * rowStart = matrixByRow.getVectorStarts();
   const int * rowLength = matrixByRow.getVectorLengths();
 
-  // Column lengths for slacks
-  const int * columnLength = si.getMatrixByCol()->getVectorLengths();
-
   const double * lower = si.getColLower();
   const double * upper = si.getColUpper();
   const double * rowLower = si.getRowLower();
@@ -3863,7 +3868,6 @@ CglKnapsackCover::createCliques( OsiSolverInterface & si,
     double upperValue=rowUpper[iRow];
     double lowerValue=rowLower[iRow];
     bool good=true;
-    int slack = -1;
     for (j=rowStart[iRow];j<rowStart[iRow]+rowLength[iRow];j++) {
       int iColumn = column[j];
       int iInteger=lookup[iColumn];
@@ -3878,9 +3882,6 @@ CglKnapsackCover::createCliques( OsiSolverInterface & si,
       } else if (iInteger<0) {
 	good = false;
 	break;
-      } else {
-	if (columnLength[iColumn]==1)
-	  slack = iInteger;
       }
       if (fabs(elementByRow[j])!=1.0) {
 	good=false;

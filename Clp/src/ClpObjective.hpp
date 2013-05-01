@@ -1,4 +1,4 @@
-/* $Id: ClpObjective.hpp 1665 2011-01-04 17:55:54Z lou $ */
+/* $Id: ClpObjective.hpp 1825 2011-11-20 16:02:57Z forrest $ */
 // Copyright (C) 2002, International Business Machines
 // Corporation and others.  All Rights Reserved.
 // This code is licensed under the terms of the Eclipse Public License (EPL).
@@ -95,8 +95,12 @@ public:
      ///@name Other
      //@{
      /// Returns type (above 63 is extra information)
-     inline int type() {
+     inline int type() const {
           return type_;
+     }
+     /// Sets type (above 63 is extra information)
+     inline void setType(int value) {
+          type_ = value;
      }
      /// Whether activated
      inline int activated() const {

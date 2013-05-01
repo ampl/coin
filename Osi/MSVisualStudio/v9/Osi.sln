@@ -7,12 +7,6 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "libOsi", "libOsi\libOsi.vcp
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "libCoinUtils", "..\..\..\CoinUtils\MSVisualStudio\v9\libCoinUtils\libCoinUtils.vcproj", "{C4867F15-438D-4FF8-8388-62FBAAA9786C}"
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "OsiExamplesBasic2", "OsiExamplesBasic2\OsiExamplesBasic2.vcproj", "{B349E853-2E2B-468E-8853-184ACD948678}"
-	ProjectSection(ProjectDependencies) = postProject
-		{C4867F15-438D-4FF8-8388-62FBAAA9786C} = {C4867F15-438D-4FF8-8388-62FBAAA9786C}
-		{7D98E2CB-876E-4F75-9F71-77D3FE87E149} = {7D98E2CB-876E-4F75-9F71-77D3FE87E149}
-	EndProjectSection
-EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "OsiExamplesBasic", "OsiExamplesBasic\OsiExamplesBasic.vcproj", "{B874A948-B5F4-4501-9735-BD9586C5216D}"
 	ProjectSection(ProjectDependencies) = postProject
 		{C4867F15-438D-4FF8-8388-62FBAAA9786C} = {C4867F15-438D-4FF8-8388-62FBAAA9786C}

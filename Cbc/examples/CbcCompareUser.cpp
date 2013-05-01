@@ -1,17 +1,14 @@
-// $Id: CbcCompareUser.cpp 1574 2011-01-05 01:13:55Z lou $
+// $Id: CbcCompareUser.cpp 1902 2013-04-10 16:58:16Z stefan $
 // Copyright (C) 2004, International Business Machines
 // Corporation and others.  All Rights Reserved.
 // This code is licensed under the terms of the Eclipse Public License (EPL).
 
-#if defined(_MSC_VER)
-// Turn off compiler warning about long names
-#  pragma warning(disable:4786)
-#endif
 #include <cassert>
 #include <cmath>
 #include <cfloat>
 //#define CBC_DEBUG
 
+#include "CoinPragma.hpp"
 #include "CbcMessage.hpp"
 #include "CbcModel.hpp"
 #include "CbcTree.hpp"

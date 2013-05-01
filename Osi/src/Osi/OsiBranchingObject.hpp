@@ -847,7 +847,7 @@ public:
   OsiLotsize & operator=( const OsiLotsize& rhs);
 
   // Destructor 
-  ~OsiLotsize ();
+  virtual ~OsiLotsize ();
   
   using OsiObject::infeasibility ;
   /// Infeasibility - large is 0.5

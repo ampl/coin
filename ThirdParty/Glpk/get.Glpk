@@ -1,7 +1,7 @@
 #!/bin/sh
 
 set -e
-glpk_ver=4.45
+glpk_ver=4.48
 
 wgetcmd=wget
 wgetcount=`which wget 2>/dev/null | wc -l`
@@ -54,7 +54,7 @@ patch -p0 < glpk.patch
 
 echo "Touch every source file to force rebuild of whole package."
 
-touch glpk/src/*.c glpk/include/*.h
+touch glpk/src/*.c glpk/src/*/*.c
 
 echo " "
 echo "Verify that there are no error message in the output above."

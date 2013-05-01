@@ -1,4 +1,4 @@
-/* $Id: CoinParam.hpp 1494 2011-11-01 16:58:47Z tkr $ */
+/* $Id: CoinParam.hpp 1493 2011-11-01 16:56:07Z tkr $ */
 #ifndef CoinParam_H
 #define CoinParam_H
 

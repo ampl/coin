@@ -1,4 +1,4 @@
-/* $Id: CbcHeuristicDiveCoefficient.cpp 1173 2009-06-04 09:44:10Z forrest $ */
+/* $Id: CbcHeuristicDiveCoefficient.cpp 1902 2013-04-10 16:58:16Z stefan $ */
 // Copyright (C) 2008, International Business Machines
 // Corporation and others.  All Rights Reserved.
 // This code is licensed under the terms of the Eclipse Public License (EPL).

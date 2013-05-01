@@ -16,14 +16,8 @@
 #include <numeric>
 
 #include "CoinPragma.hpp"
-#include "CoinError.hpp"
 
 #include "OsiCpxSolverInterface.hpp"
-#include "OsiRowCut.hpp"
-#include "OsiColCut.hpp"
-#include "CoinPackedMatrix.hpp"
-#include "CoinWarmStartBasis.hpp"
-#include "CoinFinite.hpp"
 
 #include "cplex.h"
 
@@ -260,17 +254,16 @@ void OsiCpxSolverInterface::initialSolve()
   
   switchToLP();
 
-  int algorithm = 0;
-  bool takeHint, gotHint;
+  bool takeHint;
   OsiHintStrength strength;
-  gotHint = (getHintParam(OsiDoDualInInitial,takeHint,strength));
-  assert (gotHint);
+  
+  int algorithm = 0;
+  getHintParam(OsiDoDualInInitial,takeHint,strength);
   if (strength!=OsiHintIgnore)
      algorithm = takeHint ? -1 : 1;
 
   int presolve = 1;
-  gotHint = (getHintParam(OsiDoPresolveInInitial,takeHint,strength));
-  assert (gotHint);
+  getHintParam(OsiDoPresolveInInitial,takeHint,strength);
   if (strength!=OsiHintIgnore)
      presolve = takeHint ? 1 : 0;
 
@@ -391,17 +384,16 @@ void OsiCpxSolverInterface::resolve()
 
   switchToLP();
 
-  int algorithm = 0;
-  bool takeHint, gotHint;
+  bool takeHint;
   OsiHintStrength strength;
-  gotHint = (getHintParam(OsiDoDualInResolve,takeHint,strength));
-  assert (gotHint);
+
+  int algorithm = 0;
+  getHintParam(OsiDoDualInResolve,takeHint,strength);
   if (strength!=OsiHintIgnore)
      algorithm = takeHint ? -1 : 1;
 
   int presolve = 0;
-  gotHint = (getHintParam(OsiDoPresolveInResolve,takeHint,strength));
-  assert (gotHint);
+  getHintParam(OsiDoPresolveInResolve,takeHint,strength);
   if (strength!=OsiHintIgnore)
      presolve = takeHint ? 1 : 0;
 
@@ -755,7 +747,7 @@ bool OsiCpxSolverInterface::isProvenOptimal() const
 #else
   return ((probtypemip_ == false && 
 	  (stat == CPX_OPTIMAL || stat == CPX_OPTIMAL_INFEAS)) ||
-	  probtypemip_ == true && stat == CPXMIP_OPTIMAL);
+	  (probtypemip_ == true && stat == CPXMIP_OPTIMAL));
 #endif
 }
 
@@ -776,8 +768,8 @@ bool OsiCpxSolverInterface::isProvenPrimalInfeasible() const
 
   int method = CPXgetmethod( env_, getMutableLpPtr() );
 
-  return (method == CPX_ALG_PRIMAL && stat == CPX_INFEASIBLE || 
-	  method == CPX_ALG_DUAL && stat == CPX_UNBOUNDED || 
+  return ((method == CPX_ALG_PRIMAL && stat == CPX_INFEASIBLE) ||
+	  (method == CPX_ALG_DUAL && stat == CPX_UNBOUNDED) ||
 	  stat == CPX_ABORT_PRIM_INFEAS ||
 	  stat == CPX_ABORT_PRIM_DUAL_INFEAS);
 #endif
@@ -800,8 +792,8 @@ bool OsiCpxSolverInterface::isProvenDualInfeasible() const
 
   int method = CPXgetmethod( env_, getMutableLpPtr() );
 
-  return (method == CPX_ALG_PRIMAL && stat == CPX_UNBOUNDED || 
-	  method == CPX_ALG_DUAL && stat == CPX_INFEASIBLE || 
+  return ((method == CPX_ALG_PRIMAL && stat == CPX_UNBOUNDED) ||
+	  (method == CPX_ALG_DUAL && stat == CPX_INFEASIBLE) ||
 	  stat == CPX_ABORT_DUAL_INFEAS || 
 	  stat == CPX_ABORT_PRIM_DUAL_INFEAS);
 #endif
@@ -1319,7 +1311,7 @@ const CoinPackedMatrix * OsiCpxSolverInterface::getMatrixByRow() const
       int *len      = new int   [nrows];
       
       int requiredSpace;
-      int rc = CPXgetrows( env_, getMutableLpPtr(), 
+      CPXgetrows( env_, getMutableLpPtr(), 
 			   &nelems, starts, NULL, NULL, 0, &requiredSpace,
 			   0, nrows-1 );
       
@@ -1327,7 +1319,7 @@ const CoinPackedMatrix * OsiCpxSolverInterface::getMatrixByRow() const
       int     *indices  = new int   [-requiredSpace];
       double  *elements = new double[-requiredSpace]; 
       
-      rc = CPXgetrows( env_, getMutableLpPtr(), 
+      CPXgetrows( env_, getMutableLpPtr(), 
 		       &nelems, starts, indices, elements, -requiredSpace,
 		       &requiredSpace, 0, nrows-1 );
       assert( requiredSpace == 0 );
@@ -1365,7 +1357,7 @@ const CoinPackedMatrix * OsiCpxSolverInterface::getMatrixByCol() const
       int *len    = new int   [ncols];
       
       int requiredSpace;
-      int rc = CPXgetcols( env_, getMutableLpPtr(), 
+      CPXgetcols( env_, getMutableLpPtr(), 
 			   &nelems, starts, NULL, NULL, 0, &requiredSpace,
 			   0, ncols-1 );
       assert( -requiredSpace == getNumElements() );
@@ -1373,7 +1365,7 @@ const CoinPackedMatrix * OsiCpxSolverInterface::getMatrixByCol() const
       int     *indices  = new int   [-requiredSpace];
       double  *elements = new double[-requiredSpace]; 
       
-      rc = CPXgetcols( env_, getMutableLpPtr(), 
+      CPXgetcols( env_, getMutableLpPtr(), 
 		       &nelems, starts, indices, elements, -requiredSpace,
 		       &requiredSpace, 0, ncols-1 );
       assert( requiredSpace == 0);

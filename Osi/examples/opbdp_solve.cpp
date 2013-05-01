@@ -1,10 +1,5 @@
 // Copyright (C) 2006, International Business Machines
 // Corporation and others.  All Rights Reserved.
-#ifdef COIN_OPBDP
-#if defined(_MSC_VER)
-// Turn off compiler warning about long names
-#  pragma warning(disable:4786)
-#endif
 
 #include "OsiConfig.h"
 
@@ -16,12 +11,13 @@
 #include <string>
 #include <iostream>
 
+#include "CoinPragma.hpp"
 #include "CoinHelperFunctions.hpp"
 #include "CoinPackedVector.hpp"
 #include "CoinPackedMatrix.hpp"
-#include  "CoinTime.hpp"
+#include "CoinTime.hpp"
 
-#include "odbdp_solve.hpp"
+#include "opbdp_solve.hpp"
 #include "PBCS.h"
 // Not threadsafe
 static unsigned int ** opbdp_solution=NULL;
@@ -484,4 +480,3 @@ solveOpbdp(const OsiSolverInterface * model,int & numberFound)
     return NULL;
   }
 }
-#endif

@@ -1,4 +1,4 @@
-/* $Id: ClpSolve.hpp 1665 2011-01-04 17:55:54Z lou $ */
+/* $Id: ClpSolve.hpp 1928 2013-04-06 12:54:16Z stefan $ */
 // Copyright (C) 2003, International Business Machines
 // Corporation and others.  All Rights Reserved.
 // This code is licensed under the terms of the Eclipse Public License (EPL).
@@ -199,6 +199,14 @@ public:
           if (doSingleton_) independentOptions_[1]  &= ~512;
           else independentOptions_[1] |= 512;
      }
+     /// Whether we want to kill small substitutions
+     inline bool doKillSmall() const {
+          return (independentOptions_[1] & 1024) == 0;
+     }
+     inline void setDoKillSmall(bool doKill) {
+          if (doKill) independentOptions_[1]  &= ~1024;
+          else independentOptions_[1] |= 1024;
+     }
      /// Set whole group
      inline int presolveActions() const {
           return independentOptions_[1] & 0xffff;
@@ -384,4 +392,44 @@ public:
      int oddState_;
      //@}
 };
+
+#include "ClpConfig.h"
+#if CLP_HAS_ABC
+#include "AbcCommon.hpp"
+/// For saving extra information to see if looping.
+class AbcSimplexProgress : public ClpSimplexProgress {
+
+public:
+
+
+     /**@name Constructors and destructor and copy */
+     //@{
+     /// Default constructor
+     AbcSimplexProgress (  );
+
+     /// Constructor from model
+     AbcSimplexProgress ( ClpSimplex * model );
+
+     /// Copy constructor.
+     AbcSimplexProgress(const AbcSimplexProgress &);
+
+     /// Assignment operator. This copies the data
+     AbcSimplexProgress & operator=(const AbcSimplexProgress & rhs);
+     /// Destructor
+     ~AbcSimplexProgress (  );
+
+     //@}
+
+     /**@name Check progress */
+     //@{
+     /** Returns -1 if okay, -n+1 (n number of times bad) if bad but action taken,
+         >=0 if give up and use as problem status
+     */
+     int looping (  );
+
+     //@}
+     /**@name Data  */
+     //@}
+};
+#endif
 #endif

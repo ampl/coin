@@ -9,6 +9,8 @@
 
 #ifdef NDEBUG
 #undef NDEBUG
+// checkClean and checkClear not define
+#define NO_CHECK_CL
 #endif
 
 #include <cassert>
@@ -214,7 +216,7 @@ CoinIndexedVectorUnitTest()
     try {
       assert( r[1]==0. );
     }
-    catch (CoinError e) {
+    catch (CoinError& e) {
       errorThrown = true;
     }
     assert( errorThrown );
@@ -225,7 +227,7 @@ CoinIndexedVectorUnitTest()
     try {
       assert( r[-1]==0. );
     }
-    catch (CoinError e) {
+    catch (CoinError& e) {
       errorThrown = true;
     }
     assert( errorThrown );
@@ -239,7 +241,7 @@ CoinIndexedVectorUnitTest()
     try {
       assert( r[5]==0. );
     }
-    catch (CoinError e) {
+    catch (CoinError& e) {
       errorThrown = true;
     }
     assert( errorThrown );
@@ -389,6 +391,7 @@ CoinIndexedVectorUnitTest()
     // Below are purely for debug - so use assert
     // so we won't try with false
     // Test checkClean 
+#ifndef NO_CHECK_CL
     v2.checkClean();
     assert( v2.getNumElements()==2 );
 
@@ -396,7 +399,7 @@ CoinIndexedVectorUnitTest()
     int numberRemaining = v2.clean(10.0);
     assert(numberRemaining==0);
     v2.checkClear();
-    
+#endif    
   }
   
   {

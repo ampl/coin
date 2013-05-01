@@ -4,15 +4,11 @@
 //           Carnegie Mellon University, Pittsburgh, PA 15213
 // Date:     11/24/06
 //
-// $Id: CglRedSplitParam.cpp 944 2011-01-04 23:26:07Z lou $
+// $Id: CglRedSplitParam.cpp 1123 2013-04-06 20:47:24Z stefan $
 //---------------------------------------------------------------------------
 // Copyright (C) 2006, Francois Margot and others.  All Rights Reserved.
 // This code is licensed under the terms of the Eclipse Public License (EPL).
 
-#if defined(_MSC_VER)
-// Turn off compiler warning about long names
-#  pragma warning(disable:4786)
-#endif
 #include <cstdlib>
 #include <cstdio>
 #include <cmath>
@@ -20,6 +16,7 @@
 #include <cassert>
 #include <iostream>
 
+#include "CoinPragma.hpp"
 #include "CglRedSplitParam.hpp"
 
 /***********************************************************************/

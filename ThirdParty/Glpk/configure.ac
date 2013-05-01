@@ -2,7 +2,7 @@
 # All Rights Reserved.
 # This file is distributed under the Eclipse Public License.
 
-## $Id: configure.ac 2595 2012-07-31 13:53:53Z stefan $
+## $Id: configure.ac 2724 2013-04-10 16:43:55Z stefan $
 
 #############################################################################
 #                       Names and other basic things                        #
@@ -10,7 +10,7 @@
 
 AC_PREREQ(2.59)
 
-AC_INIT([ThirdPartyGlpk],[1.8.3],[http://projects.coin-or.org/BuildTools/newticket])
+AC_INIT([ThirdPartyGlpk],[1.9.0],[http://projects.coin-or.org/BuildTools/newticket])
 
 AC_COPYRIGHT([
 Copyright 2007-2010 Stefan Vigerske and others.
@@ -20,7 +20,7 @@ under the Eclipse Public License.])
 
 # List one file in the package so that the configure script can test
 # whether the package is actually there
-AC_CONFIG_SRCDIR(glpk/include/glpk.h)
+AC_CONFIG_SRCDIR(glpk/src/glpk.h)
 
 # Where should everything be installed by default?  Here, we want it
 # to be installed directly in 'bin', 'lib', 'include' subdirectories
@@ -28,7 +28,7 @@ AC_CONFIG_SRCDIR(glpk/include/glpk.h)
 # /usr/local.
 AC_PREFIX_DEFAULT([`pwd`])
 
-AC_COIN_PROJECTDIR_INIT(Glpk,9:3:8)
+AC_COIN_PROJECTDIR_INIT(Glpk,10:0:9)
 
 #############################################################################
 #                         Standard build tool stuff                         #
@@ -58,11 +58,11 @@ AC_COIN_INIT_AUTO_TOOLS
 ###########################################################################
 
 AC_MSG_CHECKING([GLPK version])
-glpkmajorver=`awk '/define GLP_MAJOR_VERSION/ {print $3}' $srcdir/glpk/include/glpk.h`
-glpkminorver=`awk '/define GLP_MINOR_VERSION/ {print $3}' $srcdir/glpk/include/glpk.h`
+glpkmajorver=`awk '/define GLP_MAJOR_VERSION/ {print $3}' $srcdir/glpk/src/glpk.h`
+glpkminorver=`awk '/define GLP_MINOR_VERSION/ {print $3}' $srcdir/glpk/src/glpk.h`
 AC_MSG_RESULT([${glpkmajorver}.${glpkminorver}])
-if test x$glpkmajorver != x4 || ( test x$glpkminorver != x44 && test x$glpkminorver != x45 ); then
-  AC_MSG_ERROR(["Incorrect GLPK version. This build system is made for GLPK 4.44 or 4.45. Please update by rerunning get.GLPK"])
+if test x$glpkmajorver != x4 || test x$glpkminorver != x48 ; then
+  AC_MSG_ERROR(["Incorrect GLPK version. This build system is made for GLPK 4.48. Please update by rerunning get.GLPK"])
 fi
 AC_SUBST(glpkmajorver)
 AC_SUBST(glpkminorver)
@@ -72,11 +72,6 @@ AC_SUBST(glpkminorver)
 ###########################################################################
 
 AC_LANG_PUSH(C)
-
-AC_COIN_CHECK_GNU_ZLIB(GLPK)
-if test $coin_has_zlib = "yes"; then
-  AC_DEFINE([HAVE_ZLIB], [1], [Define to 1 if GNU zlib is available])
-fi
 
 AC_COIN_CHECK_GMP(Glpk)
 if test $coin_has_gmp = yes; then

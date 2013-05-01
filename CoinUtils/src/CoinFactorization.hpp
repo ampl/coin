@@ -1,4 +1,4 @@
-/* $Id: CoinFactorization.hpp 1448 2011-06-19 15:34:41Z stefan $ */
+/* $Id: CoinFactorization.hpp 1590 2013-04-10 16:48:33Z stefan $ */
 // Copyright (C) 2002, International Business Machines
 // Corporation and others.  All Rights Reserved.
 // This code is licensed under the terms of the Eclipse Public License (EPL).
@@ -983,7 +983,8 @@ protected:
 	return false;
       }
       //redo starts
-      positionLargest = positionLargest + startColumnU[iColumn] - startColumn;
+      if (positionLargest >= 0)
+         positionLargest = positionLargest + startColumnU[iColumn] - startColumn;
       startColumn = startColumnU[iColumn];
       put = startColumn + numberInColumn[iColumn];
     }

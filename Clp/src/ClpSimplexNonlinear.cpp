@@ -1,4 +1,4 @@
-/* $Id: ClpSimplexNonlinear.cpp 1665 2011-01-04 17:55:54Z lou $ */
+/* $Id: ClpSimplexNonlinear.cpp 1931 2013-04-06 20:44:29Z stefan $ */
 // Copyright (C) 2004, International Business Machines
 // Corporation and others.  All Rights Reserved.
 // This code is licensed under the terms of the Eclipse Public License (EPL).
@@ -168,6 +168,8 @@ int ClpSimplexNonlinear::primal ()
      if (problemStatus_ == 1) {
           infeasibilityCost_ = 0.0;
           createRim(1 + 4);
+          delete nonLinearCost_;
+          nonLinearCost_ = new ClpNonLinearCost(this);
           nonLinearCost_->checkInfeasibilities(0.0);
           sumPrimalInfeasibilities_ = nonLinearCost_->sumInfeasibilities();
           numberPrimalInfeasibilities_ = nonLinearCost_->numberInfeasibilities();
@@ -329,7 +331,7 @@ ClpSimplexNonlinear::statusOfProblemInPrimal(int & lastCleaned, int type,
           gutsOfSolution(NULL, NULL, true);
      }
      // Flag to say whether to go to dual to clean up
-     bool goToDual = false;
+     //bool goToDual = false;
      // really for free variables in
      //if((progressFlag_&2)!=0)
      //problemStatus_=-1;;
@@ -414,9 +416,11 @@ ClpSimplexNonlinear::statusOfProblemInPrimal(int & lastCleaned, int type,
                     infeasibilityCost_ = saveWeight;
                     if ((infeasibilityCost_ >= 1.0e18 ||
                               numberDualInfeasibilities_ == 0) && perturbation_ == 101) {
-                         goToDual = unPerturb(); // stop any further perturbation
+                         /* goToDual = unPerturb(); // stop any further perturbation
                          if (nonLinearCost_->sumInfeasibilities() > 1.0e-1)
                               goToDual = false;
+                         */
+                         unPerturb();
                          nonLinearCost_->checkInfeasibilities(primalTolerance_);
                          numberDualInfeasibilities_ = 1; // carry on
                          problemStatus_ = -1;
@@ -451,7 +455,7 @@ ClpSimplexNonlinear::statusOfProblemInPrimal(int & lastCleaned, int type,
                          nonLinearCost_->checkInfeasibilities(0.0);
                          gutsOfSolution(NULL, NULL, true);
                          problemStatus_ = -1; //continue
-                         goToDual = false;
+                         //goToDual = false;
                     } else {
                          // say infeasible
                          problemStatus_ = 1;
@@ -460,7 +464,7 @@ ClpSimplexNonlinear::statusOfProblemInPrimal(int & lastCleaned, int type,
           } else {
                // may be optimal
                if (perturbation_ == 101) {
-                    goToDual = unPerturb(); // stop any further perturbation
+                    /* goToDual =*/ unPerturb(); // stop any further perturbation
                     lastCleaned = -1; // carry on
                }
                bool unflagged = unflag() != 0;
@@ -1349,13 +1353,17 @@ ClpSimplexNonlinear::pivotColumn(CoinIndexedVector * longArray,
                     multiplyAdd(solution_ + numberColumns_, numberRows_, -1.0, rhs, 0.0);
                     matrix_->times(1.0, solution_, rhs, rowScale_, columnScale_);
                     double largest = 0.0;
+#if CLP_DEBUG > 0
                     int iLargest = -1;
+#endif
                     for (iRow = 0; iRow < numberRows_; iRow++) {
                          double value = fabs(rhs[iRow]);
                          rhs[iRow] = 0.0;
                          if (value > largest) {
                               largest = value;
+#if CLP_DEBUG > 0
                               iLargest = iRow;
+#endif
                          }
                     }
 #if CLP_DEBUG > 0
@@ -1430,7 +1438,9 @@ ClpSimplexNonlinear::pivotColumn(CoinIndexedVector * longArray,
                          else
                               way = 1.0;
                          double largest = COIN_DBL_MAX;
+#ifdef CLP_DEBUG
                          int kPivot = -1;
+#endif
                          for (iIndex = 0; iIndex < number; iIndex++) {
                               int iRow = which2[iIndex];
                               double alpha = way * work2[iIndex];
@@ -1438,7 +1448,9 @@ ClpSimplexNonlinear::pivotColumn(CoinIndexedVector * longArray,
                               if (alpha < -1.0e-5) {
                                    double distance = upper_[iPivot] - solution_[iPivot];
                                    if (distance < -largest * alpha) {
+#ifdef CLP_DEBUG
                                         kPivot = iPivot;
+#endif
                                         largest = CoinMax(0.0, -distance / alpha);
                                    }
                                    if (distance < -1.0e-12 * alpha) {
@@ -1448,7 +1460,9 @@ ClpSimplexNonlinear::pivotColumn(CoinIndexedVector * longArray,
                               } else if (alpha > 1.0e-5) {
                                    double distance = solution_[iPivot] - lower_[iPivot];
                                    if (distance < largest * alpha) {
+#ifdef CLP_DEBUG
                                         kPivot = iPivot;
+#endif
                                         largest = CoinMax(0.0, distance / alpha);
                                    }
                                    if (distance < 1.0e-12 * alpha) {
@@ -1912,6 +1926,7 @@ ClpSimplexNonlinear::pivotColumn(CoinIndexedVector * longArray,
                if (handler_->logLevel() & 32)
                     printf("current obj %g thetaObj %g, predictedObj %g\n", currentObj, thetaObj, predictedObj);
 #endif
+	       objTheta2=CoinMin(objTheta2,1.0e29);
 #if MINTYPE==1
                if (conjugate) {
                     double offset;
@@ -2491,9 +2506,6 @@ ClpSimplexNonlinear::pivotNonlinearResult()
           //printf("XX superbasic out\n");
      }
      dualOut_ = dj_[sequenceOut_];
-     double checkValue = 1.0e-2;
-     if (largestDualError_ > 1.0e-5)
-          checkValue = 1.0e-1;
      // if stable replace in basis
 
      int updateStatus = factorization_->replaceColumn(this,
@@ -2938,7 +2950,6 @@ for (iPass = 0; iPass < numberPasses; iPass++)
                               absolutelyOptimal = true;
                               break;
                          }
-                         int bestSequence = -1;
                          double theta = 1.0e30;
                          int iSequence;
                          for (iSequence = 0; iSequence < numberTotal; iSequence++) {
@@ -2949,7 +2960,6 @@ for (iPass = 0; iPass < numberPasses; iPass++)
                                    double bound = lower_[iSequence];
                                    oldValue -= bound;
                                    if (oldValue + theta * alpha < 0.0) {
-                                        bestSequence = iSequence;
                                         theta = CoinMax(0.0, oldValue / (-alpha));
                                    }
                               } else if (alpha > 1.0e-15) {
@@ -2957,7 +2967,6 @@ for (iPass = 0; iPass < numberPasses; iPass++)
                                    double bound = upper_[iSequence];
                                    oldValue = bound - oldValue;
                                    if (oldValue - theta * alpha < 0.0) {
-                                        bestSequence = iSequence;
                                         theta = CoinMax(0.0, oldValue / alpha);
                                    }
                               }
@@ -3831,11 +3840,6 @@ ClpSimplexNonlinear::primalSLP(int numberConstraints, ClpConstraint ** constrain
                          double infeasibility = rowLower_[iRow] - functionValue;
                          double thisPenalty = 0.0;
                          infValue += infeasibility;
-                         double boundMultiplier = 1.0;
-                         if (sumOfActivities < 0.001)
-                              boundMultiplier = 0.1;
-                         else if (sumOfActivities > 100.0)
-                              boundMultiplier = 10.0;
                          int k;
                          assert (dualValue >= -1.0e-5);
                          dualValue = CoinMax(dualValue, 0.0);
@@ -3864,11 +3868,6 @@ ClpSimplexNonlinear::primalSLP(int numberConstraints, ClpConstraint ** constrain
                          double infeasibility = functionValue - rowUpper_[iRow];
                          double thisPenalty = 0.0;
                          infValue += infeasibility;
-                         double boundMultiplier = 1.0;
-                         if (sumOfActivities < 0.001)
-                              boundMultiplier = 0.1;
-                         else if (sumOfActivities > 100.0)
-                              boundMultiplier = 10.0;
                          int k;
                          dualValue = -dualValue;
                          assert (dualValue >= -1.0e-5);

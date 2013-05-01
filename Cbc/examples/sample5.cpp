@@ -1,4 +1,4 @@
-// $Id: sample5.cpp 1675 2011-06-19 17:23:14Z stefan $
+// $Id: sample5.cpp 1902 2013-04-10 16:58:16Z stefan $
 // Copyright (C) 2002, International Business Machines
 // Corporation and others.  All Rights Reserved.
 // This code is licensed under the terms of the Eclipse Public License (EPL).
@@ -39,7 +39,7 @@
 #include "CoinBuild.hpp"
 #include "CoinModel.hpp"
 
-#include  "CoinTime.hpp"
+#include "CoinTime.hpp"
 
 
 /************************************************************************

@@ -1,4 +1,4 @@
-/* $Id: CoinPresolveTighten.hpp 1372 2011-01-03 23:31:00Z lou $ */
+/* $Id: CoinPresolveTighten.hpp 1498 2011-11-02 15:25:35Z mjs $ */
 // Copyright (C) 2002, International Business Machines
 // Corporation and others.  All Rights Reserved.
 // This code is licensed under the terms of the Eclipse Public License (EPL).
@@ -47,7 +47,7 @@ class do_tighten_action : public CoinPresolveAction {
 
   void postsolve(CoinPostsolveMatrix *prob) const;
 
-  ~do_tighten_action();
+  virtual ~do_tighten_action();
 
 };
 #endif

@@ -1,4 +1,4 @@
-/* $Id: CoinSearchTree.hpp 1372 2011-01-03 23:31:00Z lou $ */
+/* $Id: CoinSearchTree.hpp 1590 2013-04-10 16:48:33Z stefan $ */
 // Copyright (C) 2006, International Business Machines
 // Corporation and others.  All Rights Reserved.
 // This code is licensed under the terms of the Eclipse Public License (EPL).
@@ -24,7 +24,9 @@ private:
   unsigned int bits_[4];
 public:
   BitVector128();
+  BitVector128(unsigned int bits[4]);
   ~BitVector128() {}
+  void set(unsigned int bits[4]);
   void setBit(int i);
   void clearBit(int i);
   std::string str() const;
@@ -385,7 +387,7 @@ public:
 	numInserted_ = t.numInserted();
 	size_ = t.size();
     }
-    ~CoinSearchTree() {}
+    virtual ~CoinSearchTree() {}
     const char* compName() const { return Comp::name(); }
 };
 

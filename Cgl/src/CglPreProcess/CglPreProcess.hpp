@@ -66,10 +66,7 @@ public:
 					    int tuning=0);
   /// Creates solution in original model
   void postProcess(OsiSolverInterface &model
-#ifdef KEEP_POSTPROCESS
-		   ,bool deleteStuff=true
-#endif
-		   );
+		   ,bool deleteStuff=true);
   /** Tightens primal bounds to make dual and branch and cutfaster.  Unless
       fixed or integral, bounds are slightly looser than they could be.
       Returns non-zero if problem infeasible
@@ -135,10 +132,10 @@ public:
   { if (iPass>=0&&iPass<numberSolvers_) return presolve_[iPass]; else return NULL;}
   /** Return a pointer to the original columns (with possible  clique slacks)
       MUST be called before postProcess otherwise you just get 0,1,2.. */
-  const int * originalColumns() const;
+  const int * originalColumns();
   /** Return a pointer to the original rows
       MUST be called before postProcess otherwise you just get 0,1,2.. */
-  const int * originalRows() const;
+  const int * originalRows();
   /// Number of SOS if found
   inline int numberSOS() const
   { return numberSOS_;}
@@ -278,7 +275,7 @@ private:
                                 int iBigPass,
 				int numberPasses);
   /// create original columns and rows
-  void createOriginalIndices() const;
+  void createOriginalIndices();
   /// Make continuous variables integer
   void makeInteger();
   //@}
@@ -318,9 +315,9 @@ private:
   /// Pointer to user-defined data structure
   void * appData_;
   /// Original column numbers
-  mutable int * originalColumn_;
+  int * originalColumn_;
   /// Original row numbers
-  mutable int * originalRow_;
+  int * originalRow_;
   /// Number of cut generators
   int numberCutGenerators_;
   /// Cut generators
@@ -450,5 +447,44 @@ private:
   int lastColumn_;
  //@}
 };
+/**
+   Only store unique row cuts
+*/
+// for hashing
+typedef struct {
+  int index, next;
+} CglHashLink;
+class OsiRowCut;
+class CglUniqueRowCuts {
+public:
 
+  CglUniqueRowCuts(int initialMaxSize=0, int hashMultiplier=4 );
+  ~CglUniqueRowCuts();
+  CglUniqueRowCuts(const CglUniqueRowCuts& rhs);
+  CglUniqueRowCuts& operator=(const CglUniqueRowCuts& rhs);
+  inline OsiRowCut * cut(int sequence) const
+  { return rowCut_[sequence];}
+  inline int numberCuts() const
+  { return numberCuts_;}
+  inline int sizeRowCuts() const
+  { return numberCuts_;}
+  inline OsiRowCut * rowCutPtr(int sequence)
+  { return rowCut_[sequence];}
+  void eraseRowCut(int sequence);
+  // insert cut
+  inline void insert(const OsiRowCut & cut)
+  { insertIfNotDuplicate(cut);}
+  // Return 0 if added, 1 if not
+  int insertIfNotDuplicate(const OsiRowCut & cut);
+  // Add in cuts as normal cuts (and delete)
+  void addCuts(OsiCuts & cs);
+private:
+  OsiRowCut ** rowCut_;
+  /// Hash table
+  CglHashLink *hash_;
+  int size_;
+  int hashMultiplier_;
+  int numberCuts_;
+  int lastHash_;
+};
 #endif

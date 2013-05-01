@@ -4,7 +4,7 @@
 //           Carnegie Mellon University, Pittsburgh, PA 15213
 // Date:     21/07/05
 //
-// $Id$
+// $Id: CglLandPSimplex.cpp 1123 2013-04-06 20:47:24Z stefan $
 //
 // This code is licensed under the terms of the Eclipse Public License (EPL).
 //---------------------------------------------------------------------------
@@ -198,7 +198,7 @@ CglLandPSimplex::checkBasis()
 CglLandPSimplex::CglLandPSimplex(const OsiSolverInterface &si,
                                  const CglLandP::CachedData &cached,
                                  const CglLandP::Parameters &params,
-                                 const Validator& validator):
+                                 Validator& validator):
 #ifdef COIN_HAS_OSICLP
         clp_(NULL),
 #endif
@@ -601,7 +601,7 @@ CglLandPSimplex::genThisBasisMigs(const CglLandP::CachedData &cached,
 
 bool
 CglLandPSimplex::generateMig(int row, OsiRowCut & cut,
-                             const CglLandP::Parameters & params) const
+                             const CglLandP::Parameters & params)
 {
     row_k_.num = row;
     pullTableauRow(row_k_);
@@ -634,8 +634,22 @@ CglLandPSimplex::optimize
 
     delete basis_;
     basis_ = new CoinWarmStartBasis(*cached.basis_);
-
+#define CACHED_SOLVER
+#ifndef CACHED_SOLVER
     si_->enableSimplexInterface(0);
+#else
+    delete si_;
+    si_ = cached.solver_->clone();
+#ifdef COIN_HAS_OSICLP
+    OsiClpSolverInterface * clpSi = dynamic_cast<OsiClpSolverInterface *>(si_);
+    OsiClpSolverInterface * clpSiRhs = dynamic_cast<OsiClpSolverInterface *>(cached.solver_);
+    if (clpSi)
+    {
+        clp_ = clpSi;
+	clpSi->getModelPtr()->copyEnabledStuff(clpSiRhs->getModelPtr());;
+    }
+#endif
+#endif
 #ifdef APPEND_ROW
     if (params.modularize)
     {
@@ -1875,8 +1889,8 @@ CglLandPSimplex::fastFindBestPivotColumn(int direction, int gammaSign,
     DblEqAssert(sigma_, rhs_weight_*p/r);
     bestSigma = sigma_ = rhs_weight_*p/r;
     int lastValid = -1;
-    bool rc_positive=false;
 #ifndef NDEBUG
+    bool rc_positive=false;
     if (M3_.size())
         DblEqAssert( gammaSign*(q * r - p * s)/r, chosenReducedCostVal_);
 #endif
@@ -1885,7 +1899,9 @@ CglLandPSimplex::fastFindBestPivotColumn(int direction, int gammaSign,
         // after recomputing reduced cost (using exact row) it is found to be >=0
         resetOriginalTableauRow(basics_[row_i_.num], row_i_, direction);
         return -2;
+#ifndef NDEBUG
         rc_positive = true;
+#endif
     }
     for (int i = 0 ; i < n ; i++)
     {
@@ -1896,7 +1912,7 @@ CglLandPSimplex::fastFindBestPivotColumn(int direction, int gammaSign,
             break;
         }
         newSigma = (p + gammaSign * elements[i] * q)*rhs_weight_/(r + gammaSign*elements[i] * s);
-#ifndef NDEBUG
+#ifdef DEBUG_LAP
         double alt = computeCglpObjective(gammaSign*elements[i], false);
         DblEqAssert(newSigma, alt);
 #endif
@@ -1973,7 +1989,7 @@ CglLandPSimplex::fastFindBestPivotColumn(int direction, int gammaSign,
 
     //std::cout<<"Minimum of f attained at breakpoint "<<lastValid<<std::endl;
     assert(bestSigma <= sigma_);
-#ifndef NDEBUG
+#ifdef DEBUG_LAP
     bestSigma_ = bestSigma;
     double otherSigma= computeCglpObjective(gammaSign*elements[lastValid], false);
     DblEqAssert(bestSigma, otherSigma);
@@ -2022,7 +2038,6 @@ CglLandPSimplex::findBestPivotColumn(int direction,
     int j = 0;
     double gamma = 0.;
 
-    bool rhsIIFail = true; // Failed to find a pivot because of integer infeasibility
     for (; j< ncols_orig_ ; j++)
     {
         if (reducedSpace &&
@@ -2040,7 +2055,6 @@ CglLandPSimplex::findBestPivotColumn(int direction,
         newRow.rhs = row_k_.rhs + gamma * row_i_.rhs;
         if (newRow.rhs > 1e-5  && newRow.rhs < 1 - 1e-5 )
         {
-            rhsIIFail = false;
             double m_j = computeCglpObjective(gamma, modularize, newRow);
             if (m_j < m)
             {
@@ -2227,12 +2241,13 @@ int CglLandPSimplex::findBestPivot(int &leaving, int & direction,
     int bestLeaving = -1;
     int bestIncoming = -1;
     int bestDirection = 0;
-    int bestGammaSign = 0;
 
     double bestSigma = COIN_DBL_MAX;
     double bestRc = COIN_DBL_MAX;
     //now scan the heap
+#ifndef NDEBUG
     int best_l = 0;
+#endif
     int notImproved = 0;
     for (int l = 0; l < k && l < 10  ; l++, notImproved++)
     {
@@ -2255,12 +2270,13 @@ int CglLandPSimplex::findBestPivot(int &leaving, int & direction,
         if (incoming!=-1 && bestSigma > sigma)
         {
             //          std::cout<<"I found a better pivot "<<sigma - sigma_<< " for indice number "<<l<<std::endl;
+#ifndef NDEBUG
             best_l = l;
+#endif
             bestSigma = sigma;
             bestIncoming = incoming;
             bestLeaving = rc[l].row;
             bestDirection = rc[l].direction > 0 ? 1 : -1;
-            bestGammaSign = rc[l].gammaSign;
             bestRc = rc[l].value;
             notImproved = 0;
         }
@@ -2280,12 +2296,13 @@ int CglLandPSimplex::findBestPivot(int &leaving, int & direction,
             if (incoming!=-1 && bestSigma > sigma)
             {
                 // std::cout<<"I found a better pivot "<<sigma - sigma_<<std::endl;
+#ifndef NDEBUG
                 best_l = l;
+#endif
                 bestSigma = sigma;
                 bestIncoming = incoming;
                 bestLeaving = rc[l].row;
                 bestDirection = rc[l].direction;
-                bestGammaSign = rc[l].gammaSign2;
                 bestRc = rc[l].value2;
                 notImproved = 0;
             }

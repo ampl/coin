@@ -2,10 +2,6 @@
 // Corporation and others.  All Rights Reserved.
 // This code is licensed under the terms of the Eclipse Public License (EPL).
 
-#if defined(_MSC_VER)
-// Turn off compiler warning about long names
-#  pragma warning(disable:4786)
-#endif
 #include <cstdlib>
 #include <cstdio>
 #include <cmath>
@@ -13,6 +9,7 @@
 #include <cassert>
 #include <iostream>
 //#define CGL_DEBUG 2
+#include "CoinPragma.hpp"
 #include "CoinHelperFunctions.hpp"
 #include "CoinPackedVector.hpp"
 #include "OsiRowCutDebugger.hpp"
@@ -25,7 +22,7 @@
 //------------------------------------------------------------------- 
 void 
 CglStored::generateCuts(const OsiSolverInterface & si, OsiCuts & cs,
-			const CglTreeInfo /*info*/) const
+			const CglTreeInfo /*info*/)
 {
   // Get basic problem information
   const double * solution = si.getColSolution();
@@ -280,15 +277,21 @@ CglStored::CglStored (const char * fileName) :
 {  
   FILE * fp = fopen(fileName,"rb");
   if (fp) {
+#ifndef NDEBUG
     size_t numberRead;
+#endif
     int maxInCut=0;
     int * index = NULL;
     double * coefficient = NULL;
     double rhs[2];
     int n=0;
     while (n>=0) {
+#ifndef NDEBUG
       numberRead = fread(&n,sizeof(int),1,fp);
       assert (numberRead==1);
+#else
+      fread(&n,sizeof(int),1,fp);
+#endif
       if (n<0)
 	break;
       if (n>maxInCut) {
@@ -298,12 +301,14 @@ CglStored::CglStored (const char * fileName) :
 	index = new int [maxInCut];
 	coefficient = new double [maxInCut];
       }
+#ifndef NDEBUG
       numberRead = fread(rhs,sizeof(double),2,fp);
       assert (numberRead==2);
-      numberRead = fread(index,sizeof(int),n,fp);
-      //assert (numberRead==n);
-      numberRead = fread(coefficient,sizeof(double),n,fp);
-      //assert (numberRead==n);
+#else
+      fread(rhs,sizeof(double),2,fp);
+#endif
+      fread(index,sizeof(int),n,fp);
+      fread(coefficient,sizeof(double),n,fp);
       OsiRowCut rc;
       rc.setRow(n,index,coefficient,false);
       rc.setLb(rhs[0]);

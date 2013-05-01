@@ -1,4 +1,4 @@
-/* $Id: CoinTypes.hpp 1448 2011-06-19 15:34:41Z stefan $ */
+/* $Id: CoinTypes.hpp 1549 2012-08-09 22:24:43Z tkr $ */
 // Copyright (C) 2004, International Business Machines
 // Corporation and others.  All Rights Reserved.
 // This code is licensed under the terms of the Eclipse Public License (EPL).
@@ -7,6 +7,9 @@
 #define _CoinTypes_hpp
 
 #include "CoinUtilsConfig.h"
+#ifdef __MINGW64__
+#include <stdint.h>
+#endif
 
 #define CoinInt64 COIN_INT64_T
 #define CoinUInt64 COIN_UINT64_T

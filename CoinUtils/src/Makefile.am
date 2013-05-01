@@ -2,7 +2,7 @@
 # All Rights Reserved.
 # This file is distributed under the Eclipse Public License.
 
-## $Id: Makefile.am 1448 2011-06-19 15:34:41Z stefan $
+## $Id: Makefile.am 1510 2011-12-08 23:56:01Z lou $
 
 # Author:  Andreas Waechter           IBM    2006-04-13
 
@@ -71,6 +71,7 @@ libCoinUtils_la_SOURCES = \
 	CoinPresolveIsolated.cpp CoinPresolveIsolated.hpp \
 	CoinPresolveMatrix.cpp CoinPresolveMatrix.hpp \
 	CoinPresolvePsdebug.cpp CoinPresolvePsdebug.hpp \
+	CoinPresolveMonitor.cpp CoinPresolveMonitor.hpp \
 	CoinPresolveSingleton.cpp CoinPresolveSingleton.hpp \
 	CoinPresolveSubst.cpp CoinPresolveSubst.hpp \
 	CoinPresolveTighten.cpp CoinPresolveTighten.hpp \
@@ -146,6 +147,7 @@ includecoin_HEADERS = \
 	CoinPresolveImpliedFree.hpp \
 	CoinPresolveIsolated.hpp \
 	CoinPresolveMatrix.hpp \
+	CoinPresolveMonitor.hpp \
 	CoinPresolvePsdebug.hpp \
 	CoinPresolveSingleton.hpp \
 	CoinPresolveSubst.hpp \

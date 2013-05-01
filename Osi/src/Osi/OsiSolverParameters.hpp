@@ -6,16 +6,24 @@
 #define OsiSolverParameters_H
 
 enum OsiIntParam {
-  /** The maximum number of iterations (whatever that means for the given
-      solver) the solver can execute in the OsiSolverinterface::initialSolve()
-      and the OsiSolverinterface::resolve() methods before terminating. */
+  /*! \brief Iteration limit for initial solve and resolve.
+  
+    The maximum number of iterations (whatever that means for the given
+    solver) the solver can execute in the OsiSolverinterface::initialSolve()
+    and OsiSolverinterface::resolve() methods before terminating.
+  */
   OsiMaxNumIteration = 0,
-  /** The maximum number of iterations (whatever that means for the given
-      solver) the solver can execute in the
-      OsiSolverinterface::solveFromHotStart() method before terminating. */
+  /*! \brief Iteration limit for hot start
+  
+    The maximum number of iterations (whatever that means for the given
+    solver) the solver can execute in the
+    OsiSolverinterface::solveFromHotStart() method before terminating.
+  */
   OsiMaxNumIterationHotStart,
-  /** The name discipline; specifies how the solver will handle row and
-      column names.
+  /*! \brief Handling of row and column names.
+  
+    The name discipline specifies how the solver will handle row and column
+    names:
     - 0: Auto names: Names cannot be set by the client. Names of the form
 	 Rnnnnnnn or Cnnnnnnn are generated on demand when a name for a
 	 specific row or column is requested; nnnnnnn is derived from the row
@@ -33,42 +41,66 @@ enum OsiIntParam {
 	 contain either the name specified by the client or a generated name.
   */
   OsiNameDiscipline,
-  /** Just a marker, so that OsiSolverInterface can allocate a static sized
-      array to store parameters. */
+  /*! \brief End marker.
+  
+    Used by OsiSolverInterface to allocate a fixed-sized array to store
+    integer parameters.
+  */
   OsiLastIntParam
-};
+} ;
 
 enum OsiDblParam {
-  /** Dual objective limit. This is to be used as a termination
-      criteria in methods where the dual objective monotonically changes
-      (e.g., dual simplex, the volume algorithm) */
+  /*! \brief Dual objective limit.
+  
+    This is to be used as a termination criteria in algorithms where the dual
+    objective changes monotonically (e.g., dual simplex, volume algorithm).
+  */
   OsiDualObjectiveLimit = 0,
-  /** Primal objective limit. This is to be used as a termination
-      criteria in methods where the primal objective monotonically changes
-      (e.g., primal simplex) */
+  /*! \brief Primal objective limit.
+  
+    This is to be used as a termination criteria in algorithms where the
+    primal objective changes monotonically (e.g., primal simplex)
+  */
   OsiPrimalObjectiveLimit,
-  /** The maximum amount the dual constraints can be violated and still be
-      considered feasible. */
+  /*! \brief Dual feasibility tolerance.
+  
+    The maximum amount a dual constraint can be violated and still be
+    considered feasible.
+  */
   OsiDualTolerance,
-  /** The maximum amount the primal constraints can be violated and still be
-      considered feasible. */
+  /*! \brief Primal feasibility tolerance.
+  
+    The maximum amount a primal constraint can be violated and still be
+    considered feasible.
+  */
   OsiPrimalTolerance,
   /** The value of any constant term in the objective function. */
   OsiObjOffset,
-  /** Just a marker, so that OsiSolverInterface can allocate a static sized
-      array to store parameters. */
+  /*! \brief End marker.
+  
+    Used by OsiSolverInterface to allocate a fixed-sized array to store
+    double parameters.
+  */
   OsiLastDblParam
 };
 
 
 enum OsiStrParam {
-  /** Name of the problem. This is the found on the Name card of
-      an mps file. */
+  /*! \brief The name of the loaded problem.
+  
+    This is the string specified on the Name card of an mps file.
+  */
   OsiProbName = 0,
-  /** Name of the solver. This parameter is not settable. */
+  /*! \brief The name of the solver.
+  
+    This parameter is read-only.
+  */
   OsiSolverName,
-  /** Just a marker, so that OsiSolverInterface can allocate a static sized
-      array to store parameters. */
+  /*! \brief End marker.
+  
+    Used by OsiSolverInterface to allocate a fixed-sized array to store
+    string parameters.
+  */
   OsiLastStrParam
 };
 

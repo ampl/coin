@@ -40,7 +40,6 @@ VPATH = @srcdir@
 COIN_HAS_PKGCONFIG = @COIN_HAS_PKGCONFIG_TRUE@TRUE
 COIN_CXX_IS_CL = @COIN_CXX_IS_CL_TRUE@TRUE
 COIN_HAS_SAMPLE = @COIN_HAS_SAMPLE_TRUE@TRUE
-COIN_HAS_NETLIB = @COIN_HAS_NETLIB_TRUE@TRUE
 
 # C++ Compiler command
 CXX = @CXX@
@@ -57,15 +56,6 @@ ifeq ($(COIN_HAS_SAMPLE), TRUE)
     CXXFLAGS += -DSAMPLEDIR=\"`PKG_CONFIG_PATH=@COIN_PKG_CONFIG_PATH@ @PKG_CONFIG@ --variable=datadir coindatasample`\"
   else
     CXXFLAGS += -DSAMPLEDIR=\"@SAMPLE_DATA_INSTALLED@\"
-  endif
-endif
-
-# Netlib data directory
-ifeq ($(COIN_HAS_NETLIB), TRUE)
-  ifeq ($(COIN_HAS_PKGCONFIG), TRUE)
-    CXXFLAGS += -DNETLIBDIR=\"`PKG_CONFIG_PATH=@COIN_PKG_CONFIG_PATH@ @PKG_CONFIG@ --variable=datadir coindatanetlib`\"
-  else
-    CXXFLAGS += -DNETLIBDIR=\"@NETLIB_DATA_INSTALLED@\"
   endif
 endif
 

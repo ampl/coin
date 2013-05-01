@@ -2,7 +2,7 @@
 // Corporation and others.  All Rights Reserved.
 // Test individual classes or groups of classes
 // This file is licensed under the terms of Eclipse Public License (EPL).
-// $Id: unitTest.cpp 1754 2011-06-19 16:07:57Z stefan $
+// $Id: unitTest.cpp 1744 2011-06-13 15:08:11Z stefan $
 
 #include "CoinPragma.hpp"
 #include "OsiConfig.h"

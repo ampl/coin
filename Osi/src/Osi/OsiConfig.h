@@ -2,7 +2,7 @@
  * All Rights Reserved.
  * This code is published under the Eclipse Public License.
  *
- * $Id: OsiConfig.h 1754 2011-06-19 16:07:57Z stefan $
+ * $Id: OsiConfig.h 1881 2013-01-28 00:05:47Z stefan $
  *
  * Include file for the configuration of Osi.
  *

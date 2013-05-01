@@ -1,4 +1,4 @@
-/* $Id: Cbc_C_Interface.h 1675 2011-06-19 17:23:14Z stefan $ */
+/* $Id: Cbc_C_Interface.h 1902 2013-04-10 16:58:16Z stefan $ */
 /*
   Copyright (C) 2004 International Business Machines Corporation and others.
   All Rights Reserved.
@@ -628,7 +628,7 @@ extern "C" {
     /** Add SOS constraints to the model using dense matrix */
     COINLIBAPI void  COINLINKAGE
     Cbc_addSOS_Dense(Cbc_Model * model, int numObjects, const int * len,
-                     const int ** which, const double * weights, const int type)
+                     const int * const * which, const double * weights, const int type)
     ;
     /** Add SOS constraints to the model using row-order matrix */
     COINLIBAPI void  COINLINKAGE

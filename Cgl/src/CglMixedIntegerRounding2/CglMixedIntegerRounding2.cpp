@@ -9,14 +9,11 @@
 // All Rights Reserved.
 // This code is published under the Eclipse Public License.
 
-#if defined(_MSC_VER)
-// Turn off MS VS compiler warning about long names
-#  pragma warning(disable:4786)
-#endif
 //#include <cmath>
 //#include <cstdlib>
 #include <cassert>
 
+#include "CoinPragma.hpp"
 #include "CoinHelperFunctions.hpp"
 #include "CoinPackedMatrix.hpp"
 #include "CoinPackedVector.hpp"
@@ -29,7 +26,7 @@
 void
 CglMixedIntegerRounding2::generateCuts(const OsiSolverInterface& si,
 				      OsiCuts& cs,
-				      const CglTreeInfo info) const
+				      const CglTreeInfo info)
 {
 
   // If the LP or integer presolve is used, then need to redo preprocessing
@@ -323,7 +320,7 @@ CglMixedIntegerRounding2::gutsOfCopy (const CglMixedIntegerRounding2& rhs)
 //-------------------------------------------------------------------  
 void 
 CglMixedIntegerRounding2::
-mixIntRoundPreprocess(const OsiSolverInterface& si) const
+mixIntRoundPreprocess(const OsiSolverInterface& si)
 {
   // get matrix stored by row
   const CoinPackedMatrix & matrixByRow = *si.getMatrixByRow();
@@ -580,7 +577,7 @@ CglMixedIntegerRounding2::determineRowType(//const OsiSolverInterface& si,
 				  const double* coef, const char sense, 
 				  const double rhs) const
 {
-  if (rowLen == 0) 
+  if (rowLen == 0 || fabs(rhs) > 1.0e20) 
     return ROW_UNDEFINED;
 
   RowType rowType = ROW_UNDEFINED;
@@ -1433,12 +1430,26 @@ CglMixedIntegerRounding2::cMirSeparation(
   double cutRHS = rhsBestCut;
   double violation = 0.0;
   double normCut = 0.0;
+  //double smallest=COIN_DBL_MAX;
+  double largest=0.0;
   // Also weaken by small coefficients
+  for ( j = 0; j < cutLen; ++j) {
+    int column = cutInd[j];
+    double value = cutCoef[column];
+    //smallest=CoinMin(smallest,fabs(value));
+    largest=CoinMax(largest,fabs(value));
+    //normCut += value * value;
+  }
+  //normCut=sqrt(normCut);
+  //printf("smallest %g largest %g norm %g\n",
+  //	 smallest,largest,normCut);
+  double testValue=CoinMax(1.0e-6*largest,1.0e-12);
+  //normCut=0.0;
   int n=0;
   for ( j = 0; j < cutLen; ++j) {
     int column = cutInd[j];
     double value = cutCoef[column];
-    if (fabs(value)>1.0e-12) {
+    if (fabs(value)>testValue) {
       violation += value * xlp[column];
       normCut += value * value;
       cutInd[n++]=column;
@@ -1684,9 +1695,14 @@ CglMixedIntegerRounding2::printStats(
 }
 // This can be used to refresh any inforamtion
 void 
-CglMixedIntegerRounding2::refreshSolver(OsiSolverInterface * )
+CglMixedIntegerRounding2::refreshSolver(OsiSolverInterface * solver)
 {
-  doneInitPre_ = false;
+  if (solver->getNumRows()) {
+    mixIntRoundPreprocess(*solver);
+    doneInitPre_ = true;
+  } else {
+    doneInitPre_ = false;
+  }
 }
 // Create C++ lines to get to current state
 std::string

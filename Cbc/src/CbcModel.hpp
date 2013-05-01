@@ -1,4 +1,4 @@
-/* $Id: CbcModel.hpp 1795 2012-09-03 12:58:59Z stefan $ */
+/* $Id: CbcModel.hpp 1902 2013-04-10 16:58:16Z stefan $ */
 // Copyright (C) 2002, International Business Machines
 // Corporation and others.  All Rights Reserved.
 // This code is licensed under the terms of the Eclipse Public License (EPL).
@@ -13,6 +13,7 @@
 #include "OsiCuts.hpp"
 #include "CoinWarmStartBasis.hpp"
 #include "CbcCompareBase.hpp"
+#include "CbcCountRowCut.hpp"
 #include "CbcMessage.hpp"
 #include "CbcEventHandler.hpp"
 #include "ClpDualRowPivot.hpp"
@@ -34,12 +35,12 @@ class CbcTree;
 class CbcStrategy;
 class CbcFeasibilityBase;
 class CbcStatistics;
+class CbcFullNodeInfo;
 class CbcEventHandler ;
 class CglPreProcess;
-# ifdef COIN_HAS_CLP
 class OsiClpSolverInterface;
 class ClpNodeStuff;
-#endif
+
 // #define CBC_CHECK_BASIS 1
 
 //#############################################################################
@@ -355,6 +356,13 @@ public:
     void makeGlobalCut(const OsiColCut * cut);
     /// Make given column cut into a global cut
     void makeGlobalCut(const OsiColCut & cut);
+    /// Make partial cut into a global cut and save
+  void makePartialCut(const OsiRowCut * cut, const OsiSolverInterface * solver=NULL);
+    /// Make partial cuts into global cuts
+    void makeGlobalCuts();
+    /// Which cut generator generated this cut
+    inline const int * whichGenerator() const
+    { return whichGenerator_;}
     //@}
 
     /** \name Presolve methods */
@@ -433,11 +441,14 @@ public:
       Add additional integers.
     */
     void AddIntegers();
-
     /**
       Save copy of the model.
     */
     void saveModel(OsiSolverInterface * saveSolver, double * checkCutoffForRestart, bool * feasible);
+    /**
+      Flip direction of optimization on all models
+    */
+    void flipModel();
 
     //@}
 
@@ -704,6 +715,8 @@ public:
     inline double getCutoffIncrement() const {
         return getDblParam(CbcCutoffIncrement);
     }
+    /// See if can stop on gap
+    bool canStopOnGap() const;
 
     /** Pass in target solution and optional priorities.
         If priorities then >0 means only branch if incorrect
@@ -803,6 +816,9 @@ public:
     inline int numberPenalties() const {
         return numberPenalties_;
     }
+    /// Pointer to top of tree
+    inline const CbcFullNodeInfo * topOfTree() const
+    { return topOfTree_;}
     /// Number of analyze iterations to do
     inline void setNumberAnalyzeIterations(int number) {
         numberAnalyzeIterations_ = number;
@@ -847,7 +863,10 @@ public:
         return originalColumns_;
     }
     /// Set original columns as created by preprocessing
-    void setOriginalColumns(const int * originalColumns) ;
+    void setOriginalColumns(const int * originalColumns,
+			    int numberGood=COIN_INT_MAX) ;
+    /// Create conflict cut (well - most of)
+    OsiRowCut * conflictCut(const OsiSolverInterface * solver, bool & localCuts);
 
     /** Set the print frequency.
 
@@ -929,6 +948,7 @@ public:
         5 stopped on user event
         6 stopped on solutions
         7 linear relaxation unbounded
+        8 stopped on iteration limit
     */
     inline int secondaryStatus() const {
         return secondaryStatus_;
@@ -1304,6 +1324,8 @@ public:
     const double * savedSolution(int which) const;
     /// Return a saved solution objective (0==best) - COIN_DBL_MAX if off end
     double savedSolutionObjective(int which) const;
+    /// Delete a saved solution and move others up
+    void deleteSavedSolution(int which);
 
     /** Current phase (so heuristics etc etc can find out).
         0 - initial solve
@@ -1385,6 +1407,12 @@ public:
     inline void setStopNumberIterations(int value) {
         stopNumberIterations_ = value;
     }
+    /// A pointer to model from CbcHeuristic
+    inline CbcModel * heuristicModel() const
+    { return heuristicModel_;}
+    /// Set a pointer to model from CbcHeuristic
+    inline void setHeuristicModel(CbcModel * model)
+    { heuristicModel_ = model;}
     //@}
 
     /** \name Node selection */
@@ -1505,6 +1533,14 @@ public:
     inline void setSearchStrategy(int value) {
         searchStrategy_ = value;
     }
+    /// Stong branching strategy
+    inline int strongStrategy() const {
+        return strongStrategy_;
+    }
+    /// Set strong branching strategy
+    inline void setStrongStrategy(int value) {
+        strongStrategy_ = value;
+    }
 
     /// Get the number of cut generators
     inline int numberCutGenerators() const {
@@ -1578,6 +1614,10 @@ public:
     /// Get the number of heuristics
     inline int numberHeuristics() const {
         return numberHeuristics_;
+    }
+    /// Set the number of heuristics
+    inline void setNumberHeuristics(int value) {
+        numberHeuristics_ = value;
     }
     /// Pointer to heuristic solver which found last solution (or NULL)
     inline CbcHeuristic * lastHeuristic() const {
@@ -1695,6 +1735,10 @@ public:
     inline void setDefaultHandler(bool yesNo) {
         defaultHandler_ = yesNo;
     }
+    /// Check default handler
+    inline bool defaultHandler() const {
+        return defaultHandler_;
+    }
     //@}
     //---------------------------------------------------------------------------
     ///@name Specialized
@@ -1723,6 +1767,8 @@ public:
         18 bit (262144) - donor CbcModel
         19 bit (524288) - recipient CbcModel
         20 bit (1048576) - waiting for sub model to return
+	22 bit (4194304) - do not initialize random seed in solver (user has)
+	23 bit (8388608) - leave solver_ with cuts
     */
     inline void setSpecialOptions(int value) {
         specialOptions_ = value;
@@ -1730,6 +1776,22 @@ public:
     /// Get special options
     inline int specialOptions() const {
         return specialOptions_;
+    }
+    /// Set random seed
+    inline void setRandomSeed(int value) {
+        randomSeed_ = value;
+    }
+    /// Get random seed
+    inline int getRandomSeed() const {
+        return randomSeed_;
+    }
+    /// Set multiple root tries
+    inline void setMultipleRootTries(int value) {
+        multipleRootTries_ = value;
+    }
+    /// Get multiple root tries
+    inline int getMultipleRootTries() const {
+        return multipleRootTries_;
     }
     /// Tell model to stop on event
     inline void sayEventHappened()
@@ -1758,6 +1820,14 @@ public:
         19 bit (524288) - No limit on fathom nodes
         20 bit (1048576) - Reduce sum of infeasibilities before cuts
         21 bit (2097152) - Reduce sum of infeasibilities after cuts
+	22 bit (4194304) - Conflict analysis
+	23 bit (8388608) - Conflict analysis - temporary bit
+	24 bit (16777216) - Add cutoff as LP constraint (out)
+	25 bit (33554432) - diving/reordering
+	26 bit (67108864) - load global cuts from file
+	27 bit (134217728) - append binding global cuts to file
+	28 bit (268435456) - idiot branching
+        29 bit (536870912) - don't make fake objective
     */
     inline void setMoreSpecialOptions(int value) {
         moreSpecialOptions_ = value;
@@ -1766,7 +1836,11 @@ public:
     inline int moreSpecialOptions() const {
         return moreSpecialOptions_;
     }
-  /// Set time method
+    /// Set cutoff as constraint
+    inline void setCutoffAsConstraint(bool yesNo) {
+      cutoffRowNumber_ = (yesNo) ? -2 : -1;
+    }
+    /// Set time method
     inline void setUseElapsedTime(bool yesNo) {
         if (yesNo)
   	  moreSpecialOptions_ |= 131072;
@@ -1777,10 +1851,14 @@ public:
     inline bool useElapsedTime() const {
         return (moreSpecialOptions_&131072)!=0;
     }
+    /// Get useful temporary pointer
+    inline void * temporaryPointer() const
+    { return temporaryPointer_;}
+    /// Set useful temporary pointer
+    inline void setTemporaryPointer(void * pointer)
+    { temporaryPointer_=pointer;}
     /// Go to dantzig pivot selection if easy problem (clp only)
-#ifdef COIN_HAS_CLP
     void goToDantzig(int numberNodes, ClpDualRowPivot *& savePivotMethod);
-#endif
     /// Now we may not own objects - just point to solver's objects
     inline bool ownObjects() const {
         return ownObjects_;
@@ -2157,7 +2235,7 @@ public:
         return currentNumberCuts_;
     }
     /// Global cuts
-    inline OsiCuts * globalCuts() {
+    inline CbcRowCuts * globalCuts() {
         return &globalCuts_;
     }
     /// Copy and set a pointer to a row cut which will be added instead of normal branching.
@@ -2190,7 +2268,6 @@ public:
     inline void setMaximumNumberIterations(int value) {
         maximumNumberIterations_ = value;
     }
-# ifdef COIN_HAS_CLP
     /// Set depth for fast nodes
     inline void setFastNodeDepth(int value) {
         fastNodeDepth_ = value;
@@ -2211,7 +2288,6 @@ public:
         numberExtraNodes_ += nodes;
         numberExtraIterations_ += iterations;
     }
-#endif
     /// Number of extra iterations
     inline int numberExtraIterations() const {
         return numberExtraIterations_;
@@ -2339,7 +2415,9 @@ private:
     */
     CoinWarmStartBasis bestSolutionBasis_ ;
     /// Global cuts
-    OsiCuts globalCuts_;
+    CbcRowCuts globalCuts_;
+    /// Global conflict cuts
+    CbcRowCuts * globalConflictCuts_;
 
     /// Minimum degradation in objective value to continue cut generation
     double minimumDrop_;
@@ -2391,6 +2469,12 @@ private:
     int numberIntegers_;
     /// Number of rows at continuous
     int numberRowsAtContinuous_;
+    /**
+       -1 - cutoff as constraint not activated
+       -2 - waiting to activate
+       >=0 - activated
+     */
+    int cutoffRowNumber_;
     /// Maximum number of cuts
     int maximumNumberCuts_;
     /** Current phase (so heuristics etc etc can find out).
@@ -2494,8 +2578,12 @@ private:
     CbcFeasibilityBase * problemFeasibility_;
     /// Tree
     CbcTree * tree_;
+    /// Pointer to top of tree
+    CbcFullNodeInfo * topOfTree_;
     /// A pointer to model to be used for subtrees
     CbcModel * subTreeModel_;
+    /// A pointer to model from CbcHeuristic
+    CbcModel * heuristicModel_;
     /// Number of times any subtree stopped on nodes, time etc
     int numberStoppedSubTrees_;
     /// Variable selection function
@@ -2554,6 +2642,8 @@ private:
     int numberAnalyzeIterations_;
     /// Arrays with analysis results
     double * analyzeResults_;
+    /// Useful temporary pointer
+    void * temporaryPointer_;
     /// Number of nodes infeasible by normal branching (before cuts)
     int numberInfeasibleNodes_;
     /** Problem type as set by user or found by analysis.  This will be extended
@@ -2635,6 +2725,10 @@ private:
     int maximumWhich_;
     /// Maximum number of rows
     int maximumRows_;
+    /// Random seed
+    int randomSeed_;
+    /// Multiple root tries
+    int multipleRootTries_;
     /// Current depth
     int currentDepth_;
     /// Thread specific random number generator
@@ -2669,6 +2763,18 @@ private:
     int numberNewCuts_;
     /// Strategy worked out - mainly at root node
     int searchStrategy_;
+    /** Strategy for strong branching
+	0 - normal
+	when to do all fractional
+	1 - root node
+	2 - depth less than modifier
+	4 - if objective == best possible
+	6 - as 2+4 
+	when to do all including satisfied
+	10 - root node etc.
+	If >=100 then do when depth <= strategy/100 (otherwise 5)
+     */
+    int strongStrategy_;
     /// Number of iterations in strong branching
     int numberStrongIterations_;
     /** 0 - number times strong branching done, 1 - number fixed, 2 - number infeasible

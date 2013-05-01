@@ -6,7 +6,7 @@
 //           Carnegie Mellon University, Pittsburgh, PA 15213
 // Date:     2/6/05
 //
-// $Id: CglRedSplit.cpp 1033 2011-06-19 16:49:13Z stefan $
+// $Id: CglRedSplit.cpp 1123 2013-04-06 20:47:24Z stefan $
 //---------------------------------------------------------------------------
 // Copyright (C) 2005, Francois Margot and others.  All Rights Reserved.
 // This code is licensed under the terms of the Eclipse Public License (EPL).
@@ -1159,16 +1159,6 @@ bool CglRedSplit::rs_are_different_matrices(const CoinPackedMatrix *mat1,
   }
   return(0);
 } /* rs_are_different_matrices */
-
-/************************************************************************/
-void CglRedSplit::generateCuts(const OsiSolverInterface & si, OsiCuts & cs,
-			       const CglTreeInfo info) const {
-
-  // kludge to be able to modify the CglRedSplit object if it is const
-  CglRedSplit temp(*this);
-  temp.generateCuts(si, cs, info);
-
-} /* generateCuts */
 
 /************************************************************************/
 void CglRedSplit::generateCuts(const OsiSolverInterface &si, OsiCuts & cs,

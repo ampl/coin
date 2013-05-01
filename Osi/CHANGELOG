@@ -1,5 +1,12 @@
--------------------------------------------------------------------------------
-21/11/2012 Osi 0.105.6 released
+04/02/2013 OsiMsk
+  - update to work with Mosek 7, too (contributed by Erling D. Andersen)
+
+02/02/2013 OsiUnitTest
+  - replace macro for asserting a condition and collecting its outcome by a function
+    to improve compilation speed (contributed by Victor Zverovich)
+
+29/11/2012 OsiMsk
+  - added getRescode() to get result code of last MSK_optimize call
 
 21/11/2012 OsiCpx
   - calling setWarmStart with a too small basis now disables the use of an
@@ -9,27 +16,15 @@
   - workaround problem in Glpk with empty problem name (patch by Bertrand Le Cun)
   - not using CPXsolninfo for MIPs with CPLEX < 11.0 anymore
 
--------------------------------------------------------------------------------
-09/08/2012 Osi 0.105.5 released
-
--------------------------------------------------------------------------------
-30/07/2012 Osi 0.105.4 released
-
 25/07/2012 OsiGrb
   - fix mipstart option in OsiGrb: pass only values for discrete variables to Gurobi
 
--------------------------------------------------------------------------------
-06/02/2012 Osi 0.105.3 released
-
--------------------------------------------------------------------------------
-15/10/2011 Osi 0.105.2 released
+26/11/2011 OsiGrb
+  - add implementation of OsiGrb::applyCuts that batches the row cuts before transfering them to Gurobi
 
 12/11/2011 OsiSpx
   - add resolve with cleared basis if solve fails with exception (which may be due to a singular startbasis),
     needs SoPlex >= 1.5.0.7
-
--------------------------------------------------------------------------------
-20/09/2011 Osi 0.105.1 released
 
 03/09/2011 OsiMsk
   - fix bug in one loadProblem method when NULL was passed as row range array
@@ -42,9 +37,6 @@
 
 28/07/2011 OsiSpx
   - invert dual ray in getDualRays to match Osi definition when testing infeasibility proof
-
--------------------------------------------------------------------------------
-16/07/2011 Osi 0.105.0 released
 
 12/07/2011 MSVisualStudio
   - updated MSVC++ v10 project files to catch up with buildsystem changes

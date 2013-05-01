@@ -1,4 +1,4 @@
-// $Id: CglSimpleRounding.hpp 946 2011-01-04 23:27:12Z lou $
+// $Id: CglSimpleRounding.hpp 1123 2013-04-06 20:47:24Z stefan $
 // Copyright (C) 2000, International Business Machines
 // Corporation and others.  All Rights Reserved.
 // This code is licensed under the terms of the Eclipse Public License (EPL).
@@ -38,7 +38,7 @@ public:
   Insert generated cuts into the cut set cs.
   */
   virtual void generateCuts( const OsiSolverInterface & si, OsiCuts & cs,
-			     const CglTreeInfo info = CglTreeInfo()) const;
+			     const CglTreeInfo info = CglTreeInfo());
   //@}
 
   /**@name Constructors and destructors */

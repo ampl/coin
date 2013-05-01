@@ -1,4 +1,4 @@
-/* $Id: CbcThread.cpp 1261 2009-10-30 12:45:20Z forrest $ */
+/* $Id: CbcThread.cpp 1902 2013-04-10 16:58:16Z stefan $ */
 // Copyright (C) 2002, International Business Machines
 // Corporation and others.  All Rights Reserved.
 // This code is licensed under the terms of the Eclipse Public License (EPL).
@@ -174,7 +174,7 @@ static double getTime()
 {
     struct timespec absTime2;
     my_gettime(&absTime2);
-    double time2 = absTime2.tv_sec + 1.0e-9 * absTime2.tv_nsec;
+    double time2 = (double)absTime2.tv_sec + 1.0e-9 * (double)absTime2.tv_nsec;
     return time2;
 }
 // Timed wait in nanoseconds - if negative then seconds
@@ -243,7 +243,7 @@ int
 CbcSpecificThread::status() const
 {
 #ifdef CBC_PTHREAD
-    return threadId_.status;
+    return static_cast<int>(threadId_.status);
 #else
 #endif
 }
@@ -594,8 +594,16 @@ void
 CbcBaseModel::stopThreads(int type)
 {
     if (type < 0) {
-        for (int i = 0; i < numberThreads_; i++) {
-            assert (children_[i].returnCode() == -1);
+	// max nodes ?
+	bool finished = false;
+	while (!finished) {
+	  finished = true;
+	  for (int i = 0; i < numberThreads_; i++) {
+            if (abs(children_[i].returnCode()) != 1) {
+	      children_[i].wait(1, 0); 
+	      finished=false;
+	    }
+	  }
         }
         return;
     }
@@ -834,10 +842,23 @@ CbcBaseModel::waitForThreadsInTree(int type)
         }
         return anyLeft;
     } else if (type == 2) {
-        assert (baseModel->tree()->empty());
+        if (!baseModel->tree()->empty()) {
+  	  // max nodes ?
+	  bool finished = false;
+	  while (!finished) {
+	    finished = true;
+	    for (int iThread = 0; iThread < numberThreads_; iThread++) {
+	      if (children_[iThread].returnCode() == 0) { 
+		double time = getTime();
+		children_[numberThreads_].wait(0, 0);
+		children_[numberThreads_].incrementTimeInThread(getTime() - time);
+		finished = false;
+		children_[iThread].signal(); // unlock
+	      }
+	    }
+	  }
+        }
         int i;
-        for (i = 0; i < numberThreads_; i++)
-            assert (children_[i].returnCode() == -1);
         // do statistics
         // Seems to be bug in CoinCpu on Linux - does threads as well despite documentation
         double time = 0.0;
@@ -857,10 +878,13 @@ CbcBaseModel::waitForThreadsInTree(int type)
                 delete [] children_[i].delNode();
             children_[i].setReturnCode( 0);
             children_[i].unlockFromMaster();
-            int returnCode;
-            returnCode = children_[i].exit();
-            children_[i].setStatus( 0);
+#ifndef NDEBUG
+            int returnCode = children_[i].exit();
             assert (!returnCode);
+#else
+            children_[i].exit();
+#endif
+            children_[i].setStatus( 0);
             //else
             threadModel_[i]->moveToModel(baseModel, 2);
             assert (children_[i].numberTimesLocked() == children_[i].numberTimesUnlocked());
@@ -991,6 +1015,8 @@ CbcBaseModel::deterministicParallel()
     for (iObject = 0; iObject < numberObjects_; iObject++) {
         saveObjects_[iObject]->updateBefore(object[iObject]);
     }
+    //#define FAKE_PARALLEL
+#ifndef FAKE_PARALLEL
     for (iThread = 0; iThread < numberThreads_; iThread++) {
         children_[iThread].setReturnCode( 0);
         children_[iThread].signal();
@@ -1009,6 +1035,21 @@ CbcBaseModel::deterministicParallel()
     }
     for (iThread = 0; iThread < numberThreads_; iThread++)
         children_[iThread].setReturnCode(-1);
+#else
+    // wait
+    bool finished = false;
+    double time = getTime();
+    for (iThread = 0; iThread < numberThreads_; iThread++) {
+        children_[iThread].setReturnCode( 0);
+        children_[iThread].signal();
+	while (!finished) {
+	  children_[numberThreads_].waitNano( 1000000); // millisecond
+	  finished = (children_[iThread].returnCode() >0);
+	}
+        children_[iThread].setReturnCode(-1);
+	finished=false;
+    }
+#endif
     children_[numberThreads_].incrementTimeInThread(getTime() - time);
     // Unmark marked
     for (int i = 0; i < nAffected; i++) {
@@ -1085,9 +1126,15 @@ static void * doNodesThread(void * voidInfo)
             assert (stuff->returnCode() == 0);
             if (thisModel->parallelMode() >= 0) {
                 CbcNode * node = stuff->node();
-                assert (node->nodeInfo());
+                //assert (node->nodeInfo());
                 CbcNode * createdNode = stuff->createdNode();
-                thisModel->doOneNode(baseModel, node, createdNode);
+		// try and see if this has slipped through
+		if (node) {
+		  thisModel->doOneNode(baseModel, node, createdNode);
+		} else {
+		  //printf("null node\n");
+		  createdNode=NULL;
+		}
                 stuff->setNode(node);
                 stuff->setCreatedNode(createdNode);
                 stuff->setReturnCode( 1);
@@ -1371,8 +1418,16 @@ CbcModel::moveToModel(CbcModel * baseModel, int mode)
     if (mode == 0) {
         setCutoff(baseModel->getCutoff());
         bestObjective_ = baseModel->bestObjective_;
-        assert (!baseModel->globalCuts_.sizeRowCuts());
-        numberSolutions_ = baseModel->numberSolutions_;
+        //assert (!baseModel->globalCuts_.sizeRowCuts());
+        if (numberSolutions_ < baseModel->numberSolutions_) {
+	  assert (baseModel->bestSolution_);
+	  int numberColumns = solver_->getNumCols();
+	  if (!bestSolution_)
+	    bestSolution_ = new double [numberColumns];
+	  memcpy(bestSolution_,baseModel->bestSolution_,
+		 numberColumns*sizeof(double));
+	  numberSolutions_ = baseModel->numberSolutions_;
+	}
         stateOfSearch_ = baseModel->stateOfSearch_;
         numberNodes_ = baseModel->numberNodes_;
         numberIterations_ = baseModel->numberIterations_;
@@ -1539,7 +1594,7 @@ CbcModel::moveToModel(CbcModel * baseModel, int mode)
     } else if (mode == 10) {
         setCutoff(baseModel->getCutoff());
         bestObjective_ = baseModel->bestObjective_;
-        assert (!baseModel->globalCuts_.sizeRowCuts());
+        //assert (!baseModel->globalCuts_.sizeRowCuts());
         numberSolutions_ = baseModel->numberSolutions_;
         assert (usedInSolution_);
         assert (baseModel->usedInSolution_);
@@ -1793,7 +1848,7 @@ CbcModel::parallelCuts(CbcBaseModel * master, OsiCuts & theseCuts,
                 OsiRowCut newCut(*thisCut);
                 newCut.setGloballyValid(true);
                 newCut.mutableRow().setTestForDuplicateIndex(false);
-                globalCuts_.insert(newCut) ;
+                globalCuts_.addCutIfNotDuplicate(newCut) ;
             }
         }
         for (j = numberColumnCutsBefore; j < numberColumnCutsAfter; j++) {
@@ -1801,9 +1856,7 @@ CbcModel::parallelCuts(CbcBaseModel * master, OsiCuts & theseCuts,
             const OsiColCut * thisCut = theseCuts.colCutPtr(j) ;
             if (thisCut->globallyValid()) {
                 // add to global list
-                OsiColCut newCut(*thisCut);
-                newCut.setGloballyValid(true);
-                globalCuts_.insert(newCut) ;
+                makeGlobalCut(thisCut);
             }
         }
     }

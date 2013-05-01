@@ -1,4 +1,4 @@
-// $Id: CglStored.hpp 948 2011-01-04 23:28:13Z lou $
+// $Id: CglStored.hpp 1123 2013-04-06 20:47:24Z stefan $
 // Copyright (C) 2005, International Business Machines
 // Corporation and others.  All Rights Reserved.
 // This code is licensed under the terms of the Eclipse Public License (EPL).
@@ -29,7 +29,7 @@ public:
       and inserts any that are violated by enough
   */
   virtual void generateCuts( const OsiSolverInterface & si, OsiCuts & cs,
-			     const CglTreeInfo info = CglTreeInfo()) const;
+			     const CglTreeInfo info = CglTreeInfo());
   //@}
 
   /**@name Change criterion on whether to include cut.
@@ -113,7 +113,7 @@ protected:
   /// Pointer to probing information
   CglTreeProbingInfo * probingInfo_;
   /// Cuts
-  mutable OsiCuts cuts_;
+  OsiCuts cuts_;
   /// Number of columns in model
   int numberColumns_;
   /// Best solution (objective at end)

@@ -1,4 +1,4 @@
-/* $Id: CbcSolverAnalyze.cpp 1240 2009-10-02 18:41:44Z forrest $ */
+/* $Id: CbcSolverAnalyze.cpp 1902 2013-04-10 16:58:16Z stefan $ */
 // Copyright (C) 2007, International Business Machines
 // Corporation and others.  All Rights Reserved.
 // This code is licensed under the terms of the Eclipse Public License (EPL).
@@ -306,7 +306,8 @@ int * analyze(OsiClpSolverInterface * solverMod, int & numberChanged,
         // just get increment
         int logLevel = generalMessageHandler->logLevel();
         CbcModel model(*solver);
-        model.passInMessageHandler(generalMessageHandler);
+	if (!model.defaultHandler())
+	  model.passInMessageHandler(generalMessageHandler);
         if (noPrinting_)
             model.setLogLevel(0);
         model.analyzeObjective();

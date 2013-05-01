@@ -2,7 +2,7 @@
 // All Rights Reserved.
 // This code is published under the Eclipse Public License.
 //
-// $Id: CoinSmartPtr.hpp 1521 2012-01-29 00:44:38Z tkr $
+// $Id: CoinSmartPtr.hpp 1520 2012-01-29 00:43:31Z tkr $
 //
 // Authors:  Carl Laird, Andreas Waechter     IBM    2004-08-13
 // Removed lots of debugging stuff and reformatted: Laszlo Ladanyi, IBM

@@ -1,4 +1,4 @@
-/* $Id: addRows.cpp 1662 2011-01-04 17:52:40Z lou $ */
+/* $Id: addRows.cpp 1941 2013-04-10 16:52:27Z stefan $ */
 // Copyright (C) 2004, International Business Machines
 // Corporation and others.  All Rights Reserved.
 // This code is licensed under the terms of the Eclipse Public License (EPL).
@@ -258,7 +258,7 @@ int main(int argc, const char *argv[])
           }
           std::cout << "--------------------------------------" << std::endl;
           // Test CoinAssert
-          std::cout << "If Clp compiled with -g below should give assert, if with -O1 or COIN_ASSERT CoinError" << std::endl;
+          std::cout << "If Clp compiled without NDEBUG below should give assert, if with NDEBUG or COIN_ASSERT CoinError" << std::endl;
           model = modelSave;
           model.deleteRows(2, del);
           // Deliberate error

@@ -1,4 +1,4 @@
-/* $Id: ClpNonLinearCost.cpp 1753 2011-06-19 16:27:26Z stefan $ */
+/* $Id: ClpNonLinearCost.cpp 1769 2011-07-26 09:31:51Z forrest $ */
 // Copyright (C) 2002, International Business Machines
 // Corporation and others.  All Rights Reserved.
 // This code is licensed under the terms of the Eclipse Public License (EPL).
@@ -223,6 +223,58 @@ ClpNonLinearCost::ClpNonLinearCost ( ClpSimplex * model, int method)
                setInitialStatus(status_[iSequence]);
           }
      }
+}
+// Refresh - assuming regions OK
+void 
+ClpNonLinearCost::refresh()
+{
+     int numberTotal = numberRows_ + numberColumns_;
+     numberInfeasibilities_ = 0;
+     sumInfeasibilities_ = 0.0;
+     largestInfeasibility_ = 0.0;
+     double infeasibilityCost = model_->infeasibilityCost();
+     double primalTolerance = model_->currentPrimalTolerance();
+     double * cost = model_->costRegion();
+     double * upper = model_->upperRegion();
+     double * lower = model_->lowerRegion();
+     double * solution = model_->solutionRegion();
+     for (int iSequence = 0; iSequence < numberTotal; iSequence++) {
+       cost2_[iSequence] = cost[iSequence];
+       double value = solution[iSequence];
+       double lowerValue = lower[iSequence];
+       double upperValue = upper[iSequence];
+       if (value - upperValue <= primalTolerance) {
+	 if (value - lowerValue >= -primalTolerance) {
+	   // feasible
+	   status_[iSequence] = static_cast<unsigned char>(CLP_FEASIBLE | (CLP_SAME << 4));
+	   bound_[iSequence] = 0.0;
+	 } else {
+	   // below
+	   double infeasibility = lowerValue - value - primalTolerance;
+	   sumInfeasibilities_ += infeasibility;
+	   largestInfeasibility_ = CoinMax(largestInfeasibility_, infeasibility);
+	   cost[iSequence] -= infeasibilityCost;
+	   numberInfeasibilities_++;
+	   status_[iSequence] = static_cast<unsigned char>(CLP_BELOW_LOWER | (CLP_SAME << 4));
+	   bound_[iSequence] = upperValue;
+	   upper[iSequence] = lowerValue;
+	   lower[iSequence] = -COIN_DBL_MAX;
+	 }
+       } else {
+	 // above
+	 double infeasibility = value - upperValue - primalTolerance;
+	 sumInfeasibilities_ += infeasibility;
+	 largestInfeasibility_ = CoinMax(largestInfeasibility_, infeasibility);
+	 cost[iSequence] += infeasibilityCost;
+	 numberInfeasibilities_++;
+	 status_[iSequence] = static_cast<unsigned char>(CLP_ABOVE_UPPER | (CLP_SAME << 4));
+	 bound_[iSequence] = lowerValue;
+	 lower[iSequence] = upperValue;
+	 upper[iSequence] = COIN_DBL_MAX;
+       }
+     }
+     //     checkInfeasibilities(model_->primalTolerance());
+     
 }
 // Refreshes costs always makes row costs zero
 void
@@ -1653,7 +1705,9 @@ ClpNonLinearCost::setOne(int sequence, double solutionValue, double lowerValue, 
           whichRange_[sequence] = iRange;
      }
      if (CLP_METHOD2) {
-          abort(); // may never work
+       bound_[sequence]=0.0;
+       cost2_[sequence]=costValue;
+       setInitialStatus(status_[sequence]);
      }
 
 }

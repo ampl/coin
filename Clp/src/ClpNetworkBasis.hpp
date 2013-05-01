@@ -1,4 +1,4 @@
-/* $Id: ClpNetworkBasis.hpp 1753 2011-06-19 16:27:26Z stefan $ */
+/* $Id: ClpNetworkBasis.hpp 1722 2011-04-17 09:58:37Z stefan $ */
 // Copyright (C) 2003, International Business Machines
 // Corporation and others.  All Rights Reserved.
 // This code is licensed under the terms of the Eclipse Public License (EPL).

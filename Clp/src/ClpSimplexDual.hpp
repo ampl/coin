@@ -1,4 +1,4 @@
-/* $Id: ClpSimplexDual.hpp 1665 2011-01-04 17:55:54Z lou $ */
+/* $Id: ClpSimplexDual.hpp 1761 2011-07-06 16:06:24Z forrest $ */
 // Copyright (C) 2002, International Business Machines
 // Corporation and others.  All Rights Reserved.
 // This code is licensed under the terms of the Eclipse Public License (EPL).
@@ -281,10 +281,9 @@ public:
 
      /** Pivot in a variable and choose an outgoing one.  Assumes dual
          feasible - will not go through a reduced cost.  Returns step length in theta
-         Returns ray in ray_ (or NULL if no pivot)
          Return codes as before but -1 means no acceptable pivot
      */
-     int pivotResult();
+     int pivotResultPart1();
      /** Get next free , -1 if none */
      int nextSuperBasic();
      /** Startup part of dual (may be extended to other algorithms)

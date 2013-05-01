@@ -1,4 +1,4 @@
-/* $Id: ClpMessage.cpp 1753 2011-06-19 16:27:26Z stefan $ */
+/* $Id: ClpMessage.cpp 1928 2013-04-06 12:54:16Z stefan $ */
 // Copyright (C) 2000, International Business Machines
 // Corporation and others.  All Rights Reserved.
 // This code is licensed under the terms of the Eclipse Public License (EPL).
@@ -21,7 +21,11 @@ static Clp_message clp_us_english[] = {
      {CLP_SIMPLEX_INTERRUPT, 5, 1, "Stopped by event handler - objective value %g"},
      {CLP_SIMPLEX_STATUS, 6, 1, "%d  Obj %g%? Primal inf %g (%d)%? Dual inf %g (%d)%? w.o. free dual inf (%d)"},
      {CLP_DUAL_BOUNDS, 25, 3, "Looking optimal checking bounds with %g"},
+#if ABC_NORMAL_DEBUG>1
+     {CLP_SIMPLEX_ACCURACY, 60, 1, "Primal error %g, dual error %g"},
+#else
      {CLP_SIMPLEX_ACCURACY, 60, 3, "Primal error %g, dual error %g"},
+#endif
      {CLP_SIMPLEX_BADFACTOR, 7, 2, "Singular factorization of basis - status %d"},
      {CLP_SIMPLEX_BOUNDTIGHTEN, 8, 3, "Bounds were tightened %d times"},
      {CLP_SIMPLEX_INFEASIBILITIES, 9, 1, "%d infeasibilities"},
@@ -40,6 +44,7 @@ static Clp_message clp_us_english[] = {
      {CLP_RIMSTATISTICS3, 22, 2, "Absolute values of scaled rhs range from %g to %g, minimum gap %g"},
      {CLP_POSSIBLELOOP, 23, 2, "Possible loop - %d matches (%x) after %d checks"},
      {CLP_SMALLELEMENTS, 24, 1, "Matrix will be packed to eliminate %d small elements"},
+     {CLP_DUPLICATEELEMENTS, 26, 1, "Matrix will be packed to eliminate %d duplicate elements"},
      {CLP_SIMPLEX_HOUSE1, 101, 32, "dirOut %d, dirIn %d, theta %g, out %g, dj %g, alpha %g"},
      {CLP_SIMPLEX_HOUSE2, 102, 4, "%d %g In: %c%d Out: %c%d%? dj ratio %g distance %g%? dj %g distance %g"},
      {CLP_SIMPLEX_NONLINEAR, 103, 4, "Primal nonlinear change %g (%d)"},
@@ -56,7 +61,6 @@ static Clp_message clp_us_english[] = {
      {CLP_BAD_BOUNDS, 6002, 1, "%d bad bound pairs or bad objectives were found - first at %c%d"},
      {CLP_BAD_MATRIX, 6003, 1, "Matrix has %d large values, first at column %d, row %d is %g"},
      {CLP_LOOP, 6004, 1, "Can't get out of loop - stopping"},
-     {CLP_DUPLICATEELEMENTS, 26, 1, "Matrix will be packed to eliminate %d duplicate elements"},
      {CLP_IMPORT_RESULT, 27, 1, "Model was imported from %s in %g seconds"},
      {CLP_IMPORT_ERRORS, 3001, 1, " There were %d errors when importing model from %s"},
      {CLP_EMPTY_PROBLEM, 3002, 1, "Empty problem - %d rows, %d columns and %d elements"},
@@ -109,6 +113,7 @@ static Clp_message clp_us_english[] = {
 #endif
      {CLP_GENERAL, 1000, 1, "%s"},
      {CLP_GENERAL2, 1001, 2, "%s"},
+     {CLP_GENERAL_WARNING, 3006, 1, "%s"},
      {CLP_DUMMY_END, 999999, 0, ""}
 };
 static Clp_message uk_english[] = {

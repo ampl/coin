@@ -1,4 +1,4 @@
-/* $Id: CoinFactorization4.cpp 1552 2012-10-30 17:12:05Z forrest $ */
+/* $Id: CoinFactorization4.cpp 1553 2012-10-30 17:13:11Z forrest $ */
 // Copyright (C) 2002, International Business Machines
 // Corporation and others.  All Rights Reserved.
 // This code is licensed under the terms of the Eclipse Public License (EPL).
@@ -2398,7 +2398,7 @@ CoinFactorization::replaceColumnPFI ( CoinIndexedVector * regionSparse,
 //  =
 CoinFactorization & CoinFactorization::operator = ( const CoinFactorization & other ) {
   if (this != &other) {    
-    gutsOfDestructor();
+    gutsOfDestructor(2);
     gutsOfInitialize(3);
     persistenceFlag_=other.persistenceFlag_;
     gutsOfCopy(other);

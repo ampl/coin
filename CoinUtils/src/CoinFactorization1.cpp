@@ -1,4 +1,4 @@
-/* $Id: CoinFactorization1.cpp 1448 2011-06-19 15:34:41Z stefan $ */
+/* $Id: CoinFactorization1.cpp 1581 2013-04-06 12:48:50Z stefan $ */
 // Copyright (C) 2002, International Business Machines
 // Corporation and others.  All Rights Reserved.
 // This code is licensed under the terms of the Eclipse Public License (EPL).
@@ -34,11 +34,47 @@ CoinFactorization::CoinFactorization ( const CoinFactorization &other)
   gutsOfCopy(other);
 }
 /// The real work of constructors etc
-void CoinFactorization::gutsOfDestructor(int )
+/// Really really delete if type 2
+void CoinFactorization::gutsOfDestructor(int type)
 {
   delete [] denseArea_;
   delete [] densePermute_;
-
+  if (type==2) {
+    elementU_.switchOff();
+    startRowU_.switchOff();
+    convertRowToColumnU_.switchOff();
+    indexRowU_.switchOff();
+    indexColumnU_.switchOff();
+    startColumnU_.switchOff();
+    elementL_.switchOff();
+    indexRowL_.switchOff();
+    startColumnL_.switchOff();
+    startColumnR_.switchOff();
+    numberInRow_.switchOff();
+    numberInColumn_.switchOff();
+    numberInColumnPlus_.switchOff();
+    pivotColumn_.switchOff();
+    pivotColumnBack_.switchOff();
+    firstCount_.switchOff();
+    nextCount_.switchOff();
+    lastCount_.switchOff();
+    permute_.switchOff();
+    permuteBack_.switchOff();
+    nextColumn_.switchOff();
+    lastColumn_.switchOff();
+    nextRow_.switchOff();
+    lastRow_.switchOff();
+    saveColumn_.switchOff();
+    markRow_.switchOff();
+    pivotRowL_.switchOff();
+    pivotRegion_.switchOff();
+    elementByRowL_.switchOff();
+    startRowL_.switchOff();
+    indexColumnL_.switchOff();
+    sparse_.switchOff();
+    workArea_.switchOff();
+    workArea2_.switchOff();
+  }
   elementU_.conditionalDelete();
   startRowU_.conditionalDelete();
   convertRowToColumnU_.conditionalDelete();
@@ -489,7 +525,7 @@ CoinFactorization::factorizePart2 (int permutation[],int exactNumberElements)
 //  ~CoinFactorization.  Destructor
 CoinFactorization::~CoinFactorization (  )
 {
-  gutsOfDestructor();
+  gutsOfDestructor(2);
 }
 
 //  show_self.  Debug show object
@@ -969,7 +1005,7 @@ CoinFactorization::factor (  )
 	int * nextRow = nextRow_.array();
 	//int nSing =0;
 	k=nextRow[maximumRowsExtra_];
-	while (k!=maximumRowsExtra_) {
+	while (k!=maximumRowsExtra_ && k>=0) {
 	  int iRow = k;
 	  k=nextRow[k];
 	  //nSing++;
@@ -2385,5 +2421,5 @@ CoinFactorization::setPersistenceFlag(int flag)
 void 
 CoinFactorization::almostDestructor()
 {
-  gutsOfDestructor(1);
+  gutsOfDestructor(2);
 }

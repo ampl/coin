@@ -1,4 +1,4 @@
-/* $Id: ClpDynamicExampleMatrix.hpp 1665 2011-01-04 17:55:54Z lou $ */
+/* $Id: ClpDynamicExampleMatrix.hpp 1941 2013-04-10 16:52:27Z stefan $ */
 // Copyright (C) 2004, International Business Machines
 // Corporation and others.  All Rights Reserved.
 // This code is licensed under the terms of the Eclipse Public License (EPL).
@@ -71,6 +71,7 @@ public:
                              const unsigned char * status = NULL,
                              const unsigned char * dynamicStatus = NULL,
                              int numberIds = 0, const int *ids = NULL);
+#if 0
      /// This constructor just takes over ownership (except for lower, upper)
      ClpDynamicExampleMatrix(ClpSimplex * model, int numberSets,
                              int numberColumns, int * starts,
@@ -81,7 +82,7 @@ public:
                              const unsigned char * status = NULL,
                              const unsigned char * dynamicStatus = NULL,
                              int numberIds = 0, const int *ids = NULL);
-
+#endif
      /** Destructor */
      virtual ~ClpDynamicExampleMatrix();
      //@}

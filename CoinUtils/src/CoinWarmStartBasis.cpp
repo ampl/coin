@@ -1,4 +1,4 @@
-/* $Id: CoinWarmStartBasis.cpp 1373 2011-01-03 23:57:44Z lou $ */
+/* $Id: CoinWarmStartBasis.cpp 1515 2011-12-10 23:38:04Z lou $ */
 // Copyright (C) 2000, International Business Machines
 // Corporation and others.  All Rights Reserved.
 // This code is licensed under the terms of the Eclipse Public License (EPL).
@@ -656,6 +656,15 @@ void CoinWarmStartBasis::applyDiff (const CoinWarmStartDiff *const cwsdDiff)
   }
   return ; }
 
+const char *statusName (CoinWarmStartBasis::Status status) {
+  switch (status) {
+    case CoinWarmStartBasis::isFree: { return ("NBFR") ; }
+    case CoinWarmStartBasis::basic: { return ("B") ; }
+    case CoinWarmStartBasis::atUpperBound: { return ("NBUB") ; }
+    case CoinWarmStartBasis::atLowerBound: { return ("NBLB") ; }
+    default: { return ("INVALID!") ; }
+  }
+}
 
 /* Routines for CoinWarmStartBasisDiff */
 

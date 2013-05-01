@@ -4,8 +4,6 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "libOsi", "libOsi\libOsi.vcx
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "libCoinUtils", "..\..\..\CoinUtils\MSVisualStudio\v10\libCoinUtils\libCoinUtils.vcxproj", "{C4867F15-438D-4FF8-8388-62FBAAA9786C}"
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "OsiExamplesBasic2", "OsiExamplesBasic2\OsiExamplesBasic2.vcxproj", "{B349E853-2E2B-468E-8853-184ACD948678}"
-EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "OsiExamplesBasic", "OsiExamplesBasic\OsiExamplesBasic.vcxproj", "{B874A948-B5F4-4501-9735-BD9586C5216D}"
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "OsiExamplesBuild", "OsiExamplesBuild\OsiExamplesBuild.vcxproj", "{1864FDC9-F116-4EB0-9B3F-6FD11E0307B4}"

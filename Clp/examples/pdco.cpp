@@ -1,4 +1,4 @@
-/* $Id: pdco.cpp 1662 2011-01-04 17:52:40Z lou $ */
+/* $Id: pdco.cpp 1941 2013-04-10 16:52:27Z stefan $ */
 // Copyright (C) 2003, International Business Machines
 // Corporation and others.  All Rights Reserved.
 // This code is licensed under the terms of the Eclipse Public License (EPL).
@@ -15,6 +15,10 @@
 #include <stdio.h>
 #include <assert.h>
 #include <cmath>
+
+// easy way to allow compiling all sources for this example within one file,
+// so no need to do something special in Makefile
+#include "myPdco.cpp"
 
 int main(int argc, const char *argv[])
 {

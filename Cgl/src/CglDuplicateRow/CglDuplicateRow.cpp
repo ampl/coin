@@ -1,12 +1,8 @@
-// $Id: CglDuplicateRow.cpp 1033 2011-06-19 16:49:13Z stefan $
+// $Id: CglDuplicateRow.cpp 1123 2013-04-06 20:47:24Z stefan $
 // Copyright (C) 2004, International Business Machines
 // Corporation and others.  All Rights Reserved.
 // This code is licensed under the terms of the Eclipse Public License (EPL).
 
-#if defined(_MSC_VER)
-// Turn off compiler warning about long names
-#  pragma warning(disable:4786)
-#endif
 #include <cstdlib>
 #include <cstdio>
 #include <cmath>
@@ -15,6 +11,7 @@
 #include <iostream>
 //#define PRINT_DEBUG
 //#define CGL_DEBUG
+#include "CoinPragma.hpp"
 #include "CoinHelperFunctions.hpp"
 #include "CoinPackedMatrix.hpp"
 #include "CoinFinite.hpp"
@@ -25,7 +22,7 @@
 // Generate duplicate row column cuts
 //------------------------------------------------------------------- 
 void CglDuplicateRow::generateCuts(const OsiSolverInterface & si, OsiCuts & cs,
-			      const CglTreeInfo info) const
+			      const CglTreeInfo info)
 {
 #ifdef CGL_DEBUG
   const OsiRowCutDebugger * debugger = si.getRowCutDebugger();
@@ -50,7 +47,7 @@ void CglDuplicateRow::generateCuts(const OsiSolverInterface & si, OsiCuts & cs,
   }
 }
 void CglDuplicateRow::generateCuts12(const OsiSolverInterface & si, OsiCuts & cs,
-			      const CglTreeInfo info) const
+			      const CglTreeInfo info)
 {
   int numberColumns = matrix_.getNumCols();
   CoinPackedVector ubs;
@@ -878,7 +875,7 @@ void CglDuplicateRow::generateCuts12(const OsiSolverInterface & si, OsiCuts & cs
   }
 }
 void CglDuplicateRow::generateCuts4(const OsiSolverInterface & si, OsiCuts & cs,
-			      const CglTreeInfo ) const
+			      const CglTreeInfo )
 {
   int numberColumns = matrix_.getNumCols();
   
@@ -1065,14 +1062,11 @@ void CglDuplicateRow::generateCuts4(const OsiSolverInterface & si, OsiCuts & cs,
       const int * column0 = column+start0;
       const double * element0 = elementByRow+start0;
       int nInt=0;
-      int nLook=nRow2;
       for (int j=0;j<n;j++) {
 	int iColumn = column0[j];
 	if ((columnFlag[iColumn]&(2+4))==2)
 	  nInt++;
 	mark[iColumn] =1;
-	if (!newBound[iColumn])
-	  nLook=0; // Don't look
       }
       for (int k=i+1;k<nRow2;k++) {
 	if (duplicate_[k]==-2)
@@ -1246,13 +1240,11 @@ void CglDuplicateRow::generateCuts4(const OsiSolverInterface & si, OsiCuts & cs,
 			printf("true bounds %g %g\n",columnLower[kColumn],
 			       columnUpper[kColumn]);
 #endif
-			double lo,up;
+			double lo;
 			if (fixed[k]>0) {
 			  lo=1.0;
-			  up=1.0;
 			} else {
 			  lo=0.0;
-			  up=0.0;
 			}
 			if ((columnFlag[iColumn]&1)==0) {
 			  columnFlag[iColumn] |= 16;
@@ -1474,13 +1466,11 @@ void CglDuplicateRow::generateCuts4(const OsiSolverInterface & si, OsiCuts & cs,
 			printf("true bounds %g %g\n",columnLower[kColumn],
 			       columnUpper[kColumn]);
 #endif
-			double lo,up;
+			double lo;
 			if (fixed[k]>0) {
 			  lo=1.0;
-			  up=1.0;
 			} else {
 			  lo=0.0;
-			  up=0.0;
 			}
 			if ((columnFlag[iColumn]&1)==0) {
 			  columnFlag[iColumn] |= 16;
@@ -1871,13 +1861,11 @@ void CglDuplicateRow::generateCuts4(const OsiSolverInterface & si, OsiCuts & cs,
 		      printf("true bounds %g %g\n",columnLower[kColumn],
 			     columnUpper[kColumn]);
 #endif
-		      double lo,up;
+		      double lo;
 		      if (fixed[k]>0) {
 			lo=1.0;
-			up=1.0;
 		      } else {
 			lo=0.0;
-			up=0.0;
 		      }
 		      if ((columnFlag[iColumn]&1)==0) {
 			columnFlag[iColumn] |= 16;
@@ -2923,18 +2911,15 @@ static int outDupsEtc(int numberIntegers, int numberCliques, int * statusClique,
 }
 #endif
 void CglDuplicateRow::generateCuts8(const OsiSolverInterface & si, OsiCuts & cs,
-				    const CglTreeInfo ) const
+				    const CglTreeInfo )
 {
   bool printit=false;
   bool feasible=true;
   int numberCliques=0;
   int numberEntries=0;
-  int maximumCliques=0;
-  int maximumEntries=0;
   int * cliqueStart = NULL;
   int * entry = NULL;
   char * cliqueType=NULL;
-  int *whichClique=NULL;
   int numberRows=si.getNumRows(); 
   const CoinPackedMatrix * rowCopy = si.getMatrixByRow();
   assert(numberRows&&si.getNumCols());
@@ -2960,13 +2945,10 @@ void CglDuplicateRow::generateCuts8(const OsiSolverInterface & si, OsiCuts & cs,
   int * whichP = new int [numberIntegers];
   for (int iPass=0;iPass<2;iPass++) {
     if (iPass) {
-      maximumCliques=numberCliques;
-      maximumEntries=numberEntries;
       cliqueStart = new int [numberCliques+1];
       cliqueStart[0]=0;
       entry = new int [numberEntries];
       cliqueType = new char [numberCliques];
-      whichClique = new int [numberEntries];
       numberCliques=0;
       numberEntries=0;
     }

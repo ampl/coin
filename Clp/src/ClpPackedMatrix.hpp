@@ -1,4 +1,4 @@
-/* $Id: ClpPackedMatrix.hpp 1753 2011-06-19 16:27:26Z stefan $ */
+/* $Id: ClpPackedMatrix.hpp 1836 2011-12-15 20:22:39Z lou $ */
 // Copyright (C) 2002, International Business Machines
 // Corporation and others.  All Rights Reserved.
 // This code is licensed under the terms of the Eclipse Public License (EPL).
@@ -333,6 +333,12 @@ public:
      inline void checkGaps() {
           flags_ = (matrix_->hasGaps()) ? (flags_ | 2) : (flags_ & (~2));
      }
+     /// number of active columns (normally same as number of columns)
+     inline int numberActiveColumns() const
+     { return numberActiveColumns_;}
+     /// Set number of active columns (normally same as number of columns)
+     inline void setNumberActiveColumns(int value)
+     { numberActiveColumns_ = value;}
      //@}
 
 
@@ -468,7 +474,7 @@ protected:
          8 - has special column copy
          16 - wants special column copy
      */
-     int flags_;
+     mutable int flags_;
      /// Special row copy
      ClpPackedMatrix2 * rowCopy_;
      /// Special column copy

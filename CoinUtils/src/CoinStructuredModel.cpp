@@ -1,4 +1,4 @@
-/* $Id: CoinStructuredModel.cpp 1373 2011-01-03 23:57:44Z lou $ */
+/* $Id: CoinStructuredModel.cpp 1585 2013-04-06 20:42:02Z stefan $ */
 // Copyright (C) 2008, International Business Machines
 // Corporation and others.  All Rights Reserved.
 // This code is licensed under the terms of the Eclipse Public License (EPL).
@@ -754,8 +754,6 @@ CoinStructuredModel::decompose(const CoinPackedMatrix & matrix,
   setObjectiveOffset(objectiveOffset);
   int numberBlocks=0;
   if (type==1) {
-    // Try master at top and bottom
-    bool goodDW=true;
     // get row copy
     CoinPackedMatrix rowCopy = matrix;
     rowCopy.reverseOrdering();
@@ -992,7 +990,6 @@ CoinStructuredModel::decompose(const CoinPackedMatrix & matrix,
 	  rowBlock[stack[i]]=-1;
       }
       if (nMaster*2>numberRows) {
-	goodDW=false;
 	printf("%d rows out of %d would be in master - no good\n",
 	       nMaster,numberRows);
 	delete [] rowBlock;
@@ -1295,8 +1292,6 @@ CoinStructuredModel::decompose(const CoinPackedMatrix & matrix,
     delete [] rowLo ; 
     delete [] rowUp ; 
   } else if (type==2) {
-    // Try master at beginning and end
-    bool goodBenders=true;
     // get row copy
     CoinPackedMatrix rowCopy = matrix;
     rowCopy.reverseOrdering();
@@ -1503,7 +1498,6 @@ CoinStructuredModel::decompose(const CoinPackedMatrix & matrix,
 	  columnBlock[stack[i]]=-1;
       }
       if (nMaster*2>numberColumns) {
-	goodBenders=false;
 	printf("%d columns out of %d would be in master - no good\n",
 	       nMaster,numberColumns);
 	delete [] rowBlock;

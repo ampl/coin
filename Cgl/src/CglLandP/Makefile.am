@@ -24,7 +24,7 @@ if COIN_HAS_OSICLP
 libCglLandP_la_SOURCES += \
 	CglLandP.cpp  CglLandP.hpp \
 	CglLandPTabRow.cpp \
-        CglLandPMessages.hpp CglLandPMessages.cpp \
+        CglLandPMessages.h CglLandPMessages.cpp \
         CglLandPSimplex.cpp CglLandPSimplex.hpp \
         CglLandPValidator.cpp CglLandPValidator.hpp \
         CglLandPTest.cpp

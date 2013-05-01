@@ -1,4 +1,4 @@
-/* $Id: CbcCompare.hpp 1286 2009-11-09 23:33:07Z EdwinStraver $ */
+/* $Id: CbcCompare.hpp 1902 2013-04-10 16:58:16Z stefan $ */
 // Copyright (C) 2002, International Business Machines
 // Corporation and others.  All Rights Reserved.
 // This code is licensed under the terms of the Eclipse Public License (EPL).

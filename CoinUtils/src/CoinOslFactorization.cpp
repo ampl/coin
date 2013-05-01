@@ -1,4 +1,4 @@
-/* $Id: CoinOslFactorization.cpp 1448 2011-06-19 15:34:41Z stefan $ */
+/* $Id: CoinOslFactorization.cpp 1585 2013-04-06 20:42:02Z stefan $ */
 // Copyright (C) 1987, 2009, International Business Machines
 // Corporation and others.  All Rights Reserved.
 // This code is licensed under the terms of the Eclipse Public License (EPL).
@@ -295,7 +295,9 @@ CoinOslFactorization::makeNonSingular(int * sequence, int numberColumns)
   }
 #endif
   //printf("nr %d nc %d\n",nr,nc);
+#ifndef NDEBUG
   bool goodPass=true;
+#endif
   int numberDone=0;
   for (int i=0;i<numberRows_;i++) {
     int cRow =(-clink[i].pre)-1;
@@ -311,7 +313,9 @@ CoinOslFactorization::makeNonSingular(int * sequence, int numberColumns)
 	nextRow++;
 	numberDone++;
       } else {
+#ifndef NDEBUG
 	goodPass=false;
+#endif
 	assert(numberDone);
 	//printf("BAD singular at row %d\n",i);
 	break;

@@ -1,4 +1,4 @@
-/* $Id: ClpSimplexOther.hpp 1753 2011-06-19 16:27:26Z stefan $ */
+/* $Id: ClpSimplexOther.hpp 1884 2012-11-05 17:38:48Z forrest $ */
 // Copyright (C) 2004, International Business Machines
 // Corporation and others.  All Rights Reserved.
 // This code is licensed under the terms of the Eclipse Public License (EPL).
@@ -88,6 +88,42 @@ public:
 	 See CbcClpParam.cpp for details of format
 	 Returns -2 if unable to open file */
      int parametrics(const char * dataFile);
+     /** Parametrics
+         This is an initial slow version.
+         The code uses current bounds + theta * change (if change array not NULL)
+         It starts at startingTheta and returns ending theta in endingTheta.
+         If it can not reach input endingTheta return code will be 1 for infeasible,
+         2 for unbounded, if error on ranges -1,  otherwise 0.
+         Event handler may do more
+         On exit endingTheta is maximum reached (can be used for next startingTheta)
+     */
+     int parametrics(double startingTheta, double & endingTheta, 
+                     const double * changeLowerBound, const double * changeUpperBound,
+                     const double * changeLowerRhs, const double * changeUpperRhs);
+     int parametricsObj(double startingTheta, double & endingTheta, 
+			const double * changeObjective);
+    /// Finds best possible pivot
+    double bestPivot(bool justColumns=false);
+  typedef struct {
+    double startingTheta;
+    double endingTheta;
+    double maxTheta;
+    double acceptableMaxTheta; // if this far then within tolerances
+    double * lowerChange; // full array of lower bound changes
+    int * lowerList; // list of lower bound changes
+    double * upperChange; // full array of upper bound changes
+    int * upperList; // list of upper bound changes
+    char * markDone; // mark which ones looked at
+    int * backwardBasic; // from sequence to pivot row
+    int * lowerActive;
+    double * lowerGap;
+    double * lowerCoefficient;
+    int * upperActive;
+    double * upperGap;
+    double * upperCoefficient;
+    int unscaledChangesOffset; 
+    bool firstIteration; // so can update rhs for accuracy
+  } parametricsData;
 
 private:
      /** Parametrics - inner loop
@@ -98,10 +134,14 @@ private:
          Normal report is just theta and objective but
          if event handler exists it may do more
      */
-     int parametricsLoop(double startingTheta, double & endingTheta, double reportIncrement,
+     int parametricsLoop(parametricsData & paramData, double reportIncrement,
                          const double * changeLower, const double * changeUpper,
                          const double * changeObjective, ClpDataSave & data,
                          bool canTryQuick);
+     int parametricsLoop(parametricsData & paramData,
+                         ClpDataSave & data,bool canSkipFactorization=false);
+     int parametricsObjLoop(parametricsData & paramData,
+                         ClpDataSave & data,bool canSkipFactorization=false);
      /**  Refactorizes if necessary
           Checks if finished.  Updates status.
 
@@ -110,6 +150,7 @@ private:
            - 2 restoring from saved
      */
      void statusOfProblemInParametrics(int type, ClpDataSave & saveData);
+     void statusOfProblemInParametricsObj(int type, ClpDataSave & saveData);
      /** This has the flow between re-factorizations
 
          Reasons to come out:
@@ -120,16 +161,23 @@ private:
          +1 looks infeasible
          +3 max iterations
       */
-     int whileIterating(double startingTheta, double & endingTheta, double reportIncrement,
-                        const double * changeLower, const double * changeUpper,
+     int whileIterating(parametricsData & paramData, double reportIncrement,
                         const double * changeObjective);
      /** Computes next theta and says if objective or bounds (0= bounds, 1 objective, -1 none).
          theta is in theta_.
          type 1 bounds, 2 objective, 3 both.
      */
-     int nextTheta(int type, double maxTheta, double * primalChange, double * dualChange,
-                   const double * changeLower, const double * changeUpper,
+     int nextTheta(int type, double maxTheta, parametricsData & paramData,
                    const double * changeObjective);
+     int whileIteratingObj(parametricsData & paramData);
+     int nextThetaObj(double maxTheta, parametricsData & paramData);
+     /// Restores bound to original bound
+     void originalBound(int iSequence, double theta, const double * changeLower,
+		     const double * changeUpper);
+     /// Compute new rowLower_ etc (return negative if infeasible - otherwise largest change)
+     double computeRhsEtc(parametricsData & paramData);
+     /// Redo lower_ from rowLower_ etc
+     void redoInternalArrays();
      /**
          Row array has row part of pivot row
          Column array has column part.
@@ -177,7 +225,8 @@ public:
      /** Restores solution from dualized problem
          non-zero return code indicates minor problems
      */
-     int restoreFromDual(const ClpSimplex * dualProblem);
+  int restoreFromDual(const ClpSimplex * dualProblem,
+		      bool checkAccuracy=false);
      /** Does very cursory presolve.
          rhs is numberRows, whichRows is 3*numberRows and whichColumns is 2*numberColumns.
      */

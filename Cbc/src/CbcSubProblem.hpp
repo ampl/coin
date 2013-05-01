@@ -1,4 +1,4 @@
-// $Id$
+// $Id: CbcSubProblem.hpp 1902 2013-04-10 16:58:16Z stefan $
 // Copyright (C) 2002, International Business Machines
 // Corporation and others.  All Rights Reserved.
 // This code is licensed under the terms of the Eclipse Public License (EPL).
@@ -39,6 +39,8 @@ public:
     /// Destructor
     virtual ~CbcSubProblem ();
 
+    /// Take over
+  void takeOver ( CbcSubProblem &, bool cleanup);
     /// Apply subproblem (1=bounds, 2=basis, 3=both)
     void apply(OsiSolverInterface * model, int what = 3) const;
 
@@ -47,6 +49,10 @@ public:
     double objectiveValue_;
     /// Sum of infeasibilities
     double sumInfeasibilities_;
+    /// Branch value
+    double branchValue_;
+    /// Dj on branching variable at end
+    double djValue_;
     /** Which variable (top bit if upper bound changing)
         next bit if changing on down branch only */
     int * variables_;
@@ -60,6 +66,16 @@ public:
     int numberChangedBounds_;
     /// Number of infeasibilities
     int numberInfeasibilities_;
+    /** Status 1 bit going up on first, 2 bit set first branch infeasible on second, 4 bit redundant branch,
+	bits after 256 give reason for stopping (just last node)
+	0 - solution
+	1 - infeasible
+	2 - maximum depth
+	>2 - error or max time or something
+    */
+    int problemStatus_;
+    /// Variable branched on
+    int branchVariable_;
 };
 
 #endif //COIN_HAS_CLP

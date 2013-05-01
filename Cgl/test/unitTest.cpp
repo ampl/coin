@@ -1,4 +1,4 @@
-// $Id: unitTest.cpp 949 2011-01-04 23:29:33Z lou $
+// $Id: unitTest.cpp 1123 2013-04-06 20:47:24Z stefan $
 // Copyright (C) 2000, International Business Machines
 // Corporation and others.  All Rights Reserved.
 // This code is licensed under the terms of the Eclipse Public License (EPL).
@@ -44,9 +44,11 @@
 #include "CglMixedIntegerRounding2.hpp"
 #include "CglResidualCapacity.hpp"
 #include "CglRedSplit.hpp"
+#include "CglRedSplit2.hpp"
 #include "CglTwomir.hpp"
 #include "CglClique.hpp"
 #include "CglFlowCover.hpp"
+#include "CglZeroHalf.hpp"
 
 // Function Prototypes. Function definitions is in this file.
 void testingMessage( const char * const msg );
@@ -58,7 +60,7 @@ void testingMessage( const char * const msg );
 
 int main (int argc, const char *argv[])
 {
-  // Initialise directories containing data files.
+  // Initialize directories containing data files.
   std::string mpsDir;
   std::string testDir;
   
@@ -70,7 +72,7 @@ int main (int argc, const char *argv[])
     mpsDir = "../../Data/Sample/";
 #endif
 #ifdef TESTDIR
-	testDir = TESTDIR "/" ;
+    testDir = TESTDIR "/" ;
 #else
     testDir = "CglTestData/";
 #endif
@@ -81,7 +83,7 @@ int main (int argc, const char *argv[])
     mpsDir = "..\\..\\Data\\Sample\\";
 #endif
 #ifdef TESTDIR
-	testDir = TESTDIR "\\";
+    testDir = TESTDIR "\\";
 #else
     testDir = "CglTestData\\";
 #endif
@@ -89,11 +91,11 @@ int main (int argc, const char *argv[])
   // Check for command line override
   if (argc >= 2) {
     mpsDir = argv[1];
-	mpsDir += dirsep;
+    mpsDir += dirsep;
     if (argc >= 3) {
       testDir = argv[2];
-	  testDir += dirsep;
-	}
+      testDir += dirsep;
+    }
   }
 
 #ifdef COIN_HAS_OSICPX
@@ -219,6 +221,11 @@ int main (int argc, const char *argv[])
     testingMessage( "Testing CglFlowCover with OsiXprSolverInterface\n" );
     CglFlowCoverUnitTest(&xprSi, testDir);
   }
+  {
+    OsiXprSolverInterface xprSi;
+    testingMessage( "Testing CglZeroHalf with OsiXprSolverInterface\n" );
+    CglZeroHalfUnitTest(&xprSi, testDir);
+  }
 
 #endif
 #ifdef COIN_HAS_OSICLP
@@ -274,6 +281,11 @@ int main (int argc, const char *argv[])
   }
   {
     OsiClpSolverInterface clpSi;
+    testingMessage( "Testing CglRedSplit2 with OsiClpSolverInterface\n" );
+    CglRedSplit2UnitTest(&clpSi, mpsDir);
+  }
+  {
+    OsiClpSolverInterface clpSi;
     testingMessage( "Testing CglTwomir with OsiClpSolverInterface\n" );
     CglTwomirUnitTest(&clpSi, testDir);
   }
@@ -286,6 +298,11 @@ int main (int argc, const char *argv[])
     OsiClpSolverInterface clpSi;
     testingMessage( "Testing CglFlowCover with OsiClpSolverInterface\n" );
     CglFlowCoverUnitTest(&clpSi, testDir);
+  }
+  {
+    OsiClpSolverInterface clpSi;
+    testingMessage( "Testing CglZeroHalf with OsiClpSolverInterface\n" );
+    CglZeroHalfUnitTest(&clpSi, testDir);
   }
 
 #endif
@@ -351,6 +368,11 @@ int main (int argc, const char *argv[])
     testingMessage( "Testing CglFlowCover with OsiDylpSolverInterface\n" );
     CglFlowCoverUnitTest(&dylpSi, testDir);
   }
+  if (0) {
+    OsiDylpSolverInterface dylpSi;
+    testingMessage( "Testing CglZeroHalf with OsiDylpSolverInterface\n" );
+    CglZeroHalfUnitTest(&dylpSi, testDir);
+  }
 
 #endif
 #ifdef COIN_HAS_OSIGLPK
@@ -414,6 +436,11 @@ int main (int argc, const char *argv[])
     OsiGlpkSolverInterface glpkSi;
     testingMessage( "Testing CglFlowCover with OsiGlpkSolverInterface\n" );
     CglFlowCoverUnitTest(&glpkSi, testDir);
+  }
+  {
+    OsiGlpkSolverInterface glpkSi;
+    testingMessage( "Testing CglZeroHalf with OsiGlpkSolverInterface\n" );
+    CglZeroHalfUnitTest(&glpkSi, testDir);
   }
 
 #endif

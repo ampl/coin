@@ -27,7 +27,7 @@ public:
   /** This fixes (or reduces bounds) on sets of all different variables
   */
   virtual void generateCuts( const OsiSolverInterface & si, OsiCuts & cs,
-			     const CglTreeInfo info = CglTreeInfo()) const;
+			     const CglTreeInfo info = CglTreeInfo());
   //@}
 
 

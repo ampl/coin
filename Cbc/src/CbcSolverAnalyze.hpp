@@ -1,4 +1,4 @@
-/* $Id: CbcSolver.hpp 1212 2009-08-21 16:19:13Z forrest $ */
+/* $Id: CbcSolverAnalyze.hpp 1902 2013-04-10 16:58:16Z stefan $ */
 // Copyright (C) 2007, International Business Machines
 // Corporation and others.  All Rights Reserved.
 // This code is licensed under the terms of the Eclipse Public License (EPL).

@@ -1,4 +1,4 @@
-/* $Id: CoinSort.hpp 1448 2011-06-19 15:34:41Z stefan $ */
+/* $Id: CoinSort.hpp 1585 2013-04-06 20:42:02Z stefan $ */
 // Copyright (C) 2000, International Business Machines
 // Corporation and others.  All Rights Reserved.
 // This code is licensed under the terms of the Eclipse Public License (EPL).
@@ -352,6 +352,105 @@ CoinSort_2(S* key, S* lastKey, T* array2)
 }
 #endif
 #endif
+/// Sort without new and delete
+template <class S, class T> void
+CoinShortSort_2(S* key, S* lastKey, T* array2)
+{
+  const size_t number = coinDistance(key, lastKey);
+  if (number <= 2) {
+    if (number == 2 && key[0] > key[1]) {
+      S tempS = key[0];
+      T tempT = array2[0];
+      key[0] = key[1];
+      array2[0] = array2[1];
+      key[1] = tempS;
+      array2[1] = tempT;
+    } 
+    return;
+  } else if (number>10000) {
+    CoinSort_2Std(key, lastKey, array2);
+    return;
+  }
+  int minsize=10;
+  size_t n = number;
+  int sp;
+  S *v = key;
+  S *m, t;
+  S * ls[32] , * rs[32];
+  S *l , *r , c;
+  T it;
+  size_t j;
+  /*check already sorted  */
+  S last=key[0];
+  for (j=1;j<n;j++) {
+    if (key[j]>=last) {
+      last=key[j];
+    } else {
+      break;
+    } /* endif */
+  } /* endfor */
+  if (j==n) {
+    return;
+  } /* endif */
+  sp = 0 ; ls[sp] = v ; rs[sp] = v + (n-1) ;
+  while( sp >= 0 )
+  {
+     if ( rs[sp] - ls[sp] > minsize )
+     {
+        l = ls[sp] ; r = rs[sp] ; m = l + (r-l)/2 ;
+        if ( *l > *m )
+        {
+           t = *l ; *l = *m ; *m = t ;
+           it = array2[l-v] ; array2[l-v] = array2[m-v] ; array2[m-v] = it ;
+        }
+        if ( *m > *r )
+        {
+           t = *m ; *m = *r ; *r = t ;
+           it = array2[m-v] ; array2[m-v] = array2[r-v] ; array2[r-v] = it ;
+           if ( *l > *m )
+           {
+              t = *l ; *l = *m ; *m = t ;
+              it = array2[l-v] ; array2[l-v] = array2[m-v] ; array2[m-v] = it ;
+           }
+        }
+        c = *m ;
+        while ( r - l > 1 )
+        {
+           while ( *(++l) < c ) ;
+           while ( *(--r) > c ) ;
+           t = *l ; *l = *r ; *r = t ;
+           it = array2[l-v] ; array2[l-v] = array2[r-v] ; array2[r-v] = it ;
+        }
+        l = r - 1 ;
+        if ( l < m )
+        {  ls[sp+1] = ls[sp] ;
+           rs[sp+1] = l      ;
+           ls[sp  ] = r      ;
+        }
+        else
+        {  ls[sp+1] = r      ;
+           rs[sp+1] = rs[sp] ;
+           rs[sp  ] = l      ;
+        }
+        sp++ ;
+     }
+     else sp-- ;
+  }
+  for ( l = v , m = v + (n-1) ; l < m ; l++ )
+  {  if ( *l > *(l+1) )
+     {
+        c = *(l+1) ;
+        it = array2[(l-v)+1] ;
+        for ( r = l ; r >= v && *r > c ; r-- )
+        {
+            *(r+1) = *r ;
+            array2[(r-v)+1] = array2[(r-v)] ;
+        }
+        *(r+1) = c ;
+        array2[(r-v)+1] = it ;
+     }
+  }
+}
 //#############################################################################
 //#############################################################################
 

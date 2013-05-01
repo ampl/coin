@@ -1,4 +1,4 @@
-/* $Id: ClpCholeskyDense.hpp 1665 2011-01-04 17:55:54Z lou $ */
+/* $Id: ClpCholeskyDense.hpp 1910 2013-01-27 02:00:13Z stefan $ */
 /*
   Copyright (C) 2003, International Business Machines Corporation
   and others.  All Rights Reserved.

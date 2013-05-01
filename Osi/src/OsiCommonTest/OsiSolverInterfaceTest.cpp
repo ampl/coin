@@ -1388,7 +1388,7 @@ bool test17SebastianNowozin(OsiSolverInterface *si)
 */
 
 void testNames (const OsiSolverInterface *emptySi, std::string fn)
-{ int nameDiscipline ;
+{
   bool recognisesOsiNames = true ;
   bool ok ;
 
@@ -1715,7 +1715,6 @@ void testNames (const OsiSolverInterface *emptySi, std::string fn)
   vectors.
 */
   // std::cout << "Switching to full names." << std::endl ;
-  nameDiscipline = 2 ;
   OSIUNITTEST_ASSERT_WARNING(si->setIntParam(OsiNameDiscipline,2), delete si; return, solverName, "testNames lazy names: change name discipline");
   m = si->getNumRows() ;
   rowNames = si->getRowNames() ;
@@ -3313,6 +3312,8 @@ int testOsiPresolve (const OsiSolverInterface *emptySi,
 
   for (unsigned i = 0 ; i < sampleProbs.size() ; i++)
   { OsiSolverInterface * si = emptySi->clone();
+    if (!si->setIntParam(OsiNameDiscipline,1))
+      std::cout << "  attempt to switch to lazy names failed." ;
 
     std::string mpsName = sampleProbs[i].first ;
     double correctObj = sampleProbs[i].second ;
@@ -3334,7 +3335,7 @@ int testOsiPresolve (const OsiSolverInterface *emptySi,
   Optimise the presolved model and check the objective.  We need to turn off
   any native presolve, which may or may not affect the objective.
 */
-    presolvedModel->setHintParam(OsiDoPresolveInInitial,false) ;
+    presolvedModel->setHintParam(OsiDoPresolveInInitial,false,OsiHintDo) ;
     presolvedModel->initialSolve() ;
     OSIUNITTEST_ASSERT_ERROR(eq(correctObj,presolvedModel->getObjValue()), delete si; ++errs; continue, solverName, "testOsiPresolve");
 /*
@@ -3345,7 +3346,7 @@ int testOsiPresolve (const OsiSolverInterface *emptySi,
 */
     pinfo.postsolve(true) ;
     delete presolvedModel ;
-    si->setHintParam(OsiDoPresolveInResolve,false) ;
+    si->setHintParam(OsiDoPresolveInResolve,false,OsiHintDo) ;
     si->resolve() ;
     OSIUNITTEST_ASSERT_ERROR(eq(correctObj,si->getObjValue()), ++errs, solverName, "testOsiPresolve: postsolve objective value");
     OSIUNITTEST_ASSERT_WARNING(si->getIterationCount() == 0, ++warnings, solverName, "testOsiPresolve: postsolve number of iterations");
@@ -3429,7 +3430,6 @@ void testDualRays (const OsiSolverInterface *emptySi,
   OsiSolverInterface *si = 0 ;
 
   std::vector<double *> rays ;
-  bool catchSomeRays ;
   const int raysRequested = 5 ;
   const std::string mpsNames[] = { "galenet", "galenetbnds" } ;
   const bool rayTypes[] = { true, false } ;
@@ -3452,8 +3452,7 @@ void testDualRays (const OsiSolverInterface *emptySi,
       << "  checking if " << solverName << " implements getDualRays(maxRays"
       << ((fullRay == true)?",true":"") << ") ... " ;
 
-    int nameDiscipline = 1 ;
-    si->setIntParam(OsiNameDiscipline,nameDiscipline) ;
+    si->setIntParam(OsiNameDiscipline,1) ;
 
     OSIUNITTEST_ASSERT_ERROR(si->readMps(fn.c_str(),"mps") == 0, delete si; return, solverName, "testDualRays: read MPS");
 /*
@@ -3470,13 +3469,11 @@ void testDualRays (const OsiSolverInterface *emptySi,
   Try a call to getDualRays. If the call throws, abort this iteration and
   try again.
 */
-    catchSomeRays = false ;
     try
     { rays = si->getDualRays(raysRequested,fullRay) ;
-      catchSomeRays = true ;
       hasGetDualRays = true ;
       std::cout << "yes." << std::endl ; }
-    catch (CoinError err)
+    catch (CoinError& err)
     { std::cout << "no." << std::endl ;
       delete si ;
       si = 0 ;

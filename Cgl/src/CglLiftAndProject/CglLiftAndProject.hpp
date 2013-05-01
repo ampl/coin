@@ -22,7 +22,7 @@ public:
       Insert the generated cuts into OsiCut, cs.
   */
   virtual void generateCuts(const OsiSolverInterface & si, OsiCuts & cs,
-			    const CglTreeInfo info = CglTreeInfo()) const;
+			    const CglTreeInfo info = CglTreeInfo());
 
   /** Get the normalization : Either beta=+1 or beta=-1.
   */

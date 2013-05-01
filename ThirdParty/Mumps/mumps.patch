@@ -1,0 +1,30 @@
+diff -Nu MUMPS.orig/src/dmumps_part2.F MUMPS/src/dmumps_part2.F
+--- MUMPS.orig/src/dmumps_part2.F	2013-04-13 12:38:26.000000000 +0200
++++ MUMPS/src/dmumps_part2.F	2013-04-13 12:39:56.000000000 +0200
+@@ -1146,7 +1146,7 @@
+       IF ( (KEEP(50).EQ.2)
+      & .AND. (KEEP(95) .EQ. 3)
+      & .AND. (IORD .EQ. 7) ) THEN  
+-        IORD = 2 
++        IORD = 6 
+       ENDIF
+       CALL DMUMPS_701( N, KEEP(50), NSLAVES, IORD, 
+      &     symmetry, MedDens, NBQD, AvgDens,
+@@ -3642,7 +3642,7 @@
+              IF (NBQD.GE.MAXQD) THEN
+                IORD = 6         
+              ELSE
+-               IORD = 2         
++               IORD = 6         
+              ENDIF
+           ELSE
+              IF (NBQD.GE.MedDens*NPROCS) THEN
+@@ -3668,7 +3668,7 @@
+             IF (NBQD.GE.MAXQD) THEN
+               IORD = 6  
+             ELSE
+-              IORD = 2   
++              IORD = 6   
+             ENDIF
+           ELSE
+             IF (NBQD.GE.MedDens*NPROCS) THEN

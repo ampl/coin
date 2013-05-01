@@ -2,7 +2,7 @@
 # All Rights Reserved.
 # This file is distributed under the Eclipse Public License.
 
-## $Id: configure.ac 1805 2012-11-21 14:00:38Z stefan $
+## $Id: configure.ac 1917 2013-04-26 17:18:21Z tkr $
 
 # Author:  Andreas Waechter            IBM    2006-04-13
 
@@ -12,7 +12,7 @@
 
 AC_PREREQ(2.59)
 
-AC_INIT([Cbc],[2.7.8],[cbc@lists.coin-or.org])
+AC_INIT([Cbc],[2.8.1],[cbc@lists.coin-or.org])
 
 AC_COPYRIGHT([
 Copyright 2006 International Business Machines and others.

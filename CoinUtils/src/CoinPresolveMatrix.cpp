@@ -1,4 +1,4 @@
-/* $Id: CoinPresolveMatrix.cpp 1448 2011-06-19 15:34:41Z stefan $ */
+/* $Id: CoinPresolveMatrix.cpp 1510 2011-12-08 23:56:01Z lou $ */
 // Copyright (C) 2002, International Business Machines
 // Corporation and others.  All Rights Reserved.
 // This code is licensed under the terms of the Eclipse Public License (EPL).
@@ -282,132 +282,149 @@ void CoinPresolveMatrix::setMatrix (const CoinPackedMatrix *mtx)
   numberNextColsToDo_ = 0 ;
   initializeStuff();
   return ; }
-/* Recompute ups and downs for a row (nonzero if infeasible).
-   If iRow -1 then recompute all */
-int
-CoinPresolveMatrix::recomputeSums(int iRow)
-{
-  double * columnLower	= clo_;
-  double * columnUpper	= cup_;
 
-  const double *element	= rowels_;
-  const int *column	= hcol_;
-  const CoinBigIndex *rowStart	= mrstrt_;
-  const int *rowLength	= hinrow_;
-  int numberRows	= nrows_;
-  int numberColumns	= ncols_;
-  //const int *hrow	= hrow_;
-  //const CoinBigIndex *mcstrt	= mcstrt_;
-  //const int *hincol	= hincol_;
-  double *rowLower	= rlo_;
-  double *rowUpper	= rup_;
-  double large = 1.0e20; // treat bounds > this as infinite
-  int iFirst = (iRow>=0) ? iRow : 0;
-  int iLast = (iRow>=0) ? iRow : numberRows;
-  int infeasible=0;
-  double tolerance = feasibilityTolerance_;
-  for (iRow=iFirst;iRow<iLast;iRow++) {
-    infiniteUp_[iRow]=0;
-    sumUp_[iRow]=0.0;
-    infiniteDown_[iRow]=0;
-    sumDown_[iRow]=0.0;
-    if ((rowLower[iRow]>-large||rowUpper[iRow]<large)&&rowLength[iRow]>0) {
-      int infiniteUpper = 0;
-      int infiniteLower = 0;
-      double maximumUp = 0.0;
-      double maximumDown = 0.0;
-      CoinBigIndex rStart = rowStart[iRow];
-      CoinBigIndex rEnd = rowStart[iRow]+rowLength[iRow];
-      CoinBigIndex j;
-      // Compute possible lower and upper ranges
-      
-      for (j = rStart; j < rEnd; ++j) {
-	double value=element[j];
-	int iColumn = column[j];
+/*
+  Recompute ups and downs for a row (nonzero if infeasible).
+
+  If oneRow == -1 then do all rows.
+*/
+int CoinPresolveMatrix::recomputeSums (int oneRow)
+{
+  const int &numberRows = nrows_ ;
+  const int &numberColumns = ncols_ ;
+  
+  const double *const columnLower = clo_ ;
+  const double *const columnUpper = cup_ ;
+
+  double *const rowLower = rlo_ ;
+  double *const rowUpper = rup_ ;
+
+  const double *element = rowels_ ;
+  const int *column = hcol_ ;
+  const CoinBigIndex *rowStart = mrstrt_ ;
+  const int *rowLength = hinrow_ ;
+
+  const double large = PRESOLVE_SMALL_INF ;
+  const double &tolerance = feasibilityTolerance_ ;
+
+  const int iFirst = ((oneRow >= 0)?oneRow:0) ;
+  const int iLast = ((oneRow >= 0)?oneRow:numberRows) ;
+/*
+  Open a loop to process rows of interest.
+*/
+  int infeasible = 0 ;
+  for (int iRow = iFirst ; iRow < iLast ; iRow++) {
+    infiniteUp_[iRow] = 0 ;
+    sumUp_[iRow] = 0.0 ;
+    infiniteDown_[iRow] = 0 ;
+    sumDown_[iRow] = 0.0 ;
+/*
+  Compute finite and infinite contributions to row lhs upper and lower bounds
+  for nonempty rows with at least one reasonable bound.
+*/
+    if ((rowLower[iRow] > -large || rowUpper[iRow] < large) &&
+        rowLength[iRow] > 0) {
+      int infiniteUpper = 0 ;
+      int infiniteLower = 0 ;
+      double maximumUp = 0.0 ;
+      double maximumDown = 0.0 ; 
+      const CoinBigIndex &rStart = rowStart[iRow] ;
+      const CoinBigIndex rEnd = rStart+rowLength[iRow] ;
+      for (CoinBigIndex j = rStart ; j < rEnd ; ++j) {
+	const double &value = element[j] ;
+	const int &iColumn = column[j] ;
+	const double &lj = columnLower[iColumn] ;
+	const double &uj = columnUpper[iColumn] ;
 	if (value > 0.0) {
-	  if (columnUpper[iColumn] < large) 
-	    maximumUp += columnUpper[iColumn] * value;
+	  if (uj < large) 
+	    maximumUp += uj*value ;
 	  else
-	    ++infiniteUpper;
-	  if (columnLower[iColumn] > -large) 
-	    maximumDown += columnLower[iColumn] * value;
+	    ++infiniteUpper ;
+	  if (lj > -large) 
+	    maximumDown += lj*value ;
 	  else
-	    ++infiniteLower;
-	} else if (value<0.0) {
-	  if (columnUpper[iColumn] < large) 
-	    maximumDown += columnUpper[iColumn] * value;
+	    ++infiniteLower ;
+	} else if (value < 0.0) {
+	  if (uj < large) 
+	    maximumDown += uj*value ;
 	  else
-	    ++infiniteLower;
-	  if (columnLower[iColumn] > -large) 
-	    maximumUp += columnLower[iColumn] * value;
+	    ++infiniteLower ;
+	  if (lj > -large) 
+	    maximumUp += lj*value ;
 	  else
-	    ++infiniteUpper;
+	    ++infiniteUpper ;
 	}
       }
-#if 0
-      // Build in a margin of error (NO)
-      maximumUp += 1.0e-8*fabs(maximumUp);
-      maximumDown -= 1.0e-8*fabs(maximumDown);
-#endif
-      infiniteUp_[iRow]=infiniteUpper;
-      sumUp_[iRow]=maximumUp;
-      infiniteDown_[iRow]=infiniteLower;
-      sumDown_[iRow]=maximumDown;
-      double maxUp = maximumUp+infiniteUpper*1.0e31;
-      double maxDown = maximumDown-infiniteLower*1.0e31;
-      if (maxUp <= rowUpper[iRow] + tolerance && 
-	  maxDown >= rowLower[iRow] - tolerance) {
-	// redundant
-	infiniteUp_[iRow]=numberColumns+1;
-	infiniteDown_[iRow]=numberColumns+1;
-      } else if (maxUp <rowLower[iRow]-tolerance) {
-	// infeasible
-	infeasible++;
-      } else if (maxDown >rowUpper[iRow]+tolerance) {
-	// infeasible
-	infeasible++;
+      infiniteUp_[iRow] = infiniteUpper ;
+      sumUp_[iRow] = maximumUp ;
+      infiniteDown_[iRow] = infiniteLower ;
+      sumDown_[iRow] = maximumDown ;
+      double maxUp = maximumUp+infiniteUpper*large ;
+      double maxDown = maximumDown-infiniteLower*large ;
+/*
+  Check for redundant or infeasible row.
+*/
+      if (maxUp <= rowUpper[iRow]+tolerance && 
+	  maxDown >= rowLower[iRow]-tolerance) {
+	infiniteUp_[iRow] = numberColumns+1 ;
+	infiniteDown_[iRow] = numberColumns+1 ;
+      } else if (maxUp < rowLower[iRow]-tolerance) {
+	infeasible++ ;
+      } else if (maxDown > rowUpper[iRow]+tolerance) {
+	infeasible++ ;
       }
+    } else if (rowLength[iRow] > 0) {
+/*
+  A row where both rhs bounds are very large. Mark as redundant.
+*/
+      assert(rowLower[iRow] <= -large && rowUpper[iRow] >= large) ;
+      infiniteUp_[iRow] = numberColumns+1 ;
+      infiniteDown_[iRow] = numberColumns+1 ;
     } else {
-      // odd probably redundant
-      infiniteUp_[iRow]=numberColumns+1;
-      infiniteDown_[iRow]=numberColumns+1;
-      if (rowLower[iRow]>0.0||rowUpper[iRow]<0.0) {
-	double tolerance2=10.0*tolerance;
-	if (rowLower[iRow]>0.0&&rowLower[iRow]<tolerance2)
-	  rowLower[iRow]=0.0;
+/*
+  Row with length zero. Check the the rhs bounds include zero and force
+  `near-to-zero' to exactly zero.
+*/
+      assert(rowLength[iRow] == 0) ;
+      if (rowLower[iRow] > 0.0 || rowUpper[iRow] < 0.0) {
+	double tolerance2 = 10.0*tolerance ;
+	if (rowLower[iRow] > 0.0 && rowLower[iRow] < tolerance2)
+	  rowLower[iRow] = 0.0 ;
 	else
-	  infeasible++;
-	if (rowUpper[iRow]<0.0&&rowUpper[iRow]>-tolerance2)
-	  rowUpper[iRow]=0.0;
+	  infeasible++ ;
+	if (rowUpper[iRow] < 0.0 && rowUpper[iRow] > -tolerance2)
+	  rowUpper[iRow] = 0.0 ;
 	else
-	  infeasible++;
+	  infeasible++ ;
       }
     }
   }
-  return infeasible;
+  return (infeasible) ;
 }
-// Initialize random numbers etc (nonzero if infeasible)
-int
-CoinPresolveMatrix::initializeStuff()
+/*
+  Preallocate scratch work arrays, arrays to hold row lhs bound information,
+  and an array of random numbers.
+*/
+void CoinPresolveMatrix::initializeStuff ()
 {
-  // Allocate useful arrays
-  usefulRowInt_ = new int [3*nrows_];
-  usefulRowDouble_ = new double [nrows_];
-  usefulColumnInt_ = new int [2*ncols_];
-  usefulColumnDouble_ = new double[ncols_];
-  int k=CoinMax(ncols_+1,nrows_+1);
-  randomNumber_ = new double [k];
-  coin_init_random_vec(randomNumber_,k);
-  infiniteUp_ = new int [nrows_];
-  sumUp_ = new double [nrows_];
-  infiniteDown_ = new int [nrows_];
-  sumDown_ = new double [nrows_];
-  // return recomputeSums(-1);
-  return 0;
+  usefulRowInt_ = new int [3*nrows_] ;
+  usefulRowDouble_ = new double [2*nrows_] ;
+  usefulColumnInt_ = new int [2*ncols_] ;
+  usefulColumnDouble_ = new double[ncols_] ;
+  int k = CoinMax(ncols_+1,nrows_+1) ;
+  randomNumber_ = new double [k] ;
+  coin_init_random_vec(randomNumber_,k) ;
+  infiniteUp_ = new int [nrows_] ;
+  sumUp_ = new double [nrows_] ;
+  infiniteDown_ = new int [nrows_] ;
+  sumDown_ = new double [nrows_] ;
+  return ;
 }
-// Delete useful arrays 
-void 
-CoinPresolveMatrix::deleteStuff()
+
+/*
+  Free arrays allocated in initializeStuff.
+*/
+void CoinPresolveMatrix::deleteStuff()
 {
   delete[] usefulRowInt_;
   delete[] usefulRowDouble_;

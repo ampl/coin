@@ -1,4 +1,4 @@
-/* $Id: unitTest.cpp 1675 2011-06-19 17:23:14Z stefan $ */
+/* $Id: unitTest.cpp 1668 2011-06-13 16:32:06Z stefan $ */
 // Copyright (C) 2002, International Business Machines
 // Corporation and others.  All Rights Reserved.
 // This code is licensed under the terms of the Eclipse Public License (EPL).

@@ -1,7 +1,7 @@
 // Copyright (C) 2000, International Business Machines
 // Corporation and others.  All Rights Reserved.
 // This code is licensed under the terms of the Eclipse Public License (EPL).
-// $Id$
+// $Id: osiUnitTest.cpp 1854 2013-01-28 00:02:55Z stefan $
 
 #include "CoinPragma.hpp"
 

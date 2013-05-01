@@ -1,22 +1,18 @@
-// $Id$
+// $Id: driver4.cpp 1902 2013-04-10 16:58:16Z stefan $
 // Copyright (C) 2007, International Business Machines
 // Corporation and others.  All Rights Reserved.
 // This code is licensed under the terms of the Eclipse Public License (EPL).
-
-#if defined(_MSC_VER)
-// Turn off compiler warning about long names
-#  pragma warning(disable:4786)
-#endif
 
 #include <cassert>
 #include <iomanip> 
 
 
+#include "CoinPragma.hpp"
 #include "CbcModel.hpp"
 #include "OsiClpSolverInterface.hpp"
 #include "CbcSolver.hpp"
 
-#include  "CoinTime.hpp"
+#include "CoinTime.hpp"
 
 //#############################################################################
 
@@ -220,7 +216,11 @@ int main (int argc, const char *argv[])
 #endif
   if (argc>=2) mpsFileName = argv[1];
   int numMpsReadErrors = solver1.readMps(mpsFileName.c_str(),"");
-  assert(numMpsReadErrors==0);
+  if( numMpsReadErrors != 0 )
+  {
+     printf("%d errors reading MPS file\n", numMpsReadErrors);
+     return numMpsReadErrors;
+  }
   // Tell solver to return fast if presolve or initial solve infeasible
   solver1.getModelPtr()->setMoreSpecialOptions(3);
 

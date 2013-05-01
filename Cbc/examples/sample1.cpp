@@ -1,4 +1,4 @@
-// $Id: sample1.cpp 1675 2011-06-19 17:23:14Z stefan $
+// $Id: sample1.cpp 1902 2013-04-10 16:58:16Z stefan $
 // Copyright (C) 2002, International Business Machines
 // Corporation and others.  All Rights Reserved.
 // This code is licensed under the terms of the Eclipse Public License (EPL).
@@ -42,7 +42,7 @@ static double cpuTime()
 #else
   struct rusage usage;
   getrusage(RUSAGE_SELF,&usage);
-  cpu_temp = usage.ru_utime.tv_sec;
+  cpu_temp = (double)usage.ru_utime.tv_sec;
   cpu_temp += 1.0e-6*((double) usage.ru_utime.tv_usec);
 #endif
   return cpu_temp;
@@ -86,7 +86,16 @@ int main (int argc, const char *argv[])
   // Read in model using argv[1]
   // and assert that it is a clean model
 
-  assert(!simplex.readMps(argv[1],""));
+  if (argc <= 1) {
+     printf("using %s <modelfile>\n", argv[0]);
+     return 1;
+  }
+  int numMpsReadErrors = simplex.readMps(argv[1],"");
+  if( numMpsReadErrors != 0 )
+  {
+     printf("%d errors reading MPS file\n", numMpsReadErrors);
+     return numMpsReadErrors;
+  }
   time2 = cpuTime();
   std::cout<<"Input took "<<time2-time1<<" seconds"<<std::endl;;
   time1 = time2;

@@ -117,8 +117,6 @@ COIN_CXX_IS_CL_FALSE = @COIN_CXX_IS_CL_FALSE@
 COIN_CXX_IS_CL_TRUE = @COIN_CXX_IS_CL_TRUE@
 COIN_HAS_COINUTILS_FALSE = @COIN_HAS_COINUTILS_FALSE@
 COIN_HAS_COINUTILS_TRUE = @COIN_HAS_COINUTILS_TRUE@
-COIN_HAS_NETLIB_FALSE = @COIN_HAS_NETLIB_FALSE@
-COIN_HAS_NETLIB_TRUE = @COIN_HAS_NETLIB_TRUE@
 COIN_HAS_OSICLP_FALSE = @COIN_HAS_OSICLP_FALSE@
 COIN_HAS_OSICLP_TRUE = @COIN_HAS_OSICLP_TRUE@
 COIN_HAS_OSICPX_FALSE = @COIN_HAS_OSICPX_FALSE@
@@ -182,13 +180,6 @@ MAINTAINER_MODE_TRUE = @MAINTAINER_MODE_TRUE@
 MAKEINFO = @MAKEINFO@
 MPICC = @MPICC@
 MPICXX = @MPICXX@
-NETLIB_CFLAGS = @NETLIB_CFLAGS@
-NETLIB_CFLAGS_INSTALLED = @NETLIB_CFLAGS_INSTALLED@
-NETLIB_DATA = @NETLIB_DATA@
-NETLIB_DATA_INSTALLED = @NETLIB_DATA_INSTALLED@
-NETLIB_DEPENDENCIES = @NETLIB_DEPENDENCIES@
-NETLIB_LIBS = @NETLIB_LIBS@
-NETLIB_LIBS_INSTALLED = @NETLIB_LIBS_INSTALLED@
 OBJEXT = @OBJEXT@
 OPT_CFLAGS = @OPT_CFLAGS@
 OPT_CXXFLAGS = @OPT_CXXFLAGS@
@@ -362,15 +353,16 @@ AM_CPPFLAGS = -I`$(CYGPATH_W) $(srcdir)/../src` -I`$(CYGPATH_W) \
 	$(srcdir)/../src/CglMixedIntegerRounding2` -I`$(CYGPATH_W) \
 	$(srcdir)/../src/CglResidualCapacity` -I`$(CYGPATH_W) \
 	$(srcdir)/../src/CglRedSplit` -I`$(CYGPATH_W) \
+	$(srcdir)/../src/CglRedSplit2` -I`$(CYGPATH_W) \
 	$(srcdir)/../src/CglTwomir` -I`$(CYGPATH_W) \
 	$(srcdir)/../src/CglClique` -I`$(CYGPATH_W) \
-	$(srcdir)/../src/CglSimpleRounding` $(CGLLIB_CFLAGS) \
-	$(am__append_1) $(OSICLP_CFLAGS) $(OSICPX_CFLAGS) \
-	$(OSIDYLP_CFLAGS) $(OSIGLPK_CFLAGS) $(OSIMSK_CFLAGS) \
-	$(OSIVOL_CFLAGS) $(OSIXPR_CFLAGS)
+	$(srcdir)/../src/CglSimpleRounding` -I`$(CYGPATH_W) \
+	$(srcdir)/../src/CglZeroHalf` $(CGLLIB_CFLAGS) $(am__append_1) \
+	$(OSICLP_CFLAGS) $(OSICPX_CFLAGS) $(OSIDYLP_CFLAGS) \
+	$(OSIGLPK_CFLAGS) $(OSIMSK_CFLAGS) $(OSIVOL_CFLAGS) \
+	$(OSIXPR_CFLAGS)
 
-# This line is necessary to allow VPATH compilation with MS compilers
-# on Cygwin
+# This line is necessary to allow VPATH compilation
 DEFAULT_INCLUDES = -I. -I`$(CYGPATH_W) $(srcdir)` -I$(top_builddir)/src
 
 ########################################################################

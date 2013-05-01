@@ -1,4 +1,4 @@
-// $Id: CglCliqueHelper.cpp 933 2011-01-04 23:16:49Z lou $
+// $Id: CglCliqueHelper.cpp 1123 2013-04-06 20:47:24Z stefan $
 // Copyright (C) 2000, International Business Machines
 // Corporation and others.  All Rights Reserved.
 // This code is licensed under the terms of the Eclipse Public License (EPL).
@@ -17,7 +17,7 @@
   fractional level.
  *===========================================================================*/
 void
-CglClique::selectFractionalBinaries(const OsiSolverInterface& si) const
+CglClique::selectFractionalBinaries(const OsiSolverInterface& si)
 {
    // extract the primal tolerance from the solver
    double lclPetol = 0.0;
@@ -58,7 +58,7 @@ CglClique::selectFractionalBinaries(const OsiSolverInterface& si) const
  *===========================================================================*/
 
 void
-CglClique::selectFractionals(const OsiSolverInterface& si) const
+CglClique::selectFractionals(const OsiSolverInterface& si)
 {
    // extract the primal tolerance from the solver
    double lclPetol = 0.0;
@@ -87,7 +87,7 @@ CglClique::selectFractionals(const OsiSolverInterface& si) const
  *===========================================================================*/
 
 void
-CglClique::selectRowCliques(const OsiSolverInterface& si,int numOriginalRows) const
+CglClique::selectRowCliques(const OsiSolverInterface& si,int numOriginalRows)
 {
    const int numrows = si.getNumRows();
    std::vector<int> clique(numrows, 1);
@@ -145,7 +145,7 @@ CglClique::selectRowCliques(const OsiSolverInterface& si,int numOriginalRows) co
   Create the set packing submatrix
  *===========================================================================*/
 void
-CglClique::createSetPackingSubMatrix(const OsiSolverInterface& si) const
+CglClique::createSetPackingSubMatrix(const OsiSolverInterface& si)
 {
    sp_col_start = new int[sp_numcols+1];
    sp_row_start = new int[sp_numrows+1];
@@ -252,7 +252,7 @@ CoinIsOrthogonal(const int* first0, const int* last0,
  *===========================================================================*/
 
 void
-CglClique::createFractionalGraph() const
+CglClique::createFractionalGraph()
 {
    // fgraph.edgenum is filled when createNodeNode is invoked
    fgraph.nodenum = sp_numcols;
@@ -318,7 +318,7 @@ CglClique::createFractionalGraph() const
  * Construct the node-node incidence matrix from the fractional graph.
  *===========================================================================*/
 int
-CglClique::createNodeNode() const
+CglClique::createNodeNode()
 {
    node_node = new bool[sp_numcols * sp_numcols];
    std::fill(node_node, node_node + sp_numcols * sp_numcols, false);
@@ -346,7 +346,7 @@ CglClique::createNodeNode() const
  * Cleanup routines
  *===========================================================================*/
 void
-CglClique::deleteSetPackingSubMatrix() const
+CglClique::deleteSetPackingSubMatrix()
 {
    delete[] sp_orig_row_ind; sp_orig_row_ind = 0; 
    delete[] sp_orig_col_ind; sp_orig_col_ind = 0; 
@@ -358,7 +358,7 @@ CglClique::deleteSetPackingSubMatrix() const
 }
 
 void
-CglClique::deleteFractionalGraph() const
+CglClique::deleteFractionalGraph()
 {
    fgraph.nodenum = 0;
    fgraph.edgenum = 0;

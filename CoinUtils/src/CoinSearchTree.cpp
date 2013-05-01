@@ -1,4 +1,4 @@
-/* $Id: CoinSearchTree.cpp 1373 2011-01-03 23:57:44Z lou $ */
+/* $Id: CoinSearchTree.cpp 1590 2013-04-10 16:48:33Z stefan $ */
 // Copyright (C) 2006, International Business Machines
 // Corporation and others.  All Rights Reserved.
 // This code is licensed under the terms of the Eclipse Public License (EPL).
@@ -12,6 +12,20 @@ BitVector128::BitVector128()
   bits_[1] = 0;
   bits_[2] = 0;
   bits_[3] = 0;
+}
+
+BitVector128::BitVector128(unsigned int bits[4])
+{
+   set(bits);
+}
+
+void
+BitVector128::set(unsigned int bits[4])
+{
+   bits_[0] = bits[0];
+   bits_[1] = bits[1];
+   bits_[2] = bits[2];
+   bits_[3] = bits[3];
 }
 
 void

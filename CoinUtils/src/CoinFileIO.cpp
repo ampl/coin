@@ -1,4 +1,4 @@
-/* $Id: CoinFileIO.cpp 1448 2011-06-19 15:34:41Z stefan $ */
+/* $Id: CoinFileIO.cpp 1439 2011-06-13 16:31:21Z stefan $ */
 // Copyright (C) 2005, COIN-OR.  All Rights Reserved.
 // This code is licensed under the terms of the Eclipse Public License (EPL).
 

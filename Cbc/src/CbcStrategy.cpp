@@ -1,4 +1,4 @@
-/* $Id: CbcStrategy.cpp 1675 2011-06-19 17:23:14Z stefan $ */
+/* $Id: CbcStrategy.cpp 1641 2011-04-17 15:08:40Z forrest $ */
 // Copyright (C) 2005, International Business Machines
 // Corporation and others.  All Rights Reserved.
 // This code is licensed under the terms of the Eclipse Public License (EPL).

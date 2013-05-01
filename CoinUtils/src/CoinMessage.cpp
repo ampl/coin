@@ -1,4 +1,4 @@
-/* $Id: CoinMessage.cpp 1448 2011-06-19 15:34:41Z stefan $ */
+/* $Id: CoinMessage.cpp 1540 2012-06-28 10:31:24Z forrest $ */
 // Copyright (C) 2002, International Business Machines
 // Corporation and others.  All Rights Reserved.
 // This code is licensed under the terms of the Eclipse Public License (EPL).
@@ -36,8 +36,8 @@ static Coin_message us_english[]=
   {COIN_MPS_RETURNING,6005,0,"Returning as too many errors"},
   {COIN_MPS_CHANGED,3007,1,"Generated %s names had duplicates - %d changed"},
   {COIN_SOLVER_MPS,8,1,"%s read with %d errors"},
-  {COIN_PRESOLVE_COLINFEAS,501,2,"Problem is infeasible due to column %d, %g %g"},
-  {COIN_PRESOLVE_ROWINFEAS,502,2,"Problem is infeasible due to row %d, %g %g"},
+  {COIN_PRESOLVE_COLINFEAS,501,2,"Problem is infeasible due to column %d, %.16g %.16g"},
+  {COIN_PRESOLVE_ROWINFEAS,502,2,"Problem is infeasible due to row %d, %.16g %.16g"},
   {COIN_PRESOLVE_COLUMNBOUNDA,503,2,"Problem looks unbounded above due to column %d, %g %g"},
   {COIN_PRESOLVE_COLUMNBOUNDB,504,2,"Problem looks unbounded below due to column %d, %g %g"},
   {COIN_PRESOLVE_NONOPTIMAL,505,1,"Presolved problem not optimal, resolve after postsolve"},

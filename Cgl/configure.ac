@@ -2,7 +2,7 @@
 # All Rights Reserved.
 # This file is distributed under the Eclipse Public License.
 
-## $Id: configure.ac 1077 2012-11-21 13:35:21Z stefan $
+## $Id: configure.ac 1128 2013-04-10 18:04:44Z stefan $
 
 # Author:  Andreas Waechter            IBM    2006-04-13
 
@@ -12,7 +12,7 @@
 
 AC_PREREQ(2.59)
 
-AC_INIT([Cgl],[0.57.4],[cgl@list.coin-or.org])
+AC_INIT([Cgl],[0.58.0],[cgl@list.coin-or.org])
 
 AC_COPYRIGHT([
 Copyright 2006 International Business Machines and others.
@@ -41,7 +41,7 @@ AC_CANONICAL_BUILD
 # the source root directory contains definition of where to find those
 # externals.  The following macro ensures that those externals are
 # retrieved by svn if they are not there yet.
-AC_COIN_PROJECTDIR_INIT(Cgl,8:4:7)
+AC_COIN_PROJECTDIR_INIT(Cgl,9:0:8)
 
 # Check if user wants to produce debugging code
 AC_COIN_DEBUG_COMPILE(Cgl)
@@ -67,7 +67,6 @@ if test $coin_has_osi != yes ; then
 fi
 
 AC_COIN_CHECK_PACKAGE(Sample, [coindatasample])
-AC_COIN_CHECK_PACKAGE(Netlib, [coindatanetlib])
 
 # Clp can be used by CglLandP
 AC_COIN_CHECK_PACKAGE(OsiClp, [osi-clp], [CglLib])
@@ -131,33 +130,36 @@ AC_COIN_DOXYGEN(CoinUtils)
 ##############################################################################
 
 # Install files for unitTest
-AC_COIN_VPATH_LINK([test/CglTestData/capPlan1.mps test/CglTestData/l152lav.mps test/CglTestData/egout.mps])
+AC_COIN_VPATH_LINK([test/CglTestData/capPlan1.mps test/CglTestData/l152lav.mps test/CglTestData/egout.mps test/CglTestData/lseu.mps])
 
 # Here list all the files that configure should create (except for the
 # configuration header file)
 AC_CONFIG_FILES([Makefile
                  examples/Makefile
                  src/Makefile
-		 src/CglAllDifferent/Makefile
-		 src/CglClique/Makefile
-		 src/CglDuplicateRow/Makefile
-		 src/CglFlowCover/Makefile
-		 src/CglGomory/Makefile
-		 src/CglKnapsackCover/Makefile
-		 src/CglLandP/Makefile
-		 src/CglLiftAndProject/Makefile
-		 src/CglMixedIntegerRounding/Makefile
-		 src/CglMixedIntegerRounding2/Makefile
-		 src/CglOddHole/Makefile
-		 src/CglPreProcess/Makefile
-		 src/CglProbing/Makefile
-		 src/CglRedSplit/Makefile
-		 src/CglResidualCapacity/Makefile
-		 src/CglSimpleRounding/Makefile
-		 src/CglTwomir/Makefile
+                 src/CglAllDifferent/Makefile
+                 src/CglClique/Makefile
+                 src/CglDuplicateRow/Makefile
+                 src/CglFlowCover/Makefile
+                 src/CglGMI/Makefile
+                 src/CglGomory/Makefile
+                 src/CglKnapsackCover/Makefile
+                 src/CglLandP/Makefile
+                 src/CglLiftAndProject/Makefile
+                 src/CglMixedIntegerRounding/Makefile
+                 src/CglMixedIntegerRounding2/Makefile
+                 src/CglOddHole/Makefile
+                 src/CglPreProcess/Makefile
+                 src/CglProbing/Makefile
+                 src/CglRedSplit/Makefile
+                 src/CglRedSplit2/Makefile
+                 src/CglResidualCapacity/Makefile
+                 src/CglSimpleRounding/Makefile
+                 src/CglTwomir/Makefile
+                 src/CglZeroHalf/Makefile
                  test/Makefile
-		 cgl.pc
-		 cgl-uninstalled.pc])
+                 cgl.pc
+                 cgl-uninstalled.pc])
 AC_CONFIG_FILES([doxydoc/doxygen.conf])
 
 # Here put the location and name of the configuration header file

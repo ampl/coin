@@ -1,4 +1,4 @@
-// $Id: CglMessage.hpp 948 2011-01-04 23:28:13Z lou $
+// $Id: CglMessage.hpp 1113 2013-04-06 13:28:20Z stefan $
 // Copyright (C) 2005, International Business Machines
 // Corporation and others.  All Rights Reserved.
 // This code is licensed under the terms of the Eclipse Public License (EPL).
@@ -29,6 +29,7 @@ enum CGL_Message
   CGL_ADDED_INTEGERS,
   CGL_POST_INFEASIBLE,
   CGL_POST_CHANGED,
+  CGL_GENERAL,
   CGL_DUMMY_END
 };
 

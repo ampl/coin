@@ -1,4 +1,4 @@
-/* $Id: CbcHeuristicFPump.cpp 1573 2011-01-05 01:12:36Z lou $ */
+/* $Id: CbcHeuristicFPump.cpp 1883 2013-04-06 13:33:15Z stefan $ */
 // Copyright (C) 2004, International Business Machines
 // Corporation and others.  All Rights Reserved.
 // This code is licensed under the terms of the Eclipse Public License (EPL).
@@ -377,6 +377,8 @@ CbcHeuristicFPump::solution(double & solutionValue,
     numberIntegers = j;
     double * newSolution = new double [numberColumns];
     double newSolutionValue = COIN_DBL_MAX;
+    int maxSolutions = model_->getMaximumSolutions();
+    int numberSolutions=0;
     bool solutionFound = false;
     int * usedColumn = NULL;
     double * lastSolution = NULL;
@@ -446,7 +448,6 @@ CbcHeuristicFPump::solution(double & solutionValue,
     CoinWarmStartBasis bestBasis;
     bool exitAll = false;
     //double saveBestObjective = model_->getMinimizationObjValue();
-    int numberSolutions = 0;
     OsiSolverInterface * solver = NULL;
     double artificialFactor = 0.00001;
     // also try rounding!
@@ -486,11 +487,19 @@ CbcHeuristicFPump::solution(double & solutionValue,
     // Number of passes to do
     int maximumPasses = maximumPasses_;
 #ifdef COIN_HAS_CLP
-    if (maximumPasses == 30) {
-        OsiClpSolverInterface * clpSolver
+    {
+      OsiClpSolverInterface * clpSolver
         = dynamic_cast<OsiClpSolverInterface *> (model_->solver());
-        if (clpSolver && clpSolver->fakeObjective())
+      if (clpSolver ) {
+	if (maximumPasses == 30) {
+	  if (clpSolver->fakeObjective())
             maximumPasses = 100; // feasibility problem?
+	}
+	randomNumberGenerator_.randomize();
+	if (model_->getRandomSeed()!=-1)
+	  clpSolver->getModelPtr()->setRandomSeed(randomNumberGenerator_.getSeed());
+	clpSolver->getModelPtr()->randomNumberGenerator()->randomize();
+      }
     }
 #endif
 #ifdef RAND_RAND
@@ -847,10 +856,12 @@ CbcHeuristicFPump::solution(double & solutionValue,
                         }
                         if ((accumulate_&1) != 0) {
                             model_->incrementUsed(betterSolution); // for local search
-                            numberSolutions++;
                         }
                         solutionValue = newSolutionValue;
                         solutionFound = true;
+			numberSolutions++;
+			if (numberSolutions>=maxSolutions)
+			  exitAll = true;
                         if (general && saveValue != newSolutionValue) {
                             sprintf(pumpPrint, "Cleaned solution of %g", solutionValue);
                             model_->messageHandler()->message(CBC_FPUMP1, model_->messages())
@@ -1013,6 +1024,20 @@ CbcHeuristicFPump::solution(double & solutionValue,
                     solver->setObjCoeff(iColumn, newValue);
                     offset += costValue * newSolution[iColumn];
                 }
+		if (numberPasses==1 && !totalNumberPasses && (model_->specialOptions()&8388608)!=0) {
+		  // doing multiple solvers - make a real difference - flip 5%
+		  for (i = 0; i < numberIntegers; i++) {
+		    int iColumn = integerVariable[i];
+		    double value = floor(newSolution[iColumn]+0.5);
+		    if (fabs(value-solution[iColumn])>primalTolerance) {
+		      value = randomNumberGenerator_.randomDouble();
+		      if(value<0.05) {
+			//printf("Flipping %d - random %g\n",iColumn,value);
+			solver->setObjCoeff(iColumn,-solver->getObjCoefficients()[iColumn]);
+		      }
+		    }
+		  }
+		}
                 solver->setDblParam(OsiObjOffset, -offset);
                 if (!general && false) {
                     // Solve in two goes - first keep satisfied ones fixed
@@ -1067,6 +1092,9 @@ CbcHeuristicFPump::solution(double & solutionValue,
                             CoinWarmStartBasis * basis =
                                 dynamic_cast<CoinWarmStartBasis *>(solver->getWarmStart()) ;
                             solutionFound = true;
+			    numberSolutions++;
+			    if (numberSolutions>=maxSolutions)
+			      exitAll = true;
                             if (exitNow(newSolutionValue))
                                 exitAll = true;
                             if (basis) {
@@ -1088,10 +1116,12 @@ CbcHeuristicFPump::solution(double & solutionValue,
                             }
                             if ((accumulate_&1) != 0) {
                                 model_->incrementUsed(betterSolution); // for local search
-                                numberSolutions++;
                             }
                             solutionValue = newSolutionValue;
                             solutionFound = true;
+			    numberSolutions++;
+			    if (numberSolutions>=maxSolutions)
+			      exitAll = true;
                             if (exitNow(newSolutionValue))
                                 exitAll = true;
                         } else {
@@ -1639,6 +1669,9 @@ CbcHeuristicFPump::solution(double & solutionValue,
             newSolutionValue = solutionValue;
             memcpy(betterSolution, roundingSolution, numberColumns*sizeof(double));
             solutionFound = true;
+	    numberSolutions++;
+	    if (numberSolutions>=maxSolutions)
+	      exitAll = true;
             if (exitNow(roundingObjective))
                 exitAll = true;
         }
@@ -1657,6 +1690,14 @@ CbcHeuristicFPump::solution(double & solutionValue,
         delete [] saveObjective;
         if (usedColumn && !exitAll) {
             OsiSolverInterface * newSolver = cloneBut(3); // was model_->continuousSolver()->clone();
+#if 0 //def COIN_HAS_CLP
+	    OsiClpSolverInterface * clpSolver
+	      = dynamic_cast<OsiClpSolverInterface *> (newSolver);
+	    if (clpSolver) {
+	      ClpSimplex * simplex = clpSolver->getModelPtr();
+	      simplex->writeMps("start.mps",2,1);
+	    }
+#endif
             const double * colLower = newSolver->getColLower();
             const double * colUpper = newSolver->getColUpper();
             bool stopBAB = false;
@@ -1744,6 +1785,16 @@ CbcHeuristicFPump::solution(double & solutionValue,
                     // Give branch and bound a bit more freedom
                     double cutoff2 = newSolutionValue +
                                      CoinMax(model_->getCutoffIncrement(), 1.0e-3);
+#if 0
+		      {
+                        OsiClpSolverInterface * clpSolver
+                        = dynamic_cast<OsiClpSolverInterface *> (newSolver);
+                        if (clpSolver) {
+                            ClpSimplex * simplex = clpSolver->getModelPtr();
+                            simplex->writeMps("testA.mps",2,1);
+			}
+		      }
+#endif
                     int returnCode2 = smallBranchAndBound(newSolver, numberNodes_, newSolution, newSolutionValue,
                                                           cutoff2, "CbcHeuristicLocalAfterFPump");
                     fractionSmall_ = saveFraction;
@@ -1773,8 +1824,11 @@ CbcHeuristicFPump::solution(double & solutionValue,
                         // could add cut
                         returnCode2 &= ~2;
                     }
-                    if (returnCode2)
+                    if (returnCode2) {
                         numberBandBsolutions++;
+			// may not have got solution earlier
+			returnCode |= 1;
+		    }
                 } else {
                     // no need
                     exitAll = true;
@@ -1782,6 +1836,16 @@ CbcHeuristicFPump::solution(double & solutionValue,
                 }
                 // recompute solution value
                 if (returnCode && true) {
+#if 0
+		      {
+                        OsiClpSolverInterface * clpSolver
+                        = dynamic_cast<OsiClpSolverInterface *> (newSolver);
+                        if (clpSolver) {
+                            ClpSimplex * simplex = clpSolver->getModelPtr();
+                            simplex->writeMps("testB.mps",2,1);
+			}
+		      }
+#endif
                     delete newSolver;
                     newSolver = cloneBut(3); // was model_->continuousSolver()->clone();
                     newSolutionValue = -saveOffset;
@@ -1915,6 +1979,10 @@ CbcHeuristicFPump::solution(double & solutionValue,
                             }
                         } else {
                             //newSolver->writeMps("bad3.mps");
+			  sprintf(pumpPrint, "On closer inspection solution is not valid");
+			  model_->messageHandler()->message(CBC_FPUMP1, model_->messages())
+			    << pumpPrint
+			    << CoinMessageEol;
                             exitAll = true;
                             break;
                         }
@@ -1957,10 +2025,12 @@ CbcHeuristicFPump::solution(double & solutionValue,
                 if (gotSolution) {
                     if ((accumulate_&1) != 0) {
                         model_->incrementUsed(betterSolution); // for local search
-                        numberSolutions++;
                     }
                     solutionValue = newSolutionValue;
                     solutionFound = true;
+		    numberSolutions++;
+		    if (numberSolutions>=maxSolutions)
+		      exitAll = true;
                     if (exitNow(newSolutionValue))
                         exitAll = true;
                     CoinWarmStartBasis * basis =
@@ -2066,6 +2136,9 @@ CbcHeuristicFPump::solution(double & solutionValue,
             //abort();
             solutionValue = newSolutionValue;
             solutionFound = true;
+	    numberSolutions++;
+	    if (numberSolutions>=maxSolutions)
+	      exitAll = true;
             if (exitNow(newSolutionValue))
                 exitAll = true;
         }
@@ -2083,12 +2156,16 @@ CbcHeuristicFPump::solution(double & solutionValue,
     if (solutionValue == incomingObjective)
         sprintf(pumpPrint, "After %.2f seconds - Feasibility pump exiting - took %.2f seconds",
                 model_->getCurrentSeconds(), CoinCpuTime() - time1);
-    else
-        sprintf(pumpPrint, "After %.2f seconds - Feasibility pump exiting with objective of %g - took %.2f seconds",
-                model_->getCurrentSeconds(), solutionValue, CoinCpuTime() - time1);
+    else if (numberSolutions < maxSolutions)
+      sprintf(pumpPrint, "After %.2f seconds - Feasibility pump exiting with objective of %g - took %.2f seconds",
+	      model_->getCurrentSeconds(), solutionValue, CoinCpuTime() - time1);
+    else 
+        sprintf(pumpPrint, "After %.2f seconds - Feasibility pump exiting with objective of %g (stopping after %d solutions) - took %.2f seconds",
+                model_->getCurrentSeconds(), solutionValue, 
+		numberSolutions,CoinCpuTime() - time1);
     model_->messageHandler()->message(CBC_FPUMP1, model_->messages())
-    << pumpPrint
-    << CoinMessageEol;
+      << pumpPrint
+      << CoinMessageEol;
     if (bestBasis.getNumStructural())
         model_->setBestSolutionBasis(bestBasis);
     //model_->setMinimizationObjValue(saveBestObjective);

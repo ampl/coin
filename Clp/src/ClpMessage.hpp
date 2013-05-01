@@ -1,4 +1,4 @@
-/* $Id: ClpMessage.hpp 1753 2011-06-19 16:27:26Z stefan $ */
+/* $Id: ClpMessage.hpp 1928 2013-04-06 12:54:16Z stefan $ */
 // Copyright (C) 2002, International Business Machines
 // Corporation and others.  All Rights Reserved.
 // This code is licensed under the terms of the Eclipse Public License (EPL).
@@ -103,13 +103,14 @@ enum CLP_Message {
      CLP_CRUNCH_STATS,
      CLP_PARAMETRICS_STATS, 
      CLP_PARAMETRICS_STATS2,
-     CLP_GENERAL,
-     CLP_GENERAL2,
 #ifndef NO_FATHOM_PRINT
      CLP_FATHOM_STATUS,
      CLP_FATHOM_SOLUTION,
      CLP_FATHOM_FINISH,
 #endif
+     CLP_GENERAL,
+     CLP_GENERAL2,
+     CLP_GENERAL_WARNING,
      CLP_DUMMY_END
 };
 

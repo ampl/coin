@@ -459,7 +459,7 @@ CoinPackedMatrixUnitTest()
       try {
         globalP->getVectorSize(-1);
       }
-      catch (CoinError e) {
+      catch (CoinError& e) {
 	errorThrown = true;
       }
       assert( errorThrown );
@@ -469,7 +469,7 @@ CoinPackedMatrixUnitTest()
       try {
         globalP->getVectorSize(5);
       }
-      catch (CoinError e) {
+      catch (CoinError& e) {
         errorThrown = true;
       }
       assert( errorThrown );
@@ -518,7 +518,7 @@ CoinPackedMatrixUnitTest()
       try {
         CoinShallowPackedVector v = globalP->getVector(-1);
       }
-      catch (CoinError e) {
+      catch (CoinError& e) {
         errorThrown = true;
       }
       assert( errorThrown );
@@ -528,7 +528,7 @@ CoinPackedMatrixUnitTest()
       try {
         CoinShallowPackedVector vs = globalP->getVector(5);
       }
-      catch (CoinError e) {
+      catch (CoinError& e) {
         errorThrown = true;
       }
       assert( errorThrown );

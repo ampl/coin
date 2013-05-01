@@ -1,4 +1,4 @@
-/* $Id: ClpSimplex.hpp 1870 2012-07-22 16:13:48Z stefan $ */
+/* $Id: ClpSimplex.hpp 1928 2013-04-06 12:54:16Z stefan $ */
 // Copyright (C) 2002, International Business Machines
 // Corporation and others.  All Rights Reserved.
 // This code is licensed under the terms of the Eclipse Public License (EPL).
@@ -16,6 +16,7 @@
 #include "ClpModel.hpp"
 #include "ClpMatrixBase.hpp"
 #include "ClpSolve.hpp"
+#include "ClpConfig.h"
 class ClpDualRowPivot;
 class ClpPrimalColumnPivot;
 class ClpFactorization;
@@ -27,7 +28,12 @@ class OsiClpSolverInterface;
 class CoinWarmStartBasis;
 class ClpDisasterHandler;
 class ClpConstraint;
-
+#ifdef CLP_HAS_ABC
+#include "AbcCommon.hpp"
+class AbcTolerancesEtc;
+class AbcSimplex;
+#include "CoinAbcCommon.hpp"
+#endif
 /** This solves LPs using the simplex method
 
     It inherits from ClpModel and all its arrays are created at
@@ -115,6 +121,20 @@ public:
      /** This copies back stuff from miniModel and then deletes miniModel.
          Only to be used with mini constructor */
      void originalModel(ClpSimplex * miniModel);
+  inline int abcState() const
+  { return abcState_;}
+  inline void setAbcState(int state)
+  { abcState_=state;}
+#ifdef ABC_INHERIT
+  inline AbcSimplex * abcSimplex() const
+  { return abcSimplex_;}
+  inline void setAbcSimplex(AbcSimplex * simplex)
+  { abcSimplex_=simplex;}
+  /// Returns 0 if dual can be skipped
+  int doAbcDual();
+  /// Returns 0 if primal can be skipped
+  int doAbcPrimal(int ifValuesPass);
+#endif
      /** Array persistence flag
          If 0 then as now (delete/new)
          1 then only do arrays if bigger needed
@@ -212,6 +232,12 @@ public:
      */
      int loadNonLinear(void * info, int & numberConstraints,
                        ClpConstraint ** & constraints);
+#ifdef ABC_INHERIT
+  /// Loads tolerances etc
+  void loadTolerancesEtc(const AbcTolerancesEtc & data);
+  /// Unloads tolerances etc
+  void unloadTolerancesEtc(AbcTolerancesEtc & data);
+#endif
      //@}
 
      /**@name Functions most useful to user */
@@ -275,6 +301,13 @@ public:
      int reducedGradient(int phase = 0);
      /// Solve using structure of model and maybe in parallel
      int solve(CoinStructuredModel * model);
+#ifdef ABC_INHERIT
+  /** solvetype 0 for dual, 1 for primal
+      startup 1 for values pass
+      interrupt whether to pass across interrupt handler
+  */
+  void dealWithAbc(int solveType,int startUp,bool interrupt=false);
+#endif
      /** This loads a model from a CoinStructuredModel object - returns number of errors.
          If originalOrder then keep to order stored in blocks,
          otherwise first column/rows correspond to first block - etc.
@@ -339,6 +372,54 @@ public:
      int primalRanging(int numberCheck, const int * which,
                        double * valueIncrease, int * sequenceIncrease,
                        double * valueDecrease, int * sequenceDecrease);
+     /**
+	Modifies coefficients etc and if necessary pivots in and out.
+	All at same status will be done (basis may go singular).
+	User can tell which others have been done (i.e. if status matches).
+	If called from outside will change status and return 0.
+	If called from event handler returns non-zero if user has to take action.
+	indices>=numberColumns are slacks (obviously no coefficients)
+	status array is (char) Status enum
+     */
+     int modifyCoefficientsAndPivot(int number,
+				 const int * which,
+				 const CoinBigIndex * start,
+				 const int * row,
+				 const double * newCoefficient,
+				 const unsigned char * newStatus=NULL,
+				 const double * newLower=NULL,
+				 const double * newUpper=NULL,
+				 const double * newObjective=NULL);
+     /** Take out duplicate rows (includes scaled rows and intersections).
+	 On exit whichRows has rows to delete - return code is number can be deleted 
+	 or -1 if would be infeasible.
+	 If tolerance is -1.0 use primalTolerance for equality rows and infeasibility
+	 If cleanUp not zero then spend more time trying to leave more stable row
+	 and make row bounds exact multiple of cleanUp if close enough
+     */
+     int outDuplicateRows(int numberLook,int * whichRows, bool noOverlaps=false, double tolerance=-1.0,
+			  double cleanUp=0.0);
+     /** Try simple crash like techniques to get closer to primal feasibility
+	 returns final sum of infeasibilities */
+     double moveTowardsPrimalFeasible();
+     /** Try simple crash like techniques to remove super basic slacks
+	 but only if > threshold */
+     void removeSuperBasicSlacks(int threshold=0);
+     /** Mini presolve (faster)
+	 Char arrays must be numberRows and numberColumns long
+	 on entry second part must be filled in as follows -
+	 0 - possible
+	 >0 - take out and do something (depending on value - TBD)
+	 -1 row/column can't vanish but can have entries removed/changed
+	 -2 don't touch at all
+	 on exit <=0 ones will be in presolved problem
+	 struct will be created and will be long enough
+	 (information on length etc in first entry)
+	 user must delete struct
+     */
+     ClpSimplex * miniPresolve(char * rowType, char * columnType,void ** info);
+     /// After mini presolve
+     void miniPostsolve(const ClpSimplex * presolvedModel,void * info);
      /** Write the basis in MPS format to the specified file.
          If writeValues true writes values of structurals
          (and adds VALUES to end of NAME card)
@@ -457,10 +538,13 @@ public:
      /** Pivot out a variable and choose an incoing one.  Assumes dual
          feasible - will not go through a reduced cost.
          Returns step length in theta
-         Returns ray in ray_ (or NULL if no pivot)
          Return codes as before but -1 means no acceptable pivot
      */
-     int dualPivotResult();
+     int dualPivotResultPart1();
+     /** Do actual pivot
+	 state is 0 if need tableau column, 1 if in rowArray_[1]
+     */
+  int pivotResultPart2(int algorithm,int state);
 
      /** Common bits of coding for dual and primal.  Return 0 if okay,
          1 if bad matrix, 2 if very bad factorization
@@ -480,6 +564,8 @@ public:
      bool statusOfProblem(bool initial = false);
      /// If user left factorization frequency then compute
      void defaultFactorizationFrequency();
+     /// Copy across enabled stuff from one solver to another
+     void copyEnabledStuff(const ClpSimplex * rhs);
      //@}
 
      /**@name most useful gets and sets */
@@ -707,7 +793,9 @@ public:
         Also applies scaling if needed
      */
      void unpackPacked(CoinIndexedVector * rowArray, int sequence);
+#ifndef CLP_USER_DRIVEN
 protected:
+#endif
      /**
          This does basis housekeeping and does values for in/out variables.
          Can also decide to re-factorize
@@ -744,6 +832,9 @@ public:
      */
      void setValuesPassAction(double incomingInfeasibility,
                               double allowedInfeasibility);
+     /** Get a clean factorization - i.e. throw out singularities
+	 may do more later */
+     int cleanFactorization(int ifValuesPass);
      //@}
      /**@name most useful gets and sets */
      //@{
@@ -838,6 +929,10 @@ public:
      inline double dualIn() const {
           return dualIn_;
      }
+     /// Set reduced cost of last incoming to force error
+     inline void setDualIn(double value) {
+          dualIn_ = value;
+     }
      /// Pivot Row for use by classes e.g. steepestedge
      inline int pivotRow() const {
           return pivotRow_;
@@ -849,7 +944,9 @@ public:
      double valueIncomingDual() const;
      //@}
 
+#ifndef CLP_USER_DRIVEN
 protected:
+#endif
      /**@name protected methods */
      //@{
      /** May change basis and then returns number changed.
@@ -981,6 +1078,14 @@ public:
      inline void setValueOut(double value) {
           valueOut_ = value;
      }
+     /// Dual value of Out variable
+     inline double dualOut() const {
+          return dualOut_;
+     }
+     /// Set dual value of out variable
+     inline void setDualOut(double value) {
+          dualOut_ = value;
+     }
      /// Set lower of out variable
      inline void setLowerOut(double value) {
           lowerOut_ = value;
@@ -1076,6 +1181,10 @@ public:
 	 2048 bit - perturb in complete fathoming
 	 4096 bit - try more for complete fathoming
 	 8192 bit - don't even think of using primal if user asks for dual (and vv)
+	 16384 bit - in initialSolve so be more flexible
+	 debug
+	 32768 bit - do dual in netlibd
+	 65536 (*3) initial stateDualColumn
      */
      inline int moreSpecialOptions() const {
           return moreSpecialOptions_;
@@ -1095,6 +1204,7 @@ public:
 	 2048 bit - perturb in complete fathoming
 	 4096 bit - try more for complete fathoming
 	 8192 bit - don't even think of using primal if user asks for dual (and vv)
+	 16384 bit - in initialSolve so be more flexible
      */
      inline void setMoreSpecialOptions(int value) {
           moreSpecialOptions_ = value;
@@ -1164,9 +1274,20 @@ public:
      inline int lastBadIteration() const {
           return lastBadIteration_;
      }
+     /// Set so we know when to be cautious
+     inline void setLastBadIteration(int value) {
+          lastBadIteration_=value;
+     }
      /// Progress flag - at present 0 bit says artificials out
      inline int progressFlag() const {
           return (progressFlag_ & 3);
+     }
+     /// For dealing with all issues of cycling etc
+     inline ClpSimplexProgress * progress()
+     { return &progress_;}
+     /// Force re-factorization early value
+     inline int forceFactorization() const {
+          return forceFactorization_ ;
      }
      /// Force re-factorization early
      inline void forceFactorization(int value) {
@@ -1180,6 +1301,9 @@ public:
      void computeObjectiveValue(bool useWorkingSolution = false);
      /// Compute minimization objective value from internal solution without perturbation
      double computeInternalObjectiveValue();
+     /** Infeasibility/unbounded ray (NULL returned if none/wrong)
+         Up to user to use delete [] on these arrays.  */
+     double * infeasibilityRay(bool fullRay=false) const;
      /** Number of extra rows.  These are ones which will be dynamically created
          each iteration.  This is for GUB but may have other uses.
      */
@@ -1521,6 +1645,15 @@ protected:
      ClpSimplex * baseModel_;
      /// For dealing with all issues of cycling etc
      ClpSimplexProgress progress_;
+#ifdef ABC_INHERIT
+  AbcSimplex * abcSimplex_;
+#define CLP_ABC_WANTED 1
+#define CLP_ABC_WANTED_PARALLEL 2
+#define CLP_ABC_FULL_DONE 8
+  // bits 256,512,1024 for crash
+#endif
+#define CLP_ABC_BEEN_FEASIBLE 65536
+  int abcState_;
 public:
      /// Spare int array for passing information [0]!=0 switches on
      mutable int spareIntArray_[4];

@@ -1,4 +1,4 @@
-/* $Id: ClpHelperFunctions.cpp 1753 2011-06-19 16:27:26Z stefan $ */
+/* $Id: ClpHelperFunctions.cpp 1817 2011-11-03 09:26:23Z forrest $ */
 // Copyright (C) 2003, International Business Machines
 // Corporation and others.  All Rights Reserved.
 // This code is licensed under the terms of the Eclipse Public License (EPL).
@@ -114,6 +114,24 @@ getNorms(const double * region, int size, double & norm1, double & norm2)
           norm1 = CoinMax(norm1, fabs(region[i]));
      }
 }
+#ifndef NDEBUG
+#include "ClpModel.hpp"
+#include "ClpMessage.hpp"
+ClpModel * clpTraceModel=NULL; // Set to trap messages
+void ClpTracePrint(std::string fileName, std::string message, int lineNumber)
+{
+  if (!clpTraceModel) {
+    std::cout<<fileName<<":"<<lineNumber<<" : \'"
+	     <<message<<"\' failed."<<std::endl;	
+  } else {
+    char line[1000];
+    sprintf(line,"%s: %d : \'%s\' failed.",fileName.c_str(),lineNumber,message.c_str());
+    clpTraceModel->messageHandler()->message(CLP_GENERAL_WARNING, clpTraceModel->messages())
+      << line
+      << CoinMessageEol;
+  }
+}
+#endif
 #if COIN_LONG_WORK
 // For long double versions
 CoinWorkDouble

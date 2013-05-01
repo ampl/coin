@@ -1,4 +1,4 @@
-/* $Id: ClpHelperFunctions.hpp 1753 2011-06-19 16:27:26Z stefan $ */
+/* $Id: ClpHelperFunctions.hpp 1817 2011-11-03 09:26:23Z forrest $ */
 // Copyright (C) 2003, International Business Machines
 // Corporation and others.  All Rights Reserved.
 // This code is licensed under the terms of the Eclipse Public License (EPL).
@@ -81,7 +81,15 @@ inline double CoinSqrt(double x)
      return sqrt(x);
 }
 #endif
-
+/// Trace
+#   ifdef NDEBUG
+#      define ClpTraceDebug(expression)		{}
+#   else
+void ClpTracePrint(std::string fileName, std::string message, int line);
+#      define ClpTraceDebug(expression) { \
+       if (!(expression)) { ClpTracePrint(__FILE__,__STRING(expression),__LINE__); } \
+  }
+#   endif
 /// Following only included if ClpPdco defined
 #ifdef ClpPdco_H
 

@@ -4,7 +4,7 @@
 //           Carnegie Mellon University, Pittsburgh, PA 15213
 // Date:     21/07/05
 //
-// $Id$
+// $Id: CglLandPSimplex.hpp 1123 2013-04-06 20:47:24Z stefan $
 //
 // This code is licensed under the terms of the Eclipse Public License (EPL).
 //---------------------------------------------------------------------------
@@ -46,7 +46,7 @@ public:
     CglLandPSimplex(const OsiSolverInterface &si,
                     const CglLandP::CachedData &cached,
                     const CglLandP::Parameters &params,
-                    const Validator &validator);
+                    Validator &validator);
     /** Destructor */
     ~CglLandPSimplex();
     /**Update cached information in case of basis change in a round*/
@@ -56,7 +56,7 @@ public:
     /** Perfom pivots to find the best cuts */
     bool optimize(int var, OsiRowCut & cut, const CglLandP::CachedData &cached, const CglLandP::Parameters & params);
     /** Find Gomory cut (i.e. don't do extra setup required for pivots).*/
-    bool generateMig(int row, OsiRowCut &cut, const CglLandP::Parameters & params) const;
+    bool generateMig(int row, OsiRowCut &cut, const CglLandP::Parameters & params);
 
     /** Find extra constraints in current tableau.*/
     int generateExtraCuts(const CglLandP::CachedData &cached, const CglLandP::Parameters & params);
@@ -294,9 +294,9 @@ private:
     /// @name Work infos
     /// @{
     /** Source row for cut */
-    mutable TabRow row_k_;
+    TabRow row_k_;
     /** Original version of source row (without modularization).*/
-    mutable TabRow original_row_k_;
+    TabRow original_row_k_;
     /** Row of leaving candidate*/
     TabRow row_i_;
 #ifndef NDBEUG
@@ -369,7 +369,7 @@ private:
     /// Own the data or not?
     bool own_;
     /// A pointer to a cut validator
-    const Validator & validator_;
+    Validator & validator_;
     /// Weights for the normalization constraint
     std::vector<double> norm_weights_;
     /// Weight for rhs of normalization constraint.*/

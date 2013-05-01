@@ -2,7 +2,7 @@
 # All Rights Reserved.
 # This file is distributed under the Eclipse Public License.
 
-## $Id: Makefile.am 1041 2011-08-14 10:55:03Z stefan $
+## $Id: Makefile.am 1113 2013-04-06 13:28:20Z stefan $
 
 # Author:  Andreas Waechter           IBM    2006-04-13
 
@@ -28,23 +28,24 @@ AM_CPPFLAGS = \
 	-I`$(CYGPATH_W) $(srcdir)/../src/CglFlowCover` \
 	-I`$(CYGPATH_W) $(srcdir)/../src/CglGomory` \
 	-I`$(CYGPATH_W) $(srcdir)/../src/CglKnapsackCover` \
-        -I`$(CYGPATH_W) $(srcdir)/../src/CglLandP` \
+    -I`$(CYGPATH_W) $(srcdir)/../src/CglLandP` \
 	-I`$(CYGPATH_W) $(srcdir)/../src/CglOddHole` \
 	-I`$(CYGPATH_W) $(srcdir)/../src/CglProbing` \
 	-I`$(CYGPATH_W) $(srcdir)/../src/CglMixedIntegerRounding` \
 	-I`$(CYGPATH_W) $(srcdir)/../src/CglMixedIntegerRounding2` \
 	-I`$(CYGPATH_W) $(srcdir)/../src/CglResidualCapacity` \
 	-I`$(CYGPATH_W) $(srcdir)/../src/CglRedSplit` \
+	-I`$(CYGPATH_W) $(srcdir)/../src/CglRedSplit2` \
 	-I`$(CYGPATH_W) $(srcdir)/../src/CglTwomir` \
 	-I`$(CYGPATH_W) $(srcdir)/../src/CglClique` \
 	-I`$(CYGPATH_W) $(srcdir)/../src/CglSimpleRounding` \
+	-I`$(CYGPATH_W) $(srcdir)/../src/CglZeroHalf` \
 	$(CGLLIB_CFLAGS)
 if COIN_HAS_SAMPLE
 AM_CPPFLAGS += -DSAMPLEDIR=\"`$(CYGPATH_W) @SAMPLE_DATA@ | sed -e 's/\\\\/\\\\\\\\/g'`\"
 endif
 
-# This line is necessary to allow VPATH compilation with MS compilers
-# on Cygwin
+# This line is necessary to allow VPATH compilation
 DEFAULT_INCLUDES = -I. -I`$(CYGPATH_W) $(srcdir)` -I$(top_builddir)/src
 
 # Depending of what solvers are available, we add the corresponding files,

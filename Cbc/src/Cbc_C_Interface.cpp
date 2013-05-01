@@ -1,4 +1,4 @@
-// $Id: Cbc_C_Interface.cpp 1573 2011-01-05 01:12:36Z lou $
+// $Id: Cbc_C_Interface.cpp 1902 2013-04-10 16:58:16Z stefan $
 // Copyright (C) 2004, International Business Machines
 // Corporation and others.  All Rights Reserved.
 // This code is licensed under the terms of the Eclipse Public License (EPL).
@@ -2265,15 +2265,14 @@ Cbc_setContinuous(Cbc_Model * model, int iColumn)
 /* Add an SOS constraint to the model */
 COINLIBAPI void  COINLINKAGE
 Cbc_addSOS_Dense(Cbc_Model * model, int numObjects, const int * len,
-                 const int ** which, const double * weights, const int type)
+                 const int * const* which, const double * weights, const int type)
 {
     const char prefix[] = "Cbc_C_Interface::Cbc_addSOS_Dense(): ";
 //  const int  VERBOSE = 2;
     if (VERBOSE > 0) printf("%sbegin\n", prefix);
 
     assert(1 > 0);// this is probably broken
-    int i, j, l;
-    const int *w;
+    int i, j;
     // I think this is a different model due to overriding = operator
     CbcModel m = *(model->model_);
 
@@ -2296,8 +2295,6 @@ Cbc_addSOS_Dense(Cbc_Model * model, int numObjects, const int * len,
 
         // Make a CbcSOS and assign it to objects
         if (VERBOSE > 1) printf("%s len[%i] = %i\n", prefix, i, len[i]);
-        l = len[i];
-        w = which[i];
         if (VERBOSE > 1) printf("%s new CbcSOS()\n", prefix);
         // ***
         objects[i] = new CbcSOS(model->model_, (int)(len[i]),

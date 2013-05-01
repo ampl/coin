@@ -1,4 +1,4 @@
-// $Id: CglFlowCover.hpp 908 2010-12-30 21:54:29Z mjs $
+// $Id: CglFlowCover.hpp 1123 2013-04-06 20:47:24Z stefan $
 //-----------------------------------------------------------------------------
 // name:     Cgl Lifted Simple Generalized Flow Cover Cut Generator
 // author:   Yan Xu                email: yan.xu@sas.com
@@ -160,7 +160,7 @@ public:
      *  This function is called by 
      *  <CODE>generateCuts(const OsiSolverInterface & si, OsiCuts & cs)</CODE>.
    */
-    void flowPreprocess(const OsiSolverInterface& si) const;
+    void flowPreprocess(const OsiSolverInterface& si);
 
     /**@name Generate Cuts */
     //@{
@@ -169,7 +169,7 @@ public:
 	in the collection of cuts cs. 
     */
     virtual void generateCuts(const OsiSolverInterface & si, OsiCuts & cs,
-			      const CglTreeInfo info = CglTreeInfo()) const;
+			      const CglTreeInfo info = CglTreeInfo());
     //@}
 
     /**@name Functions to query and set maximum number of cuts can be 
@@ -226,7 +226,7 @@ private:
 			     char sense,
 			     double rhs,
 			     OsiRowCut& flowCut,
-			     double& violation ) const;
+			     double& violation );
 
 
     /** Transform a row from ">=" to "<=", and vice versa. */
@@ -342,21 +342,21 @@ private:
     /** If violation of a cut is greater that this number, the cut is useful.*/
     double TOLERANCE_;
     /** First time preprocessing */
-    mutable bool firstProcess_;
+    bool firstProcess_;
     /** The number rows of the problem.*/
-    mutable int numRows_;
+    int numRows_;
     /** The number columns of the problem.*/
-    mutable int numCols_;
+    int numCols_;
     /** The number flow cuts found.*/
     static int numFlowCuts_;
     /** Indicate whether initial flow preprecessing has been done. */
-    mutable bool doneInitPre_;
+    bool doneInitPre_;
     /** The array of CglFlowVUBs. */
-    mutable CglFlowVUB* vubs_;
+    CglFlowVUB* vubs_;
     /** The array of CglFlowVLBs. */
-    mutable CglFlowVLB* vlbs_;
+    CglFlowVLB* vlbs_;
     /** CglFlowRowType of the rows in model. */
-    mutable CglFlowRowType* rowTypes_;
+    CglFlowRowType* rowTypes_;
 };
 
 //#############################################################################

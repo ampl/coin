@@ -1,17 +1,12 @@
-// $Id: link.cpp 1574 2011-01-05 01:13:55Z lou $
+// $Id: link.cpp 1902 2013-04-10 16:58:16Z stefan $
 // Copyright (C) 2005, International Business Machines
 // Corporation and others.  All Rights Reserved.
 // This code is licensed under the terms of the Eclipse Public License (EPL).
 
-#if defined(_MSC_VER)
-// Turn off compiler warning about long names
-#  pragma warning(disable:4786)
-#endif
-
 #include <cassert>
 #include <iomanip>
 
-
+#include "CoinPragma.hpp"
 // For Branch and bound
 #include "OsiSolverInterface.hpp"
 #include "CbcModel.hpp"
@@ -20,7 +15,7 @@
 #include "CbcBranchLink.hpp"
 #include "OsiClpSolverInterface.hpp"
 
-#include  "CoinTime.hpp"
+#include "CoinTime.hpp"
 
 
 /************************************************************************

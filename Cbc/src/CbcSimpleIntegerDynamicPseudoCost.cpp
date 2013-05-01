@@ -1,4 +1,4 @@
-// $Id$
+// $Id: CbcSimpleIntegerDynamicPseudoCost.cpp 1902 2013-04-10 16:58:16Z stefan $
 // Copyright (C) 2002, International Business Machines
 // Corporation and others.  All Rights Reserved.
 // This code is licensed under the terms of the Eclipse Public License (EPL).
@@ -552,7 +552,7 @@ CbcSimpleIntegerDynamicPseudoCost::infeasibility(const OsiBranchingInformation *
     const double * solution = model_->testSolution();
     const double * lower = model_->getCbcColLower();
     const double * upper = model_->getCbcColUpper();
-#ifdef FUNNY_BRANCHING
+#ifdef FUNNY_BRANCHING2
     const double * dj = model_->getCbcReducedCost();
     double djValue = dj[columnNumber_];
     lastDownDecrease_++;
@@ -706,7 +706,7 @@ CbcSimpleIntegerDynamicPseudoCost::infeasibility(const OsiBranchingInformation *
     if (upDownSeparator_ > 0.0) {
         preferredWay = (value - below >= upDownSeparator_) ? 1 : -1;
     }
-#ifdef FUNNY_BRANCHING
+#ifdef FUNNY_BRANCHING2
     if (fabs(value - nearest) > integerTolerance) {
         double ratio = (100.0 + lastUpDecrease_) / (100.0 + lastDownDecrease_);
         downCost *= ratio;
@@ -735,12 +735,16 @@ CbcSimpleIntegerDynamicPseudoCost::infeasibility(const OsiBranchingInformation *
         double returnValue = 0.0;
         double minValue = CoinMin(downCost, upCost);
         double maxValue = CoinMax(downCost, upCost);
+#ifdef COIN_DEVELOP
         char where;
+#endif
         // was <= 10
         //if (stateOfSearch<=1||model_->currentNode()->depth()<=-10 /* was ||maxValue>0.2*distanceToCutoff*/) {
         if (stateOfSearch <= 2) {
             // no branching solution
+#ifdef COIN_DEVELOP
             where = 'i';
+#endif
             returnValue = WEIGHT_BEFORE * minValue + (1.0 - WEIGHT_BEFORE) * maxValue;
             if (0) {
                 double sum;
@@ -767,7 +771,9 @@ CbcSimpleIntegerDynamicPseudoCost::infeasibility(const OsiBranchingInformation *
             }
         } else {
             // some solution
+#ifdef COIN_DEVELOP
             where = 'I';
+#endif
 #ifndef WEIGHT_PRODUCT
             returnValue = WEIGHT_AFTER * minValue + (1.0 - WEIGHT_AFTER) * maxValue;
 #else

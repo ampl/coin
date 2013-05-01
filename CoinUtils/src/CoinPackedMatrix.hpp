@@ -1,4 +1,4 @@
-/* $Id: CoinPackedMatrix.hpp 1505 2011-11-20 16:00:54Z forrest $ */
+/* $Id: CoinPackedMatrix.hpp 1560 2012-11-24 00:29:01Z lou $ */
 // Copyright (C) 2000, International Business Machines
 // Corporation and others.  All Rights Reserved.
 // This code is licensed under the terms of the Eclipse Public License (EPL).
@@ -787,11 +787,23 @@ public:
    /// Copy constructor 
    CoinPackedMatrix(const CoinPackedMatrix& m);
 
-  /** Copy constructor - fine tuning - allowing extra space and/or reverse ordering.
-      extraForMajor is exact extra after any possible reverse ordering.
-      extraMajor_ and extraGap_ set to zero.
+  /*! \brief Copy constructor with fine tuning
+  
+    This constructor allows for the specification of an exact amount of extra
+    space and/or reverse ordering.
+
+    \p extraForMajor is the exact number of spare major vector slots after
+    any possible reverse ordering. If \p extraForMajor < 0, all gaps and small
+    elements will be removed from the copy, otherwise gaps and small elements
+    are preserved.
+
+    \p extraElements is the exact number of spare element entries.
+
+    The usual multipliers, #extraMajor_ and #extraGap_, are set to zero.
   */
-  CoinPackedMatrix(const CoinPackedMatrix& m, int extraForMajor, int extraElements, bool reverseOrdering=false);
+  CoinPackedMatrix(const CoinPackedMatrix &m,
+  		   int extraForMajor, int extraElements,
+		   bool reverseOrdering = false) ;
 
   /** Subset constructor (without gaps).  Duplicates are allowed
       and order is as given */

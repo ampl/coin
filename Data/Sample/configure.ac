@@ -2,7 +2,7 @@
 # All Rights Reserved.
 # This file is distributed under the Eclipse Public License.
 
-## $Id: configure.ac 306 2012-07-31 14:01:16Z stefan $
+## $Id: configure.ac 347 2013-04-26 14:57:31Z tkr $
 
 # Author:  Andreas Waechter            IBM    2006-04-13
 
@@ -12,7 +12,7 @@
 
 AC_PREREQ(2.59)
 
-AC_INIT([DataSample],[1.2.2],[https://projects.coin-or.org/BuildTools/])
+AC_INIT([DataSample],[1.2.4],[https://projects.coin-or.org/BuildTools/])
 
 AC_COPYRIGHT([
 Copyright 2006 International Business Machines and others.
@@ -30,7 +30,7 @@ AC_CONFIG_SRCDIR(configure.ac)
 # /usr/local.
 AC_PREFIX_DEFAULT([`pwd`])
 
-AC_COIN_PROJECTDIR_INIT(DataSample,2:2:1)
+AC_COIN_PROJECTDIR_INIT(DataSample,2:4:1)
 
 #############################################################################
 #     We only need automake to generate Makefiles for the distribution      #
@@ -44,8 +44,10 @@ AC_COIN_INIT_AUTOMAKE
 #############################################################################
 
 AC_COIN_EXAMPLE_FILES([*.mps])
+AC_COIN_EXAMPLE_FILES([*.block])
 AC_COIN_EXAMPLE_FILES([input.130])
 AC_COIN_EXAMPLE_FILES([app0110.* app0110R.* bug.*])
+AC_COIN_EXAMPLE_FILES([*.block])
 
 ##############################################################################
 #                   Finishing up by writing all the output                   #

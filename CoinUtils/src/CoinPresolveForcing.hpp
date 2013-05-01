@@ -1,4 +1,4 @@
-/* $Id: CoinPresolveForcing.hpp 1372 2011-01-03 23:31:00Z lou $ */
+/* $Id: CoinPresolveForcing.hpp 1498 2011-11-02 15:25:35Z mjs $ */
 // Copyright (C) 2002, International Business Machines
 // Corporation and others.  All Rights Reserved.
 // This code is licensed under the terms of the Eclipse Public License (EPL).
@@ -55,7 +55,7 @@ public:
 
   void postsolve(CoinPostsolveMatrix *prob) const;
 
-  ~forcing_constraint_action();
+  virtual ~forcing_constraint_action();
 };
 
 #endif

@@ -1,4 +1,4 @@
-/* $Id: CoinPresolveHelperFunctions.cpp 1373 2011-01-03 23:57:44Z lou $ */
+/* $Id: CoinPresolveHelperFunctions.cpp 1560 2012-11-24 00:29:01Z lou $ */
 // Copyright (C) 2002, International Business Machines
 // Corporation and others.  All Rights Reserved.
 // This code is licensed under the terms of the Eclipse Public License (EPL).
@@ -78,7 +78,7 @@ void compact_rep (double *elems, int *indices,
   while (link[i].pre != NO_LINK)
     i = link[i].pre ;
 
-  int j = 0 ;
+  CoinBigIndex j = 0 ;
   for (; i != n; i = link[i].suc) {
     CoinBigIndex s = starts[i] ;
     CoinBigIndex e = starts[i] + lengths[i] ;
@@ -403,43 +403,48 @@ void presolve_delete_many_from_major (int majndx, char * marked,
 */
 void presolve_delete_from_major2 (int majndx, int minndx,
 				  CoinBigIndex *majstrts, int *majlens,
-				  int *minndxs, /*double *els,*/ int *majlinks, 
+				  int *minndxs, int *majlinks, 
 				  CoinBigIndex *free_listp)
 
-{ CoinBigIndex k = majstrts[majndx] ;
+{
+  CoinBigIndex k = majstrts[majndx] ;
 
 /*
   Desired entry is the first in its major vector. We need to touch up majstrts
   to point to the next entry and link the deleted entry to the front of the
   free list.
 */
-  if (minndxs[k] == minndx)
-  { majstrts[majndx] = majlinks[k] ;
+  if (minndxs[k] == minndx) {
+    majstrts[majndx] = majlinks[k] ;
     majlinks[k] = *free_listp ;
     *free_listp = k ;
-    majlens[majndx]-- ; }
+    majlens[majndx]-- ;
+  } else {
 /*
   Desired entry is somewhere in the major vector. We need to relink around
   it and then link it on the front of the free list.
 
   The loop runs over elements 1 .. len-1; we've already ruled out element 0.
 */
-  else
-  { int len = majlens[majndx] ;
+    int len = majlens[majndx] ;
     CoinBigIndex kpre = k ;
     k = majlinks[k] ;
-    for (int i = 1 ; i < len ; ++i)
-    { if (minndxs[k] == minndx)
-      { majlinks[kpre] = majlinks[k] ;
+    for (int i = 1 ; i < len ; ++i) {
+      if (minndxs[k] == minndx) {
+        majlinks[kpre] = majlinks[k] ;
 	majlinks[k] = *free_listp ;
 	*free_listp = k ;
 	majlens[majndx]-- ;
-	return ; }
+	return ;
+      }
       kpre = k ;
-      k = majlinks[k] ; }
-   DIE("DELETE_FROM_MAJOR2") ; }
+      k = majlinks[k] ;
+    }
+    DIE("DELETE_FROM_MAJOR2") ;
+  }
 
   assert(*free_listp >= 0) ;
 
-  return ; }
+  return ;
+}
 

@@ -1,4 +1,4 @@
-// $Id: CglKnapsackCover.hpp 936 2011-01-04 23:21:32Z lou $
+// $Id: CglKnapsackCover.hpp 1123 2013-04-06 20:47:24Z stefan $
 // Copyright (C) 2000, International Business Machines
 // Corporation and others.  All Rights Reserved.
 // This code is licensed under the terms of the Eclipse Public License (EPL).
@@ -26,7 +26,7 @@ public:
       Insert the generated cuts into OsiCut, cs.
   */
   virtual void generateCuts(const OsiSolverInterface & si, OsiCuts & cs,
-			    const CglTreeInfo info = CglTreeInfo()) const;
+			    const CglTreeInfo info = CglTreeInfo());
   //@}
 
   /**@name Constructors and destructors */
@@ -96,7 +96,7 @@ private:
     int rowIndex,
     int numberElements,
     const int * index,
-    const double * element) const;
+    const double * element);
 
   int deriveAKnapsack(
     const OsiSolverInterface & si, 
@@ -106,7 +106,7 @@ private:
     int *  complement,
     double *  xstar,
     int rowIndex,
-    const CoinPackedVectorBase & matrixRow) const;
+    const CoinPackedVectorBase & matrixRow);
 
   /** Find a violated minimal cover from 
  a canonical form knapsack inequality by
@@ -120,7 +120,7 @@ private:
       double b, 
       double *  xstar, 
       CoinPackedVector & cover,
-      CoinPackedVector & remainder) const ;
+      CoinPackedVector & remainder);
 
   /** Find the most violate minimum cover by solving the lp-relaxation of the
       most-violate-min-cover problem 
@@ -132,7 +132,7 @@ private:
       double & b,
       double * xstar, 
       CoinPackedVector & cover,
-      CoinPackedVector & remainder) const;  
+      CoinPackedVector & remainder);
   
 /// find a minimum cover by a simple greedy approach
   int findGreedyCover(
@@ -142,7 +142,7 @@ private:
       double * xstar,
       CoinPackedVector & cover,
       CoinPackedVector & remainder
-      ) const;
+      );
 
   /// lift the cover inequality
   int liftCoverCut(
@@ -150,7 +150,7 @@ private:
      int nRowElem,
      CoinPackedVector & cover,
      CoinPackedVector & remainder,
-     CoinPackedVector & cut ) const;
+     CoinPackedVector & cut );
  
   /// sequence-independent lift and uncomplement and add the resulting cut to the cut set
   int liftAndUncomplementAndAdd(
@@ -161,7 +161,7 @@ private:
      int row,
      CoinPackedVector & cover,
      CoinPackedVector & remainder,
-     OsiCuts & cs ) const;
+     OsiCuts & cs );
 
   /// sequence-dependent lift, uncomplement and add the resulting cut to the cut set
 void seqLiftAndUncomplementAndAdd(
@@ -173,7 +173,7 @@ void seqLiftAndUncomplementAndAdd(
       double & b,
       CoinPackedVector & cover,      // need not be violated
       CoinPackedVector & remainder,
-      OsiCuts & cs ) const;
+      OsiCuts & cs );
 
   /// sequence-dependent lift binary variables either up or down, uncomplement and add to the cut set
 void liftUpDownAndUncomplementAndAdd(
@@ -190,7 +190,7 @@ void liftUpDownAndUncomplementAndAdd(
          CoinPackedVector & atOne,     // vars have soln value of 1 in lp relaxation
                                        // and together with fracCover form minimal (?) cover. 
          CoinPackedVector & remainder,
-         OsiCuts & cs ) const;
+         OsiCuts & cs );
 
   /// find a cover using a variation of the logic found in OSL (w/o SOS)
   int findPseudoJohnAndEllisCover (
@@ -199,7 +199,7 @@ void liftUpDownAndUncomplementAndAdd(
      double & b,
      double * xstar,                     
      CoinPackedVector & cover,  
-     CoinPackedVector & remainder) const;
+     CoinPackedVector & remainder);
 
   /// find a cover using the basic logic found in OSL (w/o SOS)
   int findJohnAndEllisCover (
@@ -209,7 +209,7 @@ void liftUpDownAndUncomplementAndAdd(
      double * xstar,                     
      CoinPackedVector & fracCover,  
      CoinPackedVector & atOnes,  
-     CoinPackedVector & remainder) const;
+     CoinPackedVector & remainder);
 
 
   /** A C-style implementation of the Horowitz-Sahni exact solution 
@@ -225,7 +225,7 @@ void liftUpDownAndUncomplementAndAdd(
       double const *pp, 
       double const *ww,
       double & z, 
-      int * x) const;
+      int * x);
 
   /** Creates cliques for use by probing.
       Only cliques >= minimumSize and < maximumSize created
@@ -250,18 +250,18 @@ void liftUpDownAndUncomplementAndAdd(
   double onetol_;  
   /// Maximum in knapsack
   int maxInKnapsack_;
-   /** which rows to look at. If specified, only these rows will be considered
-       for generating knapsack covers. Otherwise all rows will be tried */
-   int numRowsToCheck_;
-   int* rowsToCheck_;
+  /** which rows to look at. If specified, only these rows will be considered
+      for generating knapsack covers. Otherwise all rows will be tried */
+  int numRowsToCheck_;
+  int* rowsToCheck_;
   /// exactKnapsack can be expensive - this switches off some
   bool expensiveCuts_;
   /// Cliques
   /// **** TEMP so can reference from listing
-  mutable const OsiSolverInterface * solver_;
-  mutable int whichRow_;
-  mutable int * complement_;
-  mutable double * elements_;
+  const OsiSolverInterface * solver_;
+  int whichRow_;
+  int * complement_;
+  double * elements_;
   /// Number of cliques
   int numberCliques_;
   /// Clique type

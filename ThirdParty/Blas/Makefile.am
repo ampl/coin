@@ -2,7 +2,7 @@
 # All Rights Reserved.
 # This file is distributed under the Eclipse Public License.
 
-## $Id: Makefile.am 2308 2011-06-19 14:15:54Z stefan $
+## $Id: Makefile.am 2575 2012-06-19 18:47:27Z stefan $
 
 AUTOMAKE_OPTIONS = foreign
 
@@ -13,6 +13,7 @@ lib_LTLIBRARIES = libcoinblas.la
 libcoinblas_la_SOURCES = \
 	dasum.f \
 	daxpy.f \
+	dcabs1.f \
 	dcopy.f \
 	ddot.f \
 	dgbmv.f \
@@ -46,8 +47,29 @@ libcoinblas_la_SOURCES = \
 	dtrsm.f \
 	dtrsv.f \
 	idamax.f \
+	isamax.f \
+	izamax.f \
 	lsame.f \
-	xerbla.f
+	sgemm.f \
+	sgemv.f \
+	sger.f \
+	sscal.f \
+	sswap.f \
+	ssyr.f \
+	strsm.f \
+	xerbla.f \
+	zaxpy.f \
+	zcopy.f \
+	zdscal.f \
+	zdotc.f \
+	zdotu.f \
+	zgemm.f \
+	zgemv.f \
+	zgeru.f \
+	zher.f \
+	zscal.f \
+	zswap.f \
+	ztrsm.f
 
 libcoinblas_la_LDFLAGS = $(LT_LDFLAGS)
 

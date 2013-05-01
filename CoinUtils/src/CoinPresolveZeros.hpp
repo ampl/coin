@@ -1,4 +1,4 @@
-/* $Id: CoinPresolveZeros.hpp 1372 2011-01-03 23:31:00Z lou $ */
+/* $Id: CoinPresolveZeros.hpp 1498 2011-11-02 15:25:35Z mjs $ */
 // Copyright (C) 2002, International Business Machines
 // Corporation and others.  All Rights Reserved.
 // This code is licensed under the terms of the Eclipse Public License (EPL).
@@ -51,7 +51,7 @@ class drop_zero_coefficients_action : public CoinPresolveAction {
 
   void postsolve(CoinPostsolveMatrix *prob) const;
 
-  ~drop_zero_coefficients_action() { deleteAction(zeros_,dropped_zero*); }
+  virtual ~drop_zero_coefficients_action() { deleteAction(zeros_,dropped_zero*); }
 };
 
 const CoinPresolveAction *drop_zero_coefficients(CoinPresolveMatrix *prob,

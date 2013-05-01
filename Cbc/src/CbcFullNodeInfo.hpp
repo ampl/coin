@@ -1,4 +1,4 @@
-// $Id$
+// $Id: CbcFullNodeInfo.hpp 1902 2013-04-10 16:58:16Z stefan $
 // Copyright (C) 2002, International Business Machines
 // Corporation and others.  All Rights Reserved.
 // This code is licensed under the terms of the Eclipse Public License (EPL).
@@ -123,8 +123,22 @@ public:
     inline const double * lower() const {
         return lower_;
     }
+    /// Set a bound
+    inline void setColLower(int sequence, double value)
+    { lower_[sequence]=value;}
+    /// Mutable lower bounds
+    inline double * mutableLower() const {
+        return lower_;
+    }
     /// Upper bounds
     inline const double * upper() const {
+        return upper_;
+    }
+    /// Set a bound
+    inline void setColUpper(int sequence, double value)
+    { upper_[sequence]=value;}
+    /// Mutable upper bounds
+    inline double * mutableUpper() const {
         return upper_;
     }
 protected:

@@ -1,4 +1,4 @@
-/* $Id: CbcFathom.hpp 1573 2011-01-05 01:12:36Z lou $ */
+/* $Id: CbcFathom.hpp 1902 2013-04-10 16:58:16Z stefan $ */
 // Copyright (C) 2004, International Business Machines
 // Corporation and others.  All Rights Reserved.
 // This code is licensed under the terms of the Eclipse Public License (EPL).
@@ -75,7 +75,7 @@ private:
     CbcFathom & operator=(const CbcFathom& rhs);
 
 };
-#ifdef COIN_HAS_CLP
+
 #include "OsiClpSolverInterface.hpp"
 
 //#############################################################################
@@ -135,5 +135,3 @@ protected:
     //@}
 };
 #endif
-#endif
-

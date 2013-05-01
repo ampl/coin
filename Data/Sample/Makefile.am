@@ -2,7 +2,7 @@
 # All Rights Reserved.
 # This file is distributed under the Eclipse Public License.
 
-## $Id: Makefile.am 255 2011-07-16 13:54:07Z stefan $
+## $Id: Makefile.am 324 2012-11-21 18:57:40Z stefan $
 
 # Author:  Andreas Waechter           IBM    2006-04-13
 
@@ -12,15 +12,12 @@ AUTOMAKE_OPTIONS = foreign
 #                List files that should be distributed                 #
 ########################################################################
 
-EXTRA_DIST = $(EXAMPLE_FILES) README AUTHORS LICENSE
+EXTRA_DIST = $(EXAMPLE_FILES)
 
 DISTCLEANFILES = $(EXAMPLE_CLEAN_FILES)
 
 datacoindir = $(datadir)/coin/Data/Sample
 datacoin_DATA = $(EXAMPLE_FILES)
-
-coindocdir = $(datadir)/coin/doc/Data/Sample
-coindoc_DATA = README AUTHORS LICENSE
 
 pkgconfiglibdir = $(libdir)/pkgconfig
 pkgconfiglib_DATA = coindatasample.pc

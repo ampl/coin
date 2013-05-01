@@ -1,17 +1,13 @@
-// $Id: nway.cpp 1574 2011-01-05 01:13:55Z lou $
+// $Id: nway.cpp 1902 2013-04-10 16:58:16Z stefan $
 // Copyright (C) 2005, International Business Machines
 // Corporation and others.  All Rights Reserved.
 // This code is licensed under the terms of the Eclipse Public License (EPL).
-
-#if defined(_MSC_VER)
-// Turn off compiler warning about long names
-#  pragma warning(disable:4786)
-#endif
 
 #include <cassert>
 #include <iomanip>
 
 
+#include "CoinPragma.hpp"
 // For Branch and bound
 #include "CbcModel.hpp"
 #include "CbcBranchActual.hpp"
@@ -48,7 +44,11 @@ int main (int argc, const char *argv[])
 #endif
   if (argc>=2) mpsFileName = argv[1];
   int numMpsReadErrors = solver1.readMps(mpsFileName.c_str(),"");
-  assert(numMpsReadErrors==0);
+  if( numMpsReadErrors != 0 )
+  {
+     printf("%d errors reading MPS file\n", numMpsReadErrors);
+     return numMpsReadErrors;
+  }
   
   int iRow, iColumn;
   int numberColumns = solver1.getNumCols();

@@ -1,4 +1,4 @@
-/* $Id: CoinPresolveTripleton.hpp 1372 2011-01-03 23:31:00Z lou $ */
+/* $Id: CoinPresolveTripleton.hpp 1498 2011-11-02 15:25:35Z mjs $ */
 // Copyright (C) 2003, International Business Machines
 // Corporation and others.  All Rights Reserved.
 // This code is licensed under the terms of the Eclipse Public License (EPL).
@@ -59,7 +59,7 @@ class tripleton_action : public CoinPresolveAction {
   
   void postsolve(CoinPostsolveMatrix *prob) const;
 
-  ~tripleton_action();
+  virtual ~tripleton_action();
 };
 #endif
 

@@ -9,7 +9,7 @@
 // Copyright (C) 2009 Humboldt University Berlin and others.
 // All Rights Reserved.
 
-// $Id: OsiGrbSolverInterface.cpp 1846 2012-07-25 10:50:01Z stefan $
+// $Id: OsiGrbSolverInterface.cpp 1899 2013-04-06 20:43:00Z stefan $
 
 #include <iostream>
 #include <cassert>
@@ -20,6 +20,7 @@
 #include "CoinError.hpp"
 
 #include "OsiGrbSolverInterface.hpp"
+#include "OsiCuts.hpp"
 #include "OsiRowCut.hpp"
 #include "OsiColCut.hpp"
 #include "CoinPackedMatrix.hpp"
@@ -257,7 +258,7 @@ void OsiGrbSolverInterface::resizeAuxColIndSpace()
 void OsiGrbSolverInterface::initialSolve()
 {
   debugMessage("OsiGrbSolverInterface::initialSolve()\n");
-  bool takeHint, gotHint;
+  bool takeHint;
   OsiHintStrength strength;
   int prevalgorithm = -1;
 
@@ -266,8 +267,7 @@ void OsiGrbSolverInterface::initialSolve()
   GRBmodel* lp = getLpPtr( OsiGrbSolverInterface::FREECACHED_RESULTS );
 
   /* set whether dual or primal, if hint has been given */
-  gotHint = getHintParam(OsiDoDualInInitial,takeHint,strength);
-  assert(gotHint);
+  getHintParam(OsiDoDualInInitial,takeHint,strength);
   if (strength != OsiHintIgnore) {
   	GUROBI_CALL( "initialSolve", GRBgetintparam(GRBgetenv(lp), GRB_INT_PAR_METHOD, &prevalgorithm) );
   	GUROBI_CALL( "initialSolve", GRBsetintparam(GRBgetenv(lp), GRB_INT_PAR_METHOD, takeHint ? GRB_METHOD_DUAL : GRB_METHOD_PRIMAL) );
@@ -275,8 +275,7 @@ void OsiGrbSolverInterface::initialSolve()
 
 	/* set whether presolve or not */
   int presolve = GRB_PRESOLVE_AUTO;
-  gotHint = getHintParam(OsiDoPresolveInInitial,takeHint,strength);
-  assert (gotHint);
+  getHintParam(OsiDoPresolveInInitial,takeHint,strength);
   if (strength != OsiHintIgnore)
   	presolve = takeHint ? GRB_PRESOLVE_AUTO : GRB_PRESOLVE_OFF;
 
@@ -307,7 +306,7 @@ void OsiGrbSolverInterface::initialSolve()
 void OsiGrbSolverInterface::resolve()
 {
   debugMessage("OsiGrbSolverInterface::resolve()\n");
-  bool takeHint, gotHint;
+  bool takeHint;
   OsiHintStrength strength;
   int prevalgorithm = -1;
 
@@ -316,8 +315,7 @@ void OsiGrbSolverInterface::resolve()
   GRBmodel* lp = getLpPtr( OsiGrbSolverInterface::FREECACHED_RESULTS );
 
   /* set whether primal or dual */
-  gotHint = getHintParam(OsiDoDualInResolve,takeHint,strength);
-  assert (gotHint);
+  getHintParam(OsiDoDualInResolve,takeHint,strength);
   if (strength != OsiHintIgnore) {
   	GUROBI_CALL( "resolve", GRBgetintparam(GRBgetenv(lp), GRB_INT_PAR_METHOD, &prevalgorithm) );
   	GUROBI_CALL( "resolve", GRBsetintparam(GRBgetenv(lp), GRB_INT_PAR_METHOD, takeHint ? GRB_METHOD_DUAL : GRB_METHOD_PRIMAL) );
@@ -325,8 +323,7 @@ void OsiGrbSolverInterface::resolve()
 
 	/* set whether presolve or not */
   int presolve = GRB_PRESOLVE_OFF;
-  gotHint = getHintParam(OsiDoPresolveInResolve,takeHint,strength);
-  assert (gotHint);
+  getHintParam(OsiDoPresolveInResolve,takeHint,strength);
   if (strength != OsiHintIgnore)
   	presolve = takeHint ? GRB_PRESOLVE_AUTO : GRB_PRESOLVE_OFF;
 
@@ -3501,6 +3498,179 @@ OsiGrbSolverInterface& OsiGrbSolverInterface::operator=( const OsiGrbSolverInter
 //#############################################################################
 // Applying cuts
 //#############################################################################
+
+OsiSolverInterface::ApplyCutsReturnCode OsiGrbSolverInterface::applyCuts(const OsiCuts & cs,
+        double effectivenessLb)
+{
+    debugMessage("OsiGrbSolverInterface::applyCuts(%p)\n", (void*)&cs);
+  
+    OsiSolverInterface::ApplyCutsReturnCode retVal;
+    int i;
+
+    // Loop once for each column cut
+    for ( i = 0; i < cs.sizeColCuts(); i ++ ) {
+        if ( cs.colCut(i).effectiveness() < effectivenessLb ) {
+            retVal.incrementIneffective();
+            continue;
+        }
+        if ( !cs.colCut(i).consistent() ) {
+            retVal.incrementInternallyInconsistent();
+            continue;
+        }
+        if ( !cs.colCut(i).consistent(*this) ) {
+            retVal.incrementExternallyInconsistent();
+            continue;
+        }
+        if ( cs.colCut(i).infeasible(*this) ) {
+            retVal.incrementInfeasible();
+            continue;
+        }
+        applyColCut( cs.colCut(i) );
+        retVal.incrementApplied();
+    }
+
+    // Loop once for each row cut
+    int nToApply = 0;
+    uint space = 0;
+
+    for ( i = 0; i < cs.sizeRowCuts(); i ++ ) {
+        if ( cs.rowCut(i).effectiveness() < effectivenessLb ) {
+            retVal.incrementIneffective();
+            continue;
+        }
+        if ( !cs.rowCut(i).consistent() ) {
+            retVal.incrementInternallyInconsistent();
+            continue;
+        }
+        if ( !cs.rowCut(i).consistent(*this) ) {
+            retVal.incrementExternallyInconsistent();
+            continue;
+        }
+        if ( cs.rowCut(i).infeasible(*this) ) {
+            retVal.incrementInfeasible();
+            continue;
+        }
+        nToApply++;
+        space += cs.rowCut(i).row().getNumElements();
+
+        retVal.incrementApplied();
+    }
+
+    int base_row = getNumRows();
+    int base_col = getNumCols() + nauxcols;
+
+    //now apply row cuts jointly
+    int* start = new int[nToApply + 1];
+    int* indices = new int[space];
+    double* values = new double[space];
+    double* lower = new double[nToApply];
+    double* upper = new double[nToApply];
+
+    int cur = 0;
+    int r = 0;
+
+    int nTrulyRanged = nToApply;
+    for ( i = 0; i < cs.sizeRowCuts(); i ++ ) {
+
+        if ( cs.rowCut(i).effectiveness() < effectivenessLb ) {
+            continue;
+        }
+        if ( !cs.rowCut(i).consistent() ) {
+            continue;
+        }
+        if ( !cs.rowCut(i).consistent(*this) ) {
+            continue;
+        }
+        if ( cs.rowCut(i).infeasible(*this) ) {
+            continue;
+        }
+
+        start[r] = cur;
+
+        const OsiRowCut & rowCut = cs.rowCut(i);
+
+        lower[r] = rowCut.lb();
+        upper[r] = rowCut.ub();
+
+        std::cerr << "range " << lower[r] << " - " << upper[r] << std::endl;
+
+        if( lower[r] <= -getInfinity() ) {
+            lower[r] = -GRB_INFINITY;
+            nTrulyRanged--;
+        } else if (upper[r] >= getInfinity() ) {
+            upper[r] = GRB_INFINITY;
+            nTrulyRanged--;
+        }
+
+        for (int k = 0; k < rowCut.row().getNumElements(); k++) {
+            values[cur + k] = rowCut.row().getElements()[k];
+            indices[cur + k] = rowCut.row().getIndices()[k];
+        }
+
+        r++;
+        cur += rowCut.row().getNumElements();
+    }
+    start[nToApply] = cur;
+
+    int nPrevVars = getNumCols();
+
+    GUROBI_CALL( "applyRowCuts", GRBaddrangeconstrs( getLpPtr( OsiGrbSolverInterface::KEEPCACHED_COLUMN ),
+                 nToApply, space, start, indices, values, lower, upper, NULL) );
+
+    GUROBI_CALL( "applyRowCuts", GRBupdatemodel(getMutableLpPtr()) );
+
+    // store correspondence between ranged rows and new variables added by Gurobi
+    int nNewVars = getNumCols() - nPrevVars;
+
+    if (nNewVars != nTrulyRanged) {
+
+        std::cerr << "ERROR in applying cuts for Gurobi: " << __FILE__ << " : " << "line "
+                  << __LINE__ << " . Exiting" << std::endl;
+        exit(-1);
+    }
+
+    if (nTrulyRanged > 0) {
+        if( nauxcols == 0 ) {
+            // this is the first ranged row
+            assert(colmap_O2G == NULL);
+            assert(colmap_G2O == NULL);
+
+            assert(colspace_ >= getNumCols());
+
+            auxcolspace = nTrulyRanged;
+            colmap_G2O = new int[colspace_ + auxcolspace];
+            CoinIotaN(colmap_G2O, colspace_ + auxcolspace, 0);
+
+            colmap_O2G = CoinCopyOfArray(colmap_G2O, colspace_);
+        } else {
+            assert(colmap_O2G != NULL);
+            assert(colmap_G2O != NULL);
+            resizeAuxColSpace( nauxcols + nTrulyRanged);
+        }
+
+        nauxcols += nTrulyRanged;
+
+        resizeAuxColIndSpace();
+
+        int next = 0;
+        for (int k = 0; k < nToApply; k++) {
+
+            if (lower[k] > -GRB_INFINITY && upper[k] < GRB_INFINITY) {
+                auxcolind[base_row + next] = base_col + next;
+                colmap_G2O[auxcolind[base_row + next]] = - (base_row + next) - 1;
+                next++;
+            }
+        }
+    }
+
+    delete[] start;
+    delete[] indices;
+    delete[] values;
+    delete[] lower;
+    delete[] upper;
+
+    return retVal;
+}
 
 void OsiGrbSolverInterface::applyColCut( const OsiColCut & cc )
 {

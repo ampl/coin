@@ -82,10 +82,10 @@ am_libCoinUtils_la_OBJECTS = CoinAlloc.lo CoinBuild.lo \
 	CoinPresolveFixed.lo CoinPresolveForcing.lo \
 	CoinPresolveHelperFunctions.lo CoinPresolveImpliedFree.lo \
 	CoinPresolveIsolated.lo CoinPresolveMatrix.lo \
-	CoinPresolvePsdebug.lo CoinPresolveSingleton.lo \
-	CoinPresolveSubst.lo CoinPresolveTighten.lo \
-	CoinPresolveTripleton.lo CoinPresolveUseless.lo \
-	CoinPresolveZeros.lo CoinSearchTree.lo \
+	CoinPresolvePsdebug.lo CoinPresolveMonitor.lo \
+	CoinPresolveSingleton.lo CoinPresolveSubst.lo \
+	CoinPresolveTighten.lo CoinPresolveTripleton.lo \
+	CoinPresolveUseless.lo CoinPresolveZeros.lo CoinSearchTree.lo \
 	CoinShallowPackedVector.lo CoinSnapshot.lo \
 	CoinWarmStartBasis.lo CoinWarmStartVector.lo \
 	CoinWarmStartDual.lo CoinWarmStartPrimalDual.lo
@@ -388,6 +388,7 @@ libCoinUtils_la_SOURCES = \
 	CoinPresolveIsolated.cpp CoinPresolveIsolated.hpp \
 	CoinPresolveMatrix.cpp CoinPresolveMatrix.hpp \
 	CoinPresolvePsdebug.cpp CoinPresolvePsdebug.hpp \
+	CoinPresolveMonitor.cpp CoinPresolveMonitor.hpp \
 	CoinPresolveSingleton.cpp CoinPresolveSingleton.hpp \
 	CoinPresolveSubst.cpp CoinPresolveSubst.hpp \
 	CoinPresolveTighten.cpp CoinPresolveTighten.hpp \
@@ -464,6 +465,7 @@ includecoin_HEADERS = \
 	CoinPresolveImpliedFree.hpp \
 	CoinPresolveIsolated.hpp \
 	CoinPresolveMatrix.hpp \
+	CoinPresolveMonitor.hpp \
 	CoinPresolvePsdebug.hpp \
 	CoinPresolveSingleton.hpp \
 	CoinPresolveSubst.hpp \
@@ -622,6 +624,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/CoinPresolveImpliedFree.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/CoinPresolveIsolated.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/CoinPresolveMatrix.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/CoinPresolveMonitor.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/CoinPresolvePsdebug.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/CoinPresolveSingleton.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/CoinPresolveSubst.Plo@am__quote@

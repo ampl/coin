@@ -2,7 +2,7 @@
 # All Rights Reserved.
 # This file is distributed under the Eclipse Public License.
 
-## $Id: Makefile.am 2313 2011-06-19 14:33:08Z stefan $
+## $Id: Makefile.am 2640 2012-11-20 18:34:33Z stefan $
 
 AUTOMAKE_OPTIONS = foreign
 
@@ -12,34 +12,81 @@ lib_LTLIBRARIES = libcoinlapack.la
 
 LAPACK_FILES = \
 	dbdsqr.f \
+	dgebal.f \
+	dgebak.f \
 	dgebd2.f \
 	dgebrd.f \
+	dgeev.f \
+	dgehd2.f \
+	dgehrd.f \
 	dgelq2.f \
 	dgelqf.f \
+	dgels.f \
 	dgeqr2.f \
 	dgeqrf.f \
 	dgesvd.f \
 	dgesv.f \
 	dgetf2.f \
 	dgetrf.f \
+	dgetri.f \
 	dgetrs.f \
+	dggbak.f \
+	dggbal.f \
+	dgghrd.f \
+	dggev.f \
+	dhgeqz.f \
+	dhseqr.f \
 	disnan.f \
+	dlabad.f \
 	dlabrd.f \
 	dlacpy.f \
+	dladiv.f \
+	dlaebz.f \
 	dlae2.f \
 	dlaev2.f \
+	dlaexc.f \
+	dlagtf.f \
+	dlagts.f \
+	dlag2.f \
+	dlahqr.f \
+	dlahr2.f \
 	dlaisnan.f \
+	dlaln2.f \
 	dlamch.f \
+	dlaneg.f \
 	dlange.f \
+	dlanhs.f \
 	dlanst.f \
 	dlansy.f \
+	dlanv2.f \
 	dlapy2.f \
+	dlapy3.f \
+	dlaqr0.f \
+	dlaqr1.f \
+	dlaqr2.f \
+	dlaqr3.f \
+	dlaqr4.f \
+	dlaqr5.f \
 	dlarf.f \
 	dlarfb.f \
 	dlarfg.f \
-	dlarfp.f \
 	dlarft.f \
+	dlarfx.f \
+	dlarnv.f \
+	dlarra.f \
+	dlarrb.f \
+	dlarrc.f \
+	dlarrd.f \
+	dlarre.f \
+	dlarrf.f \
+	dlarrj.f \
+	dlarrk.f \
+	dlarrr.f \
+	dlarrv.f \
 	dlartg.f \
+	dlartv.f \
+	dlaruv.f \
+	dlar1v.f \
 	dlas2.f \
 	dlascl.f \
 	dlaset.f \
@@ -54,10 +101,13 @@ LAPACK_FILES = \
 	dlaswp.f \
 	dlassq.f \
 	dlasv2.f \
+	dlasyf.f \
+	dlasy2.f \
 	dlatrd.f \
 	dorg2l.f \
 	dorg2r.f \
 	dorgbr.f \
+	dorghr.f \
 	dorglq.f \
 	dorgl2.f \
 	dorgql.f \
@@ -65,22 +115,55 @@ LAPACK_FILES = \
 	dorgtr.f \
 	dorm2r.f \
 	dormbr.f \
+	dormhr.f \
 	dorml2.f \
 	dormlq.f \
+	dormql.f \
 	dormqr.f \
+	dormtr.f \
+	dorm2l.f \
 	dpotf2.f \
 	dpotrf.f \
 	dpotrs.f \
+	dstebz.f \
+	dstein.f \
+	dstemr.f \
 	dsteqr.f \
 	dsterf.f \
 	dsyev.f \
+	dsyevr.f \
+	dsyevx.f \
 	dsytd2.f \
+	dsytf2.f \
 	dsytrd.f \
+	dsytrf.f \
+	dsytri.f \
+	dtgevc.f \
+	dtrevc.f \
+	dtrexc.f \
+	dtrti2.f \
+	dtrtri.f \
+	dtrtrs.f \
 	ieeeck.f \
 	iladlc.f \
 	iladlr.f \
 	ilaenv.f \
-	iparmq.f
+	iparmq.f \
+	sgetf2.f \
+	sgetrf.f \
+	slamch.f \
+	slaswp.f \
+	zgetf2.f \
+	zgetrf.f \
+	zlacgv.f \
+	zlacpy.f \
+	zlaev2.f \
+	zlaswp.f \
+	zpotf2.f \
+	zrot.f \
+	zsymv.f \
+	zsyr.f \
+	zsytri.f
 
 libcoinlapack_la_SOURCES = $(LAPACK_FILES)
 
@@ -93,6 +176,15 @@ dlamch.obj: dlamch.f
 	$(F77) $(AM_FFLAGS) $(DLAMCH_FFLAGS) -c -o $@ `$(CYGPATH_W) '$<'`
 
 dlamch.lo: dlamch.f
+	$(LIBTOOL) --tag=F77 --mode=compile $(F77) $(AM_FFLAGS) $(DLAMCH_FFLAGS) -c -o $@ $<
+
+slamch.o: slamch.f
+	$(F77) $(AM_FFLAGS) $(DLAMCH_FFLAGS) -c -o $@ $<
+
+slamch.obj: slamch.f
+	$(F77) $(AM_FFLAGS) $(DLAMCH_FFLAGS) -c -o $@ `$(CYGPATH_W) '$<'`
+
+slamch.lo: slamch.f
 	$(LIBTOOL) --tag=F77 --mode=compile $(F77) $(AM_FFLAGS) $(DLAMCH_FFLAGS) -c -o $@ $<
 
 pkgconfiglibdir = $(libdir)/pkgconfig

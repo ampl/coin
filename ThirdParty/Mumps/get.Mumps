@@ -45,6 +45,10 @@ mv MUMPS_${mumps_ver} MUMPS
 echo " "
 echo "Done downloading the source code for MUMPS."
 echo " "
+echo "Apply a patch to work around a bug in MUMPS."
+echo " "
+
+patch -p0 < mumps.patch
 
 echo " "
 echo "Verify that there are no error message in the output above."

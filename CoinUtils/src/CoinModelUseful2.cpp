@@ -1,4 +1,4 @@
-/* $Id: CoinModelUseful2.cpp 1396 2011-03-01 10:42:29Z forrest $ */
+/* $Id: CoinModelUseful2.cpp 1395 2011-03-01 10:33:12Z forrest $ */
 // Copyright (C) 2005, International Business Machines
 // Corporation and others.  All Rights Reserved.
 /* A Bison parser, made by GNU Bison 1.875c.  */

@@ -74,10 +74,11 @@ void testsWithoutMessages (int &errs)
     << "This should print if the constructor sets format_ to null."
     << CoinMessageEol ;
 /*
-  Log level should have no effect here, so set it to 0 to prove the point.
+  Log level should have no effect by default, so set it to 0 to prove the
+  point.
 */
   hdl.message()
-    << "Setting the log level has no effect for on-the-fly messages."
+    << "By default, the log level has no effect for on-the-fly messages."
     << CoinMessageEol ;
   hdl.setLogLevel(0) ;
   if (hdl.logLevel() != 0)
@@ -85,7 +86,20 @@ void testsWithoutMessages (int &errs)
       << "Cannot set/get log level of 0!" << std::endl ;
     errs++ ; }
   hdl.message()
-    << "Log level is now " << hdl.logLevel() << "." << CoinMessageEol ;
+    << "Log level is now" << hdl.logLevel() << "." << CoinMessageEol ;
+/*
+  But we can specify a log level and it will be effective. What's more, each
+  message is completely independent, so the default behaviour should return
+  after an explicit log level suppressed printing.
+*/
+  hdl.message()
+    << "But we can specify a log level and have it take effect."
+    << CoinMessageEol ;
+  hdl.message(1)
+    << "This message should not print!" << CoinMessageEol ;
+  hdl.message()
+    << "If you saw a message that said 'should not print', there's a problem."
+    << CoinMessageEol ;
 /*
   This next sequence exposed a subtle bug in cloning. Failure here may well
   cause a core dump. Here's the scenario: Since we haven't used any messages,
@@ -237,7 +251,6 @@ void advTestsWithMessages (const CoinMessages &testMessages, int &errs)
 bool CoinMessageHandlerUnitTest ()
 
 { int errs = 0 ;
-  CoinMessages::Language curLang = CoinMessages::us_en ;
 
 /*
   Create a CoinMessages object to hold our messages. 

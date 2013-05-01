@@ -1,4 +1,4 @@
-// $Id: CbcSolverLongThin.cpp 1574 2011-01-05 01:13:55Z lou $
+// $Id: CbcSolverLongThin.cpp 1902 2013-04-10 16:58:16Z stefan $
 // Copyright (C) 2004, International Business Machines
 // Corporation and others.  All Rights Reserved.
 // This code is licensed under the terms of the Eclipse Public License (EPL).
@@ -15,7 +15,6 @@
 #include "CbcSolverLongThin.hpp"
 #include "CbcModel.hpp"
 #include "ClpPresolve.hpp"
-#include "CbcHeuristicUser.hpp"
 #include "CbcBranchActual.hpp"
 #include "CbcBranchFollow2.hpp"
 #include "CbcCutGenerator.hpp"
@@ -473,20 +472,16 @@ void CbcSolverLongThin::resolve()
     delete [] whichColumn;
     assert(!modelPtr_->specialOptions());
     int saveOptions = modelPtr_->specialOptions();
-    int startFinishOptions;
     bool takeHint;
     OsiHintStrength strength;
-    bool gotHint = (getHintParam(OsiDoInBranchAndCut,takeHint,strength));
-    assert (gotHint);
+    getHintParam(OsiDoInBranchAndCut,takeHint,strength);
     if (strength!=OsiHintIgnore&&takeHint) {
       // could do something - think about it
       //printf("thin hint %d %c\n",strength,takeHint ? 'T' :'F');
     }
     if((specialOptions_&1)==0) {
-      startFinishOptions=0;
       modelPtr_->setSpecialOptions(saveOptions|(64|1024));
     } else {
-      startFinishOptions=1+2+4;
       if((specialOptions_&4)==0) 
 	modelPtr_->setSpecialOptions(saveOptions|(64|128|512|1024|4096));
       else

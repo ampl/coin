@@ -1,4 +1,4 @@
-/* $Id: CoinPresolveEmpty.hpp 1372 2011-01-03 23:31:00Z lou $ */
+/* $Id: CoinPresolveEmpty.hpp 1561 2012-11-24 00:32:16Z lou $ */
 // Copyright (C) 2002, International Business Machines
 // Corporation and others.  All Rights Reserved.
 // This code is licensed under the terms of the Eclipse Public License (EPL).
@@ -56,7 +56,7 @@ private:
   const char *name() const { return ("drop_empty_cols_action"); }
 
   static const CoinPresolveAction *presolve(CoinPresolveMatrix *,
-					 int *ecols,
+					 const int *ecols,
 					 int necols,
 					 const CoinPresolveAction*);
 
@@ -65,7 +65,7 @@ private:
 
   void postsolve(CoinPostsolveMatrix *prob) const;
 
-  ~drop_empty_cols_action() { deleteAction(actions_,action*); }
+  virtual ~drop_empty_cols_action() { deleteAction(actions_,action*); }
 };
 
 
@@ -110,7 +110,7 @@ private:
 
   void postsolve(CoinPostsolveMatrix *prob) const;
 
-  ~drop_empty_rows_action() { deleteAction(actions_,action*); }
+  virtual ~drop_empty_rows_action() { deleteAction(actions_,action*); }
 };
 #endif
 

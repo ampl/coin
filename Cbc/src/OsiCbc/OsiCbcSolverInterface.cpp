@@ -1,4 +1,4 @@
-// $Id$
+// $Id: OsiCbcSolverInterface.cpp 1902 2013-04-10 16:58:16Z stefan $
 // Copyright (C) 2002, International Business Machines
 // Corporation and others.  All Rights Reserved.
 // This code is licensed under the terms of the Eclipse Public License (EPL).
@@ -782,6 +782,8 @@ OsiCbcSolverInterface::setObjSense(double s )
 void 
 OsiCbcSolverInterface::branchAndBound()
 {
+  *messageHandler() << "Warning: Use of OsiCbc is deprecated." << CoinMessageEol;
+  *messageHandler() << "To enjoy the full performance of Cbc, use the CbcSolver interface." << CoinMessageEol;
   modelPtr_->branchAndBound();
 }
 

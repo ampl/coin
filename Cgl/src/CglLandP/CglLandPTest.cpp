@@ -1,14 +1,9 @@
-// $Id$
+// $Id: CglLandPTest.cpp 1123 2013-04-06 20:47:24Z stefan $
 // Copyright (C) 2000-2009, International Business Machines
 // Corporation and others.  All Rights Reserved.
 // This code is licensed under the terms of the Eclipse Public License (EPL).
 
 // UnitTest for CglGomory adapted for lift-and-project
-
-#if defined(_MSC_VER)
-// Turn off compiler warning about long names
-#  pragma warning(disable:4786)
-#endif
 
 #include <cstdio>
 
@@ -18,6 +13,7 @@
 
 #include <cassert>
 
+#include "CoinPragma.hpp"
 #include "CoinPackedMatrix.hpp"
 #include "OsiCuts.hpp"
 #include "CoinWarmStartBasis.hpp"

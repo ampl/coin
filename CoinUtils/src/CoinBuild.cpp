@@ -1,4 +1,4 @@
-/* $Id: CoinBuild.cpp 1448 2011-06-19 15:34:41Z stefan $ */
+/* $Id: CoinBuild.cpp 1550 2012-08-28 14:55:18Z forrest $ */
 // Copyright (C) 2005, International Business Machines
 // Corporation and others.  All Rights Reserved.
 // This code is licensed under the terms of the Eclipse Public License (EPL).
@@ -182,8 +182,12 @@ CoinBuild::addRow(int numberInRow, const int * columns,
     printf("CoinBuild:: unable to add a row in column mode\n");
     abort();
   }
+  if (numberInRow<0)
+    printf("bad number %d\n",numberInRow); // to stop compiler error
   addItem(numberInRow, columns, elements, 
           rowLower,rowUpper,0.0);
+  if (numberInRow<0)
+    printf("bad number %d\n",numberInRow); // to stop compiler error
 }
 /*  Returns number of elements in a row and information in row
  */
@@ -306,10 +310,16 @@ CoinBuild::addItem(int numberInItem, const int * indices,
   for (int k=0;k<numberInItem;k++) {
     int iColumn = indices[k];
     assert (iColumn>=0);
-    numberOther_ = CoinMax(numberOther_,iColumn+1);
+    if (iColumn<0) {
+      printf("bad col %d\n",iColumn); // to stop compiler error
+      abort();
+    }
+    if (iColumn>=numberOther_)
+      numberOther_ = iColumn+1;
     els[k]=elements[k];
     cols[k]=iColumn;
   }
+  return;
 }
 /*  Returns number of elements in a item and information in item
  */

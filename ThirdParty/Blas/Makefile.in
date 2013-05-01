@@ -78,12 +78,16 @@ am__installdirs = "$(DESTDIR)$(libdir)" "$(DESTDIR)$(pkgconfiglibdir)"
 libLTLIBRARIES_INSTALL = $(INSTALL)
 LTLIBRARIES = $(lib_LTLIBRARIES)
 libcoinblas_la_LIBADD =
-am_libcoinblas_la_OBJECTS = dasum.lo daxpy.lo dcopy.lo ddot.lo \
-	dgbmv.lo dgemm.lo dgemv.lo dger.lo dnrm2.lo drot.lo drotg.lo \
-	drotm.lo drotmg.lo dsbmv.lo dscal.lo dsdot.lo dspmv.lo \
-	dspr2.lo dspr.lo dswap.lo dsymm.lo dsymv.lo dsyr2.lo dsyr2k.lo \
-	dsyr.lo dsyrk.lo dtbmv.lo dtbsv.lo dtpmv.lo dtpsv.lo dtrmm.lo \
-	dtrmv.lo dtrsm.lo dtrsv.lo idamax.lo lsame.lo xerbla.lo
+am_libcoinblas_la_OBJECTS = dasum.lo daxpy.lo dcabs1.lo dcopy.lo \
+	ddot.lo dgbmv.lo dgemm.lo dgemv.lo dger.lo dnrm2.lo drot.lo \
+	drotg.lo drotm.lo drotmg.lo dsbmv.lo dscal.lo dsdot.lo \
+	dspmv.lo dspr2.lo dspr.lo dswap.lo dsymm.lo dsymv.lo dsyr2.lo \
+	dsyr2k.lo dsyr.lo dsyrk.lo dtbmv.lo dtbsv.lo dtpmv.lo dtpsv.lo \
+	dtrmm.lo dtrmv.lo dtrsm.lo dtrsv.lo idamax.lo isamax.lo \
+	izamax.lo lsame.lo sgemm.lo sgemv.lo sger.lo sscal.lo sswap.lo \
+	ssyr.lo strsm.lo xerbla.lo zaxpy.lo zcopy.lo zdscal.lo \
+	zdotc.lo zdotu.lo zgemm.lo zgemv.lo zgeru.lo zher.lo zscal.lo \
+	zswap.lo ztrsm.lo
 libcoinblas_la_OBJECTS = $(am_libcoinblas_la_OBJECTS)
 DEFAULT_INCLUDES = -I. -I$(srcdir)
 F77COMPILE = $(F77) $(AM_FFLAGS) $(FFLAGS)
@@ -257,6 +261,7 @@ lib_LTLIBRARIES = libcoinblas.la
 libcoinblas_la_SOURCES = \
 	dasum.f \
 	daxpy.f \
+	dcabs1.f \
 	dcopy.f \
 	ddot.f \
 	dgbmv.f \
@@ -290,8 +295,29 @@ libcoinblas_la_SOURCES = \
 	dtrsm.f \
 	dtrsv.f \
 	idamax.f \
+	isamax.f \
+	izamax.f \
 	lsame.f \
-	xerbla.f
+	sgemm.f \
+	sgemv.f \
+	sger.f \
+	sscal.f \
+	sswap.f \
+	ssyr.f \
+	strsm.f \
+	xerbla.f \
+	zaxpy.f \
+	zcopy.f \
+	zdscal.f \
+	zdotc.f \
+	zdotu.f \
+	zgemm.f \
+	zgemv.f \
+	zgeru.f \
+	zher.f \
+	zscal.f \
+	zswap.f \
+	ztrsm.f
 
 libcoinblas_la_LDFLAGS = $(LT_LDFLAGS)
 pkgconfiglibdir = $(libdir)/pkgconfig

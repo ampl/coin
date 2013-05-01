@@ -2,7 +2,7 @@
 # All Rights Reserved.
 # This file is distributed under the Eclipse Public License.
 
-## $Id: configure.ac 2589 2012-07-31 13:51:56Z stefan $
+## $Id: configure.ac 2718 2013-04-10 16:40:22Z stefan $
 
 # Author:  Andreas Waechter            IBM    2006-04-13
 
@@ -12,7 +12,7 @@
 
 AC_PREREQ(2.59)
 
-AC_INIT([ThirdPartyBlas],[1.2.2],[http://projects.coin-or.org/BuildTools/newticket])
+AC_INIT([ThirdPartyBlas],[1.3.0],[http://projects.coin-or.org/BuildTools/newticket])
 
 AC_COPYRIGHT([
 Copyright 2006 International Business Machines and others.
@@ -30,7 +30,7 @@ AC_CONFIG_SRCDIR(dgemm.f)
 # /usr/local.
 AC_PREFIX_DEFAULT([`pwd`])
 
-AC_COIN_PROJECTDIR_INIT(Blas,3:2:2)
+AC_COIN_PROJECTDIR_INIT(Blas,4:0:3)
 
 #############################################################################
 #                         Standard build tool stuff                         #

@@ -1,4 +1,4 @@
-/* $Id: CoinMpsIO.cpp 1448 2011-06-19 15:34:41Z stefan $ */
+/* $Id: CoinMpsIO.cpp 1581 2013-04-06 12:48:50Z stefan $ */
 // Copyright (C) 2000, International Business Machines
 // Corporation and others.  All Rights Reserved.
 // This code is licensed under the terms of the Eclipse Public License (EPL).
@@ -2406,7 +2406,9 @@ int CoinMpsIO::readMps(int & numberSets,CoinSet ** &sets)
 	    columnType[icolumn] = COIN_MI_BOUND;
 	    break;
 	  case COIN_PL_BOUND:
-	    if ( columnType[icolumn] == COIN_UNSET_BOUND ) {
+	    // change to allow if no upper bound set
+	    //if ( columnType[icolumn] == COIN_UNSET_BOUND ) {
+	    if (colupper_[icolumn]==infinity_) {
 	    } else {
 	      ifError = true;
 	    }

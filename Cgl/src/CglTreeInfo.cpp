@@ -1,12 +1,8 @@
-// $Id: CglTreeInfo.cpp 1033 2011-06-19 16:49:13Z stefan $
+// $Id: CglTreeInfo.cpp 1123 2013-04-06 20:47:24Z stefan $
 // Copyright (C) 2000, International Business Machines
 // Corporation and others.  All Rights Reserved.
 // This code is licensed under the terms of the Eclipse Public License (EPL).
 
-#if defined(_MSC_VER)
-// Turn off compiler warning about long names
-#  pragma warning(disable:4786)
-#endif
 #include <cstdlib>
 #include <cstdio>
 #include <cmath>
@@ -14,6 +10,7 @@
 #include <cassert>
 #include <iostream>
 
+#include "CoinPragma.hpp"
 #include "CglTreeInfo.hpp"
 #include "CoinHelperFunctions.hpp"
 #include "CoinSort.hpp"
@@ -512,8 +509,6 @@ CglTreeProbingInfo::analyze(const OsiSolverInterface & si,int createSolver)
   bool printit=false;
   int numberCliques=0;
   int numberEntries=0;
-  int maximumCliques=0;
-  int maximumEntries=0;
   int * cliqueStart = NULL;
   cliqueEntry * entry = NULL;
   char * cliqueType=NULL;
@@ -535,8 +530,6 @@ CglTreeProbingInfo::analyze(const OsiSolverInterface & si,int createSolver)
   const double * rowUpper = si.getRowUpper();
   for (int iPass=0;iPass<2;iPass++) {
     if (iPass) {
-      maximumCliques=numberCliques;
-      maximumEntries=numberEntries;
       cliqueStart = new int [numberCliques+1];
       cliqueStart[0]=0;
       entry = new cliqueEntry [numberEntries];
@@ -1285,7 +1278,7 @@ CglTreeProbingInfo::initializeFixing(const OsiSolverInterface * model)
 }
 // Converts to ordered and takes out duplicates
 void 
-CglTreeProbingInfo::convert() const
+CglTreeProbingInfo::convert()
 {
   if (numberEntries_>=0) {
     CoinSort_2( fixingEntry_, fixingEntry_+numberEntries_, fixEntry_);

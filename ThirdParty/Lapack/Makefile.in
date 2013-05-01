@@ -78,18 +78,32 @@ am__installdirs = "$(DESTDIR)$(libdir)" "$(DESTDIR)$(pkgconfiglibdir)"
 libLTLIBRARIES_INSTALL = $(INSTALL)
 LTLIBRARIES = $(lib_LTLIBRARIES)
 libcoinlapack_la_LIBADD =
-am__objects_1 = dbdsqr.lo dgebd2.lo dgebrd.lo dgelq2.lo dgelqf.lo \
+am__objects_1 = dbdsqr.lo dgebal.lo dgebak.lo dgebd2.lo dgebrd.lo \
+	dgeev.lo dgehd2.lo dgehrd.lo dgelq2.lo dgelqf.lo dgels.lo \
 	dgeqr2.lo dgeqrf.lo dgesvd.lo dgesv.lo dgetf2.lo dgetrf.lo \
-	dgetrs.lo disnan.lo dlabrd.lo dlacpy.lo dlae2.lo dlaev2.lo \
-	dlaisnan.lo dlamch.lo dlange.lo dlanst.lo dlansy.lo dlapy2.lo \
-	dlarf.lo dlarfb.lo dlarfg.lo dlarfp.lo dlarft.lo dlartg.lo \
-	dlas2.lo dlascl.lo dlaset.lo dlasq1.lo dlasq2.lo dlasq3.lo \
-	dlasq4.lo dlasq5.lo dlasq6.lo dlasr.lo dlasrt.lo dlaswp.lo \
-	dlassq.lo dlasv2.lo dlatrd.lo dorg2l.lo dorg2r.lo dorgbr.lo \
-	dorglq.lo dorgl2.lo dorgql.lo dorgqr.lo dorgtr.lo dorm2r.lo \
-	dormbr.lo dorml2.lo dormlq.lo dormqr.lo dpotf2.lo dpotrf.lo \
-	dpotrs.lo dsteqr.lo dsterf.lo dsyev.lo dsytd2.lo dsytrd.lo \
-	ieeeck.lo iladlc.lo iladlr.lo ilaenv.lo iparmq.lo
+	dgetri.lo dgetrs.lo dggbak.lo dggbal.lo dgghrd.lo dggev.lo \
+	dhgeqz.lo dhseqr.lo disnan.lo dlabad.lo dlabrd.lo dlacpy.lo \
+	dladiv.lo dlaebz.lo dlae2.lo dlaev2.lo dlaexc.lo dlagtf.lo \
+	dlagts.lo dlag2.lo dlahqr.lo dlahr2.lo dlaisnan.lo dlaln2.lo \
+	dlamch.lo dlaneg.lo dlange.lo dlanhs.lo dlanst.lo dlansy.lo \
+	dlanv2.lo dlapy2.lo dlapy3.lo dlaqr0.lo dlaqr1.lo dlaqr2.lo \
+	dlaqr3.lo dlaqr4.lo dlaqr5.lo dlarf.lo dlarfb.lo dlarfg.lo \
+	dlarft.lo dlarfx.lo dlarnv.lo dlarra.lo dlarrb.lo dlarrc.lo \
+	dlarrd.lo dlarre.lo dlarrf.lo dlarrj.lo dlarrk.lo dlarrr.lo \
+	dlarrv.lo dlartg.lo dlartv.lo dlaruv.lo dlar1v.lo dlas2.lo \
+	dlascl.lo dlaset.lo dlasq1.lo dlasq2.lo dlasq3.lo dlasq4.lo \
+	dlasq5.lo dlasq6.lo dlasr.lo dlasrt.lo dlaswp.lo dlassq.lo \
+	dlasv2.lo dlasyf.lo dlasy2.lo dlatrd.lo dorg2l.lo dorg2r.lo \
+	dorgbr.lo dorghr.lo dorglq.lo dorgl2.lo dorgql.lo dorgqr.lo \
+	dorgtr.lo dorm2r.lo dormbr.lo dormhr.lo dorml2.lo dormlq.lo \
+	dormql.lo dormqr.lo dormtr.lo dorm2l.lo dpotf2.lo dpotrf.lo \
+	dpotrs.lo dstebz.lo dstein.lo dstemr.lo dsteqr.lo dsterf.lo \
+	dsyev.lo dsyevr.lo dsyevx.lo dsytd2.lo dsytf2.lo dsytrd.lo \
+	dsytrf.lo dsytri.lo dtgevc.lo dtrevc.lo dtrexc.lo dtrti2.lo \
+	dtrtri.lo dtrtrs.lo ieeeck.lo iladlc.lo iladlr.lo ilaenv.lo \
+	iparmq.lo sgetf2.lo sgetrf.lo slamch.lo slaswp.lo zgetf2.lo \
+	zgetrf.lo zlacgv.lo zlacpy.lo zlaev2.lo zlaswp.lo zpotf2.lo \
+	zrot.lo zsymv.lo zsyr.lo zsytri.lo
 am_libcoinlapack_la_OBJECTS = $(am__objects_1)
 libcoinlapack_la_OBJECTS = $(am_libcoinlapack_la_OBJECTS)
 DEFAULT_INCLUDES = -I. -I$(srcdir)
@@ -279,34 +293,81 @@ EXTRA_DIST = get.lapack INSTALL.LAPACK $(am__append_1)
 lib_LTLIBRARIES = libcoinlapack.la
 LAPACK_FILES = \
 	dbdsqr.f \
+	dgebal.f \
+	dgebak.f \
 	dgebd2.f \
 	dgebrd.f \
+	dgeev.f \
+	dgehd2.f \
+	dgehrd.f \
 	dgelq2.f \
 	dgelqf.f \
+	dgels.f \
 	dgeqr2.f \
 	dgeqrf.f \
 	dgesvd.f \
 	dgesv.f \
 	dgetf2.f \
 	dgetrf.f \
+	dgetri.f \
 	dgetrs.f \
+	dggbak.f \
+	dggbal.f \
+	dgghrd.f \
+	dggev.f \
+	dhgeqz.f \
+	dhseqr.f \
 	disnan.f \
+	dlabad.f \
 	dlabrd.f \
 	dlacpy.f \
+	dladiv.f \
+	dlaebz.f \
 	dlae2.f \
 	dlaev2.f \
+	dlaexc.f \
+	dlagtf.f \
+	dlagts.f \
+	dlag2.f \
+	dlahqr.f \
+	dlahr2.f \
 	dlaisnan.f \
+	dlaln2.f \
 	dlamch.f \
+	dlaneg.f \
 	dlange.f \
+	dlanhs.f \
 	dlanst.f \
 	dlansy.f \
+	dlanv2.f \
 	dlapy2.f \
+	dlapy3.f \
+	dlaqr0.f \
+	dlaqr1.f \
+	dlaqr2.f \
+	dlaqr3.f \
+	dlaqr4.f \
+	dlaqr5.f \
 	dlarf.f \
 	dlarfb.f \
 	dlarfg.f \
-	dlarfp.f \
 	dlarft.f \
+	dlarfx.f \
+	dlarnv.f \
+	dlarra.f \
+	dlarrb.f \
+	dlarrc.f \
+	dlarrd.f \
+	dlarre.f \
+	dlarrf.f \
+	dlarrj.f \
+	dlarrk.f \
+	dlarrr.f \
+	dlarrv.f \
 	dlartg.f \
+	dlartv.f \
+	dlaruv.f \
+	dlar1v.f \
 	dlas2.f \
 	dlascl.f \
 	dlaset.f \
@@ -321,10 +382,13 @@ LAPACK_FILES = \
 	dlaswp.f \
 	dlassq.f \
 	dlasv2.f \
+	dlasyf.f \
+	dlasy2.f \
 	dlatrd.f \
 	dorg2l.f \
 	dorg2r.f \
 	dorgbr.f \
+	dorghr.f \
 	dorglq.f \
 	dorgl2.f \
 	dorgql.f \
@@ -332,22 +396,55 @@ LAPACK_FILES = \
 	dorgtr.f \
 	dorm2r.f \
 	dormbr.f \
+	dormhr.f \
 	dorml2.f \
 	dormlq.f \
+	dormql.f \
 	dormqr.f \
+	dormtr.f \
+	dorm2l.f \
 	dpotf2.f \
 	dpotrf.f \
 	dpotrs.f \
+	dstebz.f \
+	dstein.f \
+	dstemr.f \
 	dsteqr.f \
 	dsterf.f \
 	dsyev.f \
+	dsyevr.f \
+	dsyevx.f \
 	dsytd2.f \
+	dsytf2.f \
 	dsytrd.f \
+	dsytrf.f \
+	dsytri.f \
+	dtgevc.f \
+	dtrevc.f \
+	dtrexc.f \
+	dtrti2.f \
+	dtrtri.f \
+	dtrtrs.f \
 	ieeeck.f \
 	iladlc.f \
 	iladlr.f \
 	ilaenv.f \
-	iparmq.f
+	iparmq.f \
+	sgetf2.f \
+	sgetrf.f \
+	slamch.f \
+	slaswp.f \
+	zgetf2.f \
+	zgetrf.f \
+	zlacgv.f \
+	zlacpy.f \
+	zlaev2.f \
+	zlaswp.f \
+	zpotf2.f \
+	zrot.f \
+	zsymv.f \
+	zsyr.f \
+	zsytri.f
 
 libcoinlapack_la_SOURCES = $(LAPACK_FILES)
 libcoinlapack_la_LDFLAGS = $(LT_LDFLAGS)
@@ -762,6 +859,15 @@ dlamch.obj: dlamch.f
 	$(F77) $(AM_FFLAGS) $(DLAMCH_FFLAGS) -c -o $@ `$(CYGPATH_W) '$<'`
 
 dlamch.lo: dlamch.f
+	$(LIBTOOL) --tag=F77 --mode=compile $(F77) $(AM_FFLAGS) $(DLAMCH_FFLAGS) -c -o $@ $<
+
+slamch.o: slamch.f
+	$(F77) $(AM_FFLAGS) $(DLAMCH_FFLAGS) -c -o $@ $<
+
+slamch.obj: slamch.f
+	$(F77) $(AM_FFLAGS) $(DLAMCH_FFLAGS) -c -o $@ `$(CYGPATH_W) '$<'`
+
+slamch.lo: slamch.f
 	$(LIBTOOL) --tag=F77 --mode=compile $(F77) $(AM_FFLAGS) $(DLAMCH_FFLAGS) -c -o $@ $<
 
 test:

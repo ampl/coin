@@ -1,5 +1,5 @@
 
-/* $Id: CbcOrClpParam.hpp 1886 2012-11-21 09:34:47Z forrest $ */
+/* $Id: CbcOrClpParam.hpp 1928 2013-04-06 12:54:16Z stefan $ */
 // Copyright (C) 2002, International Business Machines
 // Corporation and others.  All Rights Reserved.
 // This code is licensed under the terms of the Eclipse Public License (EPL).
@@ -100,6 +100,8 @@ enum CbcOrClpParameterType
      CLP_PARAM_INT_CPP,
      CLP_PARAM_INT_PROCESSTUNE,
      CLP_PARAM_INT_USESOLUTION,
+     CLP_PARAM_INT_RANDOMSEED,
+     CLP_PARAM_INT_MORESPECIALOPTIONS,
 
      CBC_PARAM_INT_STRONGBRANCHING = 151,
      CBC_PARAM_INT_CUTDEPTH,
@@ -134,6 +136,11 @@ enum CbcOrClpParameterType
      CLP_PARAM_INT_LOGLEVEL ,
 #endif
      CBC_PARAM_INT_MAXSAVEDSOLS,
+     CBC_PARAM_INT_RANDOMSEED,
+     CBC_PARAM_INT_MULTIPLEROOTS,
+     CBC_PARAM_INT_STRONG_STRATEGY,
+     CBC_PARAM_INT_EXTRA_VARIABLES,
+     CBC_PARAM_INT_MAX_SLOW_CUTS,
 
      CLP_PARAM_STR_DIRECTION = 201,
      CLP_PARAM_STR_DUALPIVOT,
@@ -159,6 +166,7 @@ enum CbcOrClpParameterType
      CLP_PARAM_STR_FACTORIZATION,
      CLP_PARAM_STR_ALLCOMMANDS,
      CLP_PARAM_STR_TIME_MODE,
+     CLP_PARAM_STR_ABCWANTED,
 
      CBC_PARAM_STR_NODESTRATEGY = 251,
      CBC_PARAM_STR_BRANCHSTRATEGY,
@@ -203,6 +211,10 @@ enum CbcOrClpParameterType
      CBC_PARAM_STR_PIVOTANDCOMPLEMENT,
      CBC_PARAM_STR_VND,
      CBC_PARAM_STR_LAGOMORYCUTS,
+     CBC_PARAM_STR_LATWOMIRCUTS,
+     CBC_PARAM_STR_REDSPLIT2CUTS,
+     CBC_PARAM_STR_GMICUTS,
+     CBC_PARAM_STR_CUTOFF_CONSTRAINT,
 
      CLP_PARAM_ACTION_DIRECTORY = 301,
      CLP_PARAM_ACTION_DIRSAMPLE,
@@ -474,7 +486,7 @@ int CoinReadGetIntField(int argc, const char *argv[], int * valid);
 double CoinReadGetDoubleField(int argc, const char *argv[], int * valid);
 void CoinReadPrintit(const char * input);
 void setCbcOrClpPrinting(bool yesNo);
-#define CBCMAXPARAMETERS 200
+#define CBCMAXPARAMETERS 250
 /*
   Subroutine to establish the cbc parameter array. See the description of
   class CbcOrClpParam for details. Pulled from C..Main() for clarity.

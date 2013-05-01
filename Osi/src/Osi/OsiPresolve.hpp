@@ -145,14 +145,23 @@ public:
   { nonLinearValue_ = value;}
   inline double nonLinearValue() const
     { return nonLinearValue_;}
-  /** Whether we want to skip dual part of presolve etc.
-      1 bit allows duplicate column processing on integer columns
-      and dual stuff on integers
-      2 bit set switches off actions which can change +1 to something else
-      4 bit set transfers costs to integer variables
-      8 bit set stops x+y+z=1 transform
-      16 bit set allows doing presolve things which don't easily unroll
-      32 bit set allows dubious gub element reduction
+  /*! \brief Fine control over presolve actions
+  
+    Set/clear the following bits to allow or suppress actions:
+      - 0x01 allow duplicate column processing on integer columns
+	     and dual stuff on integers
+      - 0x02 switch off actions which can change +1 to something else
+      	     (doubleton, tripleton, implied free)
+      - 0x04 allow transfer of costs from singletons and between integer
+      	     variables (when advantageous)
+      - 0x08 do not allow x+y+z=1 transform
+      - 0x10 allow actions that don't easily unroll
+      - 0x20 allow dubious gub element reduction
+
+    GUB element reduction is only partially implemented in CoinPresolve (see
+    gubrow_action) and willl cause an abort at postsolve. It's not clear
+    what's meant by `dual stuff on integers'.
+    -- lh, 110605 --
   */
   inline void setPresolveActions(int action)
   { presolveActions_  = (presolveActions_&0xffff0000)|(action&0xffff);}

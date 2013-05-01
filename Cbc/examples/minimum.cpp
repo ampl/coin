@@ -1,4 +1,4 @@
-// $Id: minimum.cpp 1574 2011-01-05 01:13:55Z lou $
+// $Id: minimum.cpp 1902 2013-04-10 16:58:16Z stefan $
 // Copyright (C) 2005, International Business Machines
 // Corporation and others.  All Rights Reserved.
 // This code is licensed under the terms of the Eclipse Public License (EPL).
@@ -15,7 +15,11 @@ int main (int argc, const char *argv[])
   // and assert that it is a clean model
 #if defined(SAMPLEDIR)
   int numMpsReadErrors = solver1.readMps(SAMPLEDIR "/p0033.mps","");
-  assert(numMpsReadErrors==0);
+  if( numMpsReadErrors != 0 )
+  {
+     printf("%d errors reading MPS file\n", numMpsReadErrors);
+     return numMpsReadErrors;
+  }
 #else
   fprintf(stderr, "Do not know where to find sample MPS files.\n");
   exit(1);

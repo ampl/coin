@@ -87,7 +87,7 @@ CoinPackedVectorUnitTest()
       try {
         r.duplicateIndex();
       }
-      catch (CoinError e) {
+      catch (CoinError& e) {
         errorThrown = true;
       }
       assert( !errorThrown );
@@ -106,7 +106,7 @@ CoinPackedVectorUnitTest()
       try {
 	r.setVector(ne3,inx3,el3,true);
       }
-      catch (CoinError e) {
+      catch (CoinError& e) {
 	 errorThrown = true;
       }
       assert( errorThrown );
@@ -115,7 +115,7 @@ CoinPackedVectorUnitTest()
       try {
 	 r.duplicateIndex();
       }
-      catch (CoinError e) {
+      catch (CoinError& e) {
 	 errorThrown = true;
       }
       assert( errorThrown );
@@ -994,7 +994,7 @@ CoinPackedVectorUnitTest()
       try {
         r.duplicateIndex();
       }
-      catch (CoinError e) {
+      catch (CoinError& e) {
         errorThrown = true;
       }
       assert( !errorThrown );
@@ -1013,7 +1013,7 @@ CoinPackedVectorUnitTest()
       try {
 	r.setVector(ne3,inx3,el3,true);
       }
-      catch (CoinError e) {
+      catch (CoinError& e) {
 	 errorThrown = true;
       }
       assert( errorThrown );
@@ -1022,7 +1022,7 @@ CoinPackedVectorUnitTest()
       try {
 	 r.duplicateIndex();
       }
-      catch (CoinError e) {
+      catch (CoinError& e) {
 	 errorThrown = true;
       }
       assert( errorThrown );

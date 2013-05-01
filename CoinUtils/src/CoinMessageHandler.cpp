@@ -1,4 +1,4 @@
-/* $Id: CoinMessageHandler.cpp 1448 2011-06-19 15:34:41Z stefan $ */
+/* $Id: CoinMessageHandler.cpp 1513 2011-12-10 23:34:13Z lou $ */
 // Copyright (C) 2002, International Business Machines
 // Corporation and others.  All Rights Reserved.
 // This code is licensed under the terms of the Eclipse Public License (EPL).
@@ -9,6 +9,7 @@
 #include <cstdlib>
 #include <cstddef>
 #include <map>
+
 
 /* Default constructor. */
 CoinOneMessage::CoinOneMessage()
@@ -397,17 +398,16 @@ CoinMessageHandler::checkSeverity()
    printf messages in code
 */
 void 
-CoinMessageHandler::setLogLevel(int value)
+CoinMessageHandler::setLogLevel (int value)
 {
-  if (value>=-1)
-    logLevel_=value;
+  if (value >= -1) logLevel_ = value ;
 }
 void 
-CoinMessageHandler::setLogLevel(int which,int value)
+CoinMessageHandler::setLogLevel (int which, int value)
 {
-  if (which>=0&&which<COIN_NUM_LOG) {
-    if (value>=-1)
-      logLevels_[which]=value;
+  if (which >= 0 && which < COIN_NUM_LOG) {
+    if (value >= -1)
+      logLevels_[which] = value ;
   }
 }
 void 
@@ -556,82 +556,135 @@ CoinMessageHandler::clone() const
 {
   return new CoinMessageHandler(*this);
 }
-// Start a message
-CoinMessageHandler & 
-CoinMessageHandler::message(int messageNumber,
-			   const CoinMessages &normalMessage)
+
+/*
+  Decide if we're printing or not. Split out because it's nontrivial and
+  used in two places.
+
+  Recall that setLogLevel(lvl) sets logLevel_. To set logLevels_[i], use
+  setLogLevel(i,lvl). The two are not connected. By default, all entries
+  of logLevels_ are initialised to -1000.
+
+  Unless the client changes logLevels_[0], when the log level (lvl)
+  of the message is 8 or more, it's ANDed with the handler's log level
+  (logLevel_). Printing is enabled only if the result is nonzero. Commonly
+  this is used in a scheme where individual bits enable particular debug
+  output.
+*/
+void CoinMessageHandler::calcPrintStatus (int msglvl, int msgclass)
 {
-  if (messageOut_!=messageBuffer_) {
-    // put out last message
-    internalPrint();
-  }
-  internalNumber_=messageNumber;
-  currentMessage_= *(normalMessage.message_[messageNumber]);
-  source_ = normalMessage.source_;
-  format_ = currentMessage_.message_;
-  messageBuffer_[0]='\0';
-  messageOut_=messageBuffer_;
-  highestNumber_ = CoinMax(highestNumber_,currentMessage_.externalNumber_);
-  // do we print
-  int detail = currentMessage_.detail_;
-  printStatus_=0;
-  if (logLevels_[0]==-1000) {
-    if (detail>=8&&logLevel_>=0) {
-      // bit setting - debug
-      if ((detail&logLevel_)==0)
-	printStatus_ = 3;
-    } else if (logLevel_<detail) {
-      printStatus_ = 3;
+  printStatus_ = 0 ;
+  if (logLevels_[0] == -1000) {
+    if (msglvl >= 8 && logLevel_ >= 0) {
+      if ((msglvl&logLevel_) == 0)
+	printStatus_ = 3 ;
+    } else if (logLevel_ < msglvl) {
+      printStatus_ = 3 ;
     }
-  } else if (logLevels_[normalMessage.class_]<detail) {
+  } else if (logLevels_[msgclass] < msglvl) {
     printStatus_ = 3;
   }
+}
+
+/*
+  Start a message using a standard CoinOneMessage.
+*/
+CoinMessageHandler & 
+CoinMessageHandler::message (int messageNumber,
+			     const CoinMessages &normalMessages)
+{
+  // Deal with the previous message, if there is one.
+  if (messageOut_ != messageBuffer_) {
+    internalPrint() ;
+  }
+  // Acquire the new message
+  internalNumber_ = messageNumber ;
+  currentMessage_ = *(normalMessages.message_[messageNumber]) ;
+  source_ = normalMessages.source_ ;
+  format_ = currentMessage_.message_ ;
+  highestNumber_ = CoinMax(highestNumber_,currentMessage_.externalNumber_);
+
+  // Initialise the message construction buffer
+  messageBuffer_[0] = '\0' ;
+  messageOut_ = messageBuffer_ ;
+
+  // Decide whether or not to print (sets printStatus_)
+  calcPrintStatus(currentMessage_.detail_,normalMessages.class_) ;
+
+  // If we're printing, initialise the message
   if (!printStatus_) {
     if (prefix_) {
       sprintf(messageOut_,"%s%4.4d%c ",source_.c_str(),
 	      currentMessage_.externalNumber_,
-	      currentMessage_.severity_);
-      messageOut_ += strlen(messageOut_);
+	      currentMessage_.severity_) ;
+      messageOut_ += strlen(messageOut_) ;
     }
-    format_ = nextPerCent(format_,true);
+    format_ = nextPerCent(format_,true) ;
   }
-  return *this;
+  return (*this) ;
 }
-/* The following is to help existing codes interface
-   Starts message giving number and complete text
+/*
+  Start a message, providing the full message, information to generate
+  a prefix, a severity code, and an optional log level.
+  Intended as an aid to help existing codes interface.
 */
 CoinMessageHandler & 
-CoinMessageHandler::message(int externalNumber,const char * source,
-			   const char * msg, char severity)
+CoinMessageHandler::message (int externalNumber, const char *source,
+			     const char *msg, char severity, int loglvl)
 {
-  if (messageOut_!=messageBuffer_) {
-    // put out last message
-    internalPrint();
+  // Deal with the previous message, if there is one.
+  if (messageOut_ != messageBuffer_) {
+    internalPrint() ;
   }
-  internalNumber_=externalNumber;
-  currentMessage_= CoinOneMessage();
-  currentMessage_.setExternalNumber(externalNumber);
-  source_ = source;
-  // mark so will not update buffer
-  printStatus_=2;
+  // Set up a dummy message.
+  internalNumber_ = externalNumber ;
+  char detail = ((loglvl >= 0)?(static_cast<char>(loglvl)):'\000') ;
+  currentMessage_= CoinOneMessage(externalNumber,detail,msg) ;
+  source_ = source ;
   highestNumber_ = CoinMax(highestNumber_,externalNumber);
-  // If we get here we always print
-  if (prefix_) {
-    sprintf(messageOut_,"%s%4.4d%c ",source_.c_str(),
-	    externalNumber,
-	    severity);
+
+  // Initialise the message construction buffer
+  messageBuffer_[0] = '\0' ;
+  messageOut_ = messageBuffer_ ;
+
+  /*
+    Decide whether or not to print. The normal value of printStatus_ here
+    is 2 (complete message provided). loglvl defaults to -1 for backwards
+    compatibility (previously there was no provision for a log level).
+  */
+  if (loglvl >= 0) calcPrintStatus(loglvl,0) ;
+  if (!printStatus_) {
+    printStatus_ = 2 ;
+    if (prefix_) {
+      sprintf(messageOut_,"%s%4.4d%c ",source_.c_str(),
+	      externalNumber,severity) ;
+    }
+    strcat(messageBuffer_,msg) ;
+    messageOut_ = messageBuffer_+strlen(messageBuffer_) ;
   }
-  strcat(messageBuffer_,msg);
-  messageOut_=messageBuffer_+strlen(messageBuffer_);
-  return *this;
+  return (*this) ;
 }
-  /* Allows for skipping printing of part of message,
-      but putting in data */
-  CoinMessageHandler & 
+
+/*
+  Decides whether or not to print and returns a reference to the handler.
+*/
+CoinMessageHandler & 
+CoinMessageHandler::message(int loglvl)
+{
+  // Adjust print status?
+  if (loglvl >= 0) calcPrintStatus(loglvl,0) ;
+
+  return (*this) ;
+}
+
+/*
+  Allows for skipping printing of part of message, but putting in data
+*/
+CoinMessageHandler & 
 CoinMessageHandler::printing(bool onOff)
 {
   // has no effect if skipping or whole message in
-  if (printStatus_<2) {
+  if (printStatus_ < 2) {
     assert(format_[1]=='?');
     *format_ = '%' ;
     if (onOff)
@@ -642,26 +695,32 @@ CoinMessageHandler::printing(bool onOff)
   }
   return *this;
 }
-/* Stop (and print) 
+/*
+  Stop (and print)
+
+  Unless printing is currently suppressed. We need to do the finishing actions
+  in any event.
 */
 int 
 CoinMessageHandler::finish()
 {
-  if (messageOut_!=messageBuffer_) {
-    // put out last message
+  // Deal with the collected message
+  if (printStatus_ < 3 && messageOut_ != messageBuffer_) {
     internalPrint();
   }
-  internalNumber_=-1;
-  format_ = NULL;
-  messageBuffer_[0]='\0';
-  messageOut_=messageBuffer_;
-  printStatus_=0;
-  doubleValue_.clear();
-  longValue_.clear();
-  charValue_.clear();
-  stringValue_.clear();
-  return 0;
+  // Clean up for the next message.
+  internalNumber_ = -1 ;
+  format_ = NULL ;
+  messageBuffer_[0] = '\0' ;
+  messageOut_ = messageBuffer_ ;
+  printStatus_ = 0 ;
+  doubleValue_.clear() ;
+  longValue_.clear() ;
+  charValue_.clear() ;
+  stringValue_.clear() ;
+  return (0) ;
 }
+
 /* Gets position of next field in format
    If we're scanning the initial portion of the string (prior to the first
    `%' code) the prefix will be copied to the output buffer. Normally, the
@@ -900,29 +959,26 @@ CoinMessageHandler::operator<< (const char *stringvalue)
   }
   return *this;
 }
+
+/*
+  Handle markers. Even when printing is suppressed (printStatus_ == 3) we need
+  to execute finish() to reset for the next message.
+*/
 CoinMessageHandler & 
 CoinMessageHandler::operator<< (CoinMessageMarker marker)
 {
-  if (printStatus_!=3) {
-    switch (marker) {
-    case CoinMessageEol:
-      finish();
-      break;
-    case CoinMessageNewline:
-      strcat(messageOut_,"\n");
-      messageOut_++;
-      break;
+  switch (marker) {
+    case CoinMessageEol: {
+      finish() ;
+      break ;
     }
-  } else {
-    // skipping - tidy up
-    format_ = NULL;
+    case CoinMessageNewline: {
+      if (printStatus_ != 3) {
+	strcat(messageOut_,"\n") ;
+	messageOut_++ ;
+      }
+      break ;
+    }
   }
-  return *this;
-}
-
-// returns current 
-CoinMessageHandler & 
-CoinMessageHandler::message()
-{
-  return * this;
+  return (*this) ;
 }

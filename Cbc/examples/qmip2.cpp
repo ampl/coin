@@ -1,14 +1,11 @@
-// $Id$
+// $Id: qmip2.cpp 1902 2013-04-10 16:58:16Z stefan $
 // Copyright (C) 2006, International Business Machines
 // Corporation and others.  All Rights Reserved.
 // This code is licensed under the terms of the Eclipse Public License (EPL).
 
-#if defined(_MSC_VER)
-// Turn off compiler warning about long names
-#  pragma warning(disable:4786)
-#endif
-
 #include <cassert>
+
+#include "CoinPragma.hpp"
 
 // For Branch and bound
 #include "OsiClpSolverInterface.hpp"

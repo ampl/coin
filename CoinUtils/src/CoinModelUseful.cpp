@@ -1,4 +1,4 @@
-/* $Id: CoinModelUseful.cpp 1543 2012-07-27 22:48:29Z unxusr $ */
+/* $Id: CoinModelUseful.cpp 1585 2013-04-06 20:42:02Z stefan $ */
 // Copyright (C) 2005, International Business Machines
 // Corporation and others.  All Rights Reserved.
 // This code is licensed under the terms of the Eclipse Public License (EPL).
@@ -935,13 +935,10 @@ CoinModelLinkedList::create(int maxMajor,int maxElements,
   for (i=0;i<numberElements;i++) {
     if (triples[i].column>=0) {
       int iMajor;
-      int iMinor;
       if (!type_) {
         // for rows
         iMajor=static_cast<int> (rowInTriple(triples[i]));
-        iMinor=triples[i].column;
       } else {
-        iMinor=static_cast<int> (rowInTriple(triples[i]));
         iMajor=triples[i].column;
       }
       assert (iMajor<numberMajor);
@@ -1229,6 +1226,7 @@ CoinModelLinkedList::updateDeleted(int /*which*/, CoinModelTriple * triples,
       int nextThis = next_[lastFree];
       if (previousThis>=0&&previousThis!=last) {
         next_[previousThis]=nextThis;
+#ifndef NDEBUG
         int iTest;
         if (!type_) {
           // for rows
@@ -1238,11 +1236,13 @@ CoinModelLinkedList::updateDeleted(int /*which*/, CoinModelTriple * triples,
         }
         assert (triples[previousThis].column>=0);
         assert (iTest==iMajor);
+#endif
       } else {
         first_[iMajor]=nextThis;
       }
       if (nextThis>=0) {
         previous_[nextThis]=previousThis;
+#ifndef NDEBUG
         int iTest;
         if (!type_) {
           // for rows
@@ -1252,6 +1252,7 @@ CoinModelLinkedList::updateDeleted(int /*which*/, CoinModelTriple * triples,
         }
         assert (triples[nextThis].column>=0);
         assert (iTest==iMajor);
+#endif
       } else {
         last_[iMajor]=previousThis;
       }
@@ -1275,6 +1276,7 @@ CoinModelLinkedList::updateDeleted(int /*which*/, CoinModelTriple * triples,
           int nextThis = next_[previous];
           if (previousThis>=0&&previousThis!=last) {
             next_[previousThis]=nextThis;
+#ifndef NDEBUG
             int iTest;
             if (!type_) {
               // for rows
@@ -1284,11 +1286,13 @@ CoinModelLinkedList::updateDeleted(int /*which*/, CoinModelTriple * triples,
             }
             assert (triples[previousThis].column>=0);
             assert (iTest==iMajor);
+#endif
           } else {
             first_[iMajor]=nextThis;
           }
           if (nextThis>=0) {
             previous_[nextThis]=previousThis;
+#ifndef NDEBUG
             int iTest;
             if (!type_) {
               // for rows
@@ -1298,6 +1302,7 @@ CoinModelLinkedList::updateDeleted(int /*which*/, CoinModelTriple * triples,
             }
             assert (triples[nextThis].column>=0);
             assert (iTest==iMajor);
+#endif
           } else {
             last_[iMajor]=previousThis;
           }
@@ -1425,22 +1430,19 @@ CoinModelLinkedList::validateLinks(const CoinModelTriple * triples) const
   int i;
   for ( i=0;i<numberMajor_;i++) {
     int position = first_[i];
+#ifndef NDEBUG
     int lastPosition=-1;
+#endif
     while (position>=0) {
-      int iMajor;
-      if (position!=first_[i])
-        assert (next_[previous_[position]]==position);
-      if (!type_) {
-        // for rows
-        iMajor=static_cast<int> (rowInTriple(triples[position]));
-      } else {
-        iMajor=triples[position].column;
-      }
+      assert (position==first_[i] || next_[previous_[position]]==position);
+      assert (type_ || i == static_cast<int> (rowInTriple(triples[position])));  // i == iMajor for rows
+      assert (!type_ || i == triples[position].column);  // i == iMajor
       assert (triples[position].column>=0);
       mark[position]=1;
       lastElement = CoinMax(lastElement,position);
-      assert (i==iMajor);
+#ifndef NDEBUG
       lastPosition=position;
+#endif
       position = next_[position];
     }
     assert (lastPosition==last_[i]);

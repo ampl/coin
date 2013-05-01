@@ -1,4 +1,4 @@
-// $Id: CglMessage.cpp 948 2011-01-04 23:28:13Z lou $
+// $Id: CglMessage.cpp 1113 2013-04-06 13:28:20Z stefan $
 // Copyright (C) 2005, International Business Machines
 // Corporation and others.  All Rights Reserved.
 // This code is licensed under the terms of the Eclipse Public License (EPL).
@@ -15,7 +15,7 @@ typedef struct {
 } Cgl_message;
 static Cgl_message us_english[]=
 {
-  {CGL_INFEASIBLE,0,1,"Cut generators found to be infeasible!"},
+  {CGL_INFEASIBLE,0,1,"Cut generators found to be infeasible! (or unbounded)"},
   {CGL_CLIQUES,1,2,"%d cliques of average size %g"},
   {CGL_FIXED,2,1,"%d variables fixed"},
   {CGL_PROCESS_STATS,3,1,"%d fixed, %d tightened bounds, %d strengthened rows, %d substitutions"},
@@ -30,6 +30,7 @@ static Cgl_message us_english[]=
   {CGL_ADDED_INTEGERS,12,1,"Added %d variables (from %d rows) with %d elements"},
   {CGL_POST_INFEASIBLE,13,1,"Postprocessed model is infeasible - possible tolerance issue - try without preprocessing"},
   {CGL_POST_CHANGED,14,1,"Postprocessing changed objective from %g to %g - possible tolerance issue - try without preprocessing"},
+  {CGL_GENERAL, 1000, 1, "%s"},
   {CGL_DUMMY_END,999999,0,""}
 };
 /* Constructor */

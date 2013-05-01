@@ -1,4 +1,4 @@
-/* $Id: CoinPackedVector.cpp 1373 2011-01-03 23:57:44Z lou $ */
+/* $Id: CoinPackedVector.cpp 1509 2011-12-05 13:50:48Z forrest $ */
 // Copyright (C) 2000, International Business Machines
 // Corporation and others.  All Rights Reserved.
 // This code is licensed under the terms of the Eclipse Public License (EPL).
@@ -29,7 +29,7 @@ CoinPackedVector::operator=(const CoinPackedVector & rhs)
 {
    if (this != &rhs) {
       clear();
-      gutsOfSetVector(rhs.getNumElements(), rhs.getIndices(), rhs.getElements(),
+      gutsOfSetVector(rhs.getVectorNumElements(), rhs.getVectorIndices(), rhs.getVectorElements(),
 		      CoinPackedVectorBase::testForDuplicateIndex(),
 		      "operator=");
    }
@@ -68,7 +68,7 @@ CoinPackedVector::assignVector(int size, int*& inds, double*& elems,
    try {
       CoinPackedVectorBase::setTestForDuplicateIndex(testForDuplicateIndex);
    }
-   catch (CoinError e) {
+   catch (CoinError& e) {
       throw CoinError("duplicate index", "assignVector", "CoinPackedVector");
    }
 }
@@ -95,7 +95,7 @@ CoinPackedVector::assignVector(int size, int*& inds, double*& elems,
     try {    
       CoinPackedVectorBase::setTestForDuplicateIndex(testForDuplicateIndex);
     }
-    catch (CoinError e) {
+    catch (CoinError& e) {
     throw CoinError("duplicate index", "assignVector",
 		    "CoinPackedVector");
     }
@@ -459,7 +459,7 @@ CoinPackedVector::CoinPackedVector(const CoinPackedVector & rhs) :
    origIndices_(NULL),
    capacity_(0)
 {  
-   gutsOfSetVector(rhs.getNumElements(), rhs.getIndices(), rhs.getElements(),
+   gutsOfSetVector(rhs.getVectorNumElements(), rhs.getVectorIndices(), rhs.getVectorElements(),
 		   rhs.testForDuplicateIndex(), "copy constructor");
 }
 
@@ -491,7 +491,7 @@ CoinPackedVector::gutsOfSetVector(int size,
      try {
        CoinPackedVectorBase::setTestForDuplicateIndex(testForDuplicateIndex);
      }
-     catch (CoinError e) {
+     catch (CoinError& e) {
        throw CoinError("duplicate index", method, "CoinPackedVector");
      }
    } else {
@@ -517,7 +517,7 @@ CoinPackedVector::gutsOfSetConstant(int size,
    try {
       CoinPackedVectorBase::setTestForDuplicateIndex(testForDuplicateIndex);
    }
-   catch (CoinError e) {
+   catch (CoinError& e) {
       throw CoinError("duplicate index", method, "CoinPackedVector");
    }
 }

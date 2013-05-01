@@ -4,7 +4,7 @@
 //           Carnegie Mellon University, Pittsburgh, PA 15213
 // Date:     11/22/05
 //
-// $Id$
+// $Id: CglLandPValidator.hpp 1123 2013-04-06 20:47:24Z stefan $
 //
 // This code is licensed under the terms of the Eclipse Public License (EPL).
 //---------------------------------------------------------------------------
@@ -47,13 +47,13 @@ public:
 
     /** Clean an OsiCut */
     int cleanCut(OsiRowCut & aCut, const double * solCut,const OsiSolverInterface &si, const CglParam & par,
-                 const double * colLower, const double * colUpper) const;
+                 const double * colLower, const double * colUpper);
     /** Clean an OsiCut by another method */
     int cleanCut2(OsiRowCut & aCut, const double * solCut, const OsiSolverInterface &si, const CglParam & par,
-                  const double * colLower, const double * colUpper) const;
+                  const double * colLower, const double * colUpper);
     /** Call the cut cleaner */
     int operator()(OsiRowCut & aCut, const double * solCut,const OsiSolverInterface &si, const CglParam & par,
-                   const double * colLower, const double * colUpper) const
+                   const double * colLower, const double * colUpper)
     {
         return cleanCut(aCut, solCut, si, par, colLower, colUpper);
     }
@@ -124,7 +124,7 @@ private:
     /** Strings explaining reason for rejections */
     static std::vector<std::string> rejections_;
     /** Number of cut rejected for each of the reasons.*/
-    mutable std::vector<int> numRejected_;
+    std::vector<int> numRejected_;
 };
 
 }/* Ends namespace LAP.*/

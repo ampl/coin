@@ -10,7 +10,7 @@
 // Copyright (C) 2009 Humboldt University Berlin and others.
 // All Rights Reserved.
 
-// $Id: OsiGrbSolverInterface.hpp 1754 2011-06-19 16:07:57Z stefan $
+// $Id: OsiGrbSolverInterface.hpp 1830 2011-11-26 16:46:55Z stefan $
 
 #ifndef OsiGrbSolverInterface_H
 #define OsiGrbSolverInterface_H
@@ -721,6 +721,33 @@ public:
 
 	//@}
 	/***************************************************************************/
+
+       /***************************************************************************/
+
+    /** Apply a collection of cuts.
+
+    Only cuts which have an <code>effectiveness >= effectivenessLb</code>
+    are applied.
+    <ul>
+      <li> ReturnCode.getNumineffective() -- number of cuts which were
+           not applied because they had an
+           <code>effectiveness < effectivenessLb</code>
+      <li> ReturnCode.getNuminconsistent() -- number of invalid cuts
+      <li> ReturnCode.getNuminconsistentWrtIntegerModel() -- number of
+           cuts that are invalid with respect to this integer model
+      <li> ReturnCode.getNuminfeasible() -- number of cuts that would
+           make this integer model infeasible
+      <li> ReturnCode.getNumApplied() -- number of integer cuts which
+           were applied to the integer model
+      <li> cs.size() == getNumineffective() +
+             getNuminconsistent() +
+             getNuminconsistentWrtIntegerModel() +
+             getNuminfeasible() +
+             getNumApplied()
+    </ul>
+    */
+    virtual OsiSolverInterface::ApplyCutsReturnCode applyCuts(const OsiCuts & cs,
+            double effectivenessLb = 0.0);
 
 protected:
 

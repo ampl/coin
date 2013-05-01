@@ -1,4 +1,4 @@
-/* $Id: ClpPrimalColumnSteepest.cpp 1753 2011-06-19 16:27:26Z stefan $ */
+/* $Id: ClpPrimalColumnSteepest.cpp 1878 2012-08-30 15:43:19Z forrest $ */
 // Copyright (C) 2002, International Business Machines
 // Corporation and others.  All Rights Reserved.
 // This code is licensed under the terms of the Eclipse Public License (EPL).
@@ -590,6 +590,12 @@ ClpPrimalColumnSteepest::pivotColumn(CoinIndexedVector * updates,
                assert(model_->reducedCost(bestSequence) > 0.0);
           }
      }
+#endif
+#if 0
+     for (int i=0;i<numberRows;i++)
+       printf("row %d weight %g infeas %g\n",i,weights_[i+numberColumns],infeas[i+numberColumns]);
+     for (int i=0;i<numberColumns;i++)
+       printf("column %d weight %g infeas %g\n",i,weights_[i],infeas[i]);
 #endif
      return bestSequence;
 }

@@ -1,4 +1,4 @@
-/* $Id: CbcTree.hpp 1675 2011-06-19 17:23:14Z stefan $ */
+/* $Id: CbcTree.hpp 1813 2012-11-22 19:00:22Z forrest $ */
 // Copyright (C) 2004, International Business Machines
 // Corporation and others.  All Rights Reserved.
 // This code is licensed under the terms of the Eclipse Public License (EPL).
@@ -30,7 +30,7 @@
 #if defined(_MSC_VER) || defined(__MNO_CYGWIN)
 //#define CBC_DUBIOUS_HEAP
 #endif
-#ifndef CBC_DUBIOUS_HEAP
+#if 1 //ndef CBC_DUBIOUS_HEAP
 
 /*! \brief Controls search tree debugging
 
@@ -113,6 +113,10 @@ public:
 
     /// Return a node pointer
     inline CbcNode * nodePointer (int i) const { return nodes_[i]; }
+    void realpop();
+    /** After changing data in the top node, fix the heap */
+    void fixTop();
+    void realpush(CbcNode * node);
 //@}
 
     /*! \name Search tree maintenance */
@@ -451,6 +455,9 @@ public:
     inline void resetNodeNumbers() {
         maximumNodeNumber_ = 0;
     }
+
+    /// Get maximum node number
+    inline int maximumNodeNumber() const { return maximumNodeNumber_; }
 //@}
 protected:
     std::vector <CbcNode *> nodes_;

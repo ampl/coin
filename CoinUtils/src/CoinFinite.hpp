@@ -1,4 +1,4 @@
-/* $Id: CoinFinite.hpp 1448 2011-06-19 15:34:41Z stefan $ */
+/* $Id: CoinFinite.hpp 1423 2011-04-30 10:17:48Z stefan $ */
 // Copyright (C) 2002, International Business Machines
 // Corporation and others.  All Rights Reserved.
 // This code is licensed under the terms of the Eclipse Public License (EPL).

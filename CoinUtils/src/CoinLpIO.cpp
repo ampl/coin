@@ -1,4 +1,4 @@
-/* $Id: CoinLpIO.cpp 1545 2012-07-29 18:35:03Z unxusr $ */
+/* $Id: CoinLpIO.cpp 1590 2013-04-10 16:48:33Z stefan $ */
 // Last edit: 11/5/08
 //
 // Name:     CoinLpIO.cpp; Support for Lp files
@@ -814,7 +814,7 @@ CoinLpIO::writeLp(FILE *fp, const bool useRowNames)
      cnt_print++;
    }
 
-   if(cnt_print % numberAcross != 0) {
+   if((cnt_print == 0) || (cnt_print % numberAcross != 0)) {
      fprintf(fp, "\n");
    }
    

@@ -9,9 +9,6 @@
 /* Define to 1 if GMP is available */
 #undef COIN_HAS_GMP
 
-/* Define to 1 if zlib is available */
-#undef COIN_HAS_ZLIB
-
 /* SVN revision number of project */
 #undef GLPK_SVN_REV
 
@@ -83,12 +80,6 @@
 
 /* Define to 1 if you have the <windows.h> header file. */
 #undef HAVE_WINDOWS_H
-
-/* Define to 1 if GNU zlib is available */
-#undef HAVE_ZLIB
-
-/* Define to 1 if you have the <zlib.h> header file. */
-#undef HAVE_ZLIB_H
 
 /* "Set to the name of the MySQL dynamic library" */
 #undef MYSQL_DLNAME

@@ -1,4 +1,4 @@
-// $Id: sample3.cpp 1675 2011-06-19 17:23:14Z stefan $
+// $Id: sample3.cpp 1902 2013-04-10 16:58:16Z stefan $
 // Copyright (C) 2002, International Business Machines
 // Corporation and others.  All Rights Reserved.
 // This code is licensed under the terms of the Eclipse Public License (EPL).
@@ -90,10 +90,19 @@ int main (int argc, const char *argv[])
   //solver1.messageHandler()->setLogLevel(0);
   solver1.getModelPtr()->setDualBound(1.0e10);
 
+  if (argc <= 1) {
+     printf("using %s <modelfile>\n", argv[0]);
+     return 1;
+  }
+
   // Read in model using argv[1]
   // and assert that it is a clean model
   int numMpsReadErrors = solver1.readMps(argv[1],"");
-  assert(numMpsReadErrors==0);
+  if( numMpsReadErrors != 0 )
+  {
+     printf("%d errors reading MPS file\n", numMpsReadErrors);
+     return numMpsReadErrors;
+  }
   // do here so integers correct
   CbcModel model(solver1);
   model.solver()->setHintParam(OsiDoReducePrint,true,OsiHintTry);

@@ -1,4 +1,4 @@
-/* $Id: CoinModel.cpp 1373 2011-01-03 23:57:44Z lou $ */
+/* $Id: CoinModel.cpp 1509 2011-12-05 13:50:48Z forrest $ */
 // Copyright (C) 2005, International Business Machines
 // Corporation and others.  All Rights Reserved.
 // This code is licensed under the terms of the Eclipse Public License (EPL).
@@ -125,8 +125,62 @@ CoinModel::CoinModel ()
      cut_(NULL),
      moreInfo_(NULL),
      type_(-1),
+     noNames_(false),
      links_(0)
 {
+}
+/* Constructor with sizes. */
+CoinModel::CoinModel(int firstRows, int firstColumns, int firstElements,bool noNames)
+  :  CoinBaseModel(),
+     maximumRows_(0),
+     maximumColumns_(0),
+     numberElements_(0),
+     maximumElements_(0),
+     numberQuadraticElements_(0),
+     maximumQuadraticElements_(0),
+     rowLower_(NULL),
+     rowUpper_(NULL),
+     rowType_(NULL),
+     objective_(NULL),
+     columnLower_(NULL),
+     columnUpper_(NULL),
+     integerType_(NULL),
+     columnType_(NULL),
+     start_(NULL),
+     elements_(NULL),
+     packedMatrix_(NULL),
+     quadraticElements_(NULL),
+     sortIndices_(NULL),
+     sortElements_(NULL),
+     sortSize_(0),
+     sizeAssociated_(0),
+     associated_(NULL),
+     numberSOS_(0),
+     startSOS_(NULL),
+     memberSOS_(NULL),
+     typeSOS_(NULL),
+     prioritySOS_(NULL),
+     referenceSOS_(NULL),
+     priority_(NULL),
+     cut_(NULL),
+     moreInfo_(NULL),
+     type_(-1),
+     noNames_(noNames),
+     links_(0)
+{
+  if (!firstRows) {
+    if (firstColumns) {
+      type_=1;
+      resize(0,firstColumns,firstElements);
+    }
+  } else {
+    type_=0;
+    resize(firstRows,0,firstElements);
+    if (firstColumns) {
+      // mixed - do linked lists for columns
+      //createList(2);
+    }
+  }
 }
 /* Read a problem in MPS or GAMS format from the given filename.
  */
@@ -165,6 +219,7 @@ CoinModel::CoinModel(const char *fileName, int allowStrings)
     cut_(NULL),
     moreInfo_(NULL),
     type_(-1),
+    noNames_(false),
     links_(0)
 {
   rowBlockName_ = "row_master";
@@ -188,7 +243,7 @@ CoinModel::CoinModel(const char *fileName, int allowStrings)
     try {
       status=m.readMps(fileName,"");
     }
-    catch (CoinError e) {
+    catch (CoinError& e) {
       e.print();
       status=-1;
     }
@@ -423,6 +478,7 @@ CoinModel::CoinModel(int numberRows, int numberColumns,
      cut_(NULL),
      moreInfo_(NULL),
      type_(-1),
+     noNames_(false),
      links_(0)
 {
   numberRows_ = numberRows;
@@ -462,6 +518,7 @@ CoinModel::CoinModel (const CoinModel & rhs)
     sizeAssociated_(rhs.sizeAssociated_),
     numberSOS_(rhs.numberSOS_),
     type_(rhs.type_),
+    noNames_(rhs.noNames_),
     links_(rhs.links_)
 {
   rowLower_ = CoinCopyOfArray(rhs.rowLower_,maximumRows_);
@@ -592,6 +649,7 @@ CoinModel::operator=(const CoinModel& rhs)
     sizeAssociated_= rhs.sizeAssociated_;
     numberSOS_ = rhs.numberSOS_;
     type_ = rhs.type_;
+    noNames_ = rhs.noNames_;
     links_ = rhs.links_;
     rowLower_ = CoinCopyOfArray(rhs.rowLower_,maximumRows_);
     rowUpper_ = CoinCopyOfArray(rhs.rowUpper_,maximumRows_);
@@ -720,7 +778,7 @@ CoinModel::addRow(int numberInRow, const int * columns,
   // Do name
   if (name) {
     rowName_.addHash(numberRows_,name);
-  } else {
+  } else if (!noNames_) {
     char name[9];
     sprintf(name,"r%7.7d",numberRows_);
     rowName_.addHash(numberRows_,name);
@@ -854,7 +912,7 @@ CoinModel::addColumn(int numberInColumn, const int * rows,
   // Do name
   if (name) {
     columnName_.addHash(numberColumns_,name);
-  } else {
+  } else if (!noNames_) {
     char name[9];
     sprintf(name,"c%7.7d",numberColumns_);
     columnName_.addHash(numberColumns_,name);
@@ -1124,6 +1182,7 @@ CoinModel::setRowName(int whichRow,const char * rowName)
   assert (whichRow>=0);
   // make sure enough room and fill
   fillRows(whichRow,true);
+  assert (!noNames_) ;
   const char * oldName = rowName_.name(whichRow);
   if (oldName)
     rowName_.deleteHash(whichRow);
@@ -1189,6 +1248,7 @@ CoinModel::setColumnName(int whichColumn,const char * columnName)
   // make sure enough room and fill
   fillColumns(whichColumn,true);
   const char * oldName = columnName_.name(whichColumn);
+  assert (!noNames_) ;
   if (oldName)
     columnName_.deleteHash(whichColumn);
   if (columnName)
@@ -1435,7 +1495,8 @@ CoinModel::deleteRow(int whichRow)
       rowLower_[whichRow]=-COIN_DBL_MAX;
       rowUpper_[whichRow]=COIN_DBL_MAX;
       rowType_[whichRow]=0;
-      rowName_.deleteHash(whichRow);
+      if (!noNames_) 
+	rowName_.deleteHash(whichRow);
     }
     // need lists
     if (type_==0) {
@@ -1467,7 +1528,8 @@ CoinModel::deleteColumn(int whichColumn)
       objective_[whichColumn]=0.0;
       integerType_[whichColumn]=0;
       columnType_[whichColumn]=0;
-      columnName_.deleteHash(whichColumn);
+      if (!noNames_) 
+	columnName_.deleteHash(whichColumn);
     }
     // need lists
     if (type_==0) {
@@ -1537,8 +1599,8 @@ CoinModel::packRows()
       newRow[iRow]++;
     if (rowUpper_[iRow]!=COIN_DBL_MAX)
       newRow[iRow]++;
-    if (rowName_.name(iRow))
-      newRow[iRow]++;
+    if (!noNames_&&rowName_.name(iRow))
+	newRow[iRow]++;
   }
   int i;
   for ( i=0;i<numberElements_;i++) {
@@ -1645,7 +1707,7 @@ CoinModel::packColumns()
       newColumn[iColumn]++;
     if (objective_[iColumn]!=0.0)
       newColumn[iColumn]++;
-    if (columnName_.name(iColumn))
+    if (!noNames_&&columnName_.name(iColumn))
       newColumn[iColumn]++;
   }
   int i;
@@ -2246,6 +2308,7 @@ CoinModel::getElement(const char * rowName,const char * columnName) const
     hashElements_.setNumberItems(numberElements_);
     hashElements_.resize(maximumElements_,elements_);
   }
+  assert (!noNames_); 
   int i=rowName_.hash(rowName);
   int j=columnName_.hash(columnName);
   int position;
@@ -2735,12 +2798,14 @@ CoinModel::getColumnIsInteger(int whichColumn) const
 int 
 CoinModel::row(const char * rowName) const
 {
+  assert (!noNames_) ;
   return rowName_.hash(rowName);
 }
 // Column index from column name (-1 if no names or no match)
 int 
 CoinModel::column(const char * columnName) const
 {
+  assert (!noNames_) ;
   return columnName_.hash(columnName);
 }
 // Resize
@@ -2777,7 +2842,8 @@ CoinModel::resize(int maximumRows, int maximumColumns, int maximumElements)
       delete [] rowType_;
       rowType_=tempArray2;
       // resize hash
-      rowName_.resize(maximumRows);
+      if (!noNames_) 
+	rowName_.resize(maximumRows);
       // If we have links we need to resize
       if ((links_&1)!=0) {
         rowList_.resize(maximumRows,maximumElements);
@@ -2856,7 +2922,8 @@ CoinModel::resize(int maximumRows, int maximumColumns, int maximumElements)
       delete [] integerType_;
       integerType_=tempArray2;
       // resize hash
-      columnName_.resize(maximumColumns);
+      if (!noNames_) 
+	columnName_.resize(maximumColumns);
       // If we have links we need to resize
       if ((links_&2)!=0) {
         columnList_.resize(maximumColumns,maximumElements);

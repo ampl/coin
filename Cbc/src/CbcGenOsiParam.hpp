@@ -4,7 +4,7 @@
 
   This code is licensed under the terms of the Eclipse Public License (EPL).
 
-  $Id$
+  $Id: CbcGenOsiParam.hpp 1902 2013-04-10 16:58:16Z stefan $
 */
 /*
   This file is part of cbc-generic.
@@ -18,7 +18,7 @@
 */
 
 /*
-  $Id: CbcGenOsiParam.hpp 1173 2009-06-04 09:44:10Z forrest $
+  $Id: CbcGenOsiParam.hpp 1902 2013-04-10 16:58:16Z stefan $
 */
 
 /*! \class CbcOsiParam

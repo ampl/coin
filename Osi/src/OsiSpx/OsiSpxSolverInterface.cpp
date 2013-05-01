@@ -9,7 +9,7 @@
 //-----------------------------------------------------------------------------
 // Copyright (C) 2002, Tobias Pfender, International Business Machines
 // Corporation and others.  All Rights Reserved.
-// Last edit: $Id: OsiSpxSolverInterface.cpp 1864 2012-11-21 09:35:08Z stefan $
+// Last edit: $Id: OsiSpxSolverInterface.cpp 1899 2013-04-06 20:43:00Z stefan $
 
 #include "CoinPragma.hpp"
 
@@ -73,14 +73,13 @@ inline void throwSPXerror( std::string error, std::string osimethod )
 
 void OsiSpxSolverInterface::initialSolve()
 {
-  // by default we use dual simplex
-  bool dual = true;
-
-  // unless we get the hint to use primal simplex
-  bool takeHint, gotHint;
+  bool takeHint;
   OsiHintStrength strength;
-  gotHint = (getHintParam(OsiDoDualInInitial,takeHint,strength));
-  assert (gotHint);
+
+  // by default we use dual simplex
+  // unless we get the hint to use primal simplex
+  bool dual = true;
+  getHintParam(OsiDoDualInInitial,takeHint,strength);
   if (strength!=OsiHintIgnore)
      dual = takeHint;
 
@@ -138,14 +137,13 @@ void OsiSpxSolverInterface::initialSolve()
 //-----------------------------------------------------------------------------
 void OsiSpxSolverInterface::resolve()
 {
-  // by default we use dual simplex
-  bool dual = true;
-
-  // unless we get the hint to use primal simplex
-  bool takeHint, gotHint;
+  bool takeHint;
   OsiHintStrength strength;
-  gotHint = (getHintParam(OsiDoDualInResolve,takeHint,strength));
-  assert (gotHint);
+  
+  // by default we use dual simplex
+  // unless we get the hint to use primal simplex
+  bool dual = true;
+  getHintParam(OsiDoDualInResolve,takeHint,strength);
   if (strength!=OsiHintIgnore)
      dual = takeHint;
 
@@ -357,17 +355,13 @@ OsiSpxSolverInterface::getDblParam(OsiDblParam key, double& value) const
 bool
 OsiSpxSolverInterface::getStrParam(OsiStrParam key, std::string & value) const
 {
-  bool retval = false;
   switch (key) {
   case OsiSolverName:
     value = "SoPlex";
-    break;
-  case OsiLastStrParam:
-  case OsiProbName:
-    retval = false;
-    break;
+    return true;
+  default: ;
   }
-  return true;
+  return false;
 }
 
 double OsiSpxSolverInterface::getTimeLimit() const

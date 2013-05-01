@@ -95,7 +95,7 @@ public:
 	in the collection of cuts cs. 
     */
     virtual void generateCuts(const OsiSolverInterface & si, OsiCuts & cs,
-			      const CglTreeInfo info = CglTreeInfo()) const;
+			      const CglTreeInfo info = CglTreeInfo());
     //@}
     
     //---------------------------------------------------------------------------
@@ -144,7 +144,7 @@ private:
     // Do preprocessing.
     // It determines the type of each row. 
     // It may change sense and RHS for ranged rows
-    void resCapPreprocess(const OsiSolverInterface& si) const;
+    void resCapPreprocess(const OsiSolverInterface& si);
     
     // Determine the type of a given row.
     RowType determineRowType(const OsiSolverInterface& si,
@@ -204,27 +204,27 @@ private:
 	 Default value: -1 **/
     int doPreproc_;
     // The number of rows of the problem.
-    mutable int numRows_;
+    int numRows_;
     // The number columns of the problem.
-    mutable int numCols_;
+    int numCols_;
     // Indicates whether preprocessing has been done.
-    mutable bool doneInitPre_;
+    bool doneInitPre_;
     // Array with the row types of the rows in the model.
-    mutable RowType* rowTypes_;
+    RowType* rowTypes_;
     // The indices of the rows of the initial matrix
-    mutable int* indRows_;
+    int* indRows_;
     // Sense of rows (modified if ranges)
-    mutable char * sense_;
+    char * sense_;
     // RHS of rows (modified if ranges)
-    mutable double * RHS_; 
+    double * RHS_;
     // The number of rows of type ROW_L
-    mutable int numRowL_;
+    int numRowL_;
     // The indices of the rows of type ROW_L
-    mutable int* indRowL_;
+    int* indRowL_;
     // The number of rows of type ROW_G
-    mutable int numRowG_;
+    int numRowG_;
     // The indices of the rows of type ROW_G
-    mutable int* indRowG_;
+    int* indRowG_;
 };
 
 //#############################################################################

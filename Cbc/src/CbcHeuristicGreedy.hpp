@@ -1,4 +1,4 @@
-/* $Id: CbcHeuristicGreedy.hpp 1675 2011-06-19 17:23:14Z stefan $ */
+/* $Id: CbcHeuristicGreedy.hpp 1585 2011-01-11 19:04:34Z forrest $ */
 // Copyright (C) 2005, International Business Machines
 // Corporation and others.  All Rights Reserved.
 // This code is licensed under the terms of the Eclipse Public License (EPL).

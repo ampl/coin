@@ -2,10 +2,6 @@
 // Corporation and others.  All Rights Reserved.
 // This code is licensed under the terms of the Eclipse Public License (EPL).
 
-#if defined(_MSC_VER)
-// Turn off compiler warning about long names
-#  pragma warning(disable:4786)
-#endif
 #include <cstdlib>
 #include <cstdio>
 #include <cmath>
@@ -13,6 +9,7 @@
 #include <cfloat>
 #include <iostream>
 
+#include "CoinPragma.hpp"
 #include "CoinHelperFunctions.hpp"
 #include "CglLiftAndProject.hpp"
 #include "CoinPackedVector.hpp"
@@ -23,7 +20,7 @@
 // Generate Lift-and-Project cuts
 //------------------------------------------------------------------- 
 void CglLiftAndProject::generateCuts(const OsiSolverInterface& si, OsiCuts& cs,
-				     const CglTreeInfo /*info*/) const
+				     const CglTreeInfo /*info*/)
 {
   // Assumes the mixed 0-1 problem 
   //

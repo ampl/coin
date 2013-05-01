@@ -1,4 +1,4 @@
-/* $Id: minimum.cpp 1662 2011-01-04 17:52:40Z lou $ */
+/* $Id: minimum.cpp 1941 2013-04-10 16:52:27Z stefan $ */
 // Copyright (C) 2002, International Business Machines
 // Corporation and others.  All Rights Reserved.
 // This code is licensed under the terms of the Eclipse Public License (EPL).
@@ -11,10 +11,10 @@ int main(int argc, const char *argv[])
      if (argc < 2) {
 #if defined(SAMPLEDIR)
 /*
-  SAMPLEDIR should "path/to/Data/Sample/"
+  SAMPLEDIR should "path/to/Data/Sample"
   Include the quotes and final path separator.
 */
-          status = model.readMps(SAMPLEDIR "p0033.mps", true);
+          status = model.readMps(SAMPLEDIR "/p0033.mps", true);
 #else
           fprintf(stderr, "Do not know where to find sample MPS files.\n");
           exit(1);

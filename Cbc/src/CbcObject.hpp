@@ -1,4 +1,4 @@
-// $Id$
+// $Id: CbcObject.hpp 1902 2013-04-10 16:58:16Z stefan $
 // Copyright (C) 2002, International Business Machines
 // Corporation and others.  All Rights Reserved.
 // This code is licensed under the terms of the Eclipse Public License (EPL).
@@ -251,6 +251,8 @@ public:
     }
     /// Redoes data when sequence numbers change
     virtual void redoSequenceEtc(CbcModel * , int , const int * ) {}
+    /// Initialize for branching
+    virtual void initializeForBranching(CbcModel * ) {}
 
 protected:
     /// data

@@ -1,4 +1,4 @@
-/* $Id: ClpNode.hpp 1753 2011-06-19 16:27:26Z stefan $ */
+/* $Id: ClpNode.hpp 1910 2013-01-27 02:00:13Z stefan $ */
 // Copyright (C) 2008, International Business Machines
 // Corporation and others.  All Rights Reserved.
 // This code is licensed under the terms of the Eclipse Public License (EPL).

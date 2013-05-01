@@ -1,4 +1,4 @@
-/* $Id: ClpMain.cpp 1753 2011-06-19 16:27:26Z stefan $ */
+/* $Id: ClpMain.cpp 1931 2013-04-06 20:44:29Z stefan $ */
 // Copyright (C) 2002, International Business Machines
 // Corporation and others.  All Rights Reserved.
 // This code is licensed under the terms of the Eclipse Public License (EPL).
@@ -36,6 +36,7 @@ extern glp_prob* cbc_glp_prob;
 #define GLP_OPT 5
 #endif
 
+#include "AbcCommon.hpp"
 #include "ClpFactorization.hpp"
 #include "CoinTime.hpp"
 #include "ClpSimplex.hpp"
@@ -52,6 +53,12 @@ extern glp_prob* cbc_glp_prob;
 #include "ClpPresolve.hpp"
 #include "CbcOrClpParam.hpp"
 #include "CoinSignal.hpp"
+#ifdef ABC_INHERIT
+#include "AbcSimplex.hpp"
+#include "AbcSimplexFactorization.hpp"
+#include "AbcDualRowSteepest.hpp"
+#include "AbcDualRowDantzig.hpp"
+#endif
 #ifdef DMALLOC
 #include "dmalloc.h"
 #endif
@@ -62,7 +69,11 @@ extern glp_prob* cbc_glp_prob;
 static double totalTime = 0.0;
 static bool maskMatches(const int * starts, char ** masks,
                         std::string & check);
+#ifndef ABC_INHERIT
 static ClpSimplex * currentModel = NULL;
+#else
+static AbcSimplex * currentModel = NULL;
+#endif
 
 extern "C" {
      static void
@@ -83,8 +94,13 @@ extern "C" {
 #undef NDEBUG
 #endif
 
+#ifndef ABC_INHERIT
 int mainTest (int argc, const char *argv[], int algorithm,
               ClpSimplex empty, ClpSolve solveOptions, int switchOff, bool doVector);
+#else
+int mainTest (int argc, const char *argv[], int algorithm,
+              AbcSimplex empty, ClpSolve solveOptions, int switchOff, bool doVector);
+#endif
 static void statistics(ClpSimplex * originalModel, ClpSimplex * model);
 static void generateCode(const char * fileName, int type);
 // Returns next valid field
@@ -126,19 +142,29 @@ void userChoiceWasGood(ClpSimplex * model)
 {
 }
 #endif
-
+//#define CILK_TEST
+#ifdef CILK_TEST
+static void cilkTest();
+#endif
 int
 #if defined(_MSC_VER)
 __cdecl
 #endif // _MSC_VER
 main (int argc, const char *argv[])
 {
+#ifdef CILK_TEST
+  cilkTest();
+#endif
      // next {} is just to make sure all memory should be freed - for debug
      {
           double time1 = CoinCpuTime(), time2;
           // Set up all non-standard stuff
           //int numberModels=1;
+#ifndef ABC_INHERIT
           ClpSimplex * models = new ClpSimplex[1];
+#else
+          AbcSimplex * models = new AbcSimplex[1];
+#endif
 
           // default action on import
           int allowImportErrors = 0;
@@ -154,7 +180,12 @@ main (int argc, const char *argv[])
           int doVector = 0;
           int doSprint = -1;
           // set reasonable defaults
-          int preSolve = 5;
+#ifdef ABC_INHERIT
+#define DEFAULT_PRESOLVE_PASSES 20
+#else
+#define DEFAULT_PRESOLVE_PASSES 5
+#endif
+          int preSolve = DEFAULT_PRESOLVE_PASSES;
           bool preSolveFile = false;
           models->setPerturbation(50);
           models->messageHandler()->setPrefix(false);
@@ -247,7 +278,10 @@ main (int argc, const char *argv[])
           //models[0].setDualTolerance(1.0e-7);
           //ClpDualRowSteepest steep;
           //models[0].setDualRowPivotAlgorithm(steep);
-          //models[0].setPrimalTolerance(1.0e-7);
+#ifdef ABC_INHERIT
+          models[0].setDualTolerance(1.0e-6);
+          models[0].setPrimalTolerance(1.0e-6);
+#endif
           //ClpPrimalColumnSteepest steepP;
           //models[0].setPrimalColumnPivotAlgorithm(steepP);
           std::string field;
@@ -311,6 +345,7 @@ main (int argc, const char *argv[])
                          numberMatches += match >> 1;
                     }
                }
+	       ClpSimplex * thisModel=models+iModel;
                if (iParam < numberParameters && !numberQuery) {
                     // found
                     CbcOrClpParam found = parameters[iParam];
@@ -430,7 +465,7 @@ main (int argc, const char *argv[])
                          // get next field as double
                          double value = CoinReadGetDoubleField(argc, argv, &valid);
                          if (!valid) {
-                              parameters[iParam].setDoubleParameter(models + iModel, value);
+                              parameters[iParam].setDoubleParameter(thisModel, value);
                          } else if (valid == 1) {
                               std::cout << " is illegal for double parameter " << parameters[iParam].name() << " value remains " <<
                                         parameters[iParam].doubleValue() << std::endl;
@@ -464,7 +499,7 @@ main (int argc, const char *argv[])
                                    dualize = value;
                               else if (parameters[iParam].type() == CLP_PARAM_INT_VERBOSE)
                                    verbose = value;
-                              parameters[iParam].setIntParameter(models + iModel, value);
+                              parameters[iParam].setIntParameter(thisModel, value);
                          } else if (valid == 1) {
                               std::cout << " is illegal for integer parameter " << parameters[iParam].name() << " value remains " <<
                                         parameters[iParam].intValue() << std::endl;
@@ -490,74 +525,103 @@ main (int argc, const char *argv[])
                               // for now hard wired
                               switch (type) {
                               case CLP_PARAM_STR_DIRECTION:
-                                   if (action == 0)
+				if (action == 0) {
                                         models[iModel].setOptimizationDirection(1);
-                                   else if (action == 1)
+#ifdef ABC_INHERIT
+                                        thisModel->setOptimizationDirection(1);
+#endif
+				}  else if (action == 1) {
                                         models[iModel].setOptimizationDirection(-1);
-                                   else
+#ifdef ABC_INHERIT
+                                        thisModel->setOptimizationDirection(-1);
+#endif
+				}  else {
                                         models[iModel].setOptimizationDirection(0);
+#ifdef ABC_INHERIT
+                                        thisModel->setOptimizationDirection(0);
+#endif
+				}
                                    break;
                               case CLP_PARAM_STR_DUALPIVOT:
                                    if (action == 0) {
                                         ClpDualRowSteepest steep(3);
-                                        models[iModel].setDualRowPivotAlgorithm(steep);
+                                        thisModel->setDualRowPivotAlgorithm(steep);
+#ifdef ABC_INHERIT
+                                        AbcDualRowSteepest steep2(3);
+                                        models[iModel].setDualRowPivotAlgorithm(steep2);
+#endif
                                    } else if (action == 1) {
                                         //ClpDualRowDantzig dantzig;
-                                        ClpDualRowSteepest dantzig(5);
-                                        models[iModel].setDualRowPivotAlgorithm(dantzig);
+                                        ClpDualRowDantzig dantzig;
+                                        thisModel->setDualRowPivotAlgorithm(dantzig);
+#ifdef ABC_INHERIT
+                                        AbcDualRowDantzig dantzig2;
+                                        models[iModel].setDualRowPivotAlgorithm(dantzig2);
+#endif
                                    } else if (action == 2) {
                                         // partial steep
                                         ClpDualRowSteepest steep(2);
-                                        models[iModel].setDualRowPivotAlgorithm(steep);
+                                        thisModel->setDualRowPivotAlgorithm(steep);
+#ifdef ABC_INHERIT
+                                        AbcDualRowSteepest steep2(2);
+                                        models[iModel].setDualRowPivotAlgorithm(steep2);
+#endif
                                    } else {
                                         ClpDualRowSteepest steep;
-                                        models[iModel].setDualRowPivotAlgorithm(steep);
+                                        thisModel->setDualRowPivotAlgorithm(steep);
+#ifdef ABC_INHERIT
+                                        AbcDualRowSteepest steep2;
+                                        models[iModel].setDualRowPivotAlgorithm(steep2);
+#endif
                                    }
                                    break;
                               case CLP_PARAM_STR_PRIMALPIVOT:
                                    if (action == 0) {
                                         ClpPrimalColumnSteepest steep(3);
-                                        models[iModel].setPrimalColumnPivotAlgorithm(steep);
+                                        thisModel->setPrimalColumnPivotAlgorithm(steep);
                                    } else if (action == 1) {
                                         ClpPrimalColumnSteepest steep(0);
-                                        models[iModel].setPrimalColumnPivotAlgorithm(steep);
+                                        thisModel->setPrimalColumnPivotAlgorithm(steep);
                                    } else if (action == 2) {
                                         ClpPrimalColumnDantzig dantzig;
-                                        models[iModel].setPrimalColumnPivotAlgorithm(dantzig);
+                                        thisModel->setPrimalColumnPivotAlgorithm(dantzig);
                                    } else if (action == 3) {
                                         ClpPrimalColumnSteepest steep(4);
-                                        models[iModel].setPrimalColumnPivotAlgorithm(steep);
+                                        thisModel->setPrimalColumnPivotAlgorithm(steep);
                                    } else if (action == 4) {
                                         ClpPrimalColumnSteepest steep(1);
-                                        models[iModel].setPrimalColumnPivotAlgorithm(steep);
+                                        thisModel->setPrimalColumnPivotAlgorithm(steep);
                                    } else if (action == 5) {
                                         ClpPrimalColumnSteepest steep(2);
-                                        models[iModel].setPrimalColumnPivotAlgorithm(steep);
+                                        thisModel->setPrimalColumnPivotAlgorithm(steep);
                                    } else if (action == 6) {
                                         ClpPrimalColumnSteepest steep(10);
-                                        models[iModel].setPrimalColumnPivotAlgorithm(steep);
+                                        thisModel->setPrimalColumnPivotAlgorithm(steep);
                                    }
                                    break;
                               case CLP_PARAM_STR_SCALING:
-                                   models[iModel].scaling(action);
+                                   thisModel->scaling(action);
                                    break;
                               case CLP_PARAM_STR_AUTOSCALE:
-                                   models[iModel].setAutomaticScaling(action != 0);
+                                   thisModel->setAutomaticScaling(action != 0);
                                    break;
                               case CLP_PARAM_STR_SPARSEFACTOR:
-                                   models[iModel].setSparseFactorization((1 - action) != 0);
+                                   thisModel->setSparseFactorization((1 - action) != 0);
                                    break;
                               case CLP_PARAM_STR_BIASLU:
-                                   models[iModel].factorization()->setBiasLU(action);
+                                   thisModel->factorization()->setBiasLU(action);
                                    break;
                               case CLP_PARAM_STR_PERTURBATION:
                                    if (action == 0)
-                                        models[iModel].setPerturbation(50);
+                                        thisModel->setPerturbation(50);
                                    else
-                                        models[iModel].setPerturbation(100);
+                                        thisModel->setPerturbation(100);
                                    break;
                               case CLP_PARAM_STR_ERRORSALLOWED:
                                    allowImportErrors = action;
+                                   break;
+                              case CLP_PARAM_STR_ABCWANTED:
+                                   models[iModel].setAbcState(action);
                                    break;
                               case CLP_PARAM_STR_INTPRINT:
                                    printMode = action;
@@ -567,7 +631,7 @@ main (int argc, const char *argv[])
                                    break;
                               case CLP_PARAM_STR_PRESOLVE:
                                    if (action == 0)
-                                        preSolve = 5;
+                                        preSolve = DEFAULT_PRESOLVE_PASSES;
                                    else if (action == 1)
                                         preSolve = 0;
                                    else if (action == 2)
@@ -576,10 +640,13 @@ main (int argc, const char *argv[])
                                         preSolveFile = true;
                                    break;
                               case CLP_PARAM_STR_PFI:
-                                   models[iModel].factorization()->setForrestTomlin(action == 0);
+                                   thisModel->factorization()->setForrestTomlin(action == 0);
                                    break;
                               case CLP_PARAM_STR_FACTORIZATION:
                                    models[iModel].factorization()->forceOtherFactorization(action);
+#ifdef ABC_INHERIT
+                                   thisModel->factorization()->forceOtherFactorization(action);
+#endif
                                    break;
                               case CLP_PARAM_STR_CRASH:
                                    doCrash = action;
@@ -589,6 +656,9 @@ main (int argc, const char *argv[])
                                    break;
                               case CLP_PARAM_STR_MESSAGES:
                                    models[iModel].messageHandler()->setPrefix(action != 0);
+#ifdef ABC_INHERIT
+                                   thisModel->messageHandler()->setPrefix(action != 0);
+#endif
                                    break;
                               case CLP_PARAM_STR_CHOLESKY:
                                    choleskyType = action;
@@ -622,6 +692,10 @@ main (int argc, const char *argv[])
                               // synonym for dual
                          case CBC_PARAM_ACTION_BAB:
                               if (goodModels[iModel]) {
+				if (type==CLP_PARAM_ACTION_EITHERSIMPLEX||
+				    type==CBC_PARAM_ACTION_BAB)
+				  models[iModel].setMoreSpecialOptions(16384|
+								       models[iModel].moreSpecialOptions());
                                    double objScale =
                                         parameters[whichParam(CLP_PARAM_DBL_OBJSCALE2, numberParameters, parameters)].doubleValue();
                                    if (objScale != 1.0) {
@@ -647,8 +721,15 @@ main (int argc, const char *argv[])
                                    }
                                    ClpSolve::SolveType method;
                                    ClpSolve::PresolveType presolveType;
-                                   ClpSimplex * model2 = models + iModel;
                                    ClpSolve solveOptions;
+#ifndef ABC_INHERIT
+                                   ClpSimplex * model2 = models + iModel;
+#else
+                                   AbcSimplex * model2 = models + iModel;
+				   if (type==CLP_PARAM_ACTION_EITHERSIMPLEX||
+				       type==CBC_PARAM_ACTION_BAB)
+				     solveOptions.setSpecialOption(3,0); // allow +-1
+#endif
 				   if (dualize==4) { 
 				     solveOptions.setSpecialOption(4, 77);
 				     dualize=0;
@@ -661,21 +742,34 @@ main (int argc, const char *argv[])
                                              dualize = 1;
                                              int numberColumns = model2->numberColumns();
                                              int numberRows = model2->numberRows();
+#ifndef ABC_INHERIT
                                              if (numberRows < 50000 || 5 * numberColumns > numberRows) {
+#else
+                                             if (numberRows < 500 || 4 * numberColumns > numberRows) {
+#endif
                                                   tryIt = false;
                                              } else {
                                                   fractionColumn = 0.1;
-                                                  fractionRow = 0.1;
+                                                  fractionRow = 0.3;
                                              }
                                         }
                                         if (tryIt) {
-                                             model2 = static_cast<ClpSimplexOther *> (model2)->dualOfModel(fractionRow, fractionColumn);
-                                             if (model2) {
+					  ClpSimplex * thisModel=model2;
+                                             thisModel = static_cast<ClpSimplexOther *> (thisModel)->dualOfModel(fractionRow, fractionColumn);
+                                             if (thisModel) {
                                                   printf("Dual of model has %d rows and %d columns\n",
-                                                         model2->numberRows(), model2->numberColumns());
-                                                  model2->setOptimizationDirection(1.0);
+                                                         thisModel->numberRows(), thisModel->numberColumns());
+                                                  thisModel->setOptimizationDirection(1.0);
+#ifndef ABC_INHERIT
+						  model2=thisModel;
+#else
+						  int abcState=model2->abcState();
+						  model2=new AbcSimplex(*thisModel);
+						  model2->setAbcState(abcState);
+						  delete thisModel;
+#endif
                                              } else {
-                                                  model2 = models + iModel;
+                                                  thisModel = models + iModel;
                                                   dualize = 0;
 					     }
                                         } else {
@@ -686,7 +780,7 @@ main (int argc, const char *argv[])
                                         presolveOptions |= 0x40000000;
                                    solveOptions.setPresolveActions(presolveOptions);
                                    solveOptions.setSubstitution(substitution);
-                                   if (preSolve != 5 && preSolve) {
+                                   if (preSolve != DEFAULT_PRESOLVE_PASSES && preSolve) {
                                         presolveType = ClpSolve::presolveNumber;
                                         if (preSolve < 0) {
                                              preSolve = - preSolve;
@@ -717,6 +811,10 @@ main (int argc, const char *argv[])
                                         method = ClpSolve::automatic;
                                    } else {
                                         method = ClpSolve::useBarrier;
+#ifdef ABC_INHERIT
+                                        if (doIdiot > 0) 
+                                             solveOptions.setSpecialOption(1, 2, doIdiot); // dense threshold
+#endif
                                         if (crossover == 1) {
                                              method = ClpSolve::useBarrierNoCross;
                                         } else if (crossover == 2) {
@@ -807,19 +905,128 @@ main (int argc, const char *argv[])
                                    }
 #ifdef CLP_MULTIPLE_FACTORIZATIONS
                                    int denseCode = parameters[whichParam(CBC_PARAM_INT_DENSE, numberParameters, parameters)].intValue();
-                                   model2->factorization()->setGoDenseThreshold(denseCode);
+				   if (denseCode!=-1)
+				     model2->factorization()->setGoDenseThreshold(denseCode);
                                    int smallCode = parameters[whichParam(CBC_PARAM_INT_SMALLFACT, numberParameters, parameters)].intValue();
-                                   model2->factorization()->setGoSmallThreshold(smallCode);
+				   if (smallCode!=-1)
+				     model2->factorization()->setGoSmallThreshold(smallCode);
                                    model2->factorization()->goDenseOrSmall(model2->numberRows());
 #endif
                                    try {
                                         status = model2->initialSolve(solveOptions);
+#ifndef NDEBUG
+					// if infeasible check ray
+					if (model2->status()==1) {
+					  ClpSimplex * simplex = model2;
+					  if(simplex->ray()) {
+					    // make sure we use non-scaled versions
+					    ClpPackedMatrix * saveMatrix = simplex->swapScaledMatrix(NULL);
+					    double * saveScale = simplex->swapRowScale(NULL);
+					    // could use existing arrays
+					    int numberRows=simplex->numberRows();
+					    int numberColumns=simplex->numberColumns();
+					    double * farkas = new double [2*numberColumns+numberRows];
+					    double * bound = farkas + numberColumns;
+					    double * effectiveRhs = bound + numberColumns;
+					    // get ray as user would
+					    double * ray = simplex->infeasibilityRay();
+					    // get farkas row
+					    memset(farkas,0,(2*numberColumns+numberRows)*sizeof(double));
+					    simplex->transposeTimes(-1.0,ray,farkas);
+					    // Put nonzero bounds in bound
+					    const double * columnLower = simplex->columnLower();
+					    const double * columnUpper = simplex->columnUpper();
+					    int numberBad=0;
+					    for (int i=0;i<numberColumns;i++) {
+					      double value = farkas[i];
+					      double boundValue=0.0;
+					      if (simplex->getStatus(i)==ClpSimplex::basic) {
+						// treat as zero if small
+						if (fabs(value)<1.0e-8) {
+						  value=0.0;
+						  farkas[i]=0.0;
+						}
+						if (value) {
+						  //printf("basic %d direction %d farkas %g\n",
+						  //	   i,simplex->directionOut(),value);
+						  if (value<0.0) 
+						    boundValue=columnLower[i];
+						  else
+						    boundValue=columnUpper[i];
+						}
+					      } else if (fabs(value)>1.0e-10) {
+						if (value<0.0) 
+						  boundValue=columnLower[i];
+						else
+						  boundValue=columnUpper[i];
+					      }
+					      bound[i]=boundValue;
+					      if (fabs(boundValue)>1.0e10)
+						numberBad++;
+					    }
+					    const double * rowLower = simplex->rowLower();
+					    const double * rowUpper = simplex->rowUpper();
+					    //int pivotRow = simplex->spareIntArray_[3];
+					    //bool badPivot=pivotRow<0;
+					    for (int i=0;i<numberRows;i++) {
+					      double value = ray[i];
+					      double rhsValue=0.0;
+					      if (simplex->getRowStatus(i)==ClpSimplex::basic) {
+						// treat as zero if small
+						if (fabs(value)<1.0e-8) {
+						  value=0.0;
+						  ray[i]=0.0;
+						}
+						if (value) {
+						  //printf("row basic %d direction %d ray %g\n",
+						  //	   i,simplex->directionOut(),value);
+						  if (value<0.0) 
+						    rhsValue=rowLower[i];
+						  else
+						    rhsValue=rowUpper[i];
+						}
+					      } else if (fabs(value)>1.0e-10) {
+						if (value<0.0) 
+						  rhsValue=rowLower[i];
+						else
+						  rhsValue=rowUpper[i];
+					      }
+					      effectiveRhs[i]=rhsValue;
+					      if (fabs(effectiveRhs[i])>1.0e10)
+						printf("Large rhs row %d %g\n",
+						       i,effectiveRhs[i]);
+					    }
+					    simplex->times(-1.0,bound,effectiveRhs);
+					    double bSum=0.0;
+					    for (int i=0;i<numberRows;i++) {
+					      bSum += effectiveRhs[i]*ray[i];
+					      if (fabs(effectiveRhs[i])>1.0e10)
+						printf("Large rhs row %d %g after\n",
+						       i,effectiveRhs[i]);
+					    }
+					    if (numberBad||bSum>1.0e-6) {
+					      printf("Bad infeasibility ray %g  - %d bad\n",
+						     bSum,numberBad);
+					    } else {
+					      //printf("Good ray - infeasibility %g\n",
+					      //     -bSum);
+					    }
+					    delete [] ray;
+					    delete [] farkas;
+					    simplex->swapRowScale(saveScale);
+					    simplex->swapScaledMatrix(saveMatrix);
+					  } else {
+					    //printf("No dual ray\n");
+					  }
+					}
+#endif
                                    } catch (CoinError e) {
                                         e.print();
                                         status = -1;
                                    }
                                    if (dualize) {
-                                        int returnCode = static_cast<ClpSimplexOther *> (models + iModel)->restoreFromDual(model2);
+				     ClpSimplex * thisModel=models+iModel;
+                                        int returnCode = static_cast<ClpSimplexOther *> (thisModel)->restoreFromDual(model2);
                                         if (model2->status() == 3)
                                              returnCode = 0;
                                         delete model2;
@@ -827,9 +1034,12 @@ main (int argc, const char *argv[])
                                              currentModel = models + iModel;
                                              // register signal handler
                                              signal(SIGINT, signal_handler);
-                                             models[iModel].primal(1);
+                                             thisModel->primal(1);
                                              currentModel = NULL;
                                         }
+					// switch off (user can switch back on)
+					parameters[whichParam(CLP_PARAM_INT_DUALIZE, 
+							      numberParameters, parameters)].setIntValue(dualize);
                                    }
                                    if (status >= 0)
                                         basisHasValues = 1;
@@ -1037,7 +1247,7 @@ main (int argc, const char *argv[])
                                    if (!status || (status > 0 && allowImportErrors)) {
                                         goodModels[iModel] = true;
                                         // sets to all slack (not necessary?)
-                                        models[iModel].createStatus();
+                                        thisModel->createStatus();
                                         time2 = CoinCpuTime();
                                         totalTime += time2 - time1;
                                         time1 = time2;
@@ -1283,7 +1493,7 @@ main (int argc, const char *argv[])
                                         }
                                    }
                                    if (canOpen) {
-                                        int values = models[iModel].readBasis(fileName.c_str());
+                                        int values = thisModel->readBasis(fileName.c_str());
                                         if (values == 0)
                                              basisHasValues = -1;
                                         else
@@ -1517,12 +1727,21 @@ main (int argc, const char *argv[])
                          break;
                          case CLP_PARAM_ACTION_MAXIMIZE:
                               models[iModel].setOptimizationDirection(-1);
+#ifdef ABC_INHERIT
+                              thisModel->setOptimizationDirection(-1);
+#endif
                               break;
                          case CLP_PARAM_ACTION_MINIMIZE:
                               models[iModel].setOptimizationDirection(1);
+#ifdef ABC_INHERIT
+                              thisModel->setOptimizationDirection(1);
+#endif
                               break;
                          case CLP_PARAM_ACTION_ALLSLACK:
-                              models[iModel].allSlackBasis(true);
+                              thisModel->allSlackBasis(true);
+#ifdef ABC_INHERIT
+                              models[iModel].allSlackBasis();
+#endif
                               break;
                          case CLP_PARAM_ACTION_REVERSE:
                               if (goodModels[iModel]) {
@@ -1631,6 +1850,7 @@ main (int argc, const char *argv[])
                               if (type == CLP_PARAM_ACTION_NETLIB_DUAL) {
                                    std::cerr << "Doing netlib with dual algorithm" << std::endl;
                                    algorithm = 0;
+				   models[iModel].setMoreSpecialOptions(models[iModel].moreSpecialOptions()|32768);
                               } else if (type == CLP_PARAM_ACTION_NETLIB_BARRIER) {
                                    std::cerr << "Doing netlib with barrier algorithm" << std::endl;
                                    algorithm = 2;
@@ -1643,10 +1863,10 @@ main (int argc, const char *argv[])
                                    // uncomment next to get active tuning
                                    // algorithm=6;
                               } else {
-                                   std::cerr << "Doing netlib with primal agorithm" << std::endl;
+                                   std::cerr << "Doing netlib with primal algorithm" << std::endl;
                                    algorithm = 1;
                               }
-                              int specialOptions = models[iModel].specialOptions();
+                              //int specialOptions = models[iModel].specialOptions();
                               models[iModel].setSpecialOptions(0);
                               ClpSolve solveOptions;
                               ClpSolve::PresolveType presolveType;
@@ -1675,8 +1895,39 @@ main (int argc, const char *argv[])
                                         }
                                    }
                               }
-                              mainTest(nFields, fields, algorithm, models[iModel],
+#if FACTORIZATION_STATISTICS
+			      {
+				extern int loSizeX;
+				extern int hiSizeX;
+				for (int i=0;i<argc;i++) {
+				  if (!strcmp(argv[i],"-losize")) {
+				    int size=atoi(argv[i+1]);
+				    if (size>0)
+				      loSizeX=size;
+				  }
+				  if (!strcmp(argv[i],"-hisize")) {
+				    int size=atoi(argv[i+1]);
+				    if (size>loSizeX)
+				      hiSizeX=size;
+				  }
+				}
+				if (loSizeX!=-1||hiSizeX!=1000000)
+				  printf("Solving problems %d<= and <%d\n",loSizeX,hiSizeX);
+			      }
+#endif
+			      // for moment then back to models[iModel]
+#ifndef ABC_INHERIT
+                              int specialOptions = models[iModel].specialOptions();
+                              mainTest(nFields, fields, algorithm, *thisModel,
                                        solveOptions, specialOptions, doVector != 0);
+#else
+			      //if (!processTune) {
+			      //specialOptions=0;
+			      //models->setSpecialOptions(models->specialOptions()&~65536);
+			      // }
+                              mainTest(nFields, fields, algorithm, *models,
+                                       solveOptions, 0, doVector != 0);
+#endif
                          }
                          break;
                          case CLP_PARAM_ACTION_UNITTEST: {
@@ -1699,8 +1950,13 @@ main (int argc, const char *argv[])
                               else
                                    presolveType = ClpSolve::presolveOff;
                               solveOptions.setPresolveType(presolveType, 5);
-                              mainTest(nFields, fields, algorithm, models[iModel],
+#ifndef ABC_INHERIT
+                              mainTest(nFields, fields, algorithm, *thisModel,
                                        solveOptions, specialOptions, doVector != 0);
+#else
+                              mainTest(nFields, fields, algorithm, *models,
+                                       solveOptions, specialOptions, doVector != 0);
+#endif
                          }
                          break;
                          case CLP_PARAM_ACTION_FAKEBOUND:
@@ -1918,6 +2174,92 @@ clp watson.mps -\nscaling off\nprimalsimplex"
                                              fprintf(fp, "status unknown\n" );
                                         }
                                         fprintf(fp, "Objective value %15.8g\n", objValue);
+					if (printMode==9) {
+					  // just statistics
+					  int numberRows = models[iModel].numberRows();
+					  double * dualRowSolution = models[iModel].dualRowSolution();
+					  double * primalRowSolution =
+					    models[iModel].primalRowSolution();
+					  double * rowLower = models[iModel].rowLower();
+					  double * rowUpper = models[iModel].rowUpper();
+					  double highestPrimal;
+					  double lowestPrimal;
+					  double highestDual;
+					  double lowestDual;
+					  double largestAway;
+					  int numberAtLower;
+					  int numberAtUpper;
+					  int numberBetween;
+					  highestPrimal=-COIN_DBL_MAX;
+					  lowestPrimal=COIN_DBL_MAX;
+					  highestDual=-COIN_DBL_MAX;
+					  lowestDual=COIN_DBL_MAX;
+					  largestAway=0.0;;
+					  numberAtLower=0;
+					  numberAtUpper=0;
+					  numberBetween=0;
+					  for (int iRow=0;iRow<numberRows;iRow++) {
+					    double primal=primalRowSolution[iRow];
+					    double lower=rowLower[iRow];
+					    double upper=rowUpper[iRow];
+					    double dual=dualRowSolution[iRow];
+					    highestPrimal=CoinMax(highestPrimal,primal);
+					    lowestPrimal=CoinMin(lowestPrimal,primal);
+					    highestDual=CoinMax(highestDual,dual);
+					    lowestDual=CoinMin(lowestDual,dual);
+					    if (primal<lower+1.0e-6) {
+					      numberAtLower++;
+					    } else if (primal>upper-1.0e-6) {
+					      numberAtUpper++;
+					    } else {
+					      numberBetween++;
+					      largestAway=CoinMax(largestAway,
+								  CoinMin(primal-lower,upper-primal));
+					    }
+					  }
+					  printf("For rows %d at lower, %d between, %d at upper - lowest %g, highest %g most away %g - highest dual %g lowest %g\n",
+						 numberAtLower,numberBetween,numberAtUpper,
+						 lowestPrimal,highestPrimal,largestAway,
+						 lowestDual,highestDual);
+					  int numberColumns = models[iModel].numberColumns();
+					  double * dualColumnSolution = models[iModel].dualColumnSolution();
+					  double * primalColumnSolution =
+					    models[iModel].primalColumnSolution();
+					  double * columnLower = models[iModel].columnLower();
+					  double * columnUpper = models[iModel].columnUpper();
+					  highestPrimal=-COIN_DBL_MAX;
+					  lowestPrimal=COIN_DBL_MAX;
+					  highestDual=-COIN_DBL_MAX;
+					  lowestDual=COIN_DBL_MAX;
+					  largestAway=0.0;;
+					  numberAtLower=0;
+					  numberAtUpper=0;
+					  numberBetween=0;
+					  for (int iColumn=0;iColumn<numberColumns;iColumn++) {
+					    double primal=primalColumnSolution[iColumn];
+					    double lower=columnLower[iColumn];
+					    double upper=columnUpper[iColumn];
+					    double dual=dualColumnSolution[iColumn];
+					    highestPrimal=CoinMax(highestPrimal,primal);
+					    lowestPrimal=CoinMin(lowestPrimal,primal);
+					    highestDual=CoinMax(highestDual,dual);
+					    lowestDual=CoinMin(lowestDual,dual);
+					    if (primal<lower+1.0e-6) {
+					      numberAtLower++;
+					    } else if (primal>upper-1.0e-6) {
+					      numberAtUpper++;
+					    } else {
+					      numberBetween++;
+					      largestAway=CoinMax(largestAway,
+								  CoinMin(primal-lower,upper-primal));
+					    }
+					  }
+					  printf("For columns %d at lower, %d between, %d at upper - lowest %g, highest %g most away %g - highest dual %g lowest %g\n",
+						 numberAtLower,numberBetween,numberAtUpper,
+						 lowestPrimal,highestPrimal,largestAway,
+						 lowestDual,highestDual);
+					  break;
+					}
                                         // make fancy later on
                                         int iRow;
                                         int numberRows = models[iModel].numberRows();
@@ -2450,11 +2792,13 @@ static void statistics(ClpSimplex * originalModel, ClpSimplex * model)
                if (integerInformation[iColumn]) {
                     if (columnUpper[iColumn] > columnLower[iColumn]) {
                          numberIntegers++;
-                         if (columnUpper[iColumn] == 0.0 && columnLower[iColumn] == 1)
+                         if (columnLower[iColumn] == 0.0 && columnUpper[iColumn] == 1)
                               numberBinary++;
                     }
                }
           }
+	  printf("Original problem has %d integers (%d of which binary)\n",
+		 numberIntegers,numberBinary);
      }
      numberColumns = model->numberColumns();
      int numberRows = model->numberRows();
@@ -2463,6 +2807,182 @@ static void statistics(ClpSimplex * originalModel, ClpSimplex * model)
      const double * rowLower = model->rowLower();
      const double * rowUpper = model->rowUpper();
      const double * objective = model->objective();
+     if (model->integerInformation()) {
+       const char * integerInformation  = model->integerInformation();
+       int numberIntegers = 0;
+       int numberBinary = 0;
+       double * obj = new double [numberColumns];
+       int * which = new int [numberColumns];
+       for (int iColumn = 0; iColumn < numberColumns; iColumn++) {
+	 if (columnUpper[iColumn] > columnLower[iColumn]) {
+	   if (integerInformation[iColumn]) {
+	     numberIntegers++;
+	     if (columnLower[iColumn] == 0.0 && columnUpper[iColumn] == 1)
+	       numberBinary++;
+	   }
+	 }
+       }
+       if(numberColumns != originalModel->numberColumns())
+	 printf("Presolved problem has %d integers (%d of which binary)\n",
+		numberIntegers,numberBinary);
+       for (int ifInt=0;ifInt<2;ifInt++) {
+	 for (int ifAbs=0;ifAbs<2;ifAbs++) {
+	   int numberSort=0;
+	   int numberZero=0;
+	   int numberDifferentObj=0;
+	   for (int iColumn = 0; iColumn < numberColumns; iColumn++) {
+	     if (columnUpper[iColumn] > columnLower[iColumn]) {
+	       if (!ifInt||integerInformation[iColumn]) {
+		 obj[numberSort]=(ifAbs) ? fabs(objective[iColumn]) :
+		   objective[iColumn];
+		 which[numberSort++]=iColumn;
+		 if (!objective[iColumn])
+		   numberZero++;
+	       }
+	     }
+	   }
+	   CoinSort_2(obj,obj+numberSort,which);
+	   double last=obj[0];
+	   for (int jColumn = 1; jColumn < numberSort; jColumn++) {
+	     if (fabs(obj[jColumn]-last)>1.0e-12) {
+	       numberDifferentObj++;
+	       last=obj[jColumn];
+	     }
+	   }
+	   numberDifferentObj++;
+	   printf("==== ");
+	   if (ifInt)
+	     printf("for integers ");
+	   if (!ifAbs)
+	     printf("%d zero objective ",numberZero);
+	   else
+	     printf("absolute objective values ");
+	   printf("%d different\n",numberDifferentObj);
+	   bool saveModel=false;
+	   int target=model->logLevel();
+	   if (target>10000) {
+	     if (ifInt&&!ifAbs)
+	       saveModel=true;
+	     target-=10000;
+	   }
+
+	   if (target<=100)
+	     target=12;
+	   else
+	     target-=100;
+	   if (numberDifferentObj<target) {
+	     int iLast=0;
+	     double last=obj[0];
+	     for (int jColumn = 1; jColumn < numberSort; jColumn++) {
+	       if (fabs(obj[jColumn]-last)>1.0e-12) {
+		 printf("%d variables have objective of %g\n",
+			jColumn-iLast,last);
+		 iLast=jColumn;
+		 last=obj[jColumn];
+	       }
+	     }
+	     printf("%d variables have objective of %g\n",
+		    numberSort-iLast,last);
+	     if (saveModel) {
+	       int spaceNeeded=numberSort+numberDifferentObj;
+	       int * columnAdd = new int[spaceNeeded+numberDifferentObj+1];
+	       double * elementAdd = new double[spaceNeeded];
+	       int * rowAdd = new int[2*numberDifferentObj+1];
+	       int * newIsInteger = rowAdd+numberDifferentObj+1;
+	       double * objectiveNew = new double[3*numberDifferentObj];
+	       double * lowerNew = objectiveNew+numberDifferentObj;
+	       double * upperNew = lowerNew+numberDifferentObj;
+	       memset(columnAdd+spaceNeeded,0,
+		      (numberDifferentObj+1)*sizeof(int));
+	       ClpSimplex tempModel=*model;
+	       int iLast=0;
+	       double last=obj[0];
+	       numberDifferentObj=0;
+	       int numberElements=0;
+	       rowAdd[0]=0;
+	       double * objective = tempModel.objective();
+	       for (int jColumn = 1; jColumn < numberSort+1; jColumn++) {
+		 if (jColumn==numberSort||fabs(obj[jColumn]-last)>1.0e-12) {
+		   // not if just one
+		   if (jColumn-iLast>1) {
+		     bool allInteger=integerInformation!=NULL;
+		     int iColumn=which[iLast];
+		     objectiveNew[numberDifferentObj]=objective[iColumn];
+		     double lower=0.0;
+		     double upper=0.0;
+		     for (int kColumn=iLast;kColumn<jColumn;kColumn++) {
+		       iColumn=which[kColumn];
+		       objective[iColumn]=0.0;
+		       double lowerValue=columnLower[iColumn];
+		       double upperValue=columnUpper[iColumn];
+		       double elementValue=-1.0;
+		       if (objectiveNew[numberDifferentObj]*objective[iColumn]<0.0) {
+			 lowerValue=-columnUpper[iColumn];
+			 upperValue=-columnLower[iColumn];
+			 elementValue=1.0;
+		       }
+		       columnAdd[numberElements]=iColumn;
+		       elementAdd[numberElements++]=elementValue;
+		       if (integerInformation&&!integerInformation[iColumn])
+			 allInteger=false;
+		       if (lower!=-COIN_DBL_MAX) {
+			 if (lowerValue!=-COIN_DBL_MAX)
+			   lower += lowerValue;
+			 else
+			   lower=-COIN_DBL_MAX;
+		       }
+		       if (upper!=COIN_DBL_MAX) {
+			 if (upperValue!=COIN_DBL_MAX)
+			   upper += upperValue;
+			 else
+			   upper=COIN_DBL_MAX;
+		       }
+		     }
+		     columnAdd[numberElements]=numberColumns+numberDifferentObj;
+		     elementAdd[numberElements++]=1.0;
+		     newIsInteger[numberDifferentObj]= (allInteger) ? 1 : 0;
+		     lowerNew[numberDifferentObj]=lower;
+		     upperNew[numberDifferentObj]=upper;
+		     numberDifferentObj++;
+		     rowAdd[numberDifferentObj]=numberElements;
+		   }
+		   iLast=jColumn;
+		   last=obj[jColumn];
+		 }
+	       }
+	       // add columns
+	       tempModel.addColumns(numberDifferentObj, lowerNew, upperNew,
+				    objectiveNew,
+				    columnAdd+spaceNeeded, NULL, NULL);
+	       // add constraints and make integer if all integer in group
+	       for (int iObj=0; iObj < numberDifferentObj; iObj++) {
+		 lowerNew[iObj]=0.0;
+		 upperNew[iObj]=0.0;
+		 if (newIsInteger[iObj])
+		   tempModel.setInteger(numberColumns+iObj);
+	       }
+	       tempModel.addRows(numberDifferentObj, lowerNew, upperNew,
+				 rowAdd,columnAdd,elementAdd);
+	       delete [] columnAdd;
+	       delete [] elementAdd;
+	       delete [] rowAdd;
+	       delete [] objectiveNew;
+	       // save
+	       std::string tempName = model->problemName();
+	       if (ifInt)
+		 tempName += "_int";
+	       if (ifAbs)
+		 tempName += "_abs";
+	       tempName += ".mps";
+	       tempModel.writeMps(tempName.c_str());
+	     }
+	   }
+	 }
+       }
+       delete [] which;
+       delete [] obj;
+       printf("===== end objective counts\n");
+     }
      CoinPackedMatrix * matrix = model->matrix();
      CoinBigIndex numberElements = matrix->getNumElements();
      const int * columnLength = matrix->getVectorLengths();
@@ -2706,6 +3226,303 @@ static void statistics(ClpSimplex * originalModel, ClpSimplex * model)
      const int * rowLength = rowCopy.getVectorLengths();
      number = new int[numberColumns+1];
      memset(number, 0, (numberColumns + 1)*sizeof(int));
+     if (model->logLevel() > 3) {
+       // get column copy
+       CoinPackedMatrix columnCopy = *matrix;
+       const int * columnLength = columnCopy.getVectorLengths();
+       const int * row = columnCopy.getIndices();
+       const CoinBigIndex * columnStart = columnCopy.getVectorStarts();
+       const double * element = columnCopy.getElements();
+       const double * elementByRow = rowCopy.getElements();
+       const int * rowStart = rowCopy.getVectorStarts();
+       const int * column = rowCopy.getIndices();
+       int nPossibleZeroCost=0;
+       int nPossibleNonzeroCost=0;
+       for (int iColumn = 0; iColumn < numberColumns; iColumn++) {
+	 int length = columnLength[iColumn];
+	 if (columnLower[iColumn]<-1.0e30&&columnUpper[iColumn]>1.0e30) {
+	   if (length==1) {
+	     printf("Singleton free %d - cost %g\n",iColumn,objective[iColumn]);
+	   } else if (length==2) {
+	     int iRow0=row[columnStart[iColumn]];
+	     int iRow1=row[columnStart[iColumn]+1];
+	     double element0=element[columnStart[iColumn]];
+	     double element1=element[columnStart[iColumn]+1];
+	     int n0=rowLength[iRow0];
+	     int n1=rowLength[iRow1];
+	     printf("Doubleton free %d - cost %g - %g in %srow with %d entries and %g in %srow with %d entries\n",
+		    iColumn,objective[iColumn],element0,(rowLower[iRow0]==rowUpper[iRow0]) ? "==" : "",n0,
+		    element1,(rowLower[iRow1]==rowUpper[iRow1]) ? "==" : "",n1);
+
+	   }
+	 }
+	 if (length==1) {
+	   int iRow=row[columnStart[iColumn]];
+	   double value=COIN_DBL_MAX;
+	   for (int i=rowStart[iRow];i<rowStart[iRow]+rowLength[iRow];i++) {
+	     int jColumn=column[i];
+	     if (jColumn!=iColumn) {
+	       if (value!=elementByRow[i]) {
+		 if (value==COIN_DBL_MAX) {
+		   value=elementByRow[i];
+		 } else {
+		   value = -COIN_DBL_MAX;
+		   break;
+		 }
+	       }
+	     }
+	   }
+	   if (!objective[iColumn]) {
+	     if (model->logLevel() > 4) 
+	     printf("Singleton %d with no objective in row with %d elements - rhs %g,%g\n",iColumn,rowLength[iRow],rowLower[iRow],rowUpper[iRow]);
+	     nPossibleZeroCost++;
+	   } else if (value!=-COIN_DBL_MAX) {
+	     if (model->logLevel() > 4) 
+	     printf("Singleton %d with objective in row with %d equal elements - rhs %g,%g\n",iColumn,rowLength[iRow],rowLower[iRow],rowUpper[iRow]);
+	     nPossibleNonzeroCost++;
+	   }
+	 }
+       }
+       if (nPossibleZeroCost||nPossibleNonzeroCost)
+	 printf("%d singletons with zero cost, %d with valid cost\n",
+		nPossibleZeroCost,nPossibleNonzeroCost);
+       // look for DW
+       int * blockStart = new int [2*(numberRows+numberColumns)+1+numberRows];
+       int * columnBlock = blockStart+numberRows;
+       int * nextColumn = columnBlock+numberColumns;
+       int * blockCount = nextColumn+numberColumns;
+       int * blockEls = blockCount+numberRows+1;
+       int direction[2]={-1,1};
+       int bestBreak=-1;
+       double bestValue=0.0;
+       int iPass=0;
+       int halfway=(numberRows+1)/2;
+       int firstMaster=-1;
+       int lastMaster=-2;
+       while (iPass<2) {
+	 int increment=direction[iPass];
+	 int start= increment>0 ? 0 : numberRows-1;
+	 int stop=increment>0 ? numberRows : -1;
+	 int numberBlocks=0;
+	 int thisBestBreak=-1;
+	 double thisBestValue=COIN_DBL_MAX;
+	 int numberRowsDone=0;
+	 int numberMarkedColumns=0;
+	 int maximumBlockSize=0;
+	 for (int i=0;i<numberRows+2*numberColumns;i++) 
+	   blockStart[i]=-1;
+	 for (int i=0;i<numberRows+1;i++)
+	   blockCount[i]=0;
+	 for (int iRow=start;iRow!=stop;iRow+=increment) {
+	   int iBlock = -1;
+	   for (CoinBigIndex j=rowStart[iRow];j<rowStart[iRow]+rowLength[iRow];j++) {
+	     int iColumn=column[j];
+	     int whichColumnBlock=columnBlock[iColumn];
+	     if (whichColumnBlock>=0) {
+	       // column marked
+	       if (iBlock<0) {
+		 // put row in that block
+		 iBlock=whichColumnBlock;
+	       } else if (iBlock!=whichColumnBlock) {
+		 // merge
+		 blockCount[iBlock]+=blockCount[whichColumnBlock];
+		 blockCount[whichColumnBlock]=0;
+		 int jColumn=blockStart[whichColumnBlock];
+		 while (jColumn>=0) {
+		   columnBlock[jColumn]=iBlock;
+		   iColumn=jColumn;
+		   jColumn=nextColumn[jColumn];
+		 }
+		 nextColumn[iColumn]=blockStart[iBlock];
+		 blockStart[iBlock]=blockStart[whichColumnBlock];
+		 blockStart[whichColumnBlock]=-1;
+	       }
+	     }
+	   }
+	   int n=numberMarkedColumns;
+	   if (iBlock<0) {
+	     //new block
+	     if (rowLength[iRow]) {
+	       numberBlocks++;
+	       iBlock=numberBlocks;
+	       int jColumn=column[rowStart[iRow]];
+	       columnBlock[jColumn]=iBlock;
+	       blockStart[iBlock]=jColumn;
+	       numberMarkedColumns++;
+	       for (CoinBigIndex j=rowStart[iRow]+1;j<rowStart[iRow]+rowLength[iRow];j++) {
+		 int iColumn=column[j];
+		 columnBlock[iColumn]=iBlock;
+		 numberMarkedColumns++;
+		 nextColumn[jColumn]=iColumn;
+		 jColumn=iColumn;
+	       }
+	       blockCount[iBlock]=numberMarkedColumns-n;
+	     } else {
+	       // empty
+	       iBlock=numberRows;
+	     }
+	   } else {
+	     // put in existing block
+	     int jColumn=blockStart[iBlock];
+	     for (CoinBigIndex j=rowStart[iRow];j<rowStart[iRow]+rowLength[iRow];j++) {
+	       int iColumn=column[j];
+	       assert (columnBlock[iColumn]<0||columnBlock[iColumn]==iBlock);
+	       if (columnBlock[iColumn]<0) {
+		 columnBlock[iColumn]=iBlock;
+		 numberMarkedColumns++;
+		 nextColumn[iColumn]=jColumn;
+		 jColumn=iColumn;
+	       }
+	     }
+	     blockStart[iBlock]=jColumn;
+	     blockCount[iBlock]+=numberMarkedColumns-n;
+	   }
+	   maximumBlockSize=CoinMax(maximumBlockSize,blockCount[iBlock]);
+	   numberRowsDone++;
+	   if (thisBestValue*numberRowsDone > maximumBlockSize&&numberRowsDone>halfway) { 
+	     thisBestBreak=iRow;
+	     thisBestValue=static_cast<double>(maximumBlockSize)/
+	       static_cast<double>(numberRowsDone);
+	   }
+	 }
+	 if (thisBestBreak==stop)
+	   thisBestValue=COIN_DBL_MAX;
+	 iPass++;
+	 if (iPass==1) {
+	   bestBreak=thisBestBreak;
+	   bestValue=thisBestValue;
+	 } else {
+	   if (bestValue<thisBestValue) {
+	     firstMaster=0;
+	     lastMaster=bestBreak;
+	   } else {
+	     firstMaster=thisBestBreak; // ? +1
+	     lastMaster=numberRows;
+	   }
+	 }
+       }
+       if (firstMaster<lastMaster) {
+	 printf("%d master rows %d <= < %d\n",lastMaster-firstMaster,
+		firstMaster,lastMaster);
+	 for (int i=0;i<numberRows+2*numberColumns;i++) 
+	   blockStart[i]=-1;
+	 for (int i=firstMaster;i<lastMaster;i++)
+	   blockStart[i]=-2;
+	 int firstRow=0;
+	 int numberBlocks=-1;
+	 while (true) {
+	   for (;firstRow<numberRows;firstRow++) {
+	     if (blockStart[firstRow]==-1)
+	       break;
+	   }
+	   if (firstRow==numberRows)
+	     break;
+	   int nRows=0;
+	   numberBlocks++;
+	   int numberStack=1;
+	   blockCount[0] = firstRow;
+	   while (numberStack) {
+	     int iRow=blockCount[--numberStack];
+	     for (CoinBigIndex j=rowStart[iRow];j<rowStart[iRow]+rowLength[iRow];j++) {
+	       int iColumn=column[j];
+	       int iBlock=columnBlock[iColumn];
+	       if (iBlock<0) {
+		 columnBlock[iColumn]=numberBlocks;
+		 for (CoinBigIndex k=columnStart[iColumn];
+		      k<columnStart[iColumn]+columnLength[iColumn];k++) {
+		   int jRow=row[k];
+		   int rowBlock=blockStart[jRow];
+		   if (rowBlock==-1) {
+		     nRows++;
+		     blockStart[jRow]=numberBlocks;
+		     blockCount[numberStack++]=jRow;
+		   }
+		 }
+	       }
+	     }
+	   }
+	   if (!nRows) {
+	     // empty!!
+	     numberBlocks--;
+	   }
+	   firstRow++;
+	 }
+	 // adjust 
+	 numberBlocks++;
+	 for (int i=0;i<numberBlocks;i++) {
+	   blockCount[i]=0;
+	   nextColumn[i]=0;
+	 }
+	 int numberEmpty=0;
+	 int numberMaster=0;
+	 memset(blockEls,0,numberBlocks*sizeof(int));
+	 for (int iRow = 0; iRow < numberRows; iRow++) {
+	   int iBlock=blockStart[iRow];
+	   if (iBlock>=0) {
+	     blockCount[iBlock]++;
+	     blockEls[iBlock]+=rowLength[iRow];
+	   } else {
+	     if (iBlock==-2)
+	       numberMaster++;
+	     else
+	       numberEmpty++;
+	   }
+	 }
+	 int numberEmptyColumns=0;
+	 int numberMasterColumns=0;
+	 for (int iColumn = 0; iColumn < numberColumns; iColumn++) {
+	   int iBlock=columnBlock[iColumn];
+	   if (iBlock>=0) {
+	     nextColumn[iBlock]++;
+	   } else {
+	     if (columnLength[iColumn])
+	       numberMasterColumns++;
+	     else
+	       numberEmptyColumns++;
+	   }
+	 }
+	 int largestRows=0;
+	 int largestColumns=0;
+	 for (int i=0;i<numberBlocks;i++) {
+	   if (blockCount[i]+nextColumn[i]>largestRows+largestColumns) {
+	     largestRows=blockCount[i];
+	     largestColumns=nextColumn[i];
+	   }
+	 }
+	 bool useful=true;
+	 if (numberMaster>halfway||largestRows*3>numberRows)
+	   useful=false;
+	 printf("%s %d blocks (largest %d,%d), %d master rows (%d empty) out of %d, %d master columns (%d empty) out of %d\n",
+		useful ? "**Useful" : "NoGood",
+		numberBlocks,largestRows,largestColumns,numberMaster,numberEmpty,numberRows,
+		numberMasterColumns,numberEmptyColumns,numberColumns);
+	 for (int i=0;i<numberBlocks;i++) 
+	   printf("Block %d has %d rows and %d columns (%d elements)\n",
+		  i,blockCount[i],nextColumn[i],blockEls[i]);
+	 if (model->logLevel() == 17) {
+	   int * whichRows=new int[numberRows+numberColumns];
+	   int * whichColumns=whichRows+numberRows;
+	   char name[20];
+	   for (int iBlock=0;iBlock<numberBlocks;iBlock++) {
+	     sprintf(name,"block%d.mps",iBlock);
+	     int nRows=0;
+	     for (int iRow=0;iRow<numberRows;iRow++) {
+	       if (blockStart[iRow]==iBlock)
+		 whichRows[nRows++]=iRow;
+	     }
+	     int nColumns=0;
+	     for (int iColumn=0;iColumn<numberColumns;iColumn++) {
+	       if (columnBlock[iColumn]==iBlock)
+		 whichColumns[nColumns++]=iColumn;
+	     }
+	     ClpSimplex subset(model,nRows,whichRows,nColumns,whichColumns);
+	     subset.writeMps(name,0,1);
+	   }
+	   delete [] whichRows;
+	 } 
+       }
+       delete [] blockStart;
+     }
      for (iRow = 0; iRow < numberRows; iRow++) {
           int length = rowLength[iRow];
           number[length]++;
@@ -3400,3 +4217,114 @@ static void generateCode(const char * fileName, int type)
   1.05.00 June 27 2007.  This is trunk so when gets to stable will be 1.5
   1.11.00 November 5 2009 (Guy Fawkes) - OSL factorization and better ordering
  */
+#ifdef CILK_TEST
+// -*- C++ -*-
+
+/*
+ * cilk-for.cilk
+ *
+ * Copyright (c) 2007-2008 Cilk Arts, Inc.  55 Cambridge Street,
+ * Burlington, MA 01803.  Patents pending.  All rights reserved. You may
+ * freely use the sample code to guide development of your own works,
+ * provided that you reproduce this notice in any works you make that
+ * use the sample code.  This sample code is provided "AS IS" without
+ * warranty of any kind, either express or implied, including but not
+ * limited to any implied warranty of non-infringement, merchantability
+ * or fitness for a particular purpose.  In no event shall Cilk Arts,
+ * Inc. be liable for any direct, indirect, special, or consequential
+ * damages, or any other damages whatsoever, for any use of or reliance
+ * on this sample code, including, without limitation, any lost
+ * opportunity, lost profits, business interruption, loss of programs or
+ * data, even if expressly advised of or otherwise aware of the
+ * possibility of such damages, whether in an action of contract,
+ * negligence, tort, or otherwise.
+ *
+ * This file demonstrates a Cilk++ for loop
+ */
+
+#include <cilk/cilk.h>
+//#include <cilk/cilkview.h>
+#include <cilk/reducer_max.h>
+#include <cstdlib>
+#include <iostream>
+
+// cilk_for granularity.
+#define CILK_FOR_GRAINSIZE 128
+
+double dowork(double i)
+{
+    // Waste time:
+    int j;
+    double k = i;
+    for (j = 0; j < 50000; ++j) {
+        k += k / ((j + 1) * (k + 1));
+    }
+
+    return k;
+}
+static void doSomeWork(double * a,int low, int high)
+{
+  if (high-low>300) {
+    int mid=(high+low)>>1;
+    cilk_spawn doSomeWork(a,low,mid);
+    doSomeWork(a,mid,high);
+    cilk_sync;
+  } else {
+    for(int i = low; i < high; ++i) {
+      a[i] = dowork(a[i]);
+    }
+  }
+}
+
+void cilkTest()
+{
+    unsigned int n = 10000;
+    //cilk::cilkview cv;
+
+
+    double* a = new double[n];
+
+    for(unsigned int i = 0; i < n; i++) {
+        // Populate A 
+        a[i] = (double) ((i * i) % 1024 + 512) / 512;
+    }
+
+    std::cout << "Iterating over " << n << " integers" << std::endl;
+
+    //cv.start();
+#if 1
+    //#pragma cilk_grainsize=CILK_FOR_GRAINSIZE
+    cilk_for(unsigned int i = 0; i < n; ++i) {
+        a[i] = dowork(a[i]);
+    }
+#else
+    doSomeWork(a,0,n);
+#endif
+    int * which =new int[n];
+    unsigned int n2=n>>1;
+    for (int i=0;i<n2;i++) 
+      which[i]=n-2*i;
+    cilk::reducer_max_index<int,double> maximumIndex(-1,0.0);
+    cilk_for(unsigned int i = 0; i < n2; ++i) {
+      int iWhich=which[i];
+      maximumIndex.calc_max(iWhich,a[iWhich]);
+    }
+    int bestIndex=maximumIndex.get_index();
+    int bestIndex2=-1;
+    double largest=0.0;
+    cilk_for(unsigned int i = 0; i < n2; ++i) {
+      int iWhich=which[i];
+      if (a[iWhich]>largest) {
+	bestIndex2=iWhich;
+	largest=a[iWhich];
+      }
+    }
+    assert (bestIndex==bestIndex2);
+    //cv.stop();
+    //cv.dump("cilk-for-results", false);
+
+    //std::cout << cv.accumulated_milliseconds() / 1000.f << " seconds" << std::endl;
+
+    exit(0);
+}
+#endif

@@ -2,7 +2,7 @@
  * All Rights Reserved.
  * This code is published under the Eclipse Public License.
  *
- * $Id: CoinUtilsConfig.h 1448 2011-06-19 15:34:41Z stefan $
+ * $Id: CoinUtilsConfig.h 1434 2011-06-06 13:47:41Z stefan $
  *
  * Include file for the configuration of CoinUtils.
  *

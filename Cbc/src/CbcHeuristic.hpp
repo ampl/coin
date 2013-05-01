@@ -1,4 +1,4 @@
-/* $Id: CbcHeuristic.hpp 1675 2011-06-19 17:23:14Z stefan $ */
+/* $Id: CbcHeuristic.hpp 1883 2013-04-06 13:33:15Z stefan $ */
 // Copyright (C) 2002, International Business Machines
 // Corporation and others.  All Rights Reserved.
 // This code is licensed under the terms of the Eclipse Public License (EPL).
@@ -154,6 +154,7 @@ public:
         8 bit - if has cutoff and suminf bobbling for 20 passes then
                 first try halving distance to best possible then
                 try keep halving distance to known cutoff
+        16 bit - needs new solution to run
         1024 bit - stop all heuristics on max time
     */
     inline void setSwitches(int value) {
@@ -166,6 +167,7 @@ public:
         8 bit - if has cutoff and suminf bobbling for 20 passes then
                 first try halving distance to best possible then
                 try keep halving distance to known cutoff
+        16 bit - needs new solution to run
         1024 bit - stop all heuristics on max time
     */
     inline int switches() const {
@@ -234,6 +236,8 @@ public:
     }
     /// Set random number generator seed
     void setSeed(int value);
+    /// Get random number generator seed
+    int getSeed() const;
     /// Sets decay factor (for howOften) on failure
     inline void setDecayFactor(double value) {
         decayFactor_ = value;
@@ -313,7 +317,11 @@ protected:
     int when_;
     /// Number of nodes in any sub tree
     int numberNodes_;
-    /// Feasibility pump options (-1 is off)
+    /** Feasibility pump options , -1 is off
+	>=0 for feasibility pump itself
+        -2 quick proximity search
+        -3 longer proximity search
+    */
     int feasibilityPumpOptions_;
     /// Fraction of new(rows+columns)/old(rows+columns) before doing small branch and bound
     mutable double fractionSmall_;
@@ -333,6 +341,7 @@ protected:
         8 bit - if has cutoff and suminf bobbling for 20 passes then
                 first try halving distance to best possible then
                 try keep halving distance to known cutoff
+        16 bit - needs new solution to run
         1024 bit - stop all heuristics on max time
     */
     mutable int switches_;
@@ -377,6 +386,9 @@ protected:
 
     /// How many solutions the heuristic thought it got
     int numberSolutionsFound_;
+
+    /// How many nodes the heuristic did this go
+    mutable int numberNodesDone_;
 
     // Input solution - so can be used as seed
     double * inputSolution_;

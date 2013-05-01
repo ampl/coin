@@ -2,7 +2,7 @@
 # All Rights Reserved.
 # This file is distributed under the Eclipse Public License.
 
-## $Id: Makefile.am 1753 2011-06-19 16:27:26Z stefan $
+## $Id: Makefile.am 1910 2013-01-27 02:00:13Z stefan $
 
 # Author:  Andreas Waechter           IBM    2006-04-13
 
@@ -70,6 +70,52 @@ libClp_la_SOURCES = \
 	ClpSolve.cpp ClpSolve.hpp \
 	Idiot.cpp Idiot.hpp \
 	IdiSolve.cpp
+
+if COIN_HAS_ABC
+libClp_la_SOURCES += \
+	AbcCommon.hpp \
+	AbcDualRowDantzig.cpp AbcDualRowDantzig.hpp \
+	AbcDualRowPivot.cpp AbcDualRowPivot.hpp \
+	AbcDualRowSteepest.cpp AbcDualRowSteepest.hpp \
+	AbcMatrix.cpp AbcMatrix.hpp \
+	AbcNonLinearCost.cpp AbcNonLinearCost.hpp \
+	AbcPrimalColumnDantzig.cpp AbcPrimalColumnDantzig.hpp \
+	AbcPrimalColumnPivot.cpp AbcPrimalColumnPivot.hpp \
+	AbcPrimalColumnSteepest.cpp AbcPrimalColumnSteepest.hpp \
+	AbcSimplex.cpp AbcSimplex.hpp \
+	AbcSimplexDual.cpp AbcSimplexDual.hpp \
+	AbcSimplexPrimal.cpp AbcSimplexPrimal.hpp \
+	AbcSimplexParallel.cpp \
+	AbcSimplexFactorization.cpp AbcSimplexFactorization.hpp \
+	AbcWarmStart.cpp AbcWarmStart.hpp \
+	CoinAbcBaseFactorization.hpp \
+	CoinAbcBaseFactorization1.cpp \
+	CoinAbcBaseFactorization2.cpp \
+	CoinAbcBaseFactorization3.cpp \
+	CoinAbcBaseFactorization4.cpp \
+	CoinAbcBaseFactorization5.cpp \
+	CoinAbcCommonFactorization.hpp \
+	CoinAbcCommon.hpp \
+	CoinAbcDenseFactorization.cpp \
+	CoinAbcDenseFactorization.hpp \
+	CoinAbcFactorization.hpp \
+	CoinAbcFactorization1.cpp \
+	CoinAbcFactorization2.cpp \
+	CoinAbcFactorization3.cpp \
+	CoinAbcFactorization4.cpp \
+	CoinAbcFactorization5.cpp \
+	CoinAbcHelperFunctions.cpp CoinAbcHelperFunctions.hpp \
+	CoinAbcOrderedFactorization1.cpp \
+	CoinAbcOrderedFactorization2.cpp \
+	CoinAbcOrderedFactorization3.cpp \
+	CoinAbcOrderedFactorization4.cpp \
+	CoinAbcOrderedFactorization5.cpp \
+	CoinAbcSmallFactorization1.cpp \
+	CoinAbcSmallFactorization2.cpp \
+	CoinAbcSmallFactorization3.cpp \
+	CoinAbcSmallFactorization4.cpp \
+	CoinAbcSmallFactorization5.cpp
+endif
 
 # if AMD, CHOLMOD, or GLPK is available, then compile ClpCholeskyUfl.cpp
 if COIN_HAS_AMD
@@ -180,10 +226,15 @@ includecoin_HEADERS = \
 	ClpSimplex.hpp \
 	ClpSimplexNonlinear.hpp \
 	ClpSimplexOther.hpp \
+	ClpSimplexDual.hpp \
 	ClpSimplexPrimal.hpp \
 	ClpSolve.hpp \
 	CbcOrClpParam.hpp \
 	Idiot.hpp
+
+if COIN_HAS_ABC
+includecoin_HEADERS += AbcSimplex.hpp CoinAbcCommon.hpp AbcCommon.hpp
+endif
 
 
 # if AMD, CHOLMOD, or GLPK is available, then install ClpCholeskyUfl.hpp (for advanced users)

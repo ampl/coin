@@ -1,4 +1,4 @@
-/* $Id: ClpModel.cpp 1787 2011-09-03 13:06:58Z stefan $ */
+/* $Id: ClpModel.cpp 1941 2013-04-10 16:52:27Z stefan $ */
 // copyright (C) 2002, International Business Machines
 // Corporation and others.  All Rights Reserved.
 // This code is licensed under the terms of the Eclipse Public License (EPL).
@@ -122,7 +122,7 @@ ClpModel::ClpModel (bool emptyMessages) :
 {
      intParam_[ClpMaxNumIteration] = 2147483647;
      intParam_[ClpMaxNumIterationHotStart] = 9999999;
-     intParam_[ClpNameDiscipline] = 0;
+     intParam_[ClpNameDiscipline] = 1;
 
      dblParam_[ClpDualObjectiveLimit] = COIN_DBL_MAX;
      dblParam_[ClpPrimalObjectiveLimit] = COIN_DBL_MAX;
@@ -717,7 +717,7 @@ ClpModel::ClpModel(const ClpModel &rhs, int scalingMode) :
                scalingFlag_ = 0;
           }
      }
-     randomNumberGenerator_.setSeed(1234567);
+     //randomNumberGenerator_.setSeed(1234567);
 }
 // Assignment operator. This copies the data
 ClpModel &
@@ -743,13 +743,13 @@ void
 ClpModel::gutsOfCopy(const ClpModel & rhs, int trueCopy)
 {
      defaultHandler_ = rhs.defaultHandler_;
+     randomNumberGenerator_ = rhs.randomNumberGenerator_;
      if (trueCopy >= 0) {
           if (defaultHandler_)
                handler_ = new CoinMessageHandler(*rhs.handler_);
           else
                handler_ = rhs.handler_;
           eventHandler_ = rhs.eventHandler_->clone();
-          randomNumberGenerator_ = rhs.randomNumberGenerator_;
           messages_ = rhs.messages_;
           coinMessages_ = rhs.coinMessages_;
      } else {
@@ -1583,6 +1583,161 @@ ClpModel::deleteColumns(int number, const int * which)
      setRowScale(NULL);
      setColumnScale(NULL);
 }
+// Deletes rows AND columns (does not reallocate)
+void 
+ClpModel::deleteRowsAndColumns(int numberRows, const int * whichRows,
+			       int numberColumns, const int * whichColumns)
+{
+  if (!numberColumns) {
+    deleteRows(numberRows,whichRows);
+  } else if (!numberRows) {
+    deleteColumns(numberColumns,whichColumns);
+  } else {
+    whatsChanged_ &= ~511; // all changed
+    bool doStatus = status_!=NULL;
+    int numberTotal=numberRows_+numberColumns_;
+    int * backRows = new int [numberTotal];
+    int * backColumns = backRows+numberRows_;
+    memset(backRows,0,numberTotal*sizeof(int));
+    int newNumberColumns=0;
+    for (int i=0;i<numberColumns;i++) {
+      int iColumn=whichColumns[i];
+      if (iColumn>=0&&iColumn<numberColumns_)
+	backColumns[iColumn]=-1;
+    }
+    assert (objective_->type()==1);
+    double * obj = objective(); 
+    for (int i=0;i<numberColumns_;i++) {
+      if (!backColumns[i]) {
+	columnActivity_[newNumberColumns] = columnActivity_[i];
+	reducedCost_[newNumberColumns] = reducedCost_[i];
+	obj[newNumberColumns] = obj[i];
+	columnLower_[newNumberColumns] = columnLower_[i];
+	columnUpper_[newNumberColumns] = columnUpper_[i];
+	if (doStatus)
+	  status_[newNumberColumns] = status_[i];
+	backColumns[i]=newNumberColumns++;
+      }
+    }
+    integerType_ = deleteChar(integerType_, numberColumns_,
+			      numberColumns, whichColumns, newNumberColumns, true);
+#ifndef CLP_NO_STD
+    // Now works if which out of order
+    if (lengthNames_) {
+      for (int i=0;i<numberColumns_;i++) {
+	int iColumn=backColumns[i];
+	if (iColumn) 
+	  columnNames_[iColumn] = columnNames_[i];
+      }
+      columnNames_.erase(columnNames_.begin() + newNumberColumns, columnNames_.end());
+    }
+#endif
+    int newNumberRows=0;
+    assert (!rowObjective_);
+    unsigned char * status2 = status_ + numberColumns_;
+    unsigned char * status2a = status_ + newNumberColumns;
+    for (int i=0;i<numberRows;i++) {
+      int iRow=whichRows[i];
+      if (iRow>=0&&iRow<numberRows_)
+	backRows[iRow]=-1;
+    }
+    for (int i=0;i<numberRows_;i++) {
+      if (!backRows[i]) {
+	rowActivity_[newNumberRows] = rowActivity_[i];
+	dual_[newNumberRows] = dual_[i];
+	rowLower_[newNumberRows] = rowLower_[i];
+	rowUpper_[newNumberRows] = rowUpper_[i];
+	if (doStatus)
+	  status2a[newNumberRows] = status2[i];
+	backRows[i]=newNumberRows++;
+      }
+    }
+#ifndef CLP_NO_STD
+    // Now works if which out of order
+    if (lengthNames_) {
+      for (int i=0;i<numberRows_;i++) {
+	int iRow=backRows[i];
+	if (iRow) 
+	  rowNames_[iRow] = rowNames_[i];
+      }
+      rowNames_.erase(rowNames_.begin() + newNumberRows, rowNames_.end());
+    }
+#endif
+    // possible matrix is not full
+    ClpPackedMatrix * clpMatrix = dynamic_cast<ClpPackedMatrix *>(matrix_);
+    CoinPackedMatrix * matrix = clpMatrix ? clpMatrix->matrix() : NULL;
+    if (matrix_->getNumCols() < numberColumns_) {
+      assert (matrix);
+      CoinBigIndex nel=matrix->getNumElements();
+      int n=matrix->getNumCols();
+      matrix->reserve(numberColumns_,nel);
+      CoinBigIndex * columnStart = matrix->getMutableVectorStarts();
+      int * columnLength = matrix->getMutableVectorLengths();
+      for (int i=n;i<numberColumns_;i++) {
+	columnStart[i]=nel;
+	columnLength[i]=0;
+      }
+    }
+    if (matrix) {
+      matrix->setExtraMajor(0.1);
+      //CoinPackedMatrix temp(*matrix);
+      matrix->setExtraGap(0.0);
+      matrix->setExtraMajor(0.0);
+      int * row = matrix->getMutableIndices();
+      CoinBigIndex * columnStart = matrix->getMutableVectorStarts();
+      int * columnLength = matrix->getMutableVectorLengths();
+      double * element = matrix->getMutableElements();
+      newNumberColumns=0;
+      CoinBigIndex n=0;
+      for (int iColumn=0;iColumn<numberColumns_;iColumn++) {
+	if (backColumns[iColumn]>=0) {
+	  CoinBigIndex start = columnStart[iColumn];
+	  int nSave=n;
+	  columnStart[newNumberColumns]=n;
+	  for (CoinBigIndex j=start;j<start+columnLength[iColumn];j++) {
+	    int iRow=row[j];
+	    iRow = backRows[iRow];
+	    if (iRow>=0) {
+	      row[n]=iRow;
+	      element[n++]=element[j];
+	    }
+	  }
+	  columnLength[newNumberColumns++]=n-nSave;
+	}
+      }
+      columnStart[newNumberColumns]=n;
+      matrix->setNumElements(n);
+      matrix->setMajorDim(newNumberColumns);
+      matrix->setMinorDim(newNumberRows);
+      clpMatrix->setNumberActiveColumns(newNumberColumns);
+      //temp.deleteRows(numberRows, whichRows);
+      //temp.deleteCols(numberColumns, whichColumns);
+      //assert(matrix->isEquivalent2(temp));
+      //*matrix=temp;
+    } else {
+      matrix_->deleteRows(numberRows, whichRows);
+      matrix_->deleteCols(numberColumns, whichColumns);
+    }
+    numberColumns_ = newNumberColumns;
+    numberRows_ = newNumberRows;
+    delete [] backRows;
+    // set state back to unknown
+    problemStatus_ = -1;
+    secondaryStatus_ = 0;
+    delete [] ray_;
+    ray_ = NULL;
+    if (savedRowScale_ != rowScale_) {
+      delete [] rowScale_;
+      delete [] columnScale_;
+    }
+    rowScale_ = NULL;
+    columnScale_ = NULL;
+    delete scaledMatrix_;
+    scaledMatrix_ = NULL;
+    delete rowCopy_;
+    rowCopy_ = NULL;
+  }
+}
 // Add one row
 void
 ClpModel::addRow(int numberInRow, const int * columns,
@@ -2130,8 +2285,8 @@ ClpModel::addColumns(int number, const double * columnLower,
                columnNames_.resize(numberColumns_);
           }
 #endif
-          //if (elements)
-          matrix_->appendMatrix(number, 1, columnStarts, rows, elements);
+          if (elements)
+	    matrix_->appendMatrix(number, 1, columnStarts, rows, elements);
      }
 }
 // Add columns
@@ -2599,27 +2754,18 @@ ClpModel::chgObjCoefficients(const double * objIn)
 }
 // Infeasibility/unbounded ray (NULL returned if none/wrong)
 double *
-ClpModel::infeasibilityRay() const
+ClpModel::infeasibilityRay(bool fullRay) const
 {
      double * array = NULL;
      if (problemStatus_ == 1 && ray_) {
-          array = ClpCopyOfArray(ray_, numberRows_);
-#ifndef CLP_NO_SWAP_SIGN
-          // swap signs to be consistent with norm
-          for (int i = 0; i < numberRows_; i++)
-               array[i] = -array[i];
-#endif
-#if 0
-          // clean up
-          double largest = 1.0e-30;
-          double smallest = COIN_DBL_MAX;
-          int i;
-          for (i = 0; i < numberRows_; i++) {
-               double value = fabs(array[i]);
-               smallest = CoinMin(smallest, value);
-               largest = CoinMax(largest, value);
-          }
-#endif
+       if (!fullRay) {
+	 array = ClpCopyOfArray(ray_, numberRows_);
+       } else {
+	 array = new double [numberRows_+numberColumns_];
+	 memcpy(array,ray_,numberRows_*sizeof(double));
+	 memset(array+numberRows_,0,numberColumns_*sizeof(double));
+	 transposeTimes(-1.0,array,array+numberRows_);
+       }
      }
      return array;
 }
@@ -2694,6 +2840,17 @@ ClpModel::popMessageHandler(CoinMessageHandler * oldHandler, bool oldDefault)
           delete handler_;
      defaultHandler_ = oldDefault;
      handler_ = oldHandler;
+}
+// Overrides message handler with a default one
+void 
+ClpModel::setDefaultMessageHandler()
+{
+     int logLevel = handler_->logLevel();
+     if (defaultHandler_)
+          delete handler_;
+     defaultHandler_ = true;
+     handler_ = new CoinMessageHandler();
+     handler_->setLogLevel(logLevel);
 }
 // Set language
 void
@@ -3261,13 +3418,13 @@ ClpModel::ClpModel ( const ClpModel * rhs,
           matrix_ = rhs->matrix_->subsetClone(numberRows, whichRow,
                                               numberColumns, whichColumn);
      }
-     randomNumberGenerator_.setSeed(1234567);
+     randomNumberGenerator_ = rhs->randomNumberGenerator_;
 }
 #ifndef CLP_NO_STD
 // Copies in names
 void
-ClpModel::copyNames(std::vector<std::string> & rowNames,
-                    std::vector<std::string> & columnNames)
+ClpModel::copyNames(const std::vector<std::string> & rowNames,
+                    const std::vector<std::string> & columnNames)
 {
      unsigned int maxLength = 0;
      int iRow;
@@ -3364,6 +3521,11 @@ ClpModel::setColumnName(int iColumn, std::string &name)
 void
 ClpModel::copyRowNames(const std::vector<std::string> & rowNames, int first, int last)
 {
+     // Do column names if necessary
+     if (!lengthNames_&&numberColumns_) {
+       lengthNames_=8;
+       copyColumnNames(NULL,0,numberColumns_);
+     }
      unsigned int maxLength = lengthNames_;
      int size = static_cast<int>(rowNames_.size());
      if (size != numberRows_)
@@ -3380,6 +3542,11 @@ ClpModel::copyRowNames(const std::vector<std::string> & rowNames, int first, int
 void
 ClpModel::copyColumnNames(const std::vector<std::string> & columnNames, int first, int last)
 {
+     // Do row names if necessary
+     if (!lengthNames_&&numberRows_) {
+       lengthNames_=8;
+       copyRowNames(NULL,0,numberRows_);
+     }
      unsigned int maxLength = lengthNames_;
      int size = static_cast<int>(columnNames_.size());
      if (size != numberColumns_)
@@ -3396,13 +3563,18 @@ ClpModel::copyColumnNames(const std::vector<std::string> & columnNames, int firs
 void
 ClpModel::copyRowNames(const char * const * rowNames, int first, int last)
 {
+     // Do column names if necessary
+     if (!lengthNames_&&numberColumns_) {
+       lengthNames_=8;
+       copyColumnNames(NULL,0,numberColumns_);
+     }
      unsigned int maxLength = lengthNames_;
      int size = static_cast<int>(rowNames_.size());
      if (size != numberRows_)
           rowNames_.resize(numberRows_);
      int iRow;
      for (iRow = first; iRow < last; iRow++) {
-          if (rowNames[iRow-first] && strlen(rowNames[iRow-first])) {
+          if (rowNames && rowNames[iRow-first] && strlen(rowNames[iRow-first])) {
                rowNames_[iRow] = rowNames[iRow-first];
                maxLength = CoinMax(maxLength, static_cast<unsigned int> (strlen(rowNames[iRow-first])));
           } else {
@@ -3419,13 +3591,18 @@ ClpModel::copyRowNames(const char * const * rowNames, int first, int last)
 void
 ClpModel::copyColumnNames(const char * const * columnNames, int first, int last)
 {
+     // Do row names if necessary
+     if (!lengthNames_&&numberRows_) {
+       lengthNames_=8;
+       copyRowNames(NULL,0,numberRows_);
+     }
      unsigned int maxLength = lengthNames_;
      int size = static_cast<int>(columnNames_.size());
      if (size != numberColumns_)
           columnNames_.resize(numberColumns_);
      int iColumn;
      for (iColumn = first; iColumn < last; iColumn++) {
-          if (columnNames[iColumn-first] && strlen(columnNames[iColumn-first])) {
+          if (columnNames && columnNames[iColumn-first] && strlen(columnNames[iColumn-first])) {
                columnNames_[iColumn] = columnNames[iColumn-first];
                maxLength = CoinMax(maxLength, static_cast<unsigned int> (strlen(columnNames[iColumn-first])));
           } else {
@@ -3888,7 +4065,9 @@ ClpModel::createCoinModel() const
           if (isInteger(i))
                coinModel->setColumnIsInteger(i, true);
      }
-     // do names
+     // do names - clear out
+     coinModel->zapRowNames();
+     coinModel->zapColumnNames();
      for (i = 0; i < numberRows_; i++) {
           char temp[30];
           strcpy(temp, rowName(i).c_str());

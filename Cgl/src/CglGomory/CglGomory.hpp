@@ -32,7 +32,7 @@ public:
       from integer.
   */
   virtual void generateCuts( const OsiSolverInterface & si, OsiCuts & cs,
-			     const CglTreeInfo info = CglTreeInfo()) const;
+			     const CglTreeInfo info = CglTreeInfo());
   /** Generates cuts given matrix and solution etc,
       returns number of cuts generated */
   int generateCuts( const OsiRowCutDebugger * debugger, 
@@ -44,7 +44,7 @@ public:
 		    const double * rowLower, const double * rowUpper,
 		    const char * intVar ,
 		    const CoinWarmStartBasis* warm,
-                    const CglTreeInfo info = CglTreeInfo()) const;
+                    const CglTreeInfo info = CglTreeInfo());
   /** Generates cuts given matrix and solution etc,
       returns number of cuts generated (no row copy passed in) */
   int generateCuts( const OsiRowCutDebugger * debugger, 
@@ -55,10 +55,10 @@ public:
 		    const double * rowLower, const double * rowUpper,
 		    const char * intVar ,
 		    const CoinWarmStartBasis* warm,
-                    const CglTreeInfo info = CglTreeInfo()) const;
+                    const CglTreeInfo info = CglTreeInfo());
 
   /// Return true if needs optimal basis to do cuts (will return true)
-  virtual bool needsOptimalBasis() const;
+  virtual bool needsOptimalBasis() const { return true; }
   //@}
 
   /**@name Change way Gomory works */
@@ -155,6 +155,8 @@ public:
     ~CglGomory ();
   /// Create C++ lines to get to current state
   virtual std::string generateCpp( FILE * fp);
+  /// This can be used to refresh any inforamtion
+  virtual void refreshSolver(OsiSolverInterface * solver);
   //@}
       
 private:
@@ -174,15 +176,15 @@ private:
   /// Multiplier for largest factor cut relaxation
   double largestFactorMultiplier_;
   /// Original solver
-  mutable OsiSolverInterface * originalSolver_;
+  OsiSolverInterface * originalSolver_;
   /// Limit - only generate if fewer than this in cut
   int limit_;
   /// Limit - only generate if fewer than this in cut (at root)
   int limitAtRoot_;
   /// Dynamic limit in tree
-  mutable int dynamicLimitInTree_;
+  int dynamicLimitInTree_;
   /// Number of times stalled
-  mutable int numberTimesStalled_;
+  int numberTimesStalled_;
   /// nonzero to use alternative factorization
   int alternateFactorization_;
   /// Type - 0 normal, 1 add original matrix one, 2 replace

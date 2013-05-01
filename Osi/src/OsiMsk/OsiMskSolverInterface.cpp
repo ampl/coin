@@ -1,12 +1,12 @@
-/* Osi interface for Mosek ver. 5.0
+/* Osi interface for Mosek ver. 7.0
    Lower versions are not supported
  -----------------------------------------------------------------------------
   name:     OSI Interface for MOSEK
-  author:   Bo Jensen
-  email:    support@MOSEK.com
  -----------------------------------------------------------------------------
 
   This code is licensed under the terms of the Eclipse Public License (EPL).
+
+  Originally developed by Bo Jensen from MOSEK ApS.  No longer a maintainer.
 */
 
 #include <iostream>
@@ -86,8 +86,11 @@ inline void freeCacheMatrix( CoinPackedMatrix*& ptr )
 
 // Function used to connect MOSEK to stream
  
-static void MSKAPI printlog(void *ptr,
-                     char s[])
+#if MSK_VERSION_MAJOR >= 7
+static void MSKAPI printlog(void *ptr, const char* s)
+#else
+static void MSKAPI printlog(void *ptr, char* s)
+#endif
 {
   printf("%s",s);
 } 
@@ -2194,11 +2197,10 @@ double OsiMskSolverInterface::getObjSense() const
   debugMessage("End OsiMskSolverInterface::getObjSense()\n");
   #endif
 
-  if( objsen == MSK_OBJECTIVE_SENSE_MINIMIZE ||
-      objsen == MSK_OBJECTIVE_SENSE_UNDEFINED )
-    return +1.0;
-  else
+  if( objsen == MSK_OBJECTIVE_SENSE_MAXIMIZE )
     return -1.0;
+  else
+    return +1.0;
 }
 
 
@@ -3685,13 +3687,15 @@ OsiMskSolverInterface::addCol(const CoinPackedVectorBase& vec,
   #endif
 
   int nc = getNumCols();
+
   MSKassert(3,coltypesize_ >= nc,"coltypesize_ >= nc","addCol");
 
   resizeColType(nc + 1);
   coltype_[nc] = 'C';
 
-  int start = 0, ends = vec.getNumElements();
+  int ends = vec.getNumElements();
   MSKboundkeye tag;
+  MSKtask_t task=getLpPtr(); 
 
   double inf = getInfinity();
   if(collb > -inf && colub >= inf)
@@ -3705,7 +3709,27 @@ OsiMskSolverInterface::addCol(const CoinPackedVectorBase& vec,
   else
     throw CoinError("Bound error", "addCol", "OsiMSKSolverInterface");
 
-  int err = MSK_appendvars(getLpPtr(),
+#if MSK_VERSION_MAJOR >= 7
+  int       err;
+  MSKint32t j;
+
+  err = MSK_getnumvar(task,&j);
+   
+  if ( err==MSK_RES_OK )
+    err = MSK_appendvars(task,1);
+ 
+  if ( err==MSK_RES_OK )
+    err = MSK_putcj(task,j,obj);
+
+  if ( err==MSK_RES_OK )
+    err = MSK_putacol(task,j,ends,const_cast<int*>(vec.getIndices()),const_cast<double*>(vec.getElements()));
+
+  if ( err==MSK_RES_OK )
+    err = MSK_putvarbound(task,j,tag,collb,colub);
+
+#else
+  int start = 0;
+  int err = MSK_appendvars(task,
                            1,
                            const_cast<double*> (&obj),
                            &start,
@@ -3715,6 +3739,8 @@ OsiMskSolverInterface::addCol(const CoinPackedVectorBase& vec,
                            (&tag),
                            const_cast<double*> (&collb),
                            const_cast<double*> (&colub));
+
+#endif
 
   checkMSKerror( err, "MSK_appendvars", "addCol" );
 
@@ -3775,6 +3801,15 @@ OsiMskSolverInterface::deleteCols(const int num, const int * columnIndices)
   debugMessage("Begin OsiMskSolverInterface::deleteCols(%d, %p)\n", num, (void *)columnIndices);
   #endif
 
+#if MSK_VERSION_MAJOR >= 7
+  int err;
+  err = MSK_removevars(getLpPtr( OsiMskSolverInterface::KEEPCACHED_ROW ),
+                       num,
+                       const_cast<int*>(columnIndices));
+
+  checkMSKerror( err, "MSK_removevars", "deleteCols" );
+
+#else
   int err;
   err = MSK_remove(getLpPtr( OsiMskSolverInterface::KEEPCACHED_ROW ),
                    MSK_ACC_VAR,
@@ -3782,6 +3817,7 @@ OsiMskSolverInterface::deleteCols(const int num, const int * columnIndices)
                    const_cast<int*>(columnIndices));
 
   checkMSKerror( err, "MSK_remove", "deleteCols" );
+#endif
 
   #if MSK_OSI_DEBUG_LEVEL > 3
   debugMessage("End OsiMskSolverInterface::deleteCols(%d, %p)\n", num, (void *)columnIndices);
@@ -3801,9 +3837,10 @@ OsiMskSolverInterface::addRow(const CoinPackedVectorBase& vec,
 
   getNumRows();
 
-  int start = 0, ends = vec.getNumElements();
-  double inf = getInfinity();
+  int          ends = vec.getNumElements();
+  double       inf = getInfinity();
   MSKboundkeye tag;
+  MSKtask_t    task = getLpPtr( OsiMskSolverInterface::KEEPCACHED_COLUMN );
   
   if(rowlb > -inf && rowub >= inf)
     tag = MSK_BK_LO;
@@ -3816,7 +3853,26 @@ OsiMskSolverInterface::addRow(const CoinPackedVectorBase& vec,
   else
     throw CoinError("Bound error", "addRow", "OsiMSKSolverInterface");
 
-  int err = MSK_appendcons(getLpPtr( OsiMskSolverInterface::KEEPCACHED_COLUMN ),
+#if MSK_VERSION_MAJOR >= 7
+  int       err;
+  MSKint32t i;
+
+  err = MSK_getnumcon(task,&i);
+
+  if ( err==MSK_RES_OK ) 
+    err = MSK_appendcons(task,1);
+
+  if ( err==MSK_RES_OK )
+    err = MSK_putconbound(task,i,tag,rowlb,rowub);
+
+  if ( err==MSK_RES_OK ) 
+    err = MSK_putarow(task,i,ends,
+                      const_cast<int*>(vec.getIndices()),
+                      const_cast<double*>(vec.getElements()));
+
+#else
+  int start = 0;
+  int err = MSK_appendcons(task,
                            1,
                            &start,
                            &ends,
@@ -3825,8 +3881,9 @@ OsiMskSolverInterface::addRow(const CoinPackedVectorBase& vec,
                            (&tag),
                            const_cast<double*> (&rowlb),
                            const_cast<double*> (&rowub));
+#endif
 
-  checkMSKerror( err, "MSK_appendvars", "addCol" );
+  checkMSKerror( err, "MSK_appendcons", "addRow" );
 
   #if MSK_OSI_DEBUG_LEVEL > 3
   debugMessage("End OsiMskSolverInterface::addRow(%p, %g, %g)\n", (void *)&vec, rowlb, rowub);
@@ -3948,12 +4005,21 @@ OsiMskSolverInterface::deleteRows(const int num, const int * rowIndices)
   #endif
 
   int err;
+#if MSK_VERSION_MAJOR >= 7
+  err = MSK_removecons(getLpPtr( OsiMskSolverInterface::KEEPCACHED_COLUMN ),
+                       num,
+                       const_cast<int*>(rowIndices));
+
+  checkMSKerror( err, "MSK_removecons", "deleteRows" );
+
+#else
   err = MSK_remove(getLpPtr( OsiMskSolverInterface::KEEPCACHED_COLUMN ),
                    MSK_ACC_CON,
                    num,
                    const_cast<int*>(rowIndices));
 
   checkMSKerror( err, "MSK_remove", "deleteRows" );
+#endif
 
   #if MSK_OSI_DEBUG_LEVEL > 3
   debugMessage("End OsiMskSolverInterface::deleteRows(%d, %p)\n", num, (void *)rowIndices);
@@ -4563,8 +4629,11 @@ void OsiMskSolverInterface::incrementInstanceCounter()
     debugMessage("creating new Mosek environment\n");
 #endif
 
-    err = MSK_makeenv(&env_,NULL, NULL,NULL,NULL);
-
+#if MSK_VERSION_MAJOR >= 7
+    err = MSK_makeenv(&env_,NULL);
+#else
+    err = MSK_makeenv(&env_,NULL,NULL,NULL,NULL);
+#endif
     checkMSKerror( err, "MSK_makeenv", "incrementInstanceCounter" );
 
     err = MSK_linkfunctoenvstream(env_, MSK_STREAM_LOG, NULL, printlog); 

@@ -102,7 +102,7 @@ CoinShallowPackedVectorUnitTest()
       try {
         r.setTestForDuplicateIndex(true);
       }
-      catch (CoinError e) {
+      catch (CoinError& e) {
         errorThrown = true;
       }
       assert( errorThrown );
@@ -112,7 +112,7 @@ CoinShallowPackedVectorUnitTest()
       try {
 	 r.setVector(ne3,inx3,el3);
       }
-      catch (CoinError e) {
+      catch (CoinError& e) {
         errorThrown = true;
       }
       assert( errorThrown );
@@ -121,7 +121,7 @@ CoinShallowPackedVectorUnitTest()
       try {
 	 CoinShallowPackedVector r1(ne3,inx3,el3);
       }
-      catch (CoinError e) {
+      catch (CoinError& e) {
 	 errorThrown = true;
       }
       assert( errorThrown );

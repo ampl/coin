@@ -1,4 +1,4 @@
-/* $Id: CbcLinked.hpp 1200 2009-07-25 08:44:13Z forrest $ */
+/* $Id: CbcLinked.hpp 1902 2013-04-10 16:58:16Z stefan $ */
 // Copyright (C) 2006, International Business Machines
 // Corporation and others.  All Rights Reserved.
 // This code is licensed under the terms of the Eclipse Public License (EPL).
@@ -1279,7 +1279,7 @@ public:
         and inserts any that are violated by enough
     */
     virtual void generateCuts( const OsiSolverInterface & si, OsiCuts & cs,
-                               const CglTreeInfo info = CglTreeInfo()) const;
+                               const CglTreeInfo info = CglTreeInfo());
     //@}
 
     /**@name Constructors and destructors */

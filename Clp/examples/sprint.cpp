@@ -1,4 +1,4 @@
-/* $Id: sprint.cpp 1662 2011-01-04 17:52:40Z lou $ */
+/* $Id: sprint.cpp 1941 2013-04-10 16:52:27Z stefan $ */
 // Copyright (C) 2003, International Business Machines
 // Corporation and others.  All Rights Reserved.
 // This code is licensed under the terms of the Eclipse Public License (EPL).
@@ -120,6 +120,8 @@ int main(int argc, const char *argv[])
      // Just take this number of columns in small problem
      int smallNumberColumns = CoinMin(3 * numberRows, numberColumns);
      smallNumberColumns = CoinMax(smallNumberColumns, 3000);
+     // To stop seg faults on unsuitable problems
+     smallNumberColumns = CoinMin(smallNumberColumns,numberColumns);
      // We will be using all rows
      int * whichRows = new int [numberRows];
      for (int iRow = 0; iRow < numberRows; iRow++)

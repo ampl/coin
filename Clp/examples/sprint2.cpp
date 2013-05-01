@@ -1,4 +1,4 @@
-/* $Id: sprint2.cpp 1662 2011-01-04 17:52:40Z lou $ */
+/* $Id: sprint2.cpp 1941 2013-04-10 16:52:27Z stefan $ */
 // Copyright (C) 2003, International Business Machines
 // Corporation and others.  All Rights Reserved.
 // This code is licensed under the terms of the Eclipse Public License (EPL).
@@ -71,6 +71,8 @@ int main(int argc, const char *argv[])
 
      // Just take this number of columns in small problem
      int smallNumberColumns = 3 * numberRows;
+     // To stop seg faults on unsuitable problems
+     smallNumberColumns = CoinMin(smallNumberColumns,numberColumns);
      // And we want number of rows to be this
      int smallNumberRows = numberRows / 4;
 
@@ -100,6 +102,8 @@ int main(int argc, const char *argv[])
           if (iPass) {
                double ratio = ((double) smallNumberRows) / ((double) model2->numberRows());
                smallNumberColumns = (int)(smallNumberColumns * ratio);
+	       // deal with pathological case
+	       smallNumberColumns = CoinMax(smallNumberColumns,0);
           }
           delete model2;
           /* After this postsolve model should be optimal.

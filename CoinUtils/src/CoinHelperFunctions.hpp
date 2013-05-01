@@ -1,4 +1,4 @@
-/* $Id: CoinHelperFunctions.hpp 1448 2011-06-19 15:34:41Z stefan $ */
+/* $Id: CoinHelperFunctions.hpp 1581 2013-04-06 12:48:50Z stefan $ */
 // Copyright (C) 2000, International Business Machines
 // Corporation and others.  All Rights Reserved.
 // This code is licensed under the terms of the Eclipse Public License (EPL).
@@ -998,6 +998,14 @@ public:
     retVal = ((static_cast<double> (seed_))/4294967296.0);
     return retVal;
   }
+  /// make more random (i.e. for startup)
+  inline void randomize(int n=0)
+  {
+    if (!n) 
+      n=seed_ & 255;
+    for (int i=0;i<n;i++)
+      randomDouble();
+  }
   //@}
   
   
@@ -1070,6 +1078,16 @@ public:
     retVal = erand48(seed_);
 #endif
     return retVal;
+  }
+  /// make more random (i.e. for startup)
+  inline void randomize(int n=0)
+  {
+    if (!n) {
+      n=seed_[0]+seed_[1]+seed_[2];
+      n &= 255;
+    }
+    for (int i=0;i<n;i++)
+      randomDouble();
   }
   //@}
   

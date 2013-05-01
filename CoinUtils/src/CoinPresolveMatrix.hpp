@@ -1,4 +1,4 @@
-/* $Id: CoinPresolveMatrix.hpp 1448 2011-06-19 15:34:41Z stefan $ */
+/* $Id: CoinPresolveMatrix.hpp 1581 2013-04-06 12:48:50Z stefan $ */
 // Copyright (C) 2002, International Business Machines
 // Corporation and others.  All Rights Reserved.
 // This code is licensed under the terms of the Eclipse Public License (EPL).
@@ -17,6 +17,10 @@
 #include <cassert>
 #include <cstdlib>
 
+#if PRESOLVE_DEBUG > 0
+#include "CoinFinite.hpp"
+#endif
+
 /*! \file
 
   Declarations for CoinPresolveMatrix and CoinPostsolveMatrix and their
@@ -28,37 +32,36 @@
 #if defined(_MSC_VER)
 // Avoid MS Compiler problem in recognizing type to delete
 // by casting to type.
+// Is this still necessary? -- lh, 111202 --
 #define deleteAction(array,type) delete [] ((type) array)
 #else
 #define deleteAction(array,type) delete [] array
 #endif
 
-/*! \brief Zero tolerance
-
-  OSL had a fixed zero tolerance; we still use that here.
+/*
+  Define PRESOLVE_DEBUG and PRESOLVE_CONSISTENCY on the configure command
+  line or in a Makefile!  See comments in CoinPresolvePsdebug.hpp.
 */
-const double ZTOLDP      = 1e-12;
-// But use a different one if we are doing doubletons etc
-const double ZTOLDP2      = 1e-10;
-//#define PRESOLVE_DEBUG 1
-//#define PRESOLVE_CONSISTENCY 1
-// Debugging macros/functions
-#ifndef PRESOLVE_DETAIL
-#define PRESOLVE_DETAIL_PRINT(s) {}
-#else
-#define PRESOLVE_DETAIL_PRINT(s) s
-#endif
-#if PRESOLVE_DEBUG || PRESOLVE_CONSISTENCY
-#define	PRESOLVE_STMT(s)	s
+#if PRESOLVE_DEBUG > 0 || PRESOLVE_CONSISTENCY > 0
+
+#define PRESOLVE_STMT(s) s
+
 #define PRESOLVEASSERT(x) \
-  ((x) ? 1 : \
-	((std::cerr << "FAILED ASSERTION at line " \
-		    << __LINE__ << ":  " #x "\n"), abort(), 0))
+  ((x) ? 1 : ((std::cerr << "FAILED ASSERTION at line " \
+			 << __LINE__ << ": " #x "\n"), abort(), 0))
 
-inline void DIE(const char *s)	{ std::cout<<s; abort(); }
+inline void DIE(const char *s) { std::cout << s ; abort() ; }
 
-// This code is used in [cr]done for columns and rows that are present in
-// the presolved system.
+/*! \brief Indicate column or row present at start of postsolve
+
+  This code is used during postsolve in [cr]done to indicate columns and rows
+  that are present in the presolved system (i.e., present at the start of
+  postsolve processing).
+
+  \todo
+  There are a bunch of these code definitions, scattered through presolve
+  files. They should be collected in one place.
+*/
 #define PRESENT_IN_REDUCED	'\377'
 
 #else
@@ -66,24 +69,39 @@ inline void DIE(const char *s)	{ std::cout<<s; abort(); }
 #define PRESOLVEASSERT(x) {} 
 #define	PRESOLVE_STMT(s) {}
 
-inline void DIE(const char *)	{}
+inline void DIE(const char *) {}
 
 #endif
 
-inline int ALIGN(int n, int m)	{ return (((n + m - 1) / m) * m); }
-inline int ALIGN_DOUBLE(int n)	{ return ALIGN(n,sizeof(double)); }
+/*
+  Unclear why these are separate from standard debug.
+*/
+#ifndef PRESOLVE_DETAIL
+#define PRESOLVE_DETAIL_PRINT(s) {}
+#else
+#define PRESOLVE_DETAIL_PRINT(s) s
+#endif
 
+/*! \brief Zero tolerance
+
+  OSL had a fixed zero tolerance; we still use that here.
+*/
+const double ZTOLDP = 1e-12 ;
+/*! \brief Alternate zero tolerance
+
+  Use a different one if we are doing doubletons, etc.
+*/
+const double ZTOLDP2 = 1e-10 ;
+
+/// The usual finite infinity
 #define PRESOLVE_INF COIN_DBL_MAX
+/// And a small infinity
+#define PRESOLVE_SMALL_INF 1.0e20
+/// Check for infinity using finite infinity
+#define	PRESOLVEFINITE(n) (-PRESOLVE_INF < (n) && (n) < PRESOLVE_INF)
 
-class CoinPostsolveMatrix;
 
-// Note 77
-// "Members and bases are constructed in order of declaration
-//  in the class and destroyed in the reverse order."  C++PL 3d Ed. p. 307
-//
-// That's why I put integer members (such as ncols) before the array members;
-// I like to use those integer values during initialization.
-// NOT ANYMORE
+class CoinPostsolveMatrix ;
 
 /*! \class CoinPresolveAction
     \brief Abstract base class of all presolve routines.
@@ -146,7 +164,6 @@ class CoinPresolveAction
   static void throwCoinError(const char *error, const char *ps_routine)
   { throw CoinError(error, ps_routine, "CoinPresolve"); } 
 
-
   /*! \brief The next presolve transformation
   
     Set at object construction.
@@ -182,14 +199,14 @@ class CoinPresolveAction
   These are needed for OSI-aware constructors associated with
   CoinPrePostsolveMatrix, CoinPresolveMatrix, and CoinPostsolveMatrix.
 */
-  class ClpSimplex;
-  class OsiSolverInterface;
+class ClpSimplex;
+class OsiSolverInterface;
 
 /*
   CoinWarmStartBasis is required for methods in CoinPrePostsolveMatrix
   that accept/return a CoinWarmStartBasis object.
 */
-  class CoinWarmStartBasis ;
+class CoinWarmStartBasis ;
 
 /*! \class CoinPrePostsolveMatrix
     \brief Collects all the information about the problem that is needed
@@ -239,6 +256,10 @@ class CoinPresolveAction
   CoinPostsolveMatrix would break a lot of code.  It's not clear that it's
   worth it, and it would preclude upgrades to the presolve side that might
   make use of any of these.  -- lh, 080501 --
+
+  The constructors that take an OSI or ClpSimplex as a parameter really should
+  not be here, but for historical reasons they will likely remain for the
+  forseeable future.  -- lh, 111202 --
 */
 
 class CoinPrePostsolveMatrix
@@ -301,6 +322,12 @@ class CoinPrePostsolveMatrix
 
     Functions to work with the CoinPrePostsolveMatrix::Status enum and
     related vectors.
+
+    \todo
+    Why are we futzing around with three bit status? A holdover from the
+    packed arrays of CoinWarmStartBasis? Big swaths of the presolve code
+    manipulates colstat_ and rowstat_ as unsigned char arrays using simple
+    assignment to set values.
   */
   //@{
   
@@ -401,6 +428,8 @@ class CoinPrePostsolveMatrix
   /*! \brief Set the objective sense (max/min)
 
     Coded as 1.0 for min, -1.0 for max.
+    Yes, there's a method, and a matching attribute. No, you really
+    don't want to set this to maximise.
   */
   void setObjSense(double objSense) ;
   /// Set the primal feasibility tolerance
@@ -430,14 +459,14 @@ class CoinPrePostsolveMatrix
   /*! \name Functions to retrieve problem and solution information */
   //@{
   /// Get current number of columns
-  inline int getNumCols()
+  inline int getNumCols() const
   { return (ncols_) ; } 
   /// Get current number of rows
-  inline int getNumRows()
-  { return (nrows_) ; } 
+  inline int getNumRows() const
+  { return (nrows_) ; }
   /// Get current number of non-zero coefficients
-  inline int getNumElems()
-  { return (nelems_) ; } 
+  inline int getNumElems() const
+  { return (nelems_) ; }
   /// Get column start vector for column-major packed matrix
   inline const CoinBigIndex *getColStarts() const
   { return (mcstrt_) ; } 
@@ -593,7 +622,11 @@ class CoinPrePostsolveMatrix
   /// Dual feasibility tolerance
   double ztoldj_;
 
-  /// Maximization/minimization
+  /*! \brief Maximization/minimization
+
+    Yes, there's a variable here. No, you really don't want to set this to
+    maximise. See the main notes for CoinPresolveMatrix.
+  */
   double maxmin_;
   //@}
 
@@ -671,6 +704,11 @@ class CoinPrePostsolveMatrix
   //@}
 
 };
+
+/*! \relates CoinPrePostsolveMatrix
+    \brief Generate a print string for a status code.
+*/
+const char *statusName (CoinPrePostsolveMatrix::Status status) ;
 
 
 /*! \class presolvehlink
@@ -782,6 +820,16 @@ inline void PRESOLVE_MOVE_LINK(presolvehlink *link, int i, int j)
   <b>NOTE</b> also that at the end of presolve the column-major and row-major
   matrix representations are loosely packed (<i>i.e.</i>, there may be gaps
   between columns in the bulk storage arrays).
+
+  <b>NOTE</b> that while you might think that CoinPresolve is prepared to
+  handle minimisation or maximisation, it's unlikely that this still works.
+  This is a good thing: better to convert objective coefficients and duals
+  once, before starting presolve, rather than doing it over and over in
+  each transform that considers dual variables.
+
+  The constructors that take an OSI or ClpSimplex as a parameter really should
+  not be here, but for historical reasons they will likely remain for the
+  forseeable future.  -- lh, 111202 --
 */
 
 class CoinPresolveMatrix : public CoinPrePostsolveMatrix
@@ -951,18 +999,18 @@ class CoinPresolveMatrix : public CoinPrePostsolveMatrix
   //@}
 
   /// Objective function offset introduced during presolve
-  double dobias_;
+  double dobias_ ;
 
   /// Adjust objective function constant offset
   inline void change_bias(double change_amount)
   {
-    dobias_ += change_amount;
-  #if PRESOLVE_DEBUG
-    assert(fabs(change_amount)<1.0e50);
-  #endif
+    dobias_ += change_amount ;
+  # if PRESOLVE_DEBUG > 2
+    assert(fabs(change_amount)<1.0e50) ;
     if (change_amount)
       PRESOLVE_STMT(printf("changing bias by %g to %g\n",
-			    change_amount, dobias_));
+			    change_amount, dobias_)) ;
+  # endif
   }
 
   /*! \name Row-major representation
@@ -1020,8 +1068,10 @@ class CoinPresolveMatrix : public CoinPrePostsolveMatrix
   inline void setStatus(int status)
   { status_ = (status&0x3) ; }
 
-  /*! \brief Pass number
+  /*! \brief Presolve pass number
 
+    Should be incremented externally by the method controlling application of
+    presolve transforms.
     Used to control the execution of testRedundant (evoked by the
     implied_free transform).
   */
@@ -1091,12 +1141,21 @@ class CoinPresolveMatrix : public CoinPrePostsolveMatrix
   int * nextRowsToDo_;
   /// Length of #nextRowsToDo_
   int numberNextRowsToDo_;
-  /** Presolve options
-      - 1 set if allow duplicate column tests for integer variables
-      - 2 set to allow code to try and fix infeasibilities
-      - 4 set to inhibit x+y+z=1 mods
-      - 8 not used
-      - 16 set to allow stuff which won't unroll easily 
+  /*! \brief Fine control over presolve actions
+
+    Set/clear the following bits to allow or suppress actions:
+      - 0x01 allow duplicate column tests for integer variables
+      - 0x02 not used
+      - 0x04 set to inhibit x+y+z=1 mods
+      - 0x08 not used
+      - 0x10 set to allow stuff which won't unroll easily (overlapping
+          duplicate rows; opportunistic fixing of variables from bound
+	  propagation).
+      - 0x04000 allow presolve transforms to arbitrarily ignore infeasibility
+          and set arbitrary feasible bounds.
+      - 0x10000 instructs implied_free_action to be `more lightweight'; will
+          return without doing anything after 15 presolve passes.
+      - 0x20000 instructs implied_free_action to remove small created elements
       - 0x80000000 set by presolve to say dupcol_action compressed columns
   */
   int presolveOptions_;
@@ -1106,25 +1165,56 @@ class CoinPresolveMatrix : public CoinPrePostsolveMatrix
     various \c set*Prohibited routines.
   */
   bool anyProhibited_;
-  /// Useful int array 3* number rows
-  int * usefulRowInt_;
-  /// Useful double array number rows
-  double * usefulRowDouble_;
-  /// Useful int array 2* number columns
-  int * usefulColumnInt_;
-  /// Useful double array number columns
-  double * usefulColumnDouble_;
-  /// Array of random numbers (max row,column)
-  double * randomNumber_;
-  /// Array giving number of infinite ups on a row
-  int * infiniteUp_;
-  /// Array giving sum of non-infinite ups on a row
-  double * sumUp_;
-  /// Array giving number of infinite downs on a row
-  int * infiniteDown_;
-  /// Array giving sum of non-infinite downs on a row
-  double * sumDown_;
   //@}
+
+  /*! \name Scratch work arrays
+
+    Preallocated work arrays are useful to avoid having to allocate and free
+    work arrays in individual presolve methods.
+
+    All are allocated from #setMatrix by #initializeStuff, freed from
+    #~CoinPresolveMatrix.  You can use #deleteStuff followed by
+    #initializeStuff to remove and recreate them.
+  */
+  //@{
+  /// Preallocated scratch work array, 3*nrows_
+  int *usefulRowInt_ ;
+  /// Preallocated scratch work array, 2*nrows_
+  double *usefulRowDouble_ ;
+  /// Preallocated scratch work array, 2*ncols_
+  int *usefulColumnInt_ ;
+  /// Preallocated scratch work array, ncols_
+  double *usefulColumnDouble_ ;
+  /// Array of random numbers (max row,column)
+  double *randomNumber_ ;
+
+  /// Work array for count of infinite contributions to row lhs upper bound
+  int *infiniteUp_ ;
+  /// Work array for sum of finite contributions to row lhs upper bound
+  double *sumUp_ ;
+  /// Work array for count of infinite contributions to row lhs lower bound
+  int *infiniteDown_ ;
+  /// Work array for sum of finite contributions to row lhs lower bound
+  double *sumDown_ ;
+  //@}
+
+  /*! \brief Recompute row lhs bounds
+
+    Calculate finite contributions to row lhs upper and lower bounds
+    and count infinite contributions. Returns the number of rows found
+    to be infeasible.
+
+    If \p whichRow < 0, bounds are recomputed for all rows.
+
+    As of 110611, this seems to be a work in progress in the sense that it's
+    barely used by the existing presolve code.
+  */
+  int recomputeSums(int whichRow) ;
+
+  /// Allocate scratch arrays
+  void initializeStuff() ;
+  /// Free scratch arrays
+  void deleteStuff() ;
 
   /*! \name Functions to manipulate row and column processing status */
   //@{
@@ -1296,13 +1386,6 @@ class CoinPresolveMatrix : public CoinPrePostsolveMatrix
   /// Set a flag for presence of prohibited rows or columns
   inline void setAnyProhibited(bool val = true)
   { anyProhibited_ = val ; }
-  /** Recompute ups and downs for a row (nonzero if infeasible).
-      If iRow -1 then recompute all */
-  int recomputeSums(int iRow);
-  /// Initialize random numbers etc (nonzero if infeasible)
-  int initializeStuff();
-  /// Delete useful arrays 
-  void deleteStuff();
   //@}
 
 };
@@ -1330,6 +1413,10 @@ class CoinPresolveMatrix : public CoinPrePostsolveMatrix
   There is no provision to convert the threaded representation to a packed
   representation. In the context of postsolve, it's not required. (You did
   keep a copy of the original matrix, eh?)
+
+  The constructors that take an OSI or ClpSimplex as a parameter really should
+  not be here, but for historical reasons they will likely remain for the
+  forseeable future.  -- lh, 111202 --
 */
 class CoinPostsolveMatrix : public CoinPrePostsolveMatrix
 {
@@ -1439,8 +1526,6 @@ class CoinPostsolveMatrix : public CoinPrePostsolveMatrix
 };
 
 
-#define	PRESOLVEFINITE(n)	(-PRESOLVE_INF < (n) && (n) < PRESOLVE_INF)
-
 /*! \defgroup MtxManip Presolve Matrix Manipulation Functions
 
   Functions to work with the loosely packed and threaded packed matrix
@@ -1497,8 +1582,9 @@ inline bool presolve_expand_row(CoinBigIndex *mrstrt, double *rowels,
     used directly or via the inline wrappers presolve_find_row and
     presolve_find_col.
 */
-inline CoinBigIndex presolve_find_minor(int tgt, CoinBigIndex ks, CoinBigIndex ke,
-				 const int *minndxs)
+inline CoinBigIndex presolve_find_minor(int tgt,
+					CoinBigIndex ks, CoinBigIndex ke,
+				        const int *minndxs)
 { CoinBigIndex k ;
   for (k = ks ; k < ke ; k++)
 #ifndef NDEBUG
@@ -1618,39 +1704,47 @@ inline CoinBigIndex presolve_find_row3(int row, CoinBigIndex kcs, int collen,
     \brief Delete the entry for a minor index from a major vector.
 
    Deletes the entry for \p minndx from the major vector \p majndx.
-   Specifically, the relevant entries are removed from the minor index (\p
-   minndxs) and coefficient (\p els) arrays and the vector length (\p
+   Specifically, the relevant entries are removed from the minor index
+   (\p minndxs) and coefficient (\p els) arrays and the vector length (\p
    majlens) is decremented.  Loose packing is maintained by swapping the last
    entry in the row into the position occupied by the deleted entry.
 */
 inline void presolve_delete_from_major(int majndx, int minndx,
 				const CoinBigIndex *majstrts,
 				int *majlens, int *minndxs, double *els) 
-{ CoinBigIndex ks = majstrts[majndx] ;
-  CoinBigIndex ke = ks + majlens[majndx] ;
+{
+  const CoinBigIndex ks = majstrts[majndx] ;
+  const CoinBigIndex ke = ks+majlens[majndx] ;
 
-  CoinBigIndex kmi = presolve_find_minor(minndx,ks,ke,minndxs) ;
+  const CoinBigIndex kmi = presolve_find_minor(minndx,ks,ke,minndxs) ;
 
   minndxs[kmi] = minndxs[ke-1] ;
   els[kmi] = els[ke-1] ;
   majlens[majndx]-- ;
   
-  return ; }
-// Delete all marked from major (and zero marked)
-inline void presolve_delete_many_from_major(int majndx, char * marked,
+  return ;
+}
+
+/*! \relates CoinPrePostsolveMatrix
+    \brief Delete marked entries
+
+    Removes the entries specified in \p marked, compressing the major vector
+    to maintain loose packing. \p marked is cleared in the process.
+*/
+inline void presolve_delete_many_from_major(int majndx, char *marked,
 				const CoinBigIndex *majstrts,
 				int *majlens, int *minndxs, double *els) 
 { 
-  CoinBigIndex ks = majstrts[majndx] ;
-  CoinBigIndex ke = ks + majlens[majndx] ;
-  CoinBigIndex put=ks;
-  for (CoinBigIndex k=ks;k<ke;k++) {
-    int iMinor = minndxs[k];
+  const CoinBigIndex ks = majstrts[majndx] ;
+  const CoinBigIndex ke = ks+majlens[majndx] ;
+  CoinBigIndex put = ks ;
+  for (CoinBigIndex k = ks ; k < ke ; k++) {
+    int iMinor = minndxs[k] ;
     if (!marked[iMinor]) {
-      minndxs[put]=iMinor;
-      els[put++]=els[k];
+      minndxs[put] = iMinor ;
+      els[put++] = els[k] ;
     } else {
-      marked[iMinor]=0;
+      marked[iMinor] = 0 ;
     }
   } 
   majlens[majndx] = put-ks ;
@@ -1699,7 +1793,7 @@ inline void presolve_delete_from_row(int row, int col,
 */
 void presolve_delete_from_major2 (int majndx, int minndx,
 				  CoinBigIndex *majstrts, int *majlens,
-				  int *minndxs, /*double *els,*/ int *majlinks,
+				  int *minndxs, int *majlinks,
 				   CoinBigIndex *free_listp) ;
 
 /*! \relates CoinPostsolveMatrix
@@ -1714,10 +1808,8 @@ void presolve_delete_from_major2 (int majndx, int minndx,
 */
 inline void presolve_delete_from_col2(int row, int col, CoinBigIndex *mcstrt,
 				      int *hincol, int *hrow,
-				      /*double *colels,*/ int *clinks,
-				      CoinBigIndex *free_listp)
-{ presolve_delete_from_major2(col,row,mcstrt,hincol,hrow,/*colels,*/clinks,
-			      free_listp) ; }
+				      int *clinks, CoinBigIndex *free_listp)
+{ presolve_delete_from_major2(col,row,mcstrt,hincol,hrow,clinks,free_listp) ; }
 
 //@}
 
@@ -1740,8 +1832,10 @@ inline void presolve_delete_from_col2(int row, int col, CoinBigIndex *mcstrt,
 */
 double *presolve_dupmajor(const double *elems, const int *indices,
 			  int length, CoinBigIndex offset, int tgt = -1);
-/// Initialize an array with random numbers
+
+/// Initialize a vector with random numbers
 void coin_init_random_vec(double *work, int n);
+
 //@}
 
 

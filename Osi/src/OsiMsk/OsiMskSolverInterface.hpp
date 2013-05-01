@@ -87,6 +87,8 @@ public:
     virtual bool isIterationLimitReached() const;
     /// Has there been a license problem?
     virtual bool isLicenseError() const;
+    /// Get rescode return of last Mosek optimizer call
+    int getRescode() const { return Mskerr; }
   //@}
 
   //---------------------------------------------------------------------------

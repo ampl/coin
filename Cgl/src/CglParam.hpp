@@ -5,7 +5,7 @@
 //           email: fmargot@andrew.cmu.edu
 // Date:     11/24/06
 //
-// $Id: CglParam.hpp 1033 2011-06-19 16:49:13Z stefan $
+// $Id: CglParam.hpp 1123 2013-04-06 20:47:24Z stefan $
 //
 // This code is licensed under the terms of the Eclipse Public License (EPL).
 //-----------------------------------------------------------------------------

@@ -1,4 +1,4 @@
-/* $Id: CbcMessage.hpp 1790 2012-06-08 14:59:51Z stefan $ */
+/* $Id: CbcMessage.hpp 1791 2012-06-08 15:15:10Z stefan $ */
 // Copyright (C) 2002, International Business Machines
 // Corporation and others.  All Rights Reserved.
 // This code is licensed under the terms of the Eclipse Public License (EPL).

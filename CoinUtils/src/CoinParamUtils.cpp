@@ -1,4 +1,4 @@
-/* $Id: CoinParamUtils.cpp 1469 2011-09-03 18:49:33Z stefan $ */
+/* $Id: CoinParamUtils.cpp 1468 2011-09-03 17:19:13Z stefan $ */
 // Copyright (C) 2007, International Business Machines
 // Corporation and others.  All Rights Reserved.
 // This code is licensed under the terms of the Eclipse Public License (EPL).

@@ -1,4 +1,4 @@
-/* $Id: CoinPackedVector.hpp 1448 2011-06-19 15:34:41Z stefan $ */
+/* $Id: CoinPackedVector.hpp 1509 2011-12-05 13:50:48Z forrest $ */
 // Copyright (C) 2000, International Business Machines
 // Corporation and others.  All Rights Reserved.
 // This code is licensed under the terms of the Eclipse Public License (EPL).
@@ -134,6 +134,12 @@ public:
    virtual const double * getElements() const { return elements_; }
    /// Get indices of elements
    int * getIndices() { return indices_; }
+   /// Get the size
+   inline int getVectorNumElements() const { return nElements_; }
+   /// Get indices of elements
+   inline const int * getVectorIndices() const { return indices_; }
+   /// Get element values
+   inline const double * getVectorElements() const { return elements_; }
    /// Get element values
    double * getElements() { return elements_; }
    /** Get pointer to int * vector of original postions.

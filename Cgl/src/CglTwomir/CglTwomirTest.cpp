@@ -1,12 +1,7 @@
-// $Id: CglTwomirTest.cpp 947 2011-01-04 23:27:38Z lou $
+// $Id: CglTwomirTest.cpp 1123 2013-04-06 20:47:24Z stefan $
 // Copyright (C) 2000, International Business Machines
 // Corporation and others.  All Rights Reserved.
 // This code is licensed under the terms of the Eclipse Public License (EPL).
-
-#if defined(_MSC_VER)
-// Turn off compiler warning about long names
-#  pragma warning(disable:4786)
-#endif
 
 #include <cstdio>
 
@@ -15,6 +10,7 @@
 #endif
 
 #include <cassert>
+#include "CoinPragma.hpp"
 #include "CglTwomir.hpp"
 
 

@@ -1,4 +1,4 @@
-/* $Id: CoinAlloc.hpp 1448 2011-06-19 15:34:41Z stefan $ */
+/* $Id: CoinAlloc.hpp 1438 2011-06-09 18:14:12Z stefan $ */
 // Copyright (C) 2007, International Business Machines
 // Corporation and others.  All Rights Reserved.
 // This code is licensed under the terms of the Eclipse Public License (EPL).

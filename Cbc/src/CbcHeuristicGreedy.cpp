@@ -1,4 +1,4 @@
-/* $Id: CbcHeuristicGreedy.cpp 1797 2012-10-11 09:43:41Z forrest $ */
+/* $Id: CbcHeuristicGreedy.cpp 1888 2013-04-06 20:52:59Z stefan $ */
 // Copyright (C) 2005, International Business Machines
 // Corporation and others.  All Rights Reserved.
 // This code is licensed under the terms of the Eclipse Public License (EPL).
@@ -397,7 +397,9 @@ CbcHeuristicGreedyCover::validate()
         double direction = solver->getObjSense();
 
         int numberRows = solver->getNumRows();
+        int numberColumns = solver->getNumCols();
         // Column copy
+	matrix_.setDimensions(numberRows,numberColumns);
         const double * element = matrix_.getElements();
         const CoinBigIndex * columnStart = matrix_.getVectorStarts();
         const int * columnLength = matrix_.getVectorLengths();
@@ -406,7 +408,6 @@ CbcHeuristicGreedyCover::validate()
             if (rowUpper[iRow] < 1.0e30)
                 good = false;
         }
-        int numberColumns = solver->getNumCols();
         for (int iColumn = 0; iColumn < numberColumns; iColumn++) {
             if (objective[iColumn]*direction < 0.0)
                 good = false;
@@ -829,6 +830,8 @@ CbcHeuristicGreedyEquality::validate()
         double direction = solver->getObjSense();
 
         int numberRows = solver->getNumRows();
+        int numberColumns = solver->getNumCols();
+	matrix_.setDimensions(numberRows,numberColumns);
         // Column copy
         const double * element = matrix_.getElements();
         const CoinBigIndex * columnStart = matrix_.getVectorStarts();
@@ -842,7 +845,6 @@ CbcHeuristicGreedyEquality::validate()
             if (floor(rowUpper[iRow] + 0.5) != rowUpper[iRow])
                 good = false;
         }
-        int numberColumns = solver->getNumCols();
         for (int iColumn = 0; iColumn < numberColumns; iColumn++) {
             if (objective[iColumn]*direction < 0.0)
                 good = false;
@@ -1359,7 +1361,6 @@ CbcHeuristicGreedySOS::solution(double & solutionValue,
       double over = 0.0;
       int nL=0;
       int nG=0;
-      int iUnder=-1;
       int nUnder=0;
       for (iRow = 0; iRow < numberRows; iRow++) {
 	if (rowLower[iRow]<-1.0e20)
@@ -1369,7 +1370,6 @@ CbcHeuristicGreedySOS::solution(double & solutionValue,
 	if (rowActivity[iRow] < rowLower[iRow] - 10.0*primalTolerance) {
 	  gap += rowLower[iRow]-rowActivity[iRow];
 	  nUnder++;
-	  iUnder=iRow;
 	  rowWeight[iRow] *= 1.1;
 	} else if (rowActivity[iRow] > rowUpper[iRow] + 10.0*primalTolerance) {
 	  gap += rowActivity[iRow]-rowUpper[iRow];

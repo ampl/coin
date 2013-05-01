@@ -31,7 +31,7 @@ public:
   collection of cuts cs.
   */
   virtual void generateCuts( const OsiSolverInterface & si, OsiCuts & cs,
-			     const CglTreeInfo info = CglTreeInfo()) const=0; 
+			     const CglTreeInfo info = CglTreeInfo())=0;
   //@}
 
     
@@ -83,7 +83,12 @@ public:
   */
   inline void setAggressiveness(int value)
   { aggressive_=value;}
-
+  /// Set whether can do global cuts
+  inline void setGlobalCuts(bool trueOrFalse)
+  { canDoGlobalCuts_ = trueOrFalse;}
+  /// Say whether can do global cuts
+  inline bool canDoGlobalCuts() const
+  {return canDoGlobalCuts_;}
   /**
      Returns true if may generate Row cuts in tree (rather than root node).
      Used so know if matrix will change in tree.  Really
@@ -109,6 +114,8 @@ public:
      Really just a hint to cut generator
   */
   int aggressive_;
+  /// True if can do global cuts i.e. no general integers
+  bool canDoGlobalCuts_;
 };
 
 #endif

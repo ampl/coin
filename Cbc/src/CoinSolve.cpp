@@ -1,4 +1,4 @@
-/* $Id: CoinSolve.cpp 1675 2011-06-19 17:23:14Z stefan $ */
+/* $Id: CoinSolve.cpp 1607 2011-03-04 16:15:41Z lou $ */
 // Copyright (C) 2007, International Business Machines
 // Corporation and others.  All Rights Reserved.
 // This code is licensed under the terms of the Eclipse Public License (EPL).

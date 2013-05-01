@@ -29,9 +29,13 @@ main(void)
       std::cout << "Objective value is " << si->getObjValue() << std::endl;
 
       int n = si->getNumCols();
-      const double *solution;
-      solution = si->getColSolution();
-      // We could then print the solution or examine it.
+      const double* solution = si->getColSolution();
+
+      // We can then print the solution or could examine it.
+      for( int i = 0; i < n && i < 5; ++i )
+         std::cout << si->getColName(i) << " = " << solution[i] << std::endl;
+      if( 5 < n )
+         std::cout << "..." << std::endl;
    } else {
       std::cout << "Didn't find optimal solution." << std::endl;
       // Could then check other status functions.

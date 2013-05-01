@@ -1,4 +1,4 @@
-// $Id: CglProbing.hpp 943 2011-01-04 23:25:35Z lou $
+// $Id: CglProbing.hpp 1123 2013-04-06 20:47:24Z stefan $
 // Copyright (C) 2002, International Business Machines
 // Corporation and others.  All Rights Reserved.
 // This code is licensed under the terms of the Eclipse Public License (EPL).
@@ -93,11 +93,11 @@ public:
          Probing will be done on all
 
 	 ** If generateCutsAndModify is used then new relaxed
-	 row bounds and tightened coliumn bounds are generated
+	 row bounds and tightened column bounds are generated
 	 Returns number of infeasibilities 
   */
   virtual void generateCuts( const OsiSolverInterface & si, OsiCuts & cs,
-			     const CglTreeInfo info = CglTreeInfo()) const;
+			     const CglTreeInfo info = CglTreeInfo());
   int generateCutsAndModify( const OsiSolverInterface & si, OsiCuts & cs, 
 			     CglTreeInfo * info);
   //@}
@@ -280,7 +280,7 @@ private:
 	     CoinPackedMatrix *columnCopy,const CoinBigIndex * rowStartPos,
 	     const int * realRow, const double * rowLower, const double * rowUpper,
 	     const char * intVar, double * minR, double * maxR, int * markR, 
-	     CglTreeInfo * info) const;
+	     CglTreeInfo * info);
   /// Does probing and adding cuts (with cliques)
   int probeCliques( const OsiSolverInterface & si, 
 	     const OsiRowCutDebugger * debugger, 
@@ -289,7 +289,7 @@ private:
 		    CoinPackedMatrix *columnCopy, const int * realRow,
 	     double * rowLower, double * rowUpper,
 	     char * intVar, double * minR, double * maxR, int * markR, 
-             CglTreeInfo * info) const;
+             CglTreeInfo * info);
   /// Does probing and adding cuts for clique slacks
   int probeSlacks( const OsiSolverInterface & si, 
                     const OsiRowCutDebugger * debugger, 
@@ -298,14 +298,14 @@ private:
 		   CoinPackedMatrix *columnCopy,
                     double * rowLower, double * rowUpper,
                     char * intVar, double * minR, double * maxR,int * markR,
-                     CglTreeInfo * info) const;
+                     CglTreeInfo * info);
   /** Does most of work of generateCuts 
       Returns number of infeasibilities */
   int gutsOfGenerateCuts( const OsiSolverInterface & si, 
 			  OsiCuts & cs,
 			  double * rowLower, double * rowUpper,
 			  double * colLower, double * colUpper,
-                           CglTreeInfo * info) const;
+                           CglTreeInfo * info);
   /// Sets up clique information for each row
   void setupRowCliqueInformation(const OsiSolverInterface & si);
   /** This tightens column bounds (and can declare infeasibility)
@@ -316,7 +316,7 @@ private:
 	      const int * rowLength,
               double *rowLower, double *rowUpper, 
               int nRows,int nCols,char * intVar,int maxpass,
-              double tolerance) const;
+              double tolerance);
   /// This just sets minima and maxima on rows
   void tighten2(double *colLower, double * colUpper,
                 const int *column, const double *rowElements, 
@@ -324,7 +324,7 @@ private:
 		const int * rowLength,
                 double *rowLower, double *rowUpper, 
                 double * minR, double * maxR, int * markR,
-                int nRows) const;
+                int nRows);
   //@}
 
   // Private member data
@@ -343,13 +343,13 @@ private:
   /// Upper bounds on rows
   double * rowUpper_;
   /// Lower bounds on columns
-  mutable double * colLower_;
+  double * colLower_;
   /// Upper bounds on columns
-  mutable double * colUpper_;
+  double * colUpper_;
   /// Number of rows in snapshot (or when cliqueRow stuff computed)
-  mutable int numberRows_;
+  int numberRows_;
   /// Number of columns in problem ( must == current)
-  mutable int numberColumns_;
+  int numberColumns_;
   /// Tolerance to see if infeasible
   double primalTolerance_;
   /** Mode - 0 lazy using snapshot, 1 just unsatisfied, 2 all.
@@ -360,7 +360,7 @@ private:
       0 no cuts, 1 just disaggregation type, 2 coefficient ( 3 both), 4 just column cuts
       -n as +n but just fixes variables unless at root
   */
-  mutable int rowCuts_;
+  int rowCuts_;
   /// Maximum number of passes to do in probing
   int maxPass_;
   /// Log level - 0 none, 1 - a bit, 2 - more details
@@ -386,11 +386,11 @@ private:
   /// Number of 0-1 integer variables
   int number01Integers_;
   /// Number looked at this time
-  mutable int numberThisTime_;
+  int numberThisTime_;
   /// Total number of times called
-  mutable int totalTimesCalled_;
+  int totalTimesCalled_;
   /// Which ones looked at this time
-  mutable int * lookedAt_;
+  int * lookedAt_;
   /// Disaggregation cuts and for building cliques
   typedef struct disaggregation_struct_tag {
     int sequence; // integer variable
@@ -475,7 +475,7 @@ public:
   Insert generated cuts into the cut set cs.
   */
   virtual void generateCuts( const OsiSolverInterface & si, OsiCuts & cs,
-			     const CglTreeInfo info = CglTreeInfo()) const;
+			     const CglTreeInfo info = CglTreeInfo());
   //@}
 
   /**@name Constructors and destructors */

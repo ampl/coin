@@ -1,4 +1,4 @@
-// $Id: CglOddHole.hpp 941 2011-01-04 23:24:38Z lou $
+// $Id: CglOddHole.hpp 1123 2013-04-06 20:47:24Z stefan $
 // Copyright (C) 2000, International Business Machines
 // Corporation and others.  All Rights Reserved.
 // This code is licensed under the terms of the Eclipse Public License (EPL).
@@ -39,7 +39,7 @@ public:
 
   */
   virtual void generateCuts( const OsiSolverInterface & si, OsiCuts & cs,
-			     const CglTreeInfo info = CglTreeInfo()) const;
+			     const CglTreeInfo info = CglTreeInfo());
   //@}
 
   /**@name Create Row List */

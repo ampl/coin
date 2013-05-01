@@ -128,7 +128,7 @@ public:
       in the collection of cuts cs. 
   */
   virtual void generateCuts(const OsiSolverInterface & si, OsiCuts & cs,
-			    const CglTreeInfo info = CglTreeInfo()) const;
+			    const CglTreeInfo info = CglTreeInfo());
   //@}
 
   //---------------------------------------------------------------------------
@@ -227,7 +227,7 @@ private:
   // It determines the type of each row. It also identifies the variable
   // upper bounds and variable lower bounds.
   // It may change sense and RHS for ranged rows
-  void mixIntRoundPreprocess(const OsiSolverInterface& si) const;
+  void mixIntRoundPreprocess(const OsiSolverInterface& si);
 
   // Determine the type of a given row.
   RowType determineRowType(//const OsiSolverInterface& si,
@@ -375,43 +375,43 @@ private:
       Default value: -1 **/
   int doPreproc_;
   // The number of rows of the problem.
-  mutable int numRows_;
+  int numRows_;
   // The number columns of the problem.
-  mutable int numCols_;
+  int numCols_;
   // Indicates whether preprocessing has been done.
-  mutable bool doneInitPre_;
+  bool doneInitPre_;
   // The array of CglMixIntRoundVUB2s.
-  mutable CglMixIntRoundVUB2* vubs_;
+  CglMixIntRoundVUB2* vubs_;
   // The array of CglMixIntRoundVLB2s.
-  mutable CglMixIntRoundVLB2* vlbs_;
+  CglMixIntRoundVLB2* vlbs_;
   // Array with the row types of the rows in the model.
-  mutable RowType* rowTypes_;
+  RowType* rowTypes_;
   // The indices of the rows of the initial matrix
-  mutable int* indRows_;
+  int* indRows_;
   // The number of rows of type ROW_MIX
-  mutable int numRowMix_;
+  int numRowMix_;
   // The indices of the rows of type ROW_MIX
-  mutable int* indRowMix_;
+  int* indRowMix_;
   // The number of rows of type ROW_CONT
-  mutable int numRowCont_;
+  int numRowCont_;
   // The indices of the rows of type ROW_CONT
-  mutable int* indRowCont_;
+  int* indRowCont_;
   // The number of rows of type ROW_INT
-  mutable int numRowInt_;
+  int numRowInt_;
   // The indices of the rows of type ROW_INT
-  mutable int* indRowInt_;
+  int* indRowInt_;
   // The number of rows of type ROW_CONT that have at least one variable
   // with variable upper or lower bound
-  mutable int numRowContVB_;
+  int numRowContVB_;
   // The indices of the rows of type ROW_CONT that have at least one variable
   // with variable upper or lower bound
-  mutable int* indRowContVB_;
+  int* indRowContVB_;
   // If integer - for speed
-  mutable char * integerType_;
+  char * integerType_;
   // Sense of rows (modified if ranges)
-  mutable char * sense_;
+  char * sense_;
   // RHS of rows (modified if ranges)
-  mutable double * RHS_;
+  double * RHS_;
   
 };
 

@@ -1,4 +1,4 @@
-/* $Id: useVolume.cpp 1662 2011-01-04 17:52:40Z lou $ */
+/* $Id: useVolume.cpp 1941 2013-04-10 16:52:27Z stefan $ */
 // Copyright (C) 2003, International Business Machines
 // Corporation and others.  All Rights Reserved.
 // This code is licensed under the terms of the Eclipse Public License (EPL).
@@ -171,6 +171,11 @@ int main(int argc, const char *argv[])
 #endif
      } else
           status = model.readMps(argv[1], true);
+     if( status != 0 )
+     {
+        printf("Error %d reading MPS file\n", status);
+        return status;
+     }
      /*
        This driver uses volume algorithm
        then does dual - after adjusting costs

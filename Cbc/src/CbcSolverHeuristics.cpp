@@ -1,4 +1,4 @@
-/* $Id$ */
+/* $Id: CbcSolverHeuristics.cpp 1902 2013-04-10 16:58:16Z stefan $ */
 // Copyright (C) 2007, International Business Machines
 // Corporation and others.  All Rights Reserved.
 // This code is licensed under the terms of the Eclipse Public License (EPL).
@@ -635,7 +635,6 @@ fixVubs(CbcModel & model, int skipZero2,
         int iPass = 0;
 #define MAXPROB 2
         ClpSimplex models[MAXPROB];
-        int pass[MAXPROB];
         int kPass = -1;
         int kLayer = 0;
         int skipZero = 0;
@@ -865,7 +864,6 @@ fixVubs(CbcModel & model, int skipZero2,
                     }
                 }
             }
-            pass[kPass] = iPass;
             double maxCostUp = COIN_DBL_MAX;
             objective = lpSolver->getObjCoefficients() ;
             if (way == -1)
@@ -1159,6 +1157,7 @@ int doHeuristics(CbcModel * model, int type, CbcOrClpParam* parameters_,
     int useRounding = parameters_[whichParam(CBC_PARAM_STR_ROUNDING, numberParameters_, parameters_)].currentOptionAsInteger();
     int useGreedy = parameters_[whichParam(CBC_PARAM_STR_GREEDY, numberParameters_, parameters_)].currentOptionAsInteger();
     int useCombine = parameters_[whichParam(CBC_PARAM_STR_COMBINE, numberParameters_, parameters_)].currentOptionAsInteger();
+    int useProximity = parameters_[whichParam(CBC_PARAM_STR_PROXIMITY, numberParameters_, parameters_)].currentOptionAsInteger();
     int useCrossover = parameters_[whichParam(CBC_PARAM_STR_CROSSOVER2, numberParameters_, parameters_)].currentOptionAsInteger();
     //int usePivotC = parameters_[whichParam(CBC_PARAM_STR_PIVOTANDCOMPLEMENT, numberParameters_, parameters_)].currentOptionAsInteger();
     int usePivotF = parameters_[whichParam(CBC_PARAM_STR_PIVOTANDFIX, numberParameters_, parameters_)].currentOptionAsInteger();
@@ -1454,12 +1453,13 @@ int doHeuristics(CbcModel * model, int type, CbcOrClpParam* parameters_,
     }
 
     if (useDIVING > 0) {
+        int majorIterations=64;
         int diveOptions2 = parameters_[whichParam(CBC_PARAM_INT_DIVEOPT, numberParameters_, parameters_)].intValue();
         int diveOptions;
         if (diveOptions2 > 99) {
             // switch on various active set stuff
-            diveOptions = diveOptions2 % 100;
-            diveOptions2 -= diveOptions;
+	    diveOptions = diveOptions2%100;
+            diveOptions2 /= 100;
         } else {
             diveOptions = diveOptions2;
             diveOptions2 = 0;
@@ -1470,36 +1470,72 @@ int doHeuristics(CbcModel * model, int type, CbcOrClpParam* parameters_,
             CbcHeuristicDiveVectorLength heuristicDV(*model);
             heuristicDV.setHeuristicName("DiveVectorLength");
             heuristicDV.setWhen(diveOptions);
+	    if (diveOptions2) {
+	      heuristicDV.setMaxIterations(majorIterations);
+	      heuristicDV.setPercentageToFix(0.0);
+	      heuristicDV.setMaxSimplexIterations(COIN_INT_MAX);
+	      heuristicDV.setMaxSimplexIterationsAtRoot(COIN_INT_MAX-(diveOptions2-1));
+	    }
             model->addHeuristic(&heuristicDV) ;
         }
         if ((useDIVING&2) != 0) {
             CbcHeuristicDiveGuided heuristicDG(*model);
             heuristicDG.setHeuristicName("DiveGuided");
             heuristicDG.setWhen(diveOptions);
+	    if (diveOptions2) {
+	      heuristicDG.setMaxIterations(majorIterations);
+	      heuristicDG.setPercentageToFix(0.0);
+	      heuristicDG.setMaxSimplexIterations(COIN_INT_MAX);
+	      heuristicDG.setMaxSimplexIterationsAtRoot(COIN_INT_MAX-(diveOptions2-1));
+	    }
             model->addHeuristic(&heuristicDG) ;
         }
         if ((useDIVING&4) != 0) {
             CbcHeuristicDiveFractional heuristicDF(*model);
             heuristicDF.setHeuristicName("DiveFractional");
             heuristicDF.setWhen(diveOptions);
+	    if (diveOptions2) {
+	      heuristicDF.setMaxIterations(majorIterations);
+	      heuristicDF.setPercentageToFix(0.0);
+	      heuristicDF.setMaxSimplexIterations(COIN_INT_MAX);
+	      heuristicDF.setMaxSimplexIterationsAtRoot(COIN_INT_MAX-(diveOptions2-1));
+	    }
             model->addHeuristic(&heuristicDF) ;
         }
         if ((useDIVING&8) != 0) {
             CbcHeuristicDiveCoefficient heuristicDC(*model);
             heuristicDC.setHeuristicName("DiveCoefficient");
             heuristicDC.setWhen(diveOptions);
+	    if (diveOptions2) {
+	      heuristicDC.setMaxIterations(majorIterations);
+	      heuristicDC.setPercentageToFix(0.0);
+	      heuristicDC.setMaxSimplexIterations(COIN_INT_MAX);
+	      heuristicDC.setMaxSimplexIterationsAtRoot(COIN_INT_MAX-(diveOptions2-1));
+	    }
             model->addHeuristic(&heuristicDC) ;
         }
         if ((useDIVING&16) != 0) {
             CbcHeuristicDiveLineSearch heuristicDL(*model);
             heuristicDL.setHeuristicName("DiveLineSearch");
             heuristicDL.setWhen(diveOptions);
+	    if (diveOptions2) {
+	      heuristicDL.setMaxIterations(majorIterations);
+	      heuristicDL.setPercentageToFix(0.0);
+	      heuristicDL.setMaxSimplexIterations(COIN_INT_MAX);
+	      heuristicDL.setMaxSimplexIterationsAtRoot(COIN_INT_MAX-(diveOptions2-1));
+	    }
             model->addHeuristic(&heuristicDL) ;
         }
         if ((useDIVING&32) != 0) {
             CbcHeuristicDivePseudoCost heuristicDP(*model);
             heuristicDP.setHeuristicName("DivePseudoCost");
-            heuristicDP.setWhen(diveOptions + diveOptions2);
+            heuristicDP.setWhen(diveOptions /*+ diveOptions2*/);
+	    if (diveOptions2) {
+	      heuristicDP.setMaxIterations(majorIterations);
+	      heuristicDP.setPercentageToFix(0.0);
+	      heuristicDP.setMaxSimplexIterations(COIN_INT_MAX);
+	      heuristicDP.setMaxSimplexIterationsAtRoot(COIN_INT_MAX-(diveOptions2-1));
+	    }
             model->addHeuristic(&heuristicDP) ;
         }
         anyToDo = true;
@@ -1558,6 +1594,23 @@ int doHeuristics(CbcModel * model, int type, CbcOrClpParam* parameters_,
         heuristic2.setFractionSmall(0.5);
         heuristic2.setSearchType(1);
         model->addHeuristic(&heuristic2);
+        anyToDo = true;
+    }
+    if ((useProximity >= kType && useProximity <= kType + 1)||
+	(kType == 1 && useProximity >= 4)) {
+        CbcHeuristicProximity heuristic2a(*model);
+        heuristic2a.setHeuristicName("Proximity Search");
+        heuristic2a.setFractionSmall(9999999.0);
+        heuristic2a.setNumberNodes(30);
+        heuristic2a.setFeasibilityPumpOptions(-2);
+	if (useProximity>=4) {
+	  const int nodes[]={10,100,300};
+	  heuristic2a.setNumberNodes(nodes[useProximity-4]);
+	  // more print out and stronger feasibility pump
+	  if (useProximity==6)
+	    heuristic2a.setFeasibilityPumpOptions(-3);
+	}
+        model->addHeuristic(&heuristic2a);
         anyToDo = true;
     }
     if (useCrossover >= kType && useCrossover <= kType + 1) {

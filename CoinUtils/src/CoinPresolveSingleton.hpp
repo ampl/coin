@@ -1,4 +1,4 @@
-/* $Id: CoinPresolveSingleton.hpp 1372 2011-01-03 23:31:00Z lou $ */
+/* $Id: CoinPresolveSingleton.hpp 1498 2011-11-02 15:25:35Z mjs $ */
 // Copyright (C) 2002, International Business Machines
 // Corporation and others.  All Rights Reserved.
 // This code is licensed under the terms of the Eclipse Public License (EPL).
@@ -62,7 +62,7 @@ class slack_doubleton_action : public CoinPresolveAction {
   void postsolve(CoinPostsolveMatrix *prob) const;
 
 
-  ~slack_doubleton_action() { deleteAction(actions_,action*); }
+  virtual ~slack_doubleton_action() { deleteAction(actions_,action*); }
 };
 /*! \class slack_singleton_action
     \brief For variables with one entry
@@ -107,6 +107,6 @@ class slack_singleton_action : public CoinPresolveAction {
   void postsolve(CoinPostsolveMatrix *prob) const;
 
 
-  ~slack_singleton_action() { deleteAction(actions_,action*); }
+  virtual ~slack_singleton_action() { deleteAction(actions_,action*); }
 };
 #endif

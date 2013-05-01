@@ -1,4 +1,4 @@
-/* $Id: CbcTree.cpp 1573 2011-01-05 01:12:36Z lou $ */
+/* $Id: CbcTree.cpp 1813 2012-11-22 19:00:22Z forrest $ */
 // Copyright (C) 2004, International Business Machines
 // Corporation and others.  All Rights Reserved.
 // This code is licensed under the terms of the Eclipse Public License (EPL).
@@ -315,7 +315,6 @@ CbcTree::clone() const
     return new CbcTree(*this);
 }
 
-
 #ifndef CBC_DUBIOUS_HEAP
 /*
   Set comparison predicate and re-sort the heap.
@@ -529,18 +528,6 @@ CbcTree::bestNode(double cutoff)
     if (best)
         best->setOnTree(false);
     return best;
-}
-
-double
-CbcTree::getBestPossibleObjective()
-{
-    double r_val = 1e100;
-    for (int i = 0 ; i < static_cast<int> (nodes_.size()) ; i++) {
-        if (nodes_[i] && nodes_[i]->objectiveValue() < r_val) {
-            r_val = nodes_[i]->objectiveValue();
-        }
-    }
-    return r_val;
 }
 /*! \brief Prune the tree using an objective function cutoff
 
@@ -1404,4 +1391,16 @@ CbcTree::realpush(CbcNode * node)
     candidates[pos] = node;
 }
 #endif
+
+double
+CbcTree::getBestPossibleObjective()
+{
+    double r_val = 1e100;
+    for (int i = 0 ; i < static_cast<int> (nodes_.size()) ; i++) {
+        if (nodes_[i] && nodes_[i]->objectiveValue() < r_val) {
+            r_val = nodes_[i]->objectiveValue();
+        }
+    }
+    return r_val;
+}
 

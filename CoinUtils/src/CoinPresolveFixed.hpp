@@ -1,4 +1,4 @@
-/* $Id: CoinPresolveFixed.hpp 1372 2011-01-03 23:31:00Z lou $ */
+/* $Id: CoinPresolveFixed.hpp 1510 2011-12-08 23:56:01Z lou $ */
 // Copyright (C) 2002, International Business Machines
 // Corporation and others.  All Rights Reserved.
 // This code is licensed under the terms of the Eclipse Public License (EPL).
@@ -10,16 +10,16 @@
 /*! \class remove_fixed_action
     \brief Excise fixed variables from the model.
 
-  Implements the action of removing one or more fixed variables x_j from the
-  model by substituting the value sol_j in each constraint. Specifically,
-  for each constraint i where a_ij != 0, rlo_i and rup_i are adjusted by
-  -a_ij*sol_j and a_ij is set to 0.
+  Implements the action of virtually removing one or more fixed variables
+  x_j from the model by substituting the value sol_j in each constraint.
+  Specifically, for each constraint i where a_ij != 0, rlo_i and rup_i
+  are adjusted by -a_ij*sol_j and a_ij is set to 0.
 
   There is an implicit assumption that the variable already has the correct
   value. If this isn't true, corrections to row activity may be incorrect.
   If you want to guard against this possibility, consider make_fixed_action.
 
-  Actual removal of the column from the matrix is handled by
+  Actual removal of the empty column from the matrix is handled by
   drop_empty_cols_action. Correction of the objective function is done there.
 */
 class remove_fixed_action : public CoinPresolveAction {
@@ -68,7 +68,7 @@ class remove_fixed_action : public CoinPresolveAction {
   void postsolve(CoinPostsolveMatrix *prob) const;
 
   /// Destructor
-  ~remove_fixed_action();
+  virtual ~remove_fixed_action();
 };
 
 
@@ -111,19 +111,19 @@ class make_fixed_action : public CoinPresolveAction {
   */
   const bool fix_to_lower_;
 
-  /// The postsolve object with information to undo the fix(es).
+  /*! \brief The postsolve object with the information required to repopulate
+  	     the fixed columns.
+  */
   const remove_fixed_action *faction_;
 
   /*! \brief Constructor */
-  make_fixed_action(int nactions,
-		    const action *actions,
-		    bool fix_to_lower,
+  make_fixed_action(int nactions, const action *actions, bool fix_to_lower,
 		    const remove_fixed_action *faction,
-		    const CoinPresolveAction *next) :
-    CoinPresolveAction(next),
-    nactions_(nactions), actions_(actions),
-    fix_to_lower_(fix_to_lower),
-    faction_(faction)
+		    const CoinPresolveAction *next)
+    : CoinPresolveAction(next),
+      nactions_(nactions), actions_(actions),
+      fix_to_lower_(fix_to_lower),
+      faction_(faction)
   {}
 
  public:
@@ -150,7 +150,7 @@ class make_fixed_action : public CoinPresolveAction {
   void postsolve(CoinPostsolveMatrix *prob) const;
 
   /// Destructor
-  ~make_fixed_action() { 
+  virtual ~make_fixed_action() {
     deleteAction(actions_,action*); 
     delete faction_;
   }
@@ -164,7 +164,18 @@ class make_fixed_action : public CoinPresolveAction {
 */
 
 const CoinPresolveAction *make_fixed(CoinPresolveMatrix *prob,
-				    const CoinPresolveAction *next);
-/// Transfers costs
+				    const CoinPresolveAction *next) ;
+
+/*! \brief Transfer costs from singleton variables
+    \relates make_fixed_action
+
+  Transfers costs from singleton variables in equalities onto the other
+  variables. Will also transfer costs from one integer variable to other
+  integer variables with zero cost if there's a net gain in integer variables
+  with non-zero cost.
+
+  The relation to make_fixed_action is tenuous, but this transform should be
+  attempted before the initial round of variable fixing.
+*/
 void transferCosts(CoinPresolveMatrix * prob);
 #endif

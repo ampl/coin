@@ -1,4 +1,4 @@
-/* $Id: ClpEventHandler.cpp 1665 2011-01-04 17:55:54Z lou $ */
+/* $Id: ClpEventHandler.cpp 1825 2011-11-20 16:02:57Z forrest $ */
 // Copyright (C) 2004, International Business Machines
 // Corporation and others.  All Rights Reserved.
 // This code is licensed under the terms of the Eclipse Public License (EPL).
@@ -61,6 +61,14 @@ ClpEventHandler::event(Event whichEvent)
           return -1; // do nothing
      else
           return 0; // say normal exit
+}
+/* This can do whatever it likes.  Return code -1 means no action.
+   This passes in something
+*/
+int 
+ClpEventHandler::eventWithInfo(Event whichEvent, void * info) 
+{ 
+  return -1;
 }
 /* set model. */
 void

@@ -2,10 +2,6 @@
 // Corporation and others.  All Rights Reserved.
 // This code is licensed under the terms of the Eclipse Public License (EPL).
 
-#if defined(_MSC_VER)
-// Turn off compiler warning about long names
-#  pragma warning(disable:4786)
-#endif
 #include <cstdlib>
 #include <cstdio>
 #include <cmath>
@@ -16,6 +12,7 @@
 //#ifdef NDEBUG
 //#undef NDEBUG
 //#endif
+#include "CoinPragma.hpp"
 #include "CoinHelperFunctions.hpp"
 #include "CoinPackedVector.hpp"
 #include "CoinPackedMatrix.hpp"
@@ -45,7 +42,7 @@ int gomory_try=CGL_DEBUG_GOMORY;
 // Generate Gomory cuts
 //------------------------------------------------------------------- 
 void CglGomory::generateCuts(const OsiSolverInterface & si, OsiCuts & cs,
-			     const CglTreeInfo info) const
+			     const CglTreeInfo info)
 {
 #ifdef CGL_DEBUG_GOMORY
   gomory_try++;
@@ -88,7 +85,7 @@ void CglGomory::generateCuts(const OsiSolverInterface & si, OsiCuts & cs,
 #ifdef COIN_HAS_CLP_GOMORY
   double * objective = NULL;
   OsiClpSolverInterface * clpSolver = dynamic_cast<OsiClpSolverInterface *>(originalSolver_);
-  int numberOriginalRows;
+  int numberOriginalRows = -1;
   if (clpSolver) {
     useSolver = originalSolver_;
     assert (gomoryType_);
@@ -164,9 +161,12 @@ void CglGomory::generateCuts(const OsiSolverInterface & si, OsiCuts & cs,
       }
       numberCopy=0;
       numberAdd=0;
+      const double * rowSolution = si.getRowActivity();
+      double offset=0.0;
       for (int iRow=numberOriginalRows;iRow<numberRows;iRow++) {
 	if (!copy[iRow-numberOriginalRows]) {
 	  double value = pi[iRow];
+	  offset += rowSolution[iRow]*value;
 	  for (int k=rowStart[iRow];
 	       k<rowStart[iRow]+rowLength[iRow];k++) {
 	    int iColumn=column[k];
@@ -217,11 +217,37 @@ void CglGomory::generateCuts(const OsiSolverInterface & si, OsiCuts & cs,
       simplex->setDualObjectiveLimit(COIN_DBL_MAX);
       simplex->setLogLevel(0);
       simplex->primal(1);
-      //printf("Trying - %d its\n",simplex->numberIterations());
+      // check basis
+      int numberTotal=simplex->numberRows()+simplex->numberColumns();
+      int superbasic=0;
+      for (int i=0;i<numberTotal;i++) {
+	if (simplex->getStatus(i)==ClpSimplex::superBasic)
+	  superbasic++;
+      }
+      if (superbasic) {
+	//printf("%d superbasic!\n",superbasic);
+	simplex->dual();
+	superbasic=0;
+	for (int i=0;i<numberTotal;i++) {
+	  if (simplex->getStatus(i)==ClpSimplex::superBasic)
+	    superbasic++;
+	}
+	assert (!superbasic);
+      }
+      //printf("Trying - %d its status %d objs %g %g - with offset %g\n",
+      //     simplex->numberIterations(),simplex->status(),
+      //     simplex->objectiveValue(),si.getObjValue(),simplex->objectiveValue()+offset);
       //simplex->setLogLevel(0);
       warm=simplex->getBasis();
       warmstart=warm;
-      assert (!simplex->status());
+      if (simplex->status()) {
+	//printf("BAD status %d\n",simplex->status());
+	//clpSolver->writeMps("clp");
+	//si.writeMps("si");
+	delete [] objective;
+	objective=NULL;
+	useSolver=&si;
+      }
     } else {
       // don't do
       delete warmstart;
@@ -302,6 +328,7 @@ void CglGomory::generateCuts(const OsiSolverInterface & si, OsiCuts & cs,
   }
   if ((gomoryType_%10)==2) {
     // back to original
+    assert(clpSolver);
     int numberRows = clpSolver->getNumRows();
     if (numberRows>numberOriginalRows) {
       int numberDelete = numberRows-numberOriginalRows;
@@ -448,7 +475,7 @@ CglGomory::generateCuts(
                          const double * rowLower, const double * rowUpper,
 			 const char * intVar,
                          const CoinWarmStartBasis* warm,
-                         const CglTreeInfo info) const
+                         const CglTreeInfo info)
 {
   int infoOptions=info.options;
   bool globalCuts = (infoOptions&16)!=0;
@@ -677,7 +704,7 @@ CglGomory::generateCuts(
       tolerance3=1.0e-6;
       tolerance6=1.0e-7;
       tolerance9=1.0e-5;
-      if (!limit||limit>=500)
+      if (!limit)
 	limit=numberColumns;
     } else {
       if((infoOptions&32)==0/*&&numberTimesStalled_<3*/) {
@@ -1578,6 +1605,27 @@ CglGomory::operator=(const CglGomory& rhs)
   }
   return *this;
 }
+// This can be used to refresh any information
+void 
+CglGomory::refreshSolver(OsiSolverInterface * solver)
+{
+  int numberColumns=solver->getNumCols(); 
+  const double * colUpper = solver->getColUpper();
+  const double * colLower = solver->getColLower();
+  canDoGlobalCuts_ = true;
+  if (originalSolver_) {
+    delete originalSolver_;
+    originalSolver_ = solver->clone();
+  }
+  for (int i=0;i<numberColumns;i++) {
+    if (solver->isInteger(i)) {
+      if (colUpper[i]>colLower[i]+1.0) {
+	canDoGlobalCuts_ = false;
+	break;
+      }
+    }
+  }
+}
 // Pass in a copy of original solver (clone it)
 void 
 CglGomory::passInOriginalSolver(OsiSolverInterface * solver)
@@ -1592,12 +1640,6 @@ CglGomory::passInOriginalSolver(OsiSolverInterface * solver)
     originalSolver_=NULL;
   }
 }
-// Returns true if needs optimal basis to do cuts
-bool 
-CglGomory::needsOptimalBasis() const
-{
-  return true;
-}
 // Does actual work - returns number of cuts
 int
 CglGomory::generateCuts( const OsiRowCutDebugger * debugger, 
@@ -1608,7 +1650,7 @@ CglGomory::generateCuts( const OsiRowCutDebugger * debugger,
                          const double * rowLower, const double * rowUpper,
 			 const char * intVar,
                          const CoinWarmStartBasis* warm,
-                         const CglTreeInfo info) const
+                         const CglTreeInfo info)
 {
   CoinPackedMatrix rowCopy;
   rowCopy.reverseOrderedCopyOf(columnCopy);

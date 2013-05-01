@@ -4,7 +4,7 @@
 //           Carnegie Mellon University, Pittsburgh, PA 15213
 // Date:     07/21/05
 //
-// $Id$
+// $Id: CglLandP.cpp 1123 2013-04-06 20:47:24Z stefan $
 //
 // This code is licensed under the terms of the Eclipse Public License (EPL).
 //---------------------------------------------------------------------------
@@ -130,7 +130,7 @@ CglLandP::Parameters & CglLandP::Parameters::operator=(const Parameters &other)
 CglLandP::CachedData::CachedData(int nBasics, int nNonBasics):
         basics_(NULL), nonBasics_(NULL), nBasics_(nBasics),
         nNonBasics_(nNonBasics), basis_(NULL), colsol_(NULL),
-        slacks_(NULL), integers_(NULL)
+        slacks_(NULL), integers_(NULL), solver_(NULL)
 {
     if (nBasics_>0)
     {
@@ -149,7 +149,7 @@ CglLandP::CachedData::CachedData(int nBasics, int nNonBasics):
 CglLandP::CachedData::CachedData(const CachedData &source):
         basics_(NULL), nonBasics_(NULL), nBasics_(source.nBasics_),
         nNonBasics_(source.nNonBasics_), basis_(NULL),
-        colsol_(NULL), slacks_(NULL), integers_(NULL)
+        colsol_(NULL), slacks_(NULL), integers_(NULL), solver_(NULL)
 {
     if (nBasics_>0)
     {
@@ -171,6 +171,8 @@ CglLandP::CachedData::CachedData(const CachedData &source):
     }
     if (source.basis_!=NULL)
         basis_ = new CoinWarmStartBasis(*source.basis_);
+    if (source.solver_!=NULL)
+      solver_ = source.solver_->clone();
 }
 
 CglLandP::CachedData& CglLandP::CachedData::operator=(const CachedData &source)
@@ -211,6 +213,9 @@ CglLandP::CachedData& CglLandP::CachedData::operator=(const CachedData &source)
         }
         if (source.basis_!=NULL)
             basis_ = new CoinWarmStartBasis(*source.basis_);
+        delete solver_;
+	if (source.solver_)
+	  solver_ = source.solver_->clone();
     }
     return *this;
 }
@@ -339,6 +344,14 @@ CglLandP::CachedData::getData(const OsiSolverInterface &si)
         OsiSolverInterface * ncSi = (const_cast<OsiSolverInterface *>(&si));
         ncSi->enableSimplexInterface(0);
         ncSi->getBasics(basics_);
+	// Save enabled solver
+	solver_ = si.clone();
+#ifdef COIN_HAS_OSICLP
+	OsiClpSolverInterface * clpSi = dynamic_cast<OsiClpSolverInterface *>(solver_);
+	const OsiClpSolverInterface * clpSiRhs = dynamic_cast<const OsiClpSolverInterface *>(&si);
+	if (clpSi)
+	  clpSi->getModelPtr()->copyEnabledStuff(clpSiRhs->getModelPtr());;
+#endif
         ncSi->disableSimplexInterface();
     }
 
@@ -389,6 +402,8 @@ CglLandP::CachedData::clean(){
 
    nBasics_ = 0;
    nNonBasics_ = 0;
+   delete solver_;
+   solver_ = NULL;
 }
 CglLandP::CachedData::~CachedData()
 {
@@ -401,6 +416,7 @@ CglLandP::CachedData::~CachedData()
     delete basis_;
     if (integers_)
         delete [] integers_;
+    delete solver_;
 }
 
 CglLandP::CglLandP(const CglLandP::Parameters &params,
@@ -505,7 +521,7 @@ CglLandP::scanExtraCuts(OsiCuts& cs, const double * colsol) const
 
 void
 CglLandP::generateCuts(const OsiSolverInterface & si, OsiCuts & cs,
-                       const CglTreeInfo info ) const
+                       const CglTreeInfo info )
 {
     if ((info.pass == 0) && !info.inTree)
     {

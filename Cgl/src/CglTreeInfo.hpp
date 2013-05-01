@@ -1,4 +1,4 @@
-// $Id: CglTreeInfo.hpp 1033 2011-06-19 16:49:13Z stefan $
+// $Id: CglTreeInfo.hpp 1123 2013-04-06 20:47:24Z stefan $
 // Copyright (C) 2000, International Business Machines
 // Corporation and others.  All Rights Reserved.
 // This code is licensed under the terms of the Eclipse Public License (EPL).
@@ -121,13 +121,13 @@ public:
   void generateCuts(const OsiSolverInterface & si, OsiCuts & cs,
 		    const CglTreeInfo info) const;
   /// Entries for fixing variables
-  inline cliqueEntry * fixEntries() const
+  inline cliqueEntry * fixEntries()
   { convert(); return fixEntry_;}
   /// Starts of integer variable going to zero
-  inline int * toZero() const
+  inline int * toZero()
   { convert(); return toZero_;}
   /// Starts of integer variable going to one
-  inline int * toOne() const
+  inline int * toOne()
   { convert(); return toOne_;}
   /// List of 0-1 integer variables
   inline int * integerVariable() const
@@ -143,20 +143,20 @@ public:
   { return numberIntegers_;}
 private:
   /// Converts to ordered
-  void convert() const;
+  void convert();
 protected:
   /// Entries for fixing variables
-  mutable cliqueEntry * fixEntry_;
+  cliqueEntry * fixEntry_;
   /// Starts of integer variable going to zero
-  mutable int * toZero_;
+  int * toZero_;
   /// Starts of integer variable going to one
-  mutable int * toOne_;
+  int * toOne_;
   /// List of 0-1 integer variables
   int * integerVariable_;
   /// Backward look up
   int * backward_;
   /// Entries for fixing variable when collecting
-  mutable int * fixingEntry_;
+  int * fixingEntry_;
   /// Number of variables
   int numberVariables_;
   /// Number of 0-1 variables
@@ -164,7 +164,7 @@ protected:
   /// Maximum number in fixEntry_
   int maximumEntries_;
   /// Number entries in fixingEntry_ (and fixEntry_) or -2 if correct style
-  mutable int numberEntries_;
+  int numberEntries_;
 };
 inline int sequenceInCliqueEntry(const cliqueEntry & cEntry)
 { return cEntry.fixes&0x7fffffff;}

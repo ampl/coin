@@ -1,12 +1,8 @@
-// $Id: CglProbing.cpp 1033 2011-06-19 16:49:13Z stefan $
+// $Id: CglProbing.cpp 1123 2013-04-06 20:47:24Z stefan $
 // Copyright (C) 2002, International Business Machines
 // Corporation and others.  All Rights Reserved.
 // This code is licensed under the terms of the Eclipse Public License (EPL).
 
-#if defined(_MSC_VER)
-// Turn off compiler warning about long names
-#  pragma warning(disable:4786)
-#endif
 #include <cstdlib>
 #include <cstdio>
 #include <cmath>
@@ -17,6 +13,7 @@
 //#define PRINT_DEBUG
 //#define CGL_DEBUG 1
 //#undef NDEBUG
+#include "CoinPragma.hpp"
 #include "CoinHelperFunctions.hpp"
 #include "CoinPackedVector.hpp"
 #include "CoinPackedMatrix.hpp"
@@ -397,7 +394,7 @@ CglProbing::tighten(double *colLower, double * colUpper,
 		    const CoinBigIndex * rowStartPos,const int * rowLength,
                     double *rowLower, double *rowUpper, 
                     int nRows,int nCols,char * intVar,int maxpass,
-                    double tolerance) const
+                    double tolerance)
 {
   int i, j, k, kre;
   int krs;
@@ -1152,7 +1149,7 @@ CglProbing::tighten2(double *colLower, double * colUpper,
 		     const int * rowLength,
 		     double *rowLower, double *rowUpper, 
 		     double * minR, double * maxR, int * markR,
-		     int nRows) const
+		     int nRows)
 {
   int i, j, k, kre;
   int krs;
@@ -1230,7 +1227,7 @@ static int nPath=0;
 // Generate disaggregation cuts
 //------------------------------------------------------------------- 
 void CglProbing::generateCuts(const OsiSolverInterface & si, OsiCuts & cs,
-			      const CglTreeInfo info2) const
+			      const CglTreeInfo info2)
 {
 
 #ifdef CGL_DEBUG
@@ -1634,7 +1631,7 @@ int CglProbing::gutsOfGenerateCuts(const OsiSolverInterface & si,
                                    OsiCuts & cs ,
                                    double * rowLower, double * rowUpper,
                                    double * colLower, double * colUpper,
-                                   CglTreeInfo * info) const
+                                   CglTreeInfo * info)
 {
   //printf("PASS\n");
   // Get basic problem information
@@ -1915,7 +1912,26 @@ int CglProbing::gutsOfGenerateCuts(const OsiSolverInterface & si,
 	    rc.setLb(rowLower[i]);
 	    rc.setUb(rowUpper[i]);
 	    int start = rowStart[i];
+	    int n = rowLength[i];
 	    rc.setRow(rowLength[i],column+start,elements+start,false);
+	    // but get rid of tinies
+	    CoinPackedVector & row = rc.mutableRow();
+	    double * elements = row.getElements();
+	    int n2=0;
+	    for (n2=0;n2<n;n2++) {
+	      if (fabs(elements[n2])<1.0e-12)
+		break;
+	    }
+	    if (n2<n) {
+	      int * columns = row.getIndices();
+	      for (int i=n2+1;i<n;i++) {
+		if (fabs(elements[i])>1.0e-12) {
+		  elements[n2]=elements[i];
+		  columns[n2++]=columns[i];
+		}
+	      }
+	      row.truncate(n2);
+	    }
 	    rc.setEffectiveness(effectiveness);
 	    assert (!info->strengthenRow[i]);
 	    info->strengthenRow[i]=rc.clone();
@@ -2919,7 +2935,7 @@ int CglProbing::probe( const OsiSolverInterface & si,
 		       const double * rowLower, const double * rowUpper,
 		       const char * intVar, double * minR, double * maxR, 
 		       int * markR, 
-                       CglTreeInfo * info) const
+		       CglTreeInfo * info)
 {
   int nRows=rowCopy->getNumRows();
   int nRowsSafe=CoinMin(nRows,si.getNumRows());
@@ -3274,7 +3290,6 @@ int CglProbing::probe( const OsiSolverInterface & si,
 	  }
 	}
       }
-      int awayFromBound=1;
       int j=lookedAt_[iLook];
       //if (j==231||j==226)
       //printf("size %d %d j is %d\n",rowCut.numberCuts(),cs.sizeRowCuts(),j);//printf("looking at %d (%d out of %d)\n",j,iLook,numberThisTime_); 
@@ -3285,7 +3300,6 @@ int CglProbing::probe( const OsiSolverInterface & si,
       if ((markC[j]&3)!=0||!intVar[j]) continue;
       double saveSolval = solval;
       if (solval>=colUpper[j]-tolerance||solval<=colLower[j]+tolerance||up==down) {
-	awayFromBound=0;
 	if (solval<=colLower[j]+2.0*tolerance) {
 	  solval = colLower[j]+1.0e-1;
 	  down=colLower[j];
@@ -5802,7 +5816,7 @@ int CglProbing::probeCliques( const OsiSolverInterface & si,
 		       double * rowLower, double * rowUpper,
 		       char * intVar, double * minR, double * maxR, 
 		       int * markR, 
-                       CglTreeInfo * info) const
+                       CglTreeInfo * info)
 {
   // Set up maxes
   int maxStack = info->inTree ? maxStack_ : maxStackRoot_;
@@ -5936,7 +5950,6 @@ int CglProbing::probeCliques( const OsiSolverInterface & si,
       double solval;
       double down;
       double up;
-      int awayFromBound=1;
       j=lookedAt_[iLook];
       solval=colsol[j];
       down = floor(solval+tolerance);
@@ -5945,7 +5958,6 @@ int CglProbing::probeCliques( const OsiSolverInterface & si,
       if (markC[j]||!intVar[j]) continue;
       double saveSolval = solval;
       if (solval>=colUpper[j]-tolerance||solval<=colLower[j]+tolerance||up==down) {
-	awayFromBound=0;
 	if (solval<=colLower[j]+2.0*tolerance) {
 	  solval = colLower[j]+1.0e-1;
 	  down=colLower[j];
@@ -7348,7 +7360,7 @@ CglProbing::probeSlacks( const OsiSolverInterface & si,
 			 CoinPackedMatrix *columnCopy,
                           double * rowLower, double * rowUpper,
                           char * intVar, double * minR, double * maxR,int * markR,
-                          CglTreeInfo * info) const
+                          CglTreeInfo * info)
 {
   if (!numberCliques_)
     return 0;
@@ -8983,6 +8995,7 @@ CglProbing::CglProbing (  const CglProbing & rhs)
     CoinMemcpyN(rhs.zeroFixStart_,numberColumns_,zeroFixStart_);
     endFixStart_ = new int [numberColumns_];
     CoinMemcpyN(rhs.endFixStart_,numberColumns_,endFixStart_);
+#ifndef NDEBUG
     int n2=-1;
     for (int i=numberColumns_-1;i>=0;i--) {
       if (oneFixStart_[i]>=0) {
@@ -8991,6 +9004,7 @@ CglProbing::CglProbing (  const CglProbing & rhs)
       }
     }
     assert (n==n2);
+#endif
     whichClique_ = new int [n];
     CoinMemcpyN(rhs.whichClique_,n,whichClique_);
     if (rhs.cliqueRowStart_) {
@@ -9158,6 +9172,7 @@ CglProbing::operator=(
       CoinMemcpyN(rhs.zeroFixStart_,numberColumns_,zeroFixStart_);
       endFixStart_ = new int [numberColumns_];
       CoinMemcpyN(rhs.endFixStart_,numberColumns_,endFixStart_);
+#ifndef NDEBUG
       int n2=-1;
       for (int i=numberColumns_-1;i>=0;i--) {
 	if (oneFixStart_[i]>=0) {
@@ -9166,6 +9181,7 @@ CglProbing::operator=(
 	}
       }
       assert (n==n2);
+#endif
       whichClique_ = new int [n];
       CoinMemcpyN(rhs.whichClique_,n,whichClique_);
       if (rhs.cliqueRowStart_) {
@@ -9247,9 +9263,6 @@ CglProbing::createCliques( OsiSolverInterface & si,
   const CoinBigIndex * rowStart = matrixByRow.getVectorStarts();
   const int * rowLength = matrixByRow.getVectorLengths();
 
-  // Column lengths for slacks
-  const int * columnLength = si.getMatrixByCol()->getVectorLengths();
-
   const double * lower = si.getColLower();
   const double * upper = si.getColUpper();
   const double * rowLower = si.getRowLower();
@@ -9261,7 +9274,6 @@ CglProbing::createCliques( OsiSolverInterface & si,
     double upperValue=rowUpper[iRow];
     double lowerValue=rowLower[iRow];
     bool good=true;
-    int slack = -1;
     for (j=rowStart[iRow];j<rowStart[iRow]+rowLength[iRow];j++) {
       int iColumn = column[j];
       int iInteger=lookup[iColumn];
@@ -9276,9 +9288,6 @@ CglProbing::createCliques( OsiSolverInterface & si,
       } else if (iInteger<0) {
 	good = false;
 	break;
-      } else {
-	if (columnLength[iColumn]==1)
-	  slack = iInteger;
       }
       if (fabs(elementByRow[j])!=1.0) {
 	good=false;
@@ -9780,7 +9789,7 @@ CglProbing::generateCpp( FILE * fp)
 //-------------------------------------------------------------
 void
 CglImplication::generateCuts(const OsiSolverInterface & si, OsiCuts & cs,
-				const CglTreeInfo info) const
+				const CglTreeInfo info)
 {
   if (probingInfo_) {
     //int n1=cs.sizeRowCuts();

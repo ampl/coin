@@ -1,12 +1,7 @@
-// $Id: CglOddHoleTest.cpp 941 2011-01-04 23:24:38Z lou $
+// $Id: CglOddHoleTest.cpp 1123 2013-04-06 20:47:24Z stefan $
 // Copyright (C) 2000, International Business Machines
 // Corporation and others.  All Rights Reserved.
 // This code is licensed under the terms of the Eclipse Public License (EPL).
-
-#if defined(_MSC_VER)
-// Turn off compiler warning about long names
-#  pragma warning(disable:4786)
-#endif
 
 #include <cstdio>
 
@@ -16,6 +11,7 @@
 
 #include <cassert>
 
+#include "CoinPragma.hpp"
 #include "CoinPackedMatrix.hpp"
 #include "CglOddHole.hpp"
 

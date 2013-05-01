@@ -2,7 +2,7 @@
 
 set -e
 
-lapack_ver=3.2.1
+lapack_ver=3.4.2
 
 wgetcmd=wget
 wgetcount=`which wget 2>/dev/null | wc -l`
@@ -31,7 +31,7 @@ echo "Uncompressing the tarball..."
 gunzip -f lapack-${lapack_ver}.tgz
 
 echo "Unpacking the source code..."
-tar xf lapack-${lapack_ver}.tar lapack-${lapack_ver}/SRC lapack-${lapack_ver}/INSTALL/dlamch.f
+tar xf lapack-${lapack_ver}.tar lapack-${lapack_ver}/SRC lapack-${lapack_ver}/INSTALL/dlamch.f lapack-${lapack_ver}/INSTALL/slamch.f
 rm -rf LAPACK
 mv lapack-${lapack_ver} LAPACK
 

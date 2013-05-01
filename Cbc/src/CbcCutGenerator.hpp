@@ -1,4 +1,4 @@
-/* $Id: CbcCutGenerator.hpp 1675 2011-06-19 17:23:14Z stefan $ */
+/* $Id: CbcCutGenerator.hpp 1883 2013-04-06 13:33:15Z stefan $ */
 // Copyright (C) 2003, International Business Machines
 // Corporation and others.  All Rights Reserved.
 // This code is licensed under the terms of the Eclipse Public License (EPL).
@@ -165,6 +165,12 @@ public:
     inline int whatDepthInSub() const {
         return depthCutGeneratorInSub_;
     }
+    /// Set maximum number of times to enter
+    inline void setMaximumTries(int value)
+    { maximumTries_ = value;}
+    /// Get maximum number of times to enter
+    inline int maximumTries() const
+    { return maximumTries_;}
 
     /// Get switches (for debug)
     inline int switches() const {
@@ -359,6 +365,9 @@ public:
     inline int numberShortCutsAtRoot() const {
         return numberShortCutsAtRoot_;
     }
+    inline void setNumberShortCutsAtRoot(int value) {
+        numberShortCutsAtRoot_ = value;
+    }
     /// Set model
     inline void setModel(CbcModel * model) {
         model_ = model;
@@ -381,6 +390,10 @@ public:
         switches_ &= ~256;
         switches_ |= yesNo ? 256 : 0;
     }
+    /// Add in statistics from other
+    void addStatistics(const CbcCutGenerator * other);
+    /// Scale back statistics by factor
+    void scaleBackStatistics(int factor);
     //@}
 
 private:
@@ -443,6 +456,8 @@ private:
     int numberShortCutsAtRoot_;
     /// Switches - see gets and sets
     int switches_;
+    /// Maximum number of times to enter
+    int maximumTries_;
 };
 
 // How often to do if mostly switched off (A)

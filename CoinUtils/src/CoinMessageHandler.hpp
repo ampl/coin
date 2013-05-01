@@ -1,4 +1,4 @@
-/* $Id: CoinMessageHandler.hpp 1448 2011-06-19 15:34:41Z stefan $ */
+/* $Id: CoinMessageHandler.hpp 1514 2011-12-10 23:35:23Z lou $ */
 // Copyright (C) 2002, International Business Machines
 // Corporation and others.  All Rights Reserved.
 // This code is licensed under the terms of the Eclipse Public License (EPL).
@@ -37,9 +37,13 @@
  Clp component and a Coin component.
 
  Because messages are only used in a controlled environment and have no
- impact on code and are tested by other tests I have include tests such
+ impact on code and are tested by other tests I have included tests such
  as language and derivation in other unit tests.
 */
+/*
+  Where there are derived classes I (jjf) have started message numbers at 1001.
+*/
+
 
 /** \brief Class for one massaged message.
 
@@ -258,6 +262,20 @@ enum CoinMessageMarker {
     \li <9000 non-fatal errors ('E')
     \li >=9000 aborts the program (after printing the message) ('S')
 
+    <h3> Log (detail) levels </h3>
+
+    The default behaviour is that a message will print if its detail level
+    is less than or equal to the handler's log level.  If all you want to
+    do is set a single log level for the handler, use #setLogLevel(int).
+
+    If you want to get fancy, here's how it really works: There's an array,
+    #logLevels_, which you can manipulate with #setLogLevel(int,int). Each
+    entry logLevels_[i] specifies the log level for messages of class i (see
+    CoinMessages::class_). If logLevels_[0] is set to the magic number -1000
+    you get the simple behaviour described above, whatever the class of the
+    messages. If logLevels_[0] is set to a valid log level (>= 0), then
+    logLevels_[i] really is the log level for messages of class i.
+
     <h3> Format codes </h3>
 
     CoinMessageHandler can print integers (normal, long, and long long),
@@ -306,18 +324,10 @@ enum CoinMessageMarker {
     CoinMessageHandlerTest.cpp.
 */
 
-/*
-  Where there are derived classes I (jjf) have started message numbers at 1001.
-*/
-
 class CoinMessageHandler  {
 
 friend bool CoinMessageHandlerUnitTest () ;
 
-private:
-  /** The body of the copy constructor and the assignment operator */
-  void gutsOfCopy(const CoinMessageHandler& rhs);
-  
 public:
    /**@name Virtual methods that the derived classes may provide */
    //@{
@@ -469,24 +479,40 @@ public:
     The message will be printed if the current log level is equal or greater
     than the log level of the message.
   */
-  CoinMessageHandler & message(int messageNumber,
-			      const CoinMessages & messages);
+  CoinMessageHandler &message(int messageNumber,
+			      const CoinMessages &messages) ;
+
   /*! \brief Start or continue a message
 
-    Does nothing except return a reference to the handler. This can be used
-    with any of the << operators. One use is to start a message which will be
-    constructed entirely from scratch. Another use is continuation of a
-    message after code that interrupts the usual sequence of << operators.
+    With detail = -1 (default), does nothing except return a reference to the
+    handler. (I.e., msghandler.message() << "foo" is precisely equivalent
+    to msghandler << "foo".) If \p msgDetail is >= 0, is will be used
+    as the detail level to determine whether the message should print
+    (assuming class 0).
+
+    This can be used with any of the << operators. One use is to start
+    a message which will be constructed entirely from scratch. Another
+    use is continuation of a message after code that interrupts the usual
+    sequence of << operators.
   */
-  CoinMessageHandler & message();
-  /*! \brief Generate a standard prefix and append \c msg `as is'. 
+  CoinMessageHandler & message(int detail = -1) ;
+
+  /*! \brief Print a complete message
   
-     Intended as a transition mechanism. The standard prefix is generated (if
-     enabled), and \c msg is appended. Only the operator<<(CoinMessageMarker)
-     operator can be used with a message started with this call.
+    Generate a standard prefix and append \c msg `as is'. This is intended as
+    a transition mechanism.  The standard prefix is generated (if enabled),
+    and \c msg is appended. The message must be ended with a CoinMessageEol
+    marker. Attempts to add content with << will have no effect.
+
+    The default value of \p detail will not change printing status. If
+    \p detail is >= 0, it will be used as the detail level to determine
+    whether the message should print (assuming class 0).
+
   */
-  CoinMessageHandler & message(int externalNumber,const char * header,
-			      const char * msg,char severity);
+  CoinMessageHandler &message(int externalNumber, const char *source,
+			      const char *msg,
+			      char severity, int detail = -1) ;
+
   /*! \brief Process an integer parameter value.
 
     The default format code is `%d'.
@@ -547,16 +573,6 @@ public:
   */
   CoinMessageHandler & printing(bool onOff);
 
-  /*! \brief Internal function to locate next format code.
-
-    Intended for internal use. Side effects modify the format string.
-  */
-  char * nextPerCent(char * start , const bool initial=false);
-  /*! \brief Internal printing function.
-  
-    Makes it easier to split up print into clean, print and check severity
-  */
-  int internalPrint();
   //@}
 
   /** Log levels will be by type and will then use type
@@ -596,10 +612,13 @@ protected:
   char * messageOut_;
   /// Current source of message
   std::string source_;
-  /** 0 - normal,
-      1 - put in values, move along format, no print
-      2 - put in values, no print
-      3 - skip message
+  /** 0 - Normal.
+      1 - Put in values, move along format, but don't print.
+      2 - A complete message was provided; nothing more to do but print
+          when CoinMessageEol is processed. Any << operators are treated
+	  as noops.
+      3 - do nothing except look for CoinMessageEol (i.e., the message
+          detail level was not sufficient to cause it to print).
   */
   int printStatus_;
   /// Highest message number (indicates any errors)
@@ -611,6 +630,27 @@ protected:
   /// Current number of significant digits for floating point numbers
   int g_precision_ ;
    //@}
+
+private:
+
+  /** The body of the copy constructor and the assignment operator */
+  void gutsOfCopy(const CoinMessageHandler &rhs) ;
+
+  /*! \brief Internal function to locate next format code.
+
+    Intended for internal use. Side effects modify the format string.
+  */
+  char *nextPerCent(char *start, const bool initial = false) ;
+
+  /*! \brief Internal printing function.
+  
+    Makes it easier to split up print into clean, print and check severity
+  */
+  int internalPrint() ;
+
+  /// Decide if this message should print.
+  void calcPrintStatus(int msglvl, int msgclass) ;
+    
 
 };
 

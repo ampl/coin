@@ -4,7 +4,7 @@
 //           Carnegie Mellon University, Pittsburgh, PA 15213
 // Date:     11/22/05
 //
-// $Id$
+// $Id: CglLandPValidator.cpp 1123 2013-04-06 20:47:24Z stefan $
 //
 // This code is licensed under the terms of the Eclipse Public License (EPL).
 //---------------------------------------------------------------------------
@@ -33,7 +33,7 @@ std::vector<std::string> Validator::rejections_;
 \return 4 if too many non zero element*/
 int
 Validator::cleanCut(OsiRowCut & aCut, const double * solCut, const OsiSolverInterface &si, const CglParam& par,
-                    const double * origColLower, const double * origColUpper) const
+                    const double * origColLower, const double * origColUpper)
 {
     /** Compute fill-in in si */
     int numcols = si.getNumCols();
@@ -154,7 +154,7 @@ Validator::cleanCut(OsiRowCut & aCut, const double * solCut, const OsiSolverInte
    otherwise scale it so that biggest coeff is 1 and try removing tinys ( < 1/maxRatio) either succeed or fail */
 int
 Validator::cleanCut2(OsiRowCut & aCut, const double * solCut, const OsiSolverInterface &si, const CglParam &/* par */,
-                     const double * origColLower, const double * origColUpper) const
+                     const double * origColLower, const double * origColUpper)
 {
     /** Compute fill-in in si */
     int numcols = si.getNumCols();

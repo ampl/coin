@@ -1,4 +1,4 @@
-// $Id: CglClique.cpp 1033 2011-06-19 16:49:13Z stefan $
+// $Id: CglClique.cpp 1123 2013-04-06 20:47:24Z stefan $
 // Copyright (C) 2000, International Business Machines
 // Corporation and others.  All Rights Reserved.
 // This code is licensed under the terms of the Eclipse Public License (EPL).
@@ -80,7 +80,7 @@ CglClique::CglClique(const CglClique& rhs)
 
 void
 CglClique::generateCuts(const OsiSolverInterface& si, OsiCuts & cs,
-			const CglTreeInfo info) const
+			const CglTreeInfo info)
 {
    int i;
    bool has_petol_set = petol != -1.0;
@@ -152,7 +152,7 @@ CglClique::generateCuts(const OsiSolverInterface& si, OsiCuts & cs,
  *===========================================================================*/
 
 void
-CglClique::find_rcl(OsiCuts& cs) const
+CglClique::find_rcl(OsiCuts& cs)
 {
    const int nodenum = fgraph.nodenum;
    const fnode *nodes = fgraph.nodes;
@@ -262,7 +262,7 @@ CglClique::find_rcl(OsiCuts& cs) const
  *===========================================================================*/
 
 void
-CglClique::find_scl(OsiCuts& cs) const
+CglClique::find_scl(OsiCuts& cs)
 {
    const int nodenum = fgraph.nodenum;
    const fnode *nodes = fgraph.nodes;
@@ -417,7 +417,7 @@ int
 CglClique::scl_choose_next_node(const int current_nodenum,
 				const int * /* current_indices */,
 				const int *current_degrees,
-				const double *current_values) const
+				const double *current_values)
 {
    int best = 0;
    int best_deg = current_degrees[0];
@@ -484,7 +484,7 @@ CglClique::scl_choose_next_node(const int current_nodenum,
 void
 CglClique::scl_delete_node(const int del_ind, int& current_nodenum,
 			   int *current_indices, int *current_degrees,
-			   double *current_values) const
+			   double *current_values)
 {
    const int v = current_indices[del_ind];
 
@@ -537,7 +537,7 @@ CglClique::scl_delete_node(const int del_ind, int& current_nodenum,
  *===========================================================================*/
 
 int
-CglClique::enumerate_maximal_cliques(int& pos, bool* label, OsiCuts& cs) const 
+CglClique::enumerate_maximal_cliques(int& pos, bool* label, OsiCuts& cs)
 {
    const fnode *nodes = fgraph.nodes;
    const int nodenum = fgraph.nodenum;
@@ -645,7 +645,7 @@ CglClique::enumerate_maximal_cliques(int& pos, bool* label, OsiCuts& cs) const
  *===========================================================================*/
 
 int
-CglClique::greedy_maximal_clique(OsiCuts& cs) const
+CglClique::greedy_maximal_clique(OsiCuts& cs)
 {
    assert(cl_length > 0);
    const fnode *nodes = fgraph.nodes;
@@ -696,7 +696,7 @@ CglClique::greedy_maximal_clique(OsiCuts& cs) const
  *===========================================================================*/
 
 void
-CglClique::recordClique(const int len, int* indices, OsiCuts& cs) const
+CglClique::recordClique(const int len, int* indices, OsiCuts& cs)
 {
    /* transform relative indices into user indices and order them */
    for (int j = len - 1; j >= 0; j--)
@@ -846,7 +846,7 @@ CglFakeClique::assignSolver(OsiSolverInterface * fakeSolver)
 // Generate cuts
 void
 CglFakeClique::generateCuts(const OsiSolverInterface& si, OsiCuts & cs,
-			const CglTreeInfo info) const
+			const CglTreeInfo info)
 {
   if (fakeSolver_) {
     assert (si.getNumCols()==fakeSolver_->getNumCols());

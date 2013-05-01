@@ -2,7 +2,7 @@
 # All Rights Reserved.
 # This file is distributed under the Eclipse Public License.
 
-## $Id: Makefile.am 1715 2011-08-14 11:26:42Z stefan $
+## $Id: Makefile.am 1902 2013-04-10 16:58:16Z stefan $
 
 # Author:  Andreas Waechter           IBM    2006-04-13
 
@@ -63,7 +63,7 @@ libCbc_la_SOURCES = \
 	CbcHeuristicDiveGuided.cpp CbcHeuristicDiveGuided.hpp \
 	CbcHeuristicDiveLineSearch.cpp CbcHeuristicDiveLineSearch.hpp \
 	CbcHeuristicDivePseudoCost.cpp CbcHeuristicDivePseudoCost.hpp \
-	CbcHeuristicDiveVectorLength.cpp CbcHeuristicDiveVectorLength.hpp \
+	CbcHeuristicDiveVectorLength.cpp CbcHeuristicDiveLength.hpp \
 	CbcHeuristicFPump.cpp CbcHeuristicFPump.hpp \
 	CbcHeuristicGreedy.cpp CbcHeuristicGreedy.hpp \
 	CbcHeuristicLocal.cpp CbcHeuristicLocal.hpp \
@@ -100,6 +100,7 @@ libCbcSolver_la_SOURCES = \
 	unitTestClp.cpp CbcSolver.cpp \
 	CbcSolverHeuristics.cpp CbcSolverHeuristics.hpp \
 	CbcSolverAnalyze.cpp CbcSolverAnalyze.hpp \
+	CbcMipStartIO.cpp CbcMipStartIO.hpp \
 	CbcSolverExpandKnapsack.cpp CbcSolverExpandKnapsack.hpp
 
 # This is for libtool
@@ -191,7 +192,7 @@ includecoin_HEADERS = \
 	CbcBranchBase.hpp \
 	CbcBranchDynamic.hpp \
 	CbcBranchCut.hpp \
-        CbcBranchDecision.hpp \
+	CbcBranchDecision.hpp \
 	CbcBranchDefaultDecision.hpp \
 	CbcBranchingObject.hpp \
 	CbcBranchLotsize.hpp \
@@ -205,12 +206,14 @@ includecoin_HEADERS = \
 	CbcConsequence.hpp \
 	CbcClique.hpp \
 	CbcCompare.hpp \
+	CbcCountRowCut.hpp \
 	CbcCutGenerator.hpp \
 	CbcCutModifier.hpp \
 	CbcCutSubsetModifier.hpp \
 	CbcDummyBranchingObject.hpp \
 	CbcFathom.hpp \
 	CbcEventHandler.hpp \
+	CbcFathomDynamicProgramming.hpp \
 	CbcFeasibilityBase.hpp \
 	CbcFixVariable.hpp \
 	CbcFollowOn.hpp \
@@ -247,6 +250,7 @@ includecoin_HEADERS = \
 	CbcSimpleIntegerPseudoCost.hpp \
 	CbcStrategy.hpp \
 	CbcSolver.hpp \
+	CbcMipStartIO.hpp \
 	CbcSOS.hpp \
 	CbcSubProblem.hpp \
 	CbcTree.hpp \

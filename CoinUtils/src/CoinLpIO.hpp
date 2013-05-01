@@ -1,4 +1,4 @@
-/* $Id: CoinLpIO.hpp 1448 2011-06-19 15:34:41Z stefan $ */
+/* $Id: CoinLpIO.hpp 1411 2011-03-30 11:40:33Z forrest $ */
 // Last edit: 11/5/08
 //
 // Name:     CoinLpIO.hpp; Support for Lp files

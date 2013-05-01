@@ -1,4 +1,4 @@
-/* $Id: piece.cpp 1662 2011-01-04 17:52:40Z lou $ */
+/* $Id: piece.cpp 1941 2013-04-10 16:52:27Z stefan $ */
 // Copyright (C) 2003, International Business Machines
 // Corporation and others.  All Rights Reserved.
 // This code is licensed under the terms of the Eclipse Public License (EPL).
@@ -202,7 +202,11 @@ int main(int argc, const char *argv[])
      model.setDblParam(ClpObjOffset, -objectiveOffset);
      // Create nonlinear objective
      int returnCode = model.createPiecewiseLinearCosts(segstart, breakpt, slope);
-     assert(!returnCode);
+     if( returnCode != 0 )
+     {
+        printf("Unexpected return code %d from model.createPiecewiseLinearCosts()\n", returnCode);
+        return returnCode;
+     }
 
      // delete
      delete [] segstart;

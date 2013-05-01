@@ -2,7 +2,7 @@
 # All Rights Reserved.
 # This file is distributed under the Eclipse Public License.
 
-## $Id: configure.ac 1888 2012-11-21 12:06:15Z stefan $
+## $Id: configure.ac 1942 2013-04-10 17:56:48Z stefan $
 
 # Author:  Andreas Waechter            IBM    2006-04-13
 
@@ -12,7 +12,7 @@
 
 AC_PREREQ(2.59)
 
-AC_INIT([Clp],[1.14.8],[clp@list.coin-or.org])
+AC_INIT([Clp],[1.15.0],[clp@list.coin-or.org])
 
 AC_COPYRIGHT([
 Copyright 2006 International Business Machines and others.
@@ -41,7 +41,7 @@ AC_CANONICAL_BUILD
 # the source root directory contains definition of where to find those
 # externals.  The following macro ensures that those externals are
 # retrieved by svn if they are not there yet.
-AC_COIN_PROJECTDIR_INIT(Clp,12:8:11)
+AC_COIN_PROJECTDIR_INIT(Clp,13:0:12)
 
 # Check if user wants to produce debugging code
 AC_COIN_DEBUG_COMPILE(Clp)
@@ -64,6 +64,32 @@ AC_COIN_CHECK_PACKAGE(Osi,       [osi],       [OsiClpLib])
 AC_COIN_CHECK_PACKAGE(OsiTests,  [osi-unittests])
 AC_COIN_CHECK_PACKAGE(Sample,    [coindatasample])
 AC_COIN_CHECK_PACKAGE(Netlib,    [coindatanetlib])
+
+#############################################################################
+#                                    Aboca                                  #
+#############################################################################
+
+#  1 - build Abc serial but no inherit code
+#  2 - build Abc serial and inherit code
+#  3 - build Abc cilk parallel but no inherit code
+#  4 - build Abc cilk parallel and inherit code
+AC_ARG_ENABLE([aboca],
+              [AC_HELP_STRING([--enable-aboca],[enables build of Aboca solver (set to 1,2,3,4)])],
+              [use_aboca=$enableval],
+              [use_aboca=no])
+if test "$use_aboca" = yes ; then
+  use_aboca=1
+fi
+case "$use_aboca" in 
+  1 | 2 | 3 | 4)
+    AC_DEFINE_UNQUOTED([CLP_HAS_ABC], [$use_aboca], [Define to 1, 2, 3, or 4 if Aboca should be build.])
+    ;;
+  no) ;;
+  *)
+    AC_MSG_ERROR([invalid argument for --enable-aboca: $use_aboca])
+    ;;
+esac
+AM_CONDITIONAL(COIN_HAS_ABC, test ! "$use_aboca" = no)
 
 #############################################################################
 #                        Third party linear solvers                         #
@@ -150,6 +176,8 @@ AC_COIN_CHECK_CXX_CHEADER(ieeefp)
 
 AC_COIN_VPATH_LINK(examples/hello.mps)
 AC_COIN_VPATH_LINK(examples/input.130)
+AC_COIN_VPATH_LINK(examples/g.tiny)
+AC_COIN_VPATH_LINK(examples/gparm.tiny)
 
 #############################################################################
 #                  Check for doxygen                                        #
@@ -170,7 +198,7 @@ AC_CONFIG_FILES([Makefile
                  test/Makefile
                  clp.pc
                  clp-uninstalled.pc])
-		 
+
 if test $coin_has_osi = yes ; then
   AC_CONFIG_FILES([osi-clp.pc:src/OsiClp/osi-clp.pc.in
                    osi-clp-uninstalled.pc:src/OsiClp/osi-clp-uninstalled.pc.in])

@@ -1,4 +1,4 @@
-/* $Id: CoinPrePostsolveMatrix.cpp 1448 2011-06-19 15:34:41Z stefan $ */
+/* $Id: CoinPrePostsolveMatrix.cpp 1516 2011-12-10 23:40:39Z lou $ */
 // Copyright (C) 2002, International Business Machines
 // Corporation and others.  All Rights Reserved.
 // This code is licensed under the terms of the Eclipse Public License (EPL).
@@ -442,17 +442,17 @@ CoinWarmStartBasis *CoinPrePostsolveMatrix::getStatus ()
 
 void CoinPrePostsolveMatrix::setRowStatusUsingValue (int iRow)
 
-{ double value = acts_[iRow];
-  double lower = rlo_[iRow];
-  double upper = rup_[iRow];
-  if (lower<-1.0e20&&upper>1.0e20) {
-    setRowStatus(iRow,isFree);
-  } else if (fabs(lower-value)<=ztolzb_) {
-    setRowStatus(iRow,atLowerBound);
-  } else if (fabs(upper-value)<=ztolzb_) {
-    setRowStatus(iRow,atUpperBound);
+{ double value = acts_[iRow] ;
+  double lower = rlo_[iRow] ;
+  double upper = rup_[iRow] ;
+  if (lower < -1.0e20 && upper > 1.0e20) {
+    setRowStatus(iRow,isFree) ;
+  } else if (fabs(lower-value) <= ztolzb_) {
+    setRowStatus(iRow,atUpperBound) ;
+  } else if (fabs(upper-value) <= ztolzb_) {
+    setRowStatus(iRow,atLowerBound) ;
   } else {
-    setRowStatus(iRow,superBasic);
+    setRowStatus(iRow,superBasic) ;
   }
 }
 
@@ -481,7 +481,8 @@ void CoinPrePostsolveMatrix::setColumnStatusUsingValue(int iColumn)
 
 /*
   Simple routines to return a constant character string for the status value.
-  Separate row and column routines for convenience.
+  Separate row and column routines for convenience, and one that just takes
+  the status code.
 */
 
 const char *CoinPrePostsolveMatrix::columnStatusString (int j) const
@@ -489,34 +490,39 @@ const char *CoinPrePostsolveMatrix::columnStatusString (int j) const
 { Status statj = getColumnStatus(j) ;
 
   switch (statj)
-  { case isFree:
-    { return ("NBF") ; }
-    case basic:
-    { return ("B") ; }
-    case atUpperBound:
-    { return ("NBUB") ; }
-    case atLowerBound:
-    { return ("NBLB") ; }
-    case superBasic:
-    { return ("SB") ; }
-    default:
-    { return ("INVALID") ; } } }
+  { case isFree: { return ("NBFR") ; }
+    case basic: { return ("B") ; }
+    case atUpperBound: { return ("NBUB") ; }
+    case atLowerBound: { return ("NBLB") ; }
+    case superBasic: { return ("SB") ; }
+    default: { return ("INVALID!") ; }
+  }
+}
 
 const char *CoinPrePostsolveMatrix::rowStatusString (int j) const
 
 { Status statj = getRowStatus(j) ;
 
   switch (statj)
-  { case isFree:
-    { return ("NBF") ; }
-    case basic:
-    { return ("B") ; }
-    case atUpperBound:
-    { return ("NBUB") ; }
-    case atLowerBound:
-    { return ("NBLB") ; }
-    case superBasic:
-    { return ("SB") ; }
-    default:
-    { return ("INVALID") ; } } }
+  { case isFree: { return ("NBFR") ; }
+    case basic: { return ("B") ; }
+    case atUpperBound: { return ("NBUB") ; }
+    case atLowerBound: { return ("NBLB") ; }
+    case superBasic: { return ("SB") ; }
+    default: { return ("INVALID!") ; }
+  }
+}
+
+const char *statusName (CoinPrePostsolveMatrix::Status status)
+{
+  switch (status) {
+    case CoinPrePostsolveMatrix::isFree: { return ("NBFR") ; }
+    case CoinPrePostsolveMatrix::basic: { return ("B") ; }
+    case CoinPrePostsolveMatrix::atUpperBound: { return ("NBUB") ; }
+    case CoinPrePostsolveMatrix::atLowerBound: { return ("NBLB") ; }
+    case CoinPrePostsolveMatrix::superBasic: { return ("SB") ; }
+    default: { return ("INVALID!") ; }
+  }
+}
+
 #endif

@@ -1,4 +1,4 @@
-/* $Id: ClpEventHandler.hpp 1665 2011-01-04 17:55:54Z lou $ */
+/* $Id: ClpEventHandler.hpp 1825 2011-11-20 16:02:57Z forrest $ */
 // Copyright (C) 2004, International Business Machines
 // Corporation and others.  All Rights Reserved.
 // This code is licensed under the terms of the Eclipse Public License (EPL).
@@ -33,7 +33,7 @@ public:
      */
      enum Event {
           endOfIteration = 100, // used to set secondary status
-          endOfFactorization,
+          endOfFactorization, // after gutsOfSolution etc
           endOfValuesPass,
           node, // for Cbc
           treeStatus, // for Cbc
@@ -46,7 +46,28 @@ public:
 	  presolveBeforeSolve, // ClpSolve presolve before solve
 	  presolveAfterFirstSolve, // ClpSolve presolve after solve
 	  presolveAfterSolve, // ClpSolve presolve after solve
-	  presolveEnd // ClpSolve presolve end
+	  presolveEnd, // ClpSolve presolve end
+	  goodFactorization, // before gutsOfSolution
+	  complicatedPivotIn, // in modifyCoefficients
+	  noCandidateInPrimal, // tentative end
+	  looksEndInPrimal, // About to declare victory (or defeat)
+	  endInPrimal, // Victory (or defeat)
+	  beforeStatusOfProblemInPrimal,
+	  startOfStatusOfProblemInPrimal,
+	  complicatedPivotOut, // in modifyCoefficients
+	  noCandidateInDual, // tentative end
+	  looksEndInDual, // About to declare victory (or defeat)
+	  endInDual, // Victory (or defeat)
+	  beforeStatusOfProblemInDual,
+	  startOfStatusOfProblemInDual,
+	  startOfIterationInDual,
+	  updateDualsInDual,
+	  endOfCreateRim,
+	  slightlyInfeasible,
+	  modifyMatrixInMiniPresolve,
+	  moreMiniPresolve,
+	  modifyMatrixInMiniPostsolve,
+	  noTheta // At end (because no pivot)
      };
      /**@name Virtual method that the derived classes should provide.
       The base class instance does nothing and as event() is only useful method
@@ -59,6 +80,10 @@ public:
 	 For ClpSolve 2 -> too big return status of -2 and -> too small 3
      */
      virtual int event(Event whichEvent);
+     /** This can do whatever it likes.  Return code -1 means no action.
+	 This passes in something
+     */
+     virtual int eventWithInfo(Event whichEvent, void * info) ;
      //@}
 
 

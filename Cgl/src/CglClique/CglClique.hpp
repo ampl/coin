@@ -1,4 +1,4 @@
-// $Id: CglClique.hpp 933 2011-01-04 23:16:49Z lou $
+// $Id: CglClique.hpp 1123 2013-04-06 20:47:24Z stefan $
 // Copyright (C) 2000, International Business Machines
 // Corporation and others.  All Rights Reserved.
 // This code is licensed under the terms of the Eclipse Public License (EPL).
@@ -28,7 +28,7 @@ public:
     
     virtual void
     generateCuts(const OsiSolverInterface& si, OsiCuts & cs,
-		 const CglTreeInfo info = CglTreeInfo()) const;
+		 const CglTreeInfo info = CglTreeInfo());
    
     /**@name Constructors and destructors */
     //@{
@@ -140,23 +140,23 @@ protected:
     /// True if just look at original rows
     bool justOriginalRows_;
     /** pieces of the set packing part of the solverinterface */
-    mutable int sp_numrows;
-    mutable int* sp_orig_row_ind;
-    mutable int sp_numcols;
-    mutable int* sp_orig_col_ind;
-    mutable double* sp_colsol;
-    mutable int* sp_col_start;
-    mutable int* sp_col_ind;
-    mutable int* sp_row_start;
-    mutable int* sp_row_ind;
+    int sp_numrows;
+    int* sp_orig_row_ind;
+    int sp_numcols;
+    int* sp_orig_col_ind;
+    double* sp_colsol;
+    int* sp_col_start;
+    int* sp_col_ind;
+    int* sp_row_start;
+    int* sp_row_ind;
 
     /** the intersection graph corresponding to the set packing problem */
-    mutable frac_graph fgraph;
+    frac_graph fgraph;
     /** the node-node incidence matrix of the intersection graph. */
-    mutable bool* node_node;
+    bool* node_node;
 
     /** The primal tolerance in the solverinterface. */
-    mutable double petol;
+    double petol;
 
     /** data for the star clique algorithm */
 
@@ -191,63 +191,63 @@ protected:
     /** List of indices that must be in the to be created clique. This is just
 	a pointer, it is never new'd and therefore does not need to be
 	delete[]'d either. */
-    mutable const int* cl_perm_indices;
+    const int* cl_perm_indices;
     /** The length of cl_perm_indices */
-    mutable int cl_perm_length;
+    int cl_perm_length;
 
     /** List of indices that should be considered for extending the ones listed
 	in cl_perm_indices. */
-    mutable int* cl_indices;
+    int* cl_indices;
     /** The length of cl_indices */
-    mutable int cl_length;
+    int cl_length;
 
     /** An array of nodes discarded from the candidate list. These are
 	rechecked when a maximal clique is found just to make sure that the
 	clique is really maximal. */
-    mutable int* cl_del_indices;
+    int* cl_del_indices;
     /** The length of cl_del_indices */
-    mutable int cl_del_length;
+    int cl_del_length;
 
     /**@}*/
 
 private:
     /** Scan through the variables and select those that are binary and are at
 	a fractional level. */
-    void selectFractionalBinaries(const OsiSolverInterface& si) const;
+    void selectFractionalBinaries(const OsiSolverInterface& si);
     /** Scan through the variables and select those that are at a fractional
 	level. We already know that everything is binary. */
-    void selectFractionals(const OsiSolverInterface& si) const;
+    void selectFractionals(const OsiSolverInterface& si);
     /**  */
-    void selectRowCliques(const OsiSolverInterface& si,int numOriginalRows) const;
+    void selectRowCliques(const OsiSolverInterface& si,int numOriginalRows);
     /**  */
-    void createSetPackingSubMatrix(const OsiSolverInterface& si) const;
+    void createSetPackingSubMatrix(const OsiSolverInterface& si);
     /**  */
-    void createFractionalGraph() const;
+    void createFractionalGraph();
     /**  */
-    int createNodeNode() const;
+    int createNodeNode();
     /**  */
-    void deleteSetPackingSubMatrix() const;
+    void deleteSetPackingSubMatrix();
     /**  */
-    void deleteFractionalGraph() const;
+    void deleteFractionalGraph();
     /**  */
-    void find_scl(OsiCuts& cs) const;
+    void find_scl(OsiCuts& cs);
     /**  */
-    void find_rcl(OsiCuts& cs) const;
+    void find_rcl(OsiCuts& cs);
     /**  */
     int scl_choose_next_node(const int current_nodenum,
 			     const int *current_indices,
 			     const int *current_degrees,
-			     const double *current_values) const;
+			     const double *current_values);
     /**  */
     void scl_delete_node(const int del_ind, int& current_nodenum,
 			 int *current_indices, int *current_degrees,
-			 double *current_values) const;
+			 double *current_values);
     /**  */
-    int enumerate_maximal_cliques(int& pos, bool* scl_label, OsiCuts& cs) const;
+    int enumerate_maximal_cliques(int& pos, bool* scl_label, OsiCuts& cs);
     /**  */
-    int greedy_maximal_clique(OsiCuts& cs) const;
+    int greedy_maximal_clique(OsiCuts& cs);
     /**  */
-    void recordClique(const int len, int* indices, OsiCuts& cs) const;
+    void recordClique(const int len, int* indices, OsiCuts& cs);
 };
 //#############################################################################
 /** A function that tests the methods in the CglClique class. The
@@ -272,7 +272,7 @@ public:
   
   virtual void
   generateCuts(const OsiSolverInterface& si, OsiCuts & cs,
-	       const CglTreeInfo info = CglTreeInfo()) const;
+	       const CglTreeInfo info = CglTreeInfo());
   
   /**@name Constructors and destructors */
   //@{
@@ -300,9 +300,9 @@ public:
   void assignSolver(OsiSolverInterface * fakeSolver);
 protected:
   /// fake solver to use
-  mutable OsiSolverInterface * fakeSolver_;
+  OsiSolverInterface * fakeSolver_;
   /// Probing object
-  mutable CglProbing * probing_;
+  CglProbing * probing_;
 };
 
 #endif

@@ -1,18 +1,15 @@
-// $Id: CglTwomir.cpp 1033 2011-06-19 16:49:13Z stefan $
+// $Id: CglTwomir.cpp 1123 2013-04-06 20:47:24Z stefan $
 // Copyright (C) 2002, International Business Machines
 // Corporation and others.  All Rights Reserved.
 // This code is licensed under the terms of the Eclipse Public License (EPL).
 
-#if defined(_MSC_VER)
-// Turn off compiler warning about long names
-#  pragma warning(disable:4786)
-#endif
 #include <cstdlib>
 #include <cstdio>
 #include <cmath>
 #include <cfloat>
 #include <cassert>
 #include <iostream>
+#include "CoinPragma.hpp"
 #include "CoinHelperFunctions.hpp"
 #include "CoinPackedVector.hpp"
 #include "CoinPackedMatrix.hpp"
@@ -26,6 +23,10 @@
 #include "CoinWarmStartBasis.hpp"
 #include "CglTwomir.hpp"
 class CoinWarmStartBasis;
+#define COIN_HAS_CLP_TWOMIR
+#ifdef COIN_HAS_CLP_TWOMIR
+#include "OsiClpSolverInterface.hpp"
+#endif
 #undef DGG_DEBUG_DGG
 
 //#define DGG_DEBUG_DGG 1
@@ -84,39 +85,208 @@ void testus( DGG_constraint_t *cut){ //!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 // Generate  cuts
 //------------------------------------------------------------------- 
 void CglTwomir::generateCuts(const OsiSolverInterface & si, OsiCuts & cs, 
-			     const CglTreeInfo info ) const
+			     const CglTreeInfo info )
 {
 # ifdef CGL_DEBUG
   //!!!!!!!!!!!!!!!!!!
   six = &si;
 # endif
-
-  // Temp - check if free variables
-  {
-    const double *colUpper = si.getColUpper();
-    const double *colLower = si.getColLower();
-    int ncol = si.getNumCols();
+  const double * colUpper = si.getColUpper();
+  const double * colLower = si.getColLower();
+  const OsiSolverInterface * useSolver;
+#ifdef COIN_HAS_CLP_TWOMIR
+  double * objective = NULL;
+  OsiClpSolverInterface * clpSolver = dynamic_cast<OsiClpSolverInterface *>(originalSolver_);
+  int numberOriginalRows;
+  int numberColumns=si.getNumCols();
+  int twomirType=0;
+  if (!clpSolver) {
+#endif
+    useSolver=&si;
+    // Temp - check if free variables
+    int ncol = useSolver->getNumCols();
     int numberFree=0;
     for (int i=0;i<ncol;i++) {
       if (colLower[i]<-1.0e20&&colUpper[i]>1.0e20)
         numberFree++;
     }
     if (numberFree) {
+#if 1 //def COIN_DEVELOP
       if (!info.inTree&&!info.pass)
-#ifdef COIN_DEVELOP
         printf("CglTwoMir - %d free variables - returning\n",numberFree);
 #endif
       return;
     }
+#ifdef COIN_HAS_CLP_TWOMIR
+  } else {
+    useSolver = originalSolver_;
+    assert (twomirType_);
+    // check simplex is plausible
+    if (!clpSolver->getNumRows()||numberColumns!=clpSolver->getNumCols()) {
+      delete originalSolver_;
+      originalSolver_=si.clone();
+      clpSolver = dynamic_cast<OsiClpSolverInterface *>(originalSolver_);
+      assert (clpSolver);
+      useSolver = originalSolver_;
+    }
+    ClpSimplex * simplex = clpSolver->getModelPtr();
+    numberOriginalRows = simplex->numberRows();
+    int numberRows = si.getNumRows();
+    assert (numberOriginalRows<=numberRows);
+    // only do if different (unless type 2x)
+    twomirType = twomirType_%10;
+    int whenToDo = twomirType_/10;
+    if (whenToDo==2 ||(numberRows>numberOriginalRows && whenToDo==1
+		       && (info.options&512)==0) ||
+	((info.options&1024)!=0 && (info.options&512)==0)) {
+      // bounds
+      const double * solution = si.getColSolution();
+      memcpy(simplex->columnLower(),colLower,numberColumns*sizeof(double));
+      memcpy(simplex->columnUpper(),colUpper,numberColumns*sizeof(double));
+      for (int i=0;i<numberColumns;i++) {
+	if (colLower[i]<-1.0e20&&colUpper[i]>1.0e20) {
+	  double lower=-COIN_DBL_MAX;
+	  double upper=COIN_DBL_MAX;
+	  if (solution[i]>0.0)
+	    lower=-1.0e10;
+	  else
+	    upper=1.0e10;
+	  originalSolver_->setColLower(i,lower);
+	  originalSolver_->setColUpper(i,upper);
+	}
+      }
+      double * obj = simplex->objective();
+      objective = CoinCopyOfArray(obj,numberColumns);
+      const double * pi = si.getRowPrice();
+      const CoinPackedMatrix * rowCopy = si.getMatrixByRow();
+      const int * column = rowCopy->getIndices();
+      const CoinBigIndex * rowStart = rowCopy->getVectorStarts();
+      const int * rowLength = rowCopy->getVectorLengths(); 
+      const double * rowElements = rowCopy->getElements();
+      const double * rowLower = si.getRowLower();
+      const double * rowUpper = si.getRowUpper();
+      int numberCopy;
+      int numberAdd;
+      double * rowLower2 = NULL;
+      double * rowUpper2 = NULL;
+      int * column2 = NULL;
+      CoinBigIndex * rowStart2 = NULL;
+      double * rowElements2 = NULL;
+      char * copy = new char [numberRows-numberOriginalRows];
+      memset(copy,0,numberRows-numberOriginalRows);
+      if (twomirType==2) {
+	numberCopy=0;
+	numberAdd=0;
+	for (int iRow=numberOriginalRows;iRow<numberRows;iRow++) {
+	  bool simple = true;
+	  for (int k=rowStart[iRow];
+	       k<rowStart[iRow]+rowLength[iRow];k++) {
+	    double value = rowElements[k];
+	    if (value!=floor(value+0.5)) {
+	      simple=false;
+	      break;
+	    }
+	  }
+	  if (simple) {
+	    numberCopy++;
+	    numberAdd+=rowLength[iRow];
+	    copy[iRow-numberOriginalRows]=1;
+	  }
+	}
+	if (numberCopy) {
+	  //printf("Using %d rows out of %d\n",numberCopy,numberRows-numberOriginalRows);
+	  rowLower2 = new double [numberCopy];
+	  rowUpper2 = new double [numberCopy];
+	  rowStart2 = new CoinBigIndex [numberCopy+1];
+	  rowStart2[0]=0;
+	  column2 = new int [numberAdd];
+	  rowElements2 = new double [numberAdd];
+	}
+      }
+      numberCopy=0;
+      numberAdd=0;
+      const double * rowSolution = si.getRowActivity();
+      double offset=0.0;
+      for (int iRow=numberOriginalRows;iRow<numberRows;iRow++) {
+	if (!copy[iRow-numberOriginalRows]) {
+	  double value = pi[iRow];
+	  offset += rowSolution[iRow]*value;
+	  for (int k=rowStart[iRow];
+	       k<rowStart[iRow]+rowLength[iRow];k++) {
+	    int iColumn=column[k];
+	    obj[iColumn] -= value*rowElements[k];
+	  }
+	} else {
+	  rowLower2[numberCopy]=rowLower[iRow];
+	  rowUpper2[numberCopy]=rowUpper[iRow];
+	  for (int k=rowStart[iRow];
+	       k<rowStart[iRow]+rowLength[iRow];k++) {
+	    column2[numberAdd]=column[k];
+	    rowElements2[numberAdd++]=rowElements[k];
+	  }
+	  numberCopy++;
+	  rowStart2[numberCopy]=numberAdd;
+	}
+      }
+#if 0
+      CoinThreadRandom randomNumberGenerator;
+      const double * solution = si.getColSolution();
+      for (int i=0;i<numberColumns;i++) {
+	if (intVar[i]==1) {
+	  double randomNumber = randomNumberGenerator.randomDouble();
+	  //randomNumber = 0.001*floor(randomNumber*1000.0);
+	  if (solution[i]>0.5)
+	    obj[i] -= randomNumber*0.001*fabs(obj[i]);
+	  else
+	    obj[i] += randomNumber*0.001*fabs(obj[i]);
+	}
+      }
+#endif
+      if (numberCopy) {
+	clpSolver->addRows(numberCopy,
+			   rowStart2,column2,rowElements2,
+			   rowLower2,rowUpper2);
+	delete [] rowLower2 ;
+	delete [] rowUpper2 ;
+	delete [] column2 ;
+	delete [] rowStart2 ;
+	delete [] rowElements2 ;
+      }
+      delete [] copy;
+      memcpy(simplex->primalColumnSolution(),si.getColSolution(),
+	     numberColumns*sizeof(double));
+      CoinWarmStart * warmstart = si.getWarmStart();
+      CoinWarmStartBasis* warm =
+	dynamic_cast<CoinWarmStartBasis*>(warmstart);
+      warm->resize(simplex->numberRows(),numberColumns);
+      clpSolver->setBasis(*warm);
+      delete warm;
+      simplex->setDualObjectiveLimit(COIN_DBL_MAX);
+      simplex->setLogLevel(0);
+      clpSolver->resolve();
+      //printf("Trying - %d its status %d objs %g %g - with offset %g\n",
+      //     simplex->numberIterations(),simplex->status(),
+      //     simplex->objectiveValue(),si.getObjValue(),simplex->objectiveValue()+offset);
+      //simplex->setLogLevel(0);
+      if (simplex->status()) {
+	//printf("BAD status %d\n",simplex->status());
+	//clpSolver->writeMps("clp");
+	//si.writeMps("si");
+	delete [] objective;
+	objective=NULL;
+	useSolver=&si;
+      }
+    }
   }
+#endif
 
-  si.getStrParam(OsiProbName,probname_) ;
+  useSolver->getStrParam(OsiProbName,probname_) ;
   int numberRowCutsBefore = cs.sizeRowCuts();
   
   DGG_list_t cut_list;
   DGG_list_init (&cut_list);
 
-  DGG_data_t* data = DGG_getData(reinterpret_cast<const void *> (&si));
+  DGG_data_t* data = DGG_getData(reinterpret_cast<const void *> (useSolver));
 
   // Note that the lhs variables are hash defines to data->cparams.*
   q_max = q_max_;
@@ -127,10 +297,10 @@ void CglTwomir::generateCuts(const OsiSolverInterface & si, OsiCuts & cs,
   max_elements = info.inTree ? max_elements_ : max_elements_root_;
   data->gomory_threshold = info.inTree ? away_ : awayAtRoot_;
   if (!info.inTree) {
-    //const CoinPackedMatrix * columnCopy = si.getMatrixByCol();
+    //const CoinPackedMatrix * columnCopy = useSolver->getMatrixByCol();
     //int numberColumns=columnCopy->getNumCols(); 
     if (!info.pass||(info.options&32)!=0) {
-      max_elements=si.getNumCols();
+      max_elements=useSolver->getNumCols();
       //} else {
       //int numberRows=columnCopy.getNumRows();
       //int numberElements=columnCopy->getNumElements();
@@ -143,10 +313,10 @@ void CglTwomir::generateCuts(const OsiSolverInterface & si, OsiCuts & cs,
   if (!do_2mir_) q_max = q_min - 1;
 
   if (do_tab_ && info.level < 1 && info.pass < 6)
-    DGG_generateTabRowCuts( &cut_list, data, reinterpret_cast<const void *> (&si) );
+    DGG_generateTabRowCuts( &cut_list, data, reinterpret_cast<const void *> (useSolver) );
   
   if (do_form_)
-    DGG_generateFormulationCuts( &cut_list, data, reinterpret_cast<const void *> (&si),
+    DGG_generateFormulationCuts( &cut_list, data, reinterpret_cast<const void *> (useSolver),
 				 info.formulation_rows,
 				 randomNumberGenerator_);
   
@@ -192,8 +362,8 @@ void CglTwomir::generateCuts(const OsiSolverInterface & si, OsiCuts & cs,
 	int number=0;
 	double largest=0.0;
 	double smallest=1.0e30;
-	const double *colUpper = si.getColUpper();
-	const double *colLower = si.getColLower();
+	const double *colUpper = useSolver->getColUpper();
+	const double *colLower = useSolver->getColLower();
 	bool goodCut=true;
 	for (i=0;i<number2;i++) {
 	  double value=fabs(packed[i]);
@@ -261,6 +431,65 @@ void CglTwomir::generateCuts(const OsiSolverInterface & si, OsiCuts & cs,
 	cs.rowCutPtr(i)->setGloballyValid();
     }
   }
+#ifdef COIN_HAS_CLP_TWOMIR
+  if (objective) {
+    int numberRowCutsAfter = cs.sizeRowCuts();
+    ClpSimplex * simplex = clpSolver->getModelPtr();
+    memcpy(simplex->objective(),objective,numberColumns*sizeof(double));
+    delete [] objective;
+    // take out locally useless cuts
+    const double * solution = si.getColSolution();
+    double primalTolerance = 1.0e-7;
+    for (int k = numberRowCutsAfter - 1; k >= numberRowCutsBefore; k--) {
+      const OsiRowCut * thisCut = cs.rowCutPtr(k) ;
+      double sum = 0.0;
+      int n = thisCut->row().getNumElements();
+      const int * column = thisCut->row().getIndices();
+      const double * element = thisCut->row().getElements();
+      assert (n);
+      for (int i = 0; i < n; i++) {
+	double value = element[i];
+	sum += value * solution[column[i]];
+      }
+      if (sum > thisCut->ub() + primalTolerance) {
+	sum = sum - thisCut->ub();
+      } else if (sum < thisCut->lb() - primalTolerance) {
+	sum = thisCut->lb() - sum;
+      } else {
+	sum = 0.0;
+      }
+      if (!sum) {
+	// take out
+	cs.eraseRowCut(k);
+      }
+    }
+#ifdef CLP_INVESTIGATE2
+    printf("OR %p pass %d inTree %c - %d cuts (but %d deleted)\n",
+       originalSolver_,info.pass,info.inTree?'Y':'N',
+       numberRowCutsAfter-numberRowCutsBefore,
+       numberRowCutsAfter-cs.sizeRowCuts());
+#endif
+  }
+
+  int numberRowCutsAfter = cs.sizeRowCuts();
+  if (!info.inTree) {
+    for (int i=numberRowCutsBefore;i<numberRowCutsAfter;i++) {
+      cs.rowCutPtr(i)->setGloballyValid();
+    }
+  }
+  if (twomirType==2) {
+    // back to original
+    int numberRows = clpSolver->getNumRows();
+    if (numberRows>numberOriginalRows) {
+      int numberDelete = numberRows-numberOriginalRows;
+      int * delRow = new int [numberDelete];
+      for (int i=0;i<numberDelete;i++)
+	delRow[i]=i+numberOriginalRows;
+      clpSolver->deleteRows(numberDelete,delRow);
+      delete [] delRow;
+    }
+  }
+#endif
 }
 
 
@@ -270,8 +499,8 @@ void CglTwomir::generateCuts(const OsiSolverInterface & si, OsiCuts & cs,
 CglTwomir::CglTwomir () :
   CglCutGenerator(),
   probname_(),
-  randomNumberGenerator_(987654321), 
-  away_(0.0005),awayAtRoot_(0.0005),
+  randomNumberGenerator_(987654321),originalSolver_(NULL), 
+  away_(0.0005),awayAtRoot_(0.0005),twomirType_(0),
   do_mir_(true), do_2mir_(true), do_tab_(true), do_form_(true),
   t_min_(1), t_max_(1), q_min_(1), q_max_(1), a_max_(2),max_elements_(50000),
   max_elements_root_(50000),form_nrows_(0) {}
@@ -282,8 +511,10 @@ CglTwomir::CglTwomir () :
 CglTwomir::CglTwomir (const CglTwomir & source) :
   CglCutGenerator(source),
   randomNumberGenerator_(source.randomNumberGenerator_),
+  originalSolver_(NULL),
   away_(source.away_),
   awayAtRoot_(source.awayAtRoot_),
+  twomirType_(source.twomirType_),
   do_mir_(source.do_mir_),
   do_2mir_(source.do_2mir_),
   do_tab_(source.do_tab_), 
@@ -298,6 +529,8 @@ CglTwomir::CglTwomir (const CglTwomir & source) :
   form_nrows_(source.form_nrows_)
 {
   probname_ = source.probname_ ;
+  if (source.originalSolver_)
+    originalSolver_ = source.originalSolver_->clone();
 }
 
 //-------------------------------------------------------------------
@@ -314,6 +547,7 @@ CglTwomir::clone() const
 //-------------------------------------------------------------------
 CglTwomir::~CglTwomir ()
 {
+  delete originalSolver_;
 }
 
 //----------------------------------------------------------------
@@ -327,6 +561,12 @@ CglTwomir::operator=(const CglTwomir& rhs)
     randomNumberGenerator_ = rhs.randomNumberGenerator_;
     away_=rhs.away_;
     awayAtRoot_=rhs.awayAtRoot_;
+    twomirType_ = rhs.twomirType_;
+    delete originalSolver_;
+    if (rhs.originalSolver_)
+      originalSolver_ = rhs.originalSolver_->clone();
+    else
+      originalSolver_=NULL;
     do_mir_=rhs.do_mir_;
     do_2mir_=rhs.do_2mir_;
     do_tab_=rhs.do_tab_; 
@@ -341,6 +581,32 @@ CglTwomir::operator=(const CglTwomir& rhs)
     form_nrows_=rhs.form_nrows_;
   }
   return *this;
+}
+// Pass in a copy of original solver (clone it)
+void 
+CglTwomir::passInOriginalSolver(OsiSolverInterface * solver)
+{
+  delete originalSolver_;
+  if (solver) {
+    if (!twomirType_)
+      twomirType_=1;
+    originalSolver_ = solver->clone();
+    originalSolver_->setHintParam(OsiDoDualInResolve, false, OsiHintDo);
+    // Temp - check if free variables
+    const double *colUpper = originalSolver_->getColUpper();
+    const double *colLower = originalSolver_->getColLower();
+    int ncol = originalSolver_->getNumCols();
+    int numberFree=0;
+    for (int i=0;i<ncol;i++) {
+      if (colLower[i]<-1.0e20&&colUpper[i]>1.0e20) 
+        numberFree++;
+    }
+    if (numberFree)
+      printf("CglTwoMir - %d free variables - take care\n",numberFree);
+  } else {
+    twomirType_=0;
+    originalSolver_=NULL;
+  }
 }
 
 int DGG_freeData( DGG_data_t *data )
@@ -581,7 +847,6 @@ DGG_getSlackExpression(const void *osi_ptr, DGG_data_t* data, int row_index)
   const double *rowMat;
   const double *rowUpper;
   const double *rowLower;
-  const char *rowSense;
     
   row = DGG_newConstraint(data->ncol);
 
@@ -592,7 +857,6 @@ DGG_getSlackExpression(const void *osi_ptr, DGG_data_t* data, int row_index)
 
   rowUpper = si->getRowUpper();
   rowLower = si->getRowLower();
-  rowSense = si->getRowSense();
 
 #if DGG_DEBUG_DGG
   if ( row_index < 0 || row_index > data->nrow )
@@ -1651,8 +1915,6 @@ int DGG_is2stepValid(double alpha, double bht)
 
   /* d */
   double tau;
-  /* d-bar */
-  double tau_lim;
 
   /* ensure that alpha is not null or negative */
   if ( alpha < DGG_MIN_ALPHA )
@@ -1660,7 +1922,6 @@ int DGG_is2stepValid(double alpha, double bht)
 
   /* compute tau and tau_lim */
   tau = ceil( bht / alpha );
-  tau_lim = ceil( 1 / (1 - bht) ) - 1;
 
   /* make sure alpha is not a divisor of bht */
   if ( DGG_is_a_multiple_of_b(alpha, bht) )
@@ -1836,6 +2097,15 @@ double CglTwomir::getAwayAtRoot() const
   return awayAtRoot_;
 }
 
+// This can be used to refresh any information
+void 
+CglTwomir::refreshSolver(OsiSolverInterface * solver)
+{
+  if (originalSolver_) {
+    delete originalSolver_;
+    originalSolver_ = solver->clone();
+  }
+}
 // Create C++ lines to get to current state
 std::string
 CglTwomir::generateCpp( FILE * fp) 

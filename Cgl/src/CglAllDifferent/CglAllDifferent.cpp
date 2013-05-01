@@ -2,10 +2,6 @@
 // Corporation and others.  All Rights Reserved.
 // This code is licensed under the terms of the Eclipse Public License (EPL).
 
-#if defined(_MSC_VER)
-// Turn off compiler warning about long names
-#  pragma warning(disable:4786)
-#endif
 #include <cstdlib>
 #include <cstdio>
 #include <cmath>
@@ -15,6 +11,7 @@
 //#define PRINT_DEBUG
 //#define CGL_DEBUG 1
 //#undef NDEBUG
+#include "CoinPragma.hpp"
 #include "CoinHelperFunctions.hpp"
 #include "CoinPackedVector.hpp"
 #include "CoinPackedMatrix.hpp"
@@ -31,7 +28,7 @@ namespace { int nPath = 0 ; }
 // Generate cuts
 //------------------------------------------------------------------- 
 void CglAllDifferent::generateCuts(const OsiSolverInterface & si, OsiCuts & cs,
-			      const CglTreeInfo ) const
+			      const CglTreeInfo )
 {
 #ifndef NDEBUG
   int nCols=si.getNumCols();

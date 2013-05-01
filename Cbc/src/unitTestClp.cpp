@@ -1,4 +1,4 @@
-/* $Id: unitTestClp.cpp 1675 2011-06-19 17:23:14Z stefan $ */
+/* $Id: unitTestClp.cpp 1883 2013-04-06 13:33:15Z stefan $ */
 // Copyright (C) 2002, International Business Machines
 // Corporation and others.  All Rights Reserved.
 // This code is licensed under the terms of the Eclipse Public License (EPL).
@@ -676,7 +676,7 @@ int CbcClpUnitTest (const CbcModel &saveModel, const std::string &dirMiplib,
     std::cout
       << " -- (" << model->getNodeCount() << " n / "
       << model->getIterationCount() << " i / "
-      << timeOfSolution << " s) (subtotal " << timeTaken << " s)"
+      << timeOfSolution << " s) (subtotal " << timeTaken << " seconds)"
       << std::endl;
     delete model;
   }

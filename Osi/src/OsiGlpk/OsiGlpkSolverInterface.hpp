@@ -26,7 +26,9 @@
 
 #ifndef GLP_PROB_DEFINED
 #define GLP_PROB_DEFINED
+// Glpk < 4.48:
 typedef struct { double _opaque_prob[100]; } glp_prob;
+// Glpk 4.48: typedef struct glp_prob glp_prob;
 #endif
 
 class OsiGlpkSolverInterface : virtual public OsiSolverInterface {

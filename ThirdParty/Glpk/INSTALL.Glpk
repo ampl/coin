@@ -13,15 +13,15 @@ Otherwise, follow those instructions:
 
 You may download
 
-ftp://ftp.gnu.org/gnu/glpk/glpk-4.45.tar.gz
+ftp://ftp.gnu.org/gnu/glpk/glpk-4.48.tar.gz
 
 and unpack it in this directory:
 
-gunzip glpk-4.45.tar.gz
-tar xf glpk-4.45.tar
+gunzip glpk-4.48.tar.gz
+tar xf glpk-4.48.tar
 
 Then you need to rename the directory
-  glpk-4.45
+  glpk-4.48
 into
   glpk
 .

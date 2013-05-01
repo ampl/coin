@@ -1,4 +1,4 @@
-/* $Id: ClpInterior.cpp 1665 2011-01-04 17:55:54Z lou $ */
+/* $Id: ClpInterior.cpp 1941 2013-04-10 16:52:27Z stefan $ */
 // Copyright (C) 2002, International Business Machines
 // Corporation and others.  All Rights Reserved.
 // This code is licensed under the terms of the Eclipse Public License (EPL).
@@ -11,10 +11,8 @@
 #include "CoinHelperFunctions.hpp"
 #include "ClpInterior.hpp"
 #include "ClpMatrixBase.hpp"
-#ifdef COIN_DO_PDCO
 #include "ClpLsqr.hpp"
 #include "ClpPdcoBase.hpp"
-#endif
 #include "CoinDenseVector.hpp"
 #include "ClpMessage.hpp"
 #include "ClpHelperFunctions.hpp"
@@ -380,10 +378,8 @@ ClpInterior::gutsOfCopy(const ClpInterior & rhs)
      x_ = ClpCopyOfArray(rhs.x_, numberColumns_);
      y_ = ClpCopyOfArray(rhs.y_, numberRows_);
      dj_ = ClpCopyOfArray(rhs.dj_, numberColumns_ + numberRows_);
-#ifdef COIN_DO_PDCO
-     lsqrObject_ = new ClpLsqr(*rhs.lsqrObject_);
-     pdcoStuff_ = rhs.pdcoStuff_->clone();
-#endif
+     lsqrObject_ = rhs.lsqrObject_ != NULL ? new ClpLsqr(*rhs.lsqrObject_) : NULL;
+     pdcoStuff_ = rhs.pdcoStuff_ != NULL ? rhs.pdcoStuff_->clone() : NULL;
      largestPrimalError_ = rhs.largestPrimalError_;
      largestDualError_ = rhs.largestDualError_;
      sumDualInfeasibilities_ = rhs.sumDualInfeasibilities_;
@@ -471,12 +467,10 @@ ClpInterior::gutsOfDelete()
      y_ = NULL;
      delete [] dj_;
      dj_ = NULL;
-#ifdef COIN_DO_PDCO
      delete lsqrObject_;
      lsqrObject_ = NULL;
-     //delete pdcoStuff_;
+     //delete pdcoStuff_;  // FIXME
      pdcoStuff_ = NULL;
-#endif
      delete [] errorRegion_;
      errorRegion_ = NULL;
      delete [] rhsFixRegion_;
@@ -964,7 +958,6 @@ ClpInterior::readMps(const char *filename,
      int status = ClpModel::readMps(filename, keepNames, ignoreErrors);
      return status;
 }
-#ifdef COIN_DO_PDCO
 #include "ClpPdco.hpp"
 /* Pdco algorithm - see ClpPdco.hpp for method */
 int
@@ -978,7 +971,6 @@ ClpInterior::pdco( ClpPdcoBase * stuff, Options &options, Info &info, Outfo &out
 {
      return ((ClpPdco *) this)->pdco(stuff, options, info, outfo);
 }
-#endif
 #include "ClpPredictorCorrector.hpp"
 // Primal-Dual Predictor-Corrector barrier
 int

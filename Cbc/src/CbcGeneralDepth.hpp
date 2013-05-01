@@ -1,4 +1,4 @@
-// $Id$
+// $Id: CbcGeneralDepth.hpp 1902 2013-04-10 16:58:16Z stefan $
 // Copyright (C) 2002, International Business Machines
 // Corporation and others.  All Rights Reserved.
 // This code is licensed under the terms of the Eclipse Public License (EPL).
@@ -69,6 +69,10 @@ public:
     /// Set maximum depth
     inline void setMaximumDepth(int value) {
         maximumDepth_ = value;
+    }
+    /// Return number of nodes
+    inline int numberNodes() const {
+        return numberNodes_;
     }
     /// Get which solution
     inline int whichSolution() const {
