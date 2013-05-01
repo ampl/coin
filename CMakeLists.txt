@@ -381,6 +381,7 @@ add_coin_library(Cgl Osi)
 add_cgl_library(Cgl/src/CglClique)
 add_cgl_library(Cgl/src/CglDuplicateRow)
 add_cgl_library(Cgl/src/CglFlowCover)
+add_cgl_library(Cgl/src/CglGMI)
 add_cgl_library(Cgl/src/CglGomory)
 add_cgl_library(Cgl/src/CglKnapsackCover)
 add_cgl_library(Cgl/src/CglLandP)
@@ -390,17 +391,20 @@ add_cgl_library(Cgl/src/CglOddHole)
 add_cgl_library(Cgl/src/CglPreProcess CglClique CglDuplicateRow)
 add_cgl_library(Cgl/src/CglProbing)
 add_cgl_library(Cgl/src/CglRedSplit)
+add_cgl_library(Cgl/src/CglRedSplit2)
 add_cgl_library(Cgl/src/CglResidualCapacity)
 add_cgl_library(Cgl/src/CglSimpleRounding)
 add_cgl_library(Cgl/src/CglTwomir)
+add_cgl_library(Cgl/src/CglZeroHalf)
 target_link_libraries(Cgl-unitTest
   OsiClp CglClique CglFlowCover CglGomory CglKnapsackCover CglLandP
   CglMixedIntegerRounding CglMixedIntegerRounding2 CglOddHole CglProbing
-  CglRedSplit CglResidualCapacity CglSimpleRounding CglTwomir)
+  CglRedSplit CglRedSplit2 CglResidualCapacity CglSimpleRounding CglTwomir
+  CglZeroHalf)
 
 add_coin_library(Cbc
-  OsiClp CglFlowCover CglGomory CglKnapsackCover
-  CglMixedIntegerRounding2 CglPreProcess CglProbing CglTwomir)
+  OsiClp CglFlowCover CglGMI CglGomory CglKnapsackCover CglMixedIntegerRounding2
+  CglPreProcess CglProbing CglRedSplit2 CglTwomir CglZeroHalf)
 add_coin_library(Cbc/src/OsiCbc Osi Cbc)
 target_link_libraries(Cbc-osiUnitTest OsiCbc)
 target_link_libraries(Cbc-gamsTest CbcSolver)
