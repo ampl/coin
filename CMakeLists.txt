@@ -17,6 +17,8 @@ if (COIN_DISABLE_WARNINGS)
     # "base class 'C' should be explicitly initialized in the copy constructor"
     # in older GCC.
     string(REPLACE "-Wextra" "" CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS}")
+    # CoinSignal.hpp doesn't compile on Mac with -std=c++11 flag
+    string(REPLACE "-std=c++11" "" CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS}")
     foreach(flag -Wno-format-security -Wno-overloaded-virtual
                  -Wno-unused-variable -Wno-unused-but-set-variable
                  -Wno-int-to-pointer-cast -Wno-uninitialized)
