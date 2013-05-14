@@ -38,6 +38,12 @@ if (COIN_DISABLE_WARNINGS)
   endif ()
 endif ()
 
+option(ENABLE_CBC_PARALLEL "Enables compilation of the SMP version of Cbc" ON)
+find_package(Threads)
+if (ENABLE_CBC_PARALLEL AND Threads_FOUND)
+  set(CBC_THREAD 1)
+endif ()
+
 # Parses an automake input processing conditional parts such as:
 #   if VAR
 #   ...
@@ -406,6 +412,7 @@ target_link_libraries(Cgl-unitTest
 add_coin_library(Cbc
   OsiClp CglFlowCover CglGMI CglGomory CglKnapsackCover CglMixedIntegerRounding2
   CglPreProcess CglProbing CglRedSplit2 CglTwomir CglZeroHalf)
+target_link_libraries(Cbc ${CMAKE_THREAD_LIBS_INIT})
 add_coin_library(Cbc/src/OsiCbc Osi Cbc)
 target_link_libraries(Cbc-osiUnitTest OsiCbc)
 target_link_libraries(Cbc-gamsTest CbcSolver)
