@@ -20,7 +20,7 @@ if (COIN_DISABLE_WARNINGS)
     string(REPLACE "-Wextra" "" CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS}")
     foreach(flag -Wno-format-security -Wno-overloaded-virtual
                  -Wno-unused-variable -Wno-unused-but-set-variable
-                 -Wnounused-result -Wno-int-to-pointer-cast -Wno-uninitialized)
+                 -Wno-unused-result -Wno-int-to-pointer-cast -Wno-uninitialized)
       set(var HAVE${flag})
       string(REPLACE "-" "_" var ${var})
       check_cxx_compiler_flag(${flag} ${var})
