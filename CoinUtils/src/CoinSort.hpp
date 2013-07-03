@@ -1,4 +1,4 @@
-/* $Id: CoinSort.hpp 1585 2013-04-06 20:42:02Z stefan $ */
+/* $Id: CoinSort.hpp 1596 2013-04-25 14:29:25Z stefan $ */
 // Copyright (C) 2000, International Business Machines
 // Corporation and others.  All Rights Reserved.
 // This code is licensed under the terms of the Eclipse Public License (EPL).
@@ -256,7 +256,7 @@ CoinSort_2(S* key, S* lastKey, T* array2)
   }
 #endif
   int minsize=10;
-  int n = number;
+  int n = static_cast<int>(number);
   int sp;
   S *v = key;
   S *m, t;

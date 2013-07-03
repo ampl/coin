@@ -1,4 +1,4 @@
-/* $Id: CbcModel.cpp 1916 2013-04-26 16:21:11Z tkr $ */
+/* $Id: CbcModel.cpp 1926 2013-05-24 10:19:49Z stefan $ */
 // Copyright (C) 2002, International Business Machines
 // Corporation and others.  All Rights Reserved.
 // This code is licensed under the terms of the Eclipse Public License (EPL).
@@ -3899,6 +3899,10 @@ void CbcModel::branchAndBound(int doStatistics)
             double objectiveValue = newNode->objectiveValue();
             setBestSolution(CBC_SOLUTION, objectiveValue,
                             solver_->getColSolution()) ;
+            if (eventHandler) {
+	      // we are stopping anyway so no need to test return code
+	      eventHandler->event(CbcEventHandler::solution);
+            }
             delete newNode ;
             newNode = NULL ;
         }

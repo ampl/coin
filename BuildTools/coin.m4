@@ -2,7 +2,7 @@
 # All Rights Reserved.
 # This file is distributed under the Eclipse Public License.
 #
-## $Id: coin.m4 2619 2012-11-19 14:52:00Z stefan $
+## $Id: coin.m4 2768 2013-06-08 13:09:47Z stefan $
 #
 # Author: Andreas Wachter    IBM      2006-04-14
 
@@ -423,16 +423,26 @@ if test x"$CXXFLAGS" = x; then
         case "$CXX" in
           clang* ) ;;
           cl* | */cl* | CL* | */CL*)
-	    # The MT and MTd options are mutually exclusive
-            coin_opt_cxxflags='-MT -O2'
+            # The MT and MTd options are mutually exclusive
+            if test "$coin_disable_shared" = yes || test "$enable_shared" = yes ; then
+               coin_opt_cxxflags='-MD -O2'
+               coin_dbg_cxxflags='-MDd'
+            else
+               coin_opt_cxxflags='-MT -O2'
+               coin_dbg_cxxflags='-MTd'
+            fi
             coin_add_cxxflags='-nologo -EHsc -GR -wd4996 -D_CRT_SECURE_NO_DEPRECATE'
-            coin_dbg_cxxflags='-MTd'
             ;;
           icl* | */icl* | ICL* | */ICL*)
-	    # The MT and MTd options are mutually exclusive
-            coin_opt_cxxflags='-MT -Ox'
+          # The MT and MTd options are mutually exclusive
+            if test "$coin_disable_shared" = yes || test "$enable_shared" = yes ; then
+              coin_opt_cxxflags='-MD -Ox'
+              coin_dbg_cxxflags='-MDd -debug'
+            else
+              coin_opt_cxxflags='-MT -Ox'
+              coin_dbg_cxxflags='-MTd -debug'
+            fi
             coin_add_cxxflags='-nologo -EHsc -GR -D_CRT_SECURE_NO_DEPRECATE'
-            coin_dbg_cxxflags='-MTd -debug'
             ;;
         esac
         ;;
@@ -827,14 +837,24 @@ if test x"$CFLAGS" = x; then
         case "$CC" in
           clang* ) ;;
           cl* | */cl* | CL* | */CL*)
-            coin_opt_cflags='-MT -O2'
+            if test "$coin_disable_shared" = yes || test "$enable_shared" = yes ; then
+              coin_opt_cflags='-MD -O2'
+              coin_dbg_cflags='-MDd'
+            else
+              coin_opt_cflags='-MT -O2'
+              coin_dbg_cflags='-MTd'
+            fi
             coin_add_cflags='-nologo -wd4996 -D_CRT_SECURE_NO_DEPRECATE'
-            coin_dbg_cflags='-MTd'
             ;;
           icl* | */icl* | ICL* | */ICL*)
-            coin_opt_cflags='-MT -Ox'
+            if test "$coin_disable_shared" = yes || test "$enable_shared" = yes ; then
+              coin_opt_cflags='-MD -Ox'
+              coin_dbg_cflags='-MDd -debug'
+            else
+              coin_opt_cflags='-MT -Ox'
+              coin_dbg_cflags='-MTd -debug'
+            fi
             coin_add_cflags='-nologo -D_CRT_SECURE_NO_DEPRECATE'
-            coin_dbg_cflags='-MTd -debug'
             ;;
         esac
         ;;
@@ -1048,14 +1068,24 @@ if test "$F77" != "unavailable" && test x"$FFLAGS" = x ; then
       *-cygwin* | *-mingw*)
         case $F77 in
           ifort* | */ifort* | IFORT* | */IFORT* )
-            coin_opt_fflags='-MT -O3'
+            if test "$coin_disable_shared" = yes || test "$enable_shared" = yes ; then
+              coin_opt_fflags='-MD -O3'
+              coin_dbg_fflags='-MDd -debug'
+            else
+              coin_opt_fflags='-MT -O3'
+              coin_dbg_fflags='-MTd -debug'
+            fi
             coin_add_fflags='-fpp -nologo'
-            coin_dbg_fflags='-MTd -debug'
           ;;
           compile_f2c*)
-            coin_opt_fflags='-MT -O2'
+            if test "$coin_disable_shared" = yes || test "$enable_shared" = yes ; then
+              coin_opt_fflags='-MD -O2'
+              coin_dbg_fflags='-MDd'
+            else
+              coin_opt_fflags='-MT -O2'
+              coin_dbg_fflags='-MTd'
+            fi
             coin_add_fflags='-nologo -wd4996'
-            coin_dbg_fflags='-MTd'
           ;;
         esac
         ;;
@@ -1578,6 +1608,7 @@ AC_COIN_INIT_AUTO_TOOLS
 # This is a trick to have this code before AC_COIN_PROG_LIBTOOL
 AC_DEFUN([AC_COIN_DISABLE_STATIC],
 [
+coin_disable_shared=no
 # Test if force_shared has been set
 if test "x$1" = xforce_shared; then
   if test x$enable_shared = xno; then
@@ -1610,6 +1641,9 @@ fi
 if test x"$coin_disable_shared" = xyes; then
   if test x"$enable_shared" = xyes; then
     AC_MSG_WARN([On $platform, shared objects are not supported. I'm disabling your choice.])
+  else
+    # we don't disable shared, because it was not selected anyway
+    coin_disable_shared=no
   fi
   enable_shared=no
 fi
@@ -3020,11 +3054,15 @@ AC_DEFUN([AC_COIN_HAS_PKGCONFIG],
 AC_ARG_ENABLE([pkg-config],
   [AC_HELP_STRING([--disable-pkg-config],[disable use of pkg-config (if available)])],
   [use_pkgconfig="$enableval"],
-  [use_pkgconfig=yes])
+  [if test x$coin_cc_is_cl = xtrue; then
+     use_pkgconfig=no
+   else
+     use_pkgconfig=yes
+   fi])
 
 if test $use_pkgconfig = yes ; then
   if test "x$ac_cv_env_PKG_CONFIG_set" != "xset"; then
-    AC_PATH_TOOL([PKG_CONFIG], [pkg-config])
+    AC_CHECK_TOOL([PKG_CONFIG], [pkg-config])
   fi
   if test -n "$PKG_CONFIG"; then
     _pkg_min_version=m4_default([$1], [0.16.0])

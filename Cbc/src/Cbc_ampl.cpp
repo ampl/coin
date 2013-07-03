@@ -1,4 +1,4 @@
-/* $Id: Cbc_ampl.cpp 1888 2013-04-06 20:52:59Z stefan $ */
+/* $Id: Cbc_ampl.cpp 1926 2013-05-24 10:19:49Z stefan $ */
 /****************************************************************
 Copyright (C) 1997-2000 Lucent Technologies
 Modifications for Coin -  Copyright (C) 2006, International Business Machines Corporation and others.
@@ -765,7 +765,7 @@ CoinModel::CoinModel( int nonLinear, const char * fileName, const void * info)
         cut_(NULL),
         moreInfo_(NULL),
         type_(-1),
-        noNames_(false),
+	noNames_(false),
         links_(0)
 {
     problemName_ = "";

@@ -1,4 +1,4 @@
-/* $Id: ClpSolve.cpp 1931 2013-04-06 20:44:29Z stefan $ */
+/* $Id: ClpSolve.cpp 1959 2013-06-14 15:43:10Z stefan $ */
 // Copyright (C) 2003, International Business Machines
 // Corporation and others.  All Rights Reserved.
 // This code is licensed under the terms of the Eclipse Public License (EPL).
@@ -543,7 +543,7 @@ void
 ClpSimplex::dealWithAbc(int solveType, int startUp,
 			bool interrupt)
 {
-  if (!this->abcState()) {
+  if (!this->abcState()||!numberRows_||!numberColumns_) {
     if (!solveType)
       this->dual(0);
     else
@@ -2767,6 +2767,7 @@ ClpSimplex::initialSolve(ClpSolve & options)
                }
           }
 #ifdef BORROW
+	  int saveNumberIterations = barrier.numberIterations();
           barrier.returnModel(*model2);
           double * rowPrimal = new double [numberRows];
           double * columnPrimal = new double [numberColumns];
@@ -3008,6 +3009,7 @@ ClpSimplex::initialSolve(ClpSolve & options)
 
           //model2->setMaximumIterations(saveMaxIts);
 #ifdef BORROW
+          model2->setNumberIterations(model2->numberIterations()+saveNumberIterations);
           delete [] rowPrimal;
           delete [] columnPrimal;
           delete [] rowDual;

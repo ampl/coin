@@ -1330,7 +1330,7 @@ static bool isGapFree(const CoinPackedMatrix& matrix)
 }
 
 CoinPresolveMatrix::CoinPresolveMatrix(int ncols0_in,
-				       double /*maxmin_*/,
+				       double maxmin,
 				       // end prepost members
 				       OsiSolverInterface * si,
 				       // rowrep
@@ -1474,6 +1474,12 @@ CoinPresolveMatrix::CoinPresolveMatrix(int ncols0_in,
 	setRowProhibited(irow);
     }
   }
+  // Go to minimization
+  if (maxmin<0.0) {
+    for (int i=0;i<ncols_;i++)
+      cost_[i]=-cost_[i];
+    maxmin_=1.0;
+  }
   if (doStatus) {
     // allow for status and solution
     sol_ = new double[ncols_];
@@ -1552,6 +1558,12 @@ void CoinPresolveMatrix::update_model(OsiSolverInterface * si,
 {
   int nels=0;
   int i;
+  if (si->getObjSense() < 0.0) {
+    for (int i=0;i<ncols_;i++)
+      cost_[i]=-cost_[i];
+    dobias_=-dobias_;
+    maxmin_ = -1.0;
+  }
   for ( i=0; i<ncols_; i++) 
     nels += hincol_[i];
   CoinPackedMatrix m(true,nrows_,ncols_,nels, colels_, hrow_,mcstrt_,hincol_);

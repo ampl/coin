@@ -2,7 +2,7 @@
 # All Rights Reserved.
 # This file is distributed under the Eclipse Public License.
 
-## $Id: configure.ac 1917 2013-04-26 17:18:21Z tkr $
+## $Id: configure.ac 1930 2013-06-14 16:24:57Z stefan $
 
 # Author:  Andreas Waechter            IBM    2006-04-13
 
@@ -12,7 +12,7 @@
 
 AC_PREREQ(2.59)
 
-AC_INIT([Cbc],[2.8.1],[cbc@lists.coin-or.org])
+AC_INIT([Cbc],[2.8.2],[cbc@lists.coin-or.org])
 
 AC_COPYRIGHT([
 Copyright 2006 International Business Machines and others.
@@ -45,7 +45,7 @@ AC_COIN_CREATE_LIBTOOL
 AC_COIN_MAIN_PACKAGEDIR(ASL,    ThirdParty,[solvers/asl.h])
 AC_COIN_MAIN_PACKAGEDIR(Blas,   ThirdParty,[daxpy.f])
 AC_COIN_MAIN_PACKAGEDIR(Lapack, ThirdParty,[LAPACK/SRC/dlarf.f])
-AC_COIN_MAIN_PACKAGEDIR(Glpk,   ThirdParty,[glpk/include/glpk.h])
+AC_COIN_MAIN_PACKAGEDIR(Glpk,   ThirdParty,[glpk/src/glpk.h])
 AC_COIN_MAIN_PACKAGEDIR(Metis,  ThirdParty,[metis-4.0/Lib/balance.c])
 AC_COIN_MAIN_PACKAGEDIR(Mumps,  ThirdParty,[MUMPS/src/dmumps_part1.F])
 AC_COIN_MAIN_PACKAGEDIR(Sample, Data)

@@ -1,4 +1,4 @@
-// $Id: CglTwomir.cpp 1123 2013-04-06 20:47:24Z stefan $
+// $Id: CglTwomir.cpp 1132 2013-04-25 18:57:12Z stefan $
 // Copyright (C) 2002, International Business Machines
 // Corporation and others.  All Rights Reserved.
 // This code is licensed under the terms of the Eclipse Public License (EPL).
@@ -111,7 +111,7 @@ void CglTwomir::generateCuts(const OsiSolverInterface & si, OsiCuts & cs,
         numberFree++;
     }
     if (numberFree) {
-#if 1 //def COIN_DEVELOP
+#ifdef COIN_DEVELOP
       if (!info.inTree&&!info.pass)
         printf("CglTwoMir - %d free variables - returning\n",numberFree);
 #endif

@@ -1,4 +1,4 @@
-/* $Id: CbcHeuristicDivePseudoCost.cpp 1902 2013-04-10 16:58:16Z stefan $ */
+/* $Id: CbcHeuristicDivePseudoCost.cpp 1922 2013-05-16 07:35:51Z forrest $ */
 // Copyright (C) 2008, International Business Machines
 // Corporation and others.  All Rights Reserved.
 // This code is licensed under the terms of the Eclipse Public License (EPL).
@@ -152,7 +152,8 @@ CbcHeuristicDivePseudoCost::initializeData()
     }
     // get pseudo costs
     model_->fillPseudoCosts(downArray_, upArray_);
-    int diveOptions = when_ / 100;
+    // allow for -999 -> force to run
+    int diveOptions = (when_>0) ? when_ / 100 : 0;
     if (diveOptions) {
         // pseudo shadow prices
         int k = diveOptions % 100;

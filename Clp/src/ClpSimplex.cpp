@@ -1,4 +1,4 @@
-/* $Id: ClpSimplex.cpp 1928 2013-04-06 12:54:16Z stefan $ */
+/* $Id: ClpSimplex.cpp 1959 2013-06-14 15:43:10Z stefan $ */
 // Copyright (C) 2002, International Business Machines
 // Corporation and others.  All Rights Reserved.
 // This code is licensed under the terms of the Eclipse Public License (EPL).
@@ -3312,6 +3312,10 @@ ClpSimplex::createRim(int what, bool makeRowCopy, int startFinishOptions)
                if (matrix_->scale(this))
                     scalingFlag_ = -scalingFlag_; // not scaled after all
                if (rowScale_ && automaticScale_) {
+		    if (!savedRowScale_) {
+		      inverseRowScale_ = rowScale_ + numberRows2;
+		      inverseColumnScale_ = columnScale_ + numberColumns_;
+		    }
                     // try automatic scaling
                     double smallestObj = 1.0e100;
                     double largestObj = 0.0;
@@ -7179,7 +7183,11 @@ ClpSimplex::readGMPL(const char *filename, const char * dataName,
 int
 ClpSimplex::readLp(const char *filename, const double epsilon )
 {
-     FILE *fp = fopen(filename, "r");
+  FILE *fp;
+  if (strcmp(filename,"-"))
+    fp = fopen(filename, "r");
+  else
+    fp = stdin;
 
      if(!fp) {
           printf("### ERROR: ClpSimplex::readLp():  Unable to open file %s for reading\n",
@@ -9872,8 +9880,8 @@ ClpSimplex::checkSolutionInternal()
                     if (fabs(dualValue) > 10.0 * dualTolerance) {
 		      sumDualInfeasibilities_ += fabs(dualValue) - dualTolerance_;
                          numberDualInfeasibilities_ ++;
-			 if (fabs(dualValue) > 1000.0 * dualTolerance) 
-			   setColumnStatus(iColumn,superBasic);
+			 //if (fabs(dualValue) > 1000.0 * dualTolerance) 
+			 //setColumnStatus(iColumn,superBasic); Maybe on a switch
                     }
                     break;
                case ClpSimplex::isFixed:

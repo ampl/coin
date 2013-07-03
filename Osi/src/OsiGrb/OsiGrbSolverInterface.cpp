@@ -9,7 +9,7 @@
 // Copyright (C) 2009 Humboldt University Berlin and others.
 // All Rights Reserved.
 
-// $Id: OsiGrbSolverInterface.cpp 1899 2013-04-06 20:43:00Z stefan $
+// $Id: OsiGrbSolverInterface.cpp 1907 2013-04-25 16:11:48Z stefan $
 
 #include <iostream>
 #include <cassert>
@@ -3531,7 +3531,7 @@ OsiSolverInterface::ApplyCutsReturnCode OsiGrbSolverInterface::applyCuts(const O
 
     // Loop once for each row cut
     int nToApply = 0;
-    uint space = 0;
+    size_t space = 0;
 
     for ( i = 0; i < cs.sizeRowCuts(); i ++ ) {
         if ( cs.rowCut(i).effectiveness() < effectivenessLb ) {

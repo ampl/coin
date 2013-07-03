@@ -1,4 +1,4 @@
-/* $Id: ClpPackedMatrix.cpp 1928 2013-04-06 12:54:16Z stefan $ */
+/* $Id: ClpPackedMatrix.cpp 1957 2013-05-15 08:58:19Z forrest $ */
 // Copyright (C) 2002, International Business Machines
 // Corporation and others.  All Rights Reserved.
 // This code is licensed under the terms of the Eclipse Public License (EPL).
@@ -4910,7 +4910,10 @@ ClpPackedMatrix::appendMatrix(int number, int type,
           // columns
           if (!matrix_->isColOrdered() && numberOther > matrix_->getNumRows())
                matrix_->setDimensions(numberOther, -1);
-          numberErrors = matrix_->appendCols(number, starts, index, element, numberOther);
+	  if (element)
+	    numberErrors = matrix_->appendCols(number, starts, index, element, numberOther);
+	  else
+	    matrix_->setDimensions(-1,matrix_->getNumCols()+number); // resize
      }
      clearCopies();
      numberActiveColumns_ = matrix_->getNumCols();
