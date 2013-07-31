@@ -1,4 +1,4 @@
-/* $Id: CoinLpIO.hpp 1411 2011-03-30 11:40:33Z forrest $ */
+/* $Id: CoinLpIO.hpp 1602 2013-07-12 12:15:37Z tkr $ */
 // Last edit: 11/5/08
 //
 // Name:     CoinLpIO.hpp; Support for Lp files
@@ -12,10 +12,12 @@
 // Corporation and others.  All Rights Reserved.
 // This code is licensed under the terms of the Eclipse Public License (EPL).
 
+#ifndef CoinLpIO_H
+#define CoinLpIO_H
 
 #include <cstdio>
 
-class CoinPackedMatrix;
+#include "CoinPackedMatrix.hpp"
 #include "CoinMessage.hpp"
 
 typedef int COINColumnIndex;
@@ -92,7 +94,7 @@ Notes: <UL>
 </UL>
 */
 class CoinLpIO {
-
+      friend void CoinLpIOUnitTest(const std::string & lpDir); 
 public:
 
   /**@name Constructor and Destructor */
@@ -100,6 +102,18 @@ public:
   /// Default Constructor
   CoinLpIO(); 
   
+  /// Does the heavy lifting for destruct and assignment.
+  void gutsOfDestructor(); 
+ 
+  /// Does the heavy lifting for copy and assignment
+  void gutsOfCopy(const CoinLpIO &); 
+ 
+  /// assignment operator
+  CoinLpIO & operator = (const CoinLpIO& rhs) ; 
+ 
+  /// Copy constructor 
+  CoinLpIO (const CoinLpIO &); 
+
   /// Destructor 
   ~CoinLpIO();
 
@@ -726,3 +740,8 @@ protected:
 
 };
 
+void
+CoinLpIOUnitTest(const std::string& lpDir);
+
+
+#endif 

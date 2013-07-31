@@ -1,4 +1,4 @@
-/* $Id: CoinPresolveDual.cpp 1565 2012-11-29 19:32:14Z lou $ */
+/* $Id: CoinPresolveDual.cpp 1607 2013-07-16 09:01:29Z stefan $ */
 // Copyright (C) 2002, International Business Machines
 // Corporation and others.  All Rights Reserved.
 // This code is licensed under the terms of the Eclipse Public License (EPL).
@@ -963,7 +963,7 @@ const CoinPresolveAction
       const CoinBigIndex kre = krs+hinrow[i] ;
       for (CoinBigIndex k = krs ; k < kre ; k++) {
 	const int j = hcol[k] ;
-	if (cup[j] > clo[j] && integerType[j]) {
+	if (cup[j] > clo[j] && (integerType[j]||prob->colProhibited2(j))) {
 	  canFix[i] = 0 ;
 #	  if PRESOLVE_DEBUG > 1
 	  std::cout

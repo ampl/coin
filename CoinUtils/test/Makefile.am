@@ -2,7 +2,7 @@
 # All Rights Reserved.
 # This file is distributed under the Eclipse Public License.
 
-## $Id: Makefile.am 1434 2011-06-06 13:47:41Z stefan $
+## $Id: Makefile.am 1602 2013-07-12 12:15:37Z tkr $
 
 # Author:  Andreas Waechter           IBM    2006-04-13
 
@@ -15,6 +15,7 @@ AUTOMAKE_OPTIONS = foreign
 noinst_PROGRAMS = unitTest
 
 unitTest_SOURCES = \
+	CoinLpIOTest.cpp \
 	CoinDenseVectorTest.cpp \
 	CoinErrorTest.cpp \
 	CoinIndexedVectorTest.cpp \

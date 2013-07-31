@@ -1,4 +1,4 @@
-/* $Id: ClpSimplex.cpp 1959 2013-06-14 15:43:10Z stefan $ */
+/* $Id: ClpSimplex.cpp 1963 2013-06-17 10:38:53Z forrest $ */
 // Copyright (C) 2002, International Business Machines
 // Corporation and others.  All Rights Reserved.
 // This code is licensed under the terms of the Eclipse Public License (EPL).
@@ -9784,7 +9784,7 @@ ClpSimplex::checkSolutionInternal()
      int iRow, iColumn;
      assert (!rowObjective_);
 
-     objectiveValue_ = 0.0;
+     objectiveValue_ = -nonLinearOffset;
      // now look at solution
      sumPrimalInfeasibilities_ = 0.0;
      numberPrimalInfeasibilities_ = 0;

@@ -1,4 +1,4 @@
-/* $Id: CoinPresolveEmpty.cpp 1561 2012-11-24 00:32:16Z lou $ */
+/* $Id: CoinPresolveEmpty.cpp 1607 2013-07-16 09:01:29Z stefan $ */
 // Copyright (C) 2002, International Business Machines
 // Corporation and others.  All Rights Reserved.
 // This code is licensed under the terms of the Eclipse Public License (EPL).
@@ -251,7 +251,7 @@ const CoinPresolveAction
   // count empty cols
   for (int i = 0 ; i < ncols ; i++) {
     nelems2 += hincol[i] ;
-    if (hincol[i] == 0) {
+    if (hincol[i] == 0&&!prob->colProhibited2(i)) {
 #     if PRESOLVE_DEBUG > 1
       if (nempty == 0)
 	std::cout << "UNUSED COLS:" ;

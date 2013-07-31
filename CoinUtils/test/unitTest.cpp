@@ -22,6 +22,7 @@
 #include "CoinIndexedVector.hpp"
 #include "CoinPackedMatrix.hpp"
 #include "CoinMpsIO.hpp"
+#include "CoinLpIO.hpp"
 #include "CoinMessageHandler.hpp"
 void CoinModelUnitTest(const std::string & mpsDir,
                        const std::string & netlibDir, const std::string & testModel);
@@ -199,6 +200,9 @@ int main (int argc, const char *argv[])
 
   testingMessage( "Testing CoinMpsIO\n" );
   CoinMpsIOUnitTest(mpsDir);
+
+  testingMessage( "Testing CoinLpIO\n" );
+  CoinLpIOUnitTest(mpsDir);
 
   testingMessage( "Testing CoinMessageHandler\n" );
   if (!CoinMessageHandlerUnitTest())

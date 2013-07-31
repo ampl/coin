@@ -2,7 +2,7 @@
 # All Rights Reserved.
 # This file is distributed under the Eclipse Public License.
 
-## $Id: Makefile.am 1902 2013-04-10 16:58:16Z stefan $
+## $Id: Makefile.am 1936 2013-07-03 09:12:23Z stefan $
 
 # Author:  Andreas Waechter           IBM    2006-04-13
 
@@ -258,6 +258,17 @@ includecoin_HEADERS = \
 	CbcTreeLocal.hpp \
 	ClpConstraintAmpl.hpp \
 	ClpAmplObjective.hpp 
+
+########################################################################
+#                     Installing manifest (MSVC++)                     #
+########################################################################
+
+if COIN_CXX_IS_CL
+install-exec-hook:
+	test -s cbc.exe.manifest && \
+	mt -manifest cbc.exe.manifest -outputresource:cbc.exe;\
+	cp cbc.exe $(bindir)/clp.exe
+endif
 
 #######################################################################
 # Create the Config.h file that has all public defines and install it #

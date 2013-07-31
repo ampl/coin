@@ -1,4 +1,4 @@
-/* $Id: CoinLpIO.cpp 1590 2013-04-10 16:48:33Z stefan $ */
+/* $Id: CoinLpIO.cpp 1602 2013-07-12 12:15:37Z tkr $ */
 // Last edit: 11/5/08
 //
 // Name:     CoinLpIO.cpp; Support for Lp files
@@ -74,6 +74,171 @@ CoinLpIO::CoinLpIO() :
   messages_ = CoinMessage();
 }
 
+//-------------------------------------------------------------------
+// Copy constructor
+//-------------------------------------------------------------------
+CoinLpIO::CoinLpIO(const CoinLpIO& rhs)
+    :
+    problemName_(CoinStrdup("")),
+    defaultHandler_(true),
+    numberRows_(0),
+    numberColumns_(0),
+    numberElements_(0),
+    rowsense_(NULL),
+    rhs_(NULL),
+    rowrange_(NULL),
+    matrixByRow_(NULL),
+    matrixByColumn_(NULL),
+    rowlower_(NULL),
+    rowupper_(NULL),
+    collower_(NULL),
+    colupper_(NULL),
+    objective_(NULL),
+    objectiveOffset_(0.0),
+    integerType_(NULL),
+    fileName_(CoinStrdup("")),
+    infinity_(COIN_DBL_MAX),
+    numberAcross_(10),
+    epsilon_(1e-5),
+    objName_(NULL)
+{
+    card_previous_names_[0] = 0;
+    card_previous_names_[1] = 0;
+    previous_names_[0] = NULL;
+    previous_names_[1] = NULL;
+    maxHash_[0] = 0;
+    numberHash_[0] = 0;
+    hash_[0] = NULL;
+    names_[0] = NULL;
+    maxHash_[1] = 0;
+    numberHash_[1] = 0;
+    hash_[1] = NULL;
+    names_[1] = NULL;
+ 
+    if ( rhs.rowlower_ != NULL || rhs.collower_ != NULL) {
+       gutsOfCopy(rhs);
+    }
+ 
+    defaultHandler_ = rhs.defaultHandler_;
+ 
+    if (defaultHandler_) {
+       handler_ = new CoinMessageHandler(*rhs.handler_);
+    } else {
+       handler_ = rhs.handler_;
+    }
+ 
+    messages_ = CoinMessage();
+}
+
+
+void CoinLpIO::gutsOfCopy(const CoinLpIO& rhs)
+{
+    defaultHandler_ = rhs.defaultHandler_;
+ 
+    if (rhs.matrixByRow_) {
+       matrixByRow_ = new CoinPackedMatrix(*(rhs.matrixByRow_));
+    }
+ 
+    numberElements_ = rhs.numberElements_;
+    numberRows_ = rhs.numberRows_;
+    numberColumns_ = rhs.numberColumns_;
+    decimals_ = rhs.decimals_;
+ 
+    if (rhs.rowlower_) {
+       rowlower_ = reinterpret_cast<double*> (malloc(numberRows_ * sizeof(double)));
+       rowupper_ = reinterpret_cast<double*> (malloc(numberRows_ * sizeof(double)));
+       memcpy(rowlower_, rhs.rowlower_, numberRows_ * sizeof(double));
+       memcpy(rowupper_, rhs.rowupper_, numberRows_ * sizeof(double));
+       rowrange_ = reinterpret_cast<double *> (malloc(numberRows_*sizeof(double)));
+       rowsense_ = reinterpret_cast<char *> (malloc(numberRows_*sizeof(char)));
+       rhs_ = reinterpret_cast<double *> (malloc(numberRows_*sizeof(double)));
+       memcpy(rowrange_,rhs.getRowRange(),numberRows_*sizeof(double));
+       memcpy(rowsense_,rhs.getRowSense(),numberRows_*sizeof(char));
+       memcpy(rhs_,rhs.getRightHandSide(),numberRows_*sizeof(double));
+    }
+ 
+    if (rhs.collower_) {
+       collower_ = reinterpret_cast<double*> (malloc(numberColumns_ * sizeof(double)));
+       colupper_ = reinterpret_cast<double*> (malloc(numberColumns_ * sizeof(double)));
+       objective_ = reinterpret_cast<double*> (malloc(numberColumns_ * sizeof(double)));
+       memcpy(collower_, rhs.collower_, numberColumns_ * sizeof(double));
+       memcpy(colupper_, rhs.colupper_, numberColumns_ * sizeof(double));
+       memcpy(objective_, rhs.objective_, numberColumns_ * sizeof(double));
+    }
+ 
+    if (rhs.integerType_) {
+       integerType_ = reinterpret_cast<char*> (malloc (numberColumns_ * sizeof(char)));
+       memcpy(integerType_, rhs.integerType_, numberColumns_ * sizeof(char));
+    }
+ 
+    free(fileName_);
+    free(problemName_);
+    fileName_ = CoinStrdup(rhs.fileName_);
+    problemName_ = CoinStrdup(rhs.problemName_);
+    numberHash_[0] = rhs.numberHash_[0];
+    numberHash_[1] = rhs.numberHash_[1];
+    maxHash_[0] = rhs.maxHash_[0];
+    maxHash_[1] = rhs.maxHash_[1];
+    infinity_ = rhs.infinity_;
+    numberAcross_ = rhs.numberAcross_;
+    objectiveOffset_ = rhs.objectiveOffset_;
+    int section;
+ 
+    for (section = 0; section < 2; section++) {
+       if (numberHash_[section]) {
+          char** names2 = rhs.names_[section];
+          names_[section] = reinterpret_cast<char**> (malloc(maxHash_[section] *
+                            sizeof(char*)));
+          char** names = names_[section];
+          int i;
+ 
+          for (i = 0; i < numberHash_[section]; i++) {
+             names[i] = CoinStrdup(names2[i]);
+          }
+ 
+          hash_[section] = new CoinHashLink[maxHash_[section]];
+          std::memcpy(hash_[section], rhs.hash_[section], maxHash_[section]*sizeof(CoinHashLink));
+       }
+    }
+ }
+
+CoinLpIO &
+CoinLpIO::operator=(const CoinLpIO& rhs)
+{
+    if (this != &rhs) {
+       gutsOfDestructor();
+ 
+       if ( rhs.rowlower_ != NULL || rhs.collower_ != NULL) {
+          gutsOfCopy(rhs);
+       }
+ 
+       defaultHandler_ = rhs.defaultHandler_;
+ 
+       if (defaultHandler_) {
+          handler_ = new CoinMessageHandler(*rhs.handler_);
+       } else {
+          handler_ = rhs.handler_;
+       }
+ 
+       messages_ = CoinMessage();
+    }
+ 
+    return *this;
+}
+
+
+void CoinLpIO::gutsOfDestructor()
+ {
+    freeAll();
+ 
+    if (defaultHandler_) {
+       delete handler_;
+       handler_ = NULL;
+    }
+}
+
+
+
 /************************************************************************/
 CoinLpIO::~CoinLpIO() {
   stopHash(0);
@@ -81,6 +246,7 @@ CoinLpIO::~CoinLpIO() {
   freeAll();
   if (defaultHandler_) {
     delete handler_;
+    handler_ = NULL; 
   }
 }
 
@@ -105,7 +271,9 @@ void
 CoinLpIO::freeAll() {
 
   delete matrixByColumn_;
+  matrixByColumn_ = NULL; 
   delete matrixByRow_;
+  matrixByRow_ = NULL; 
   free(rowupper_);
   rowupper_ = NULL;
   free(rowlower_);
@@ -2345,8 +2513,10 @@ CoinLpIO::insertHash(const char *thisName, int section)
 void 
 CoinLpIO::passInMessageHandler(CoinMessageHandler * handler)
 {
-  if (defaultHandler_) 
+  if (defaultHandler_){ 
     delete handler_;
+    handler = NULL; 
+    }
   defaultHandler_=false;
   handler_=handler;
 }

@@ -2,7 +2,7 @@
 # All Rights Reserved.
 # This file is distributed under the Eclipse Public License.
 #
-## $Id: coin.m4 2768 2013-06-08 13:09:47Z stefan $
+## $Id: coin.m4 2802 2013-06-28 12:52:42Z stefan $
 #
 # Author: Andreas Wachter    IBM      2006-04-14
 
@@ -56,32 +56,16 @@ fi
 AC_MSG_RESULT($coin_vpath_config)
 ]) # AC_COIN_CHECK_VPATH
 
+
 ###########################################################################
-#                         COIN_PROJECTDIR_INIT                            #
+#                          COIN_PROJECTVERSION                            #
 ###########################################################################
 
-# This macro does everything that is required in the early part in the
-# configure script, such as defining a few variables.  This should only be used
-# in the main directory of a project directory (the one which holds the src
-# directory for the project). The first parameter is the project name. The
-# second (optional) is the libtool library version (important for releases,
-# less so for stable or trunk).
+# This macro is used by COIN_PROJECTDIR_INIT and sets up variables related
+# to versioning numbers of the project.
 
-AC_DEFUN([AC_COIN_PROJECTDIR_INIT],
-[
-# As backup, we make sure we don't loose an FLIBS if it has been set
-# by the user
-save_FLIBS="$FLIBS"
-
-# A useful makefile conditional that is always false
-AM_CONDITIONAL(ALWAYS_FALSE, false)
-
-# We set the following variable so that we know later in AC_COIN_FINALIZE
-# that we are in a project main directory
-coin_projectdir=yes
-
-# Set the project's version numbers
-m4_ifvaln([$1],[
+AC_DEFUN([AC_COIN_PROJECTVERSION],
+[m4_ifvaln([$1],[
   AC_DEFINE_UNQUOTED(m4_toupper($1_VERSION), ["$PACKAGE_VERSION"],[Version number of project])
   
   [coin_majorver=`echo $PACKAGE_VERSION | sed -n -e 's/^\([0-9]*\).*/\1/gp'`]
@@ -111,10 +95,37 @@ m4_ifvaln([$1],[
     fi
   fi
  ])
-
+ 
 # Capture libtool library version, if given.
-m4_ifvaln([$2],[coin_libversion=$2],[])
+ m4_ifvaln([$2],[coin_libversion=$2],[])
+])
 
+###########################################################################
+#                         COIN_PROJECTDIR_INIT                            #
+###########################################################################
+
+# This macro does everything that is required in the early part in the
+# configure script, such as defining a few variables.  This should only be used
+# in the main directory of a project directory (the one which holds the src
+# directory for the project). The first parameter is the project name. The
+# second (optional) is the libtool library version (important for releases,
+# less so for stable or trunk).
+
+AC_DEFUN([AC_COIN_PROJECTDIR_INIT],
+[
+# As backup, we make sure we don't loose an FLIBS if it has been set
+# by the user
+save_FLIBS="$FLIBS"
+
+# A useful makefile conditional that is always false
+AM_CONDITIONAL(ALWAYS_FALSE, false)
+
+# We set the following variable so that we know later in AC_COIN_FINALIZE
+# that we are in a project main directory
+coin_projectdir=yes
+
+# Set the project's version numbers
+AC_COIN_PROJECTVERSION($1, $2)
 ]) # AC_COIN_PROJECTDIR_INIT
 
 ###########################################################################

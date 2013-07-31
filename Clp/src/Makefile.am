@@ -2,7 +2,7 @@
 # All Rights Reserved.
 # This file is distributed under the Eclipse Public License.
 
-## $Id: Makefile.am 1910 2013-01-27 02:00:13Z stefan $
+## $Id: Makefile.am 1968 2013-07-03 09:04:17Z stefan $
 
 # Author:  Andreas Waechter           IBM    2006-04-13
 
@@ -260,6 +260,21 @@ endif
 
 # needed by Cbc
 includecoin_HEADERS += CbcOrClpParam.cpp
+
+########################################################################
+#                     Installing manifest (MSVC++)                     #
+########################################################################
+
+if COIN_CXX_IS_CL
+install-exec-hook:
+	test -s clp.exe.manifest && \
+	mt -manifest clp.exe.manifest -outputresource:clp.exe;\
+	cp clp.exe $(bindir)/clp.exe
+endif
+
+#######################################################################
+# Create the Config.h file that has all public defines and install it #
+#######################################################################
 
 install-exec-local:
 	$(install_sh_DATA) config_clp.h $(DESTDIR)$(includecoindir)/ClpConfig.h
