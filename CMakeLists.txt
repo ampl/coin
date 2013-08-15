@@ -18,7 +18,7 @@ if (COIN_DISABLE_WARNINGS)
   # Disable warnings.
   if (CMAKE_COMPILER_IS_GNUCXX)
     string(REPLACE "-Wextra" "" CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS}")
-    foreach(flag -Wno-format-security -Wno-overloaded-virtual
+    foreach(flag -Wno-format-security -Wno-overloaded-virtual -Wno-reorder
                  -Wno-unused-variable -Wno-unused-but-set-variable
                  -Wno-unused-result -Wno-int-to-pointer-cast -Wno-uninitialized)
       set(var HAVE${flag})
