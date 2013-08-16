@@ -18,16 +18,7 @@ if (COIN_DISABLE_WARNINGS)
   # Disable warnings.
   if (CMAKE_COMPILER_IS_GNUCXX)
     string(REPLACE "-Wextra" "" CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS}")
-    foreach(flag -Wno-format-security -Wno-overloaded-virtual -Wno-reorder
-                 -Wno-unused-variable -Wno-unused-but-set-variable
-                 -Wno-unused-result -Wno-int-to-pointer-cast -Wno-uninitialized)
-      set(var HAVE${flag})
-      string(REPLACE "-" "_" var ${var})
-      check_cxx_compiler_flag(${flag} ${var})
-      if (${var})
-        add_definitions(${flag})
-      endif ()
-    endforeach ()
+    string(REPLACE "-Wall" "" CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS}")
   elseif (MSVC)
     add_definitions(-D_SCL_SECURE_NO_WARNINGS)
     foreach (flag_var
