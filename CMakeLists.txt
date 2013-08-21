@@ -13,17 +13,6 @@ set(CMAKE_RUNTIME_OUTPUT_DIRECTORY "bin/")
 string(REPLACE "-std=c++11" "" CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS}")
 string(REPLACE "-stdlib=libc++" "" CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS}")
 
-function(disable_warnings)
-  foreach(flag ${ARGN})
-    set(var HAVE${flag})
-    string(REPLACE "-" "_" var ${var})
-    check_cxx_compiler_flag(${flag} ${var})
-    if (${var})
-      add_definitions(${flag})
-    endif ()
-  endforeach ()
-endfunction()
-
 include(CheckCXXCompilerFlag)
 if (COIN_DISABLE_WARNINGS)
   # Disable warnings.
@@ -38,13 +27,15 @@ if (COIN_DISABLE_WARNINGS)
     string(REPLACE "-Wextra" "" CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS}")
     string(REPLACE "-Wall" "" CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS}")
     if (CMAKE_COMPILER_IS_GNUCXX)
-      disable_warnings(
+      add_definitions(
         -Wno-format-security -Wno-overloaded-virtual -Wno-unused-result)
     elseif (CMAKE_CXX_COMPILER_ID STREQUAL "Clang")
-      disable_warnings(
-        -Wno-constant-conversion -Wno-constant-logical-operand -Wno-format-security
-        -Wno-newline-eof -Wno-parentheses-equality -Wno-self-assign-field
-        -Wno-tautological-compare)
+      add_definitions(
+        -Wno-constant-conversion -Wno-constant-logical-operand
+        -Wno-format-security -Wno-language-extension-token -Wno-newline-eof
+        -Wno-parentheses -Wno-parentheses-equality -Wno-self-assign-field
+        -Wno-sizeof-pointer-memaccess -Wno-tautological-compare
+        -Wno-unused-comparison)
     endif ()
   endif ()
 endif ()
