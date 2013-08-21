@@ -38,7 +38,13 @@ if (COIN_DISABLE_WARNINGS)
     string(REPLACE "-Wextra" "" CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS}")
     string(REPLACE "-Wall" "" CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS}")
     if (CMAKE_COMPILER_IS_GNUCXX)
-      disable_warnings(-Wno-format-security -Wno-overloaded-virtual -Wno-unused-result)
+      disable_warnings(
+        -Wno-format-security -Wno-overloaded-virtual -Wno-unused-result)
+    elseif (CMAKE_CXX_COMPILER_ID STREQUAL "Clang")
+      disable_warnings(
+        -Wno-constant-conversion -Wno-constant-logical-operand -Wno-format-security
+        -Wno-newline-eof -Wno-parentheses-equality -Wno-self-assign-field
+        -Wno-tautological-compare)
     endif ()
   endif ()
 endif ()
