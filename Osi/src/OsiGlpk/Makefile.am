@@ -2,7 +2,7 @@
 # All Rights Reserved.
 # This file is distributed under the Eclipse Public License.
 
-## $Id: Makefile.am 1800 2011-08-14 10:37:34Z stefan $
+## $Id: Makefile.am 1953 2013-12-14 23:53:52Z tkr $
 
 # Author:  Andreas Waechter           IBM    2006-04-13
 
@@ -18,6 +18,11 @@ lib_LTLIBRARIES = libOsiGlpk.la
 # List all source files for this library, including headers
 libOsiGlpk_la_SOURCES = \
 	OsiGlpkSolverInterface.cpp OsiGlpkSolverInterface.hpp
+
+# List all additionally required libraries
+if DEPENDENCY_LINKING
+libOsiGlpk_la_LIBADD = $(OSILIB_LIBS) ../Osi/libOsi.la
+endif
 
 # This is for libtool
 libOsiGlpk_la_LDFLAGS = $(LT_LDFLAGS)

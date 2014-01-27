@@ -359,6 +359,105 @@ CoinMpsIOUnitTest(const std::string & mpsDir)
         assert( siC1rr  == siC1.getRowRange() );
       }
     }
+	
+	//test special sections: SOS, QUADOBJ, CSECTION
+	{
+	    CoinMpsIO m_MpsData;
+		std::string fn = mpsDir+"spec_sections";
+		int nOfSOS;
+		CoinSet ** SOS;
+		int status = m_MpsData.readMps(fn.c_str(),"mps", nOfSOS, SOS);
+
+		assert (status == 0); 
+
+		assert (nOfSOS == 2);
+
+		assert (SOS[0]->numberEntries() == 2);
+		assert (SOS[1]->numberEntries() == 2);
+		assert (SOS[0]->setType() == 1);
+		assert (SOS[1]->setType() == 2);
+
+		{
+		    int numberEntries = SOS[0]->numberEntries();
+			const int * which = SOS[0]->which();
+			const double * weights = SOS[0]->weights();
+			assert (which[0] == 2);
+			assert (which[1] == 3);
+			assert (weights[0] == 0);
+			assert (weights[1] == 1);
+		}
+
+		{
+		    int numberEntries = SOS[1]->numberEntries();
+			const int * which = SOS[1]->which();
+			const double * weights = SOS[1]->weights();
+			assert (which[0] == 4);
+			assert (which[1] == 5);
+			assert (weights[0] == 20);
+			assert (weights[1] == 40);
+		}
+
+		int * columnStart = NULL;
+		int * columnIdx = NULL;
+		double * elements = NULL;
+		status = m_MpsData.readQuadraticMps(NULL, columnStart, columnIdx, elements, 0);
+
+		assert (status == 0); 
+
+		assert (columnStart[ 0] == 0);
+		assert (columnStart[ 1] == 0);
+		assert (columnStart[ 2] == 0);
+		assert (columnStart[ 3] == 0);
+		assert (columnStart[ 4] == 0);
+		assert (columnStart[ 5] == 0);
+		assert (columnStart[ 6] == 0);
+		assert (columnStart[ 7] == 2);
+		assert (columnStart[ 8] == 3);
+		assert (columnStart[ 9] == 3);
+		assert (columnStart[10] == 3);
+		assert (columnStart[11] == 3);
+		assert (columnStart[12] == 3);
+		assert (columnStart[13] == 3);
+		assert (columnStart[14] == 3);
+		assert (columnStart[15] == 3);
+
+		assert (columnIdx[0] == 6);
+		assert (columnIdx[1] == 7);
+		assert (columnIdx[2] == 7);
+
+		assert (elements[0] == 1.0);
+		assert (elements[1] == 2.0);
+		assert (elements[2] == 7.0);
+
+		int nOfCones;
+		int * coneStart = NULL;
+		int * coneIdx = NULL;
+		int * coneType = NULL;
+		status = m_MpsData.readConicMps(NULL, coneStart, coneIdx, coneType, nOfCones);
+
+		assert (status == 0); 
+
+		assert (nOfCones == 2);
+
+		assert (coneType[0] == 1);
+		assert (coneType[1] == 2);
+
+		assert (coneStart[0] == 0);
+		assert (coneStart[1] == 3);
+		assert (coneStart[2] == 7);
+
+		assert (coneStart[0] == 0);
+		assert (coneStart[1] == 3);
+		assert (coneStart[2] == 7);
+
+		assert (coneIdx[0] ==  8);
+		assert (coneIdx[1] ==  9);
+		assert (coneIdx[2] == 10);
+		assert (coneIdx[3] == 11);
+		assert (coneIdx[4] == 12);
+		assert (coneIdx[5] == 13);
+		assert (coneIdx[6] == 14);
+	}
 
 #ifdef COIN_HAS_GLPK
     // test GMPL reader
@@ -548,3 +647,4 @@ CoinMpsIOUnitTest(const std::string & mpsDir)
   }
 
 }
+

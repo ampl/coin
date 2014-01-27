@@ -2,7 +2,7 @@
 # All Rights Reserved.
 # This file is distributed under the Eclipse Public License.
 
-## $Id: configure.ac 1608 2013-07-16 09:04:18Z stefan $
+## $Id: configure.ac 1682 2013-12-17 21:22:26Z tkr $
 
 # Author:  Andreas Waechter            IBM    2006-04-13
 
@@ -12,7 +12,7 @@
 
 AC_PREREQ(2.59)
 
-AC_INIT([CoinUtils],[2.9.3],[http://projects.coin-or.org/CoinUtils])
+AC_INIT([CoinUtils],[2.9.11],[http://projects.coin-or.org/CoinUtils])
 
 AC_COPYRIGHT([
 Copyright 2006 International Business Machines and others.
@@ -41,7 +41,7 @@ AC_CANONICAL_BUILD
 # the source root directory contains definition of where to find those
 # externals.  The following macro ensures that those externals are
 # retrieved by svn if they are not there yet.
-AC_COIN_PROJECTDIR_INIT(CoinUtils,12:3:9)
+AC_COIN_PROJECTDIR_INIT(CoinUtils,12:11:9)
 
 # Check if user wants to produce debugging code
 AC_COIN_DEBUG_COMPILE(CoinUtils)
@@ -123,6 +123,7 @@ fi
 #############################################################################
 
 AC_COIN_CHECK_CXX_CHEADER(inttypes)
+AC_COIN_CHECK_CXX_CHEADER(stdint)
 
 ##### 64bit Integer types
 # The problem here is that you can't extend `int64_t' to `unsigned int64_t'.
@@ -230,6 +231,10 @@ if test x"$CoinIntPtr" = x; then
   AC_MSG_ERROR([Cannot find integer type capturing pointer])
 fi
 AC_DEFINE_UNQUOTED([COIN_INTPTR_T],[$CoinIntPtr],[Define to integer type capturing pointer])
+
+if test "x$ac_cv_header_stdint_h" = xyes ; then
+  AC_DEFINE([COINUTILS_HAS_STDINT_H], [1], [Define to 1 if stdint.h is available for CoinUtils])
+fi
 
 #############################################################################
 #                           Check whether we have windows.h                 #

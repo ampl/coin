@@ -43,6 +43,7 @@ PRE_UNINSTALL = :
 POST_UNINSTALL = :
 build_triplet = @build@
 host_triplet = @host@
+@DEPENDENCY_LINKING_TRUE@am__append_1 = $(CGLLIB_LIBS)
 subdir = src
 DIST_COMMON = $(includecoin_HEADERS) $(srcdir)/Makefile.am \
 	$(srcdir)/Makefile.in $(srcdir)/config.h.in \
@@ -65,6 +66,7 @@ am__installdirs = "$(DESTDIR)$(libdir)" "$(DESTDIR)$(includecoindir)"
 libLTLIBRARIES_INSTALL = $(INSTALL)
 LTLIBRARIES = $(lib_LTLIBRARIES)
 am__DEPENDENCIES_1 =
+@DEPENDENCY_LINKING_TRUE@am__DEPENDENCIES_2 = $(am__DEPENDENCIES_1)
 am_libCgl_la_OBJECTS = CglCutGenerator.lo CglMessage.lo CglStored.lo \
 	CglParam.lo CglTreeInfo.lo
 libCgl_la_OBJECTS = $(am_libCgl_la_OBJECTS)
@@ -177,6 +179,8 @@ DBG_CFLAGS = @DBG_CFLAGS@
 DBG_CXXFLAGS = @DBG_CXXFLAGS@
 DEFS = @DEFS@
 DEPDIR = @DEPDIR@
+DEPENDENCY_LINKING_FALSE = @DEPENDENCY_LINKING_FALSE@
+DEPENDENCY_LINKING_TRUE = @DEPENDENCY_LINKING_TRUE@
 ECHO = @ECHO@
 ECHO_C = @ECHO_C@
 ECHO_N = @ECHO_N@
@@ -376,11 +380,11 @@ libCgl_la_LDFLAGS = $(LT_LDFLAGS)
 
 # We want to have all the sublibraries from the Cgl subprojects collected into
 # this library
-libCgl_la_LIBADD = $(CGL_SUBLIBS)
+libCgl_la_LIBADD = $(CGL_SUBLIBS) $(am__append_1)
 
 # Since automake is not doing this on its own, we need to declare the
 # dependencies to the subdirectory libraries here
-libCgl_la_DEPENDENCIES = $(libCgl_la_LIBADD)
+libCgl_la_DEPENDENCIES = $(CGL_SUBLIBS)
 
 # Here list all include flags, relative to this "srcdir" directory.  This
 # "cygpath" stuff is necessary to compile with native compilers on Windows.

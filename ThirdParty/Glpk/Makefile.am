@@ -2,7 +2,7 @@
 # All Rights Reserved.
 # This file is distributed under the Eclipse Public License.
 
-## $Id: Makefile.am 2639 2012-11-20 15:30:18Z stefan $
+## $Id: Makefile.am 3152 2013-12-16 18:35:00Z tkr $
 
 AUTOMAKE_OPTIONS = foreign
 
@@ -150,6 +150,10 @@ AM_CPPFLAGS = \
   -I`$(CYGPATH_W) $(srcdir)/$(GLPKDIR)/src/colamd` \
   -I`$(CYGPATH_W) $(srcdir)/$(GLPKDIR)/src/minisat` \
   -I$(GLPKDIR)
+
+if DEPENDENCY_LINKING
+libcoinglpk_la_LIBADD = $(GLPK_PCLIBS)
+endif
 
 libcoinglpk_la_LDFLAGS = $(LT_LDFLAGS)
 

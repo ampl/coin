@@ -80,7 +80,10 @@ am__installdirs = "$(DESTDIR)$(libdir)" "$(DESTDIR)$(pkgconfiglibdir)" \
 	"$(DESTDIR)$(thirdpartyincludedir)"
 libLTLIBRARIES_INSTALL = $(INSTALL)
 LTLIBRARIES = $(lib_LTLIBRARIES)
-libcoinmumps_la_LIBADD =
+am__DEPENDENCIES_1 =
+@DEPENDENCY_LINKING_TRUE@libcoinmumps_la_DEPENDENCIES =  \
+@DEPENDENCY_LINKING_TRUE@	$(am__DEPENDENCIES_1) \
+@DEPENDENCY_LINKING_TRUE@	$(am__DEPENDENCIES_1)
 nodist_libcoinmumps_la_OBJECTS = tools_common_mod.lo \
 	dmumps_comm_buffer.lo dmumps_struc_def.lo mumps_ooc_common.lo \
 	mumps_static_mapping.lo dmumps_ooc_buffer.lo dmumps_load.lo \
@@ -181,6 +184,8 @@ DBG_FFLAGS = @DBG_FFLAGS@
 # Reset DEFS to that they don't show up for the Fortran compiler
 DEFS = 
 DEPDIR = @DEPDIR@
+DEPENDENCY_LINKING_FALSE = @DEPENDENCY_LINKING_FALSE@
+DEPENDENCY_LINKING_TRUE = @DEPENDENCY_LINKING_TRUE@
 ECHO = @ECHO@
 ECHO_C = @ECHO_C@
 ECHO_N = @ECHO_N@
@@ -344,6 +349,7 @@ AM_CPPFLAGS = \
 	-I`$(CYGPATH_W) $(srcdir)/$(MUMPSDIR)/libseq` \
 	-I`$(CYGPATH_W) $(srcdir)/$(MUMPSDIR)/include`
 
+@DEPENDENCY_LINKING_TRUE@libcoinmumps_la_LIBADD = $(MUMPS_LIBS) $(MUMPS_PCLIBS)
 libcoinmumps_la_LDFLAGS = $(LT_LDFLAGS)
 
 # Module files that need to be deleted

@@ -2,7 +2,7 @@
 # All Rights Reserved.
 # This file is distributed under the Eclipse Public License.
 
-## $Id: configure.ac 2770 2013-06-14 13:33:25Z stefan $
+## $Id: configure.ac 3154 2013-12-17 16:34:32Z tkr $
 
 # Author:  Andreas Waechter            IBM    2006-04-13
 # Revised: Lou Hafer		       SFU    2007-09-15
@@ -13,7 +13,7 @@
 
 AC_PREREQ(2.59)
 
-AC_INIT([ThirdPartyASL],[1.2.5],[http://projects.coin-or.org/BuildTools/newticket])
+AC_INIT([ThirdPartyASL],[1.2.15],[http://projects.coin-or.org/BuildTools/newticket])
 
 AC_COPYRIGHT([
 Copyright 2006, 2007, 2009 International Business Machines and others.
@@ -39,7 +39,7 @@ AC_PREFIX_DEFAULT([`pwd`])
 AC_CANONICAL_BUILD
 
 # A bit of initial setup.
-AC_COIN_PROJECTDIR_INIT(ASL,3:5:2)
+AC_COIN_PROJECTDIR_INIT(ASL,3:15:2)
 
 # Turn off warnings and pedantic mode since they could make trouble on some
 # platforms, and we can't fix issues in third-party code.
@@ -74,6 +74,17 @@ if test "x$coin_cc_is_cl" = xtrue ; then
 else
   AMPLSOLVER_A=libamplsolver.a
 fi
+
+# Determine the host type to set linker options in the Makefile
+AC_SUBST(HOST_TYPE)
+case $host in
+  *-cygwin* | *-mingw*)
+    AM_CONDITIONAL(HOST_IS_CYGWIN, [test 0 = 0])
+  ;;
+  *)
+    AM_CONDITIONAL(HOST_IS_CYGWIN, [test 0 = 1])
+  ;;
+esac
 
 # Determine flags to be passed on the command line to (n)make. The main
 # activity is to groom CFLAGS and set up ASLMAKEFLAGS to pass CFLAGS on the
@@ -120,6 +131,10 @@ if test -z "$ASLMAKEFLAGS" ; then
      fi],
     [asladdcflags="$asladdcflags -DNO_LONG_LONG"],[])
 
+# Check for ssize_t; we need to define NO_SSIZE_T if it's not present.
+
+  AC_CHECK_TYPE([ssize_t],[],
+    [asladdcflags="$asladdcflags -DNO_SSIZE_T"],[])
 
 # Check for dlopen, ASL uses it to load userdefined function libraries
   AC_CHECK_LIB(dl,[dlopen],[ASL_PCLIBS="-ldl $ASL_PCLIBS"])

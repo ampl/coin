@@ -5,7 +5,7 @@
 # This file is distributed under the Eclipse Public License.
 # It is part of the BuildTools project in COIN-OR (www.coin-or.org)
 #
-# $Id$
+# $Id: prepare_new_stable 2947 2013-09-13 08:36:57Z stefan $
 #
 # Adapted from prepare_new_release by Lou Hafer, SFU, 100507. 
 
@@ -329,8 +329,8 @@ newVersion=${majVer}.${minVer}
 
 # Construct a build directory name.
 
-topBuildDir=`echo $srcProj | sed -e 's|.*/\([^/]*\)$|\1|'`
-topBuildDir=${topBuildDir}-${newVersion}
+topProjName=`echo $srcProj | sed -e 's|.*/\([^/]*\)$|\1|'`
+topBuildDir=${topProjName}-${newVersion}
 echo "Build directory.....: $topBuildDir"
 
 # Now decide where to check out code.
@@ -381,7 +381,12 @@ cd $coDir
 # be two files for a standard project, one for a ThirdParty or Data project.
 
 echo ''
-bak_files=`find . -name 'configure.ac'`
+if test -d $topProjName ; then
+  bak_files=`find $topProjName -name 'configure.ac'`
+fi
+if test -e configure.ac ; then
+  bak_files="$bak_files configure.ac"
+fi
 echo "===> Creating backup (.bak) for configure.ac files..."
 for i in $bak_files; do
   cp $i $i.bak
@@ -404,10 +409,13 @@ done
 # Find config_proj_default.h. If there's a definition for PROJ_VERSION, adjust it and
 # add config_proj_default.h.bak to the list of files to be restored.
 
-srcProjUC=`echo $srcProj | tr '[a-z]' '[A-Z]'`
-configFileLoc=`find . -name .svn -prune -o -name 'config_*_default.h' -print`
+topProjNameUC=`echo $topProjName | tr '[a-z]' '[A-Z]'`
+if test -d $topProjName ; then
+  configFileLoc=`find $topProjName -name .svn -prune -o -name 'config_*_default.h' -print`
+fi
+echo "config File Loc: $configFileLoc"
 if test -n "$configFileLoc" ; then
-  versionSym=${srcProjUC}_VERSION
+  versionSym=${topProjNameUC}_VERSION
   echo ''
   echo "===> Updating $versionSym in $configFileLoc (if present)"
   echo ''
@@ -578,7 +586,7 @@ if test -n "$srcDepFile" ; then
 	  ext_proj=`extractProjFromURL $ext_url`
 	  getScript=get.$ext_proj
 	  if test -x "$getScript" ; then
-	    ./$getScript -patch
+	    ./$getScript -y
 	  fi
 	  cd $coDir
 	fi
@@ -597,7 +605,7 @@ if test $isThirdParty = yes; then
     echo ''
     echo '===> Downloading third party code...'
     echo ''
-    ./get.$srcProj
+    ./get.$srcProj -y
   fi
 fi
 

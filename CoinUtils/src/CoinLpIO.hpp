@@ -1,4 +1,4 @@
-/* $Id: CoinLpIO.hpp 1602 2013-07-12 12:15:37Z tkr $ */
+/* $Id: CoinLpIO.hpp 1652 2013-10-18 10:35:37Z stefan $ */
 // Last edit: 11/5/08
 //
 // Name:     CoinLpIO.hpp; Support for Lp files
@@ -74,7 +74,10 @@ Notes: <UL>
       as suffix. This should be kept in mind when assigning names to ranged
       constraint, as the resulting name must be distinct from all the other
       names and be considered valid by the method is_invalid_name().
- <LI> At most one constant term may appear in the objective function; 
+ <LI> At most one term related to any single variable may appear in the
+      objective function; if more than one term are present, only the last
+      one is taken into account.
+      At most one constant term may appear in the objective function; 
       if present, it must appear last. 
  <LI> Default bounds are 0 for lower bound and +infinity for upper bound.
  <LI> Free variables get default lower bound -infinity and 

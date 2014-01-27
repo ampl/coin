@@ -278,7 +278,8 @@ bool OsiMskSolverInterface::definedSolution(int solution) const
 }
 
 // Returns the flag for solver currently switched on in MOSEK resp. (MSK_OPTIMIZER_FREE),
-// (MSK_OPTIMIZER_INTPNT), (MSK_OPTIMIZER_PRIMAL_SIMPLEX) or (MSK_OPTIMIZER_MIXED_INT).
+// (MSK_OPTIMIZER_INTPNT), (MSK_OPTIMIZER_PRIMAL_SIMPLEX), (MSK_OPTIMIZER_MIXED_INT), or
+// (MSK_OPTIMIZER_MIXED_INT_CONIC).
 // MOSEK also has Conic and nonconvex solvers, but these are for obvious reasons not 
 // an option in the Osi interface.
 
@@ -326,7 +327,11 @@ OsiMskSolverInterface::switchToMIP( void )
   int err = MSK_putintparam(getMutableLpPtr(), MSK_IPAR_MIO_MODE, MSK_MIO_MODE_SATISFIED);
   checkMSKerror(err,"MSK_putintparam","switchToMIP");
 
+#if MSK_VERSION_MAJOR >= 7
+  err = MSK_putintparam(getMutableLpPtr(), MSK_IPAR_OPTIMIZER, MSK_OPTIMIZER_MIXED_INT_CONIC);
+#else
   err = MSK_putintparam(getMutableLpPtr(), MSK_IPAR_OPTIMIZER, MSK_OPTIMIZER_MIXED_INT);
+#endif
   checkMSKerror(err,"MSK_putintparam","switchToMIP");
   probtypemip_ = true;
   

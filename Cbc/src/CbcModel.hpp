@@ -1,4 +1,4 @@
-/* $Id: CbcModel.hpp 1902 2013-04-10 16:58:16Z stefan $ */
+/* $Id: CbcModel.hpp 1973 2013-10-19 15:59:44Z stefan $ */
 // Copyright (C) 2002, International Business Machines
 // Corporation and others.  All Rights Reserved.
 // This code is licensed under the terms of the Eclipse Public License (EPL).
@@ -1914,6 +1914,9 @@ public:
       If cloneHandler is true then message handler is cloned
     */
     CbcModel(const CbcModel & rhs, bool cloneHandler = false);
+
+    /** Clone */
+    virtual CbcModel *clone (bool cloneHandler);
 
     /// Assignment operator
     CbcModel & operator=(const CbcModel& rhs);

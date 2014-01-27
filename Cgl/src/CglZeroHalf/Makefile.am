@@ -2,7 +2,7 @@
 # All Rights Reserved.
 # This file is distributed under the Eclipse Public License.
 
-## $Id: Makefile.am 1123 2013-04-06 20:47:24Z stefan $
+## $Id: Makefile.am 1166 2013-12-11 09:25:29Z stefan $
 
 # Author:  Andreas Waechter           IBM    2006-04-13
 
@@ -41,4 +41,4 @@ DEFAULT_INCLUDES = -I. -I`$(CYGPATH_W) $(srcdir)`
 # Here list all the header files that are required by a user of the library,
 # and that therefore should be installed in 'include/coin'
 includecoindir = $(includedir)/coin
-includecoin_HEADERS = CglZeroHalf.hpp
+includecoin_HEADERS = CglZeroHalf.hpp Cgl012cut.hpp

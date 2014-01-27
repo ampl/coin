@@ -1,4 +1,4 @@
-/* $Id: CbcThread.cpp 1902 2013-04-10 16:58:16Z stefan $ */
+/* $Id: CbcThread.cpp 1973 2013-10-19 15:59:44Z stefan $ */
 // Copyright (C) 2002, International Business Machines
 // Corporation and others.  All Rights Reserved.
 // This code is licensed under the terms of the Eclipse Public License (EPL).
@@ -569,7 +569,8 @@ CbcBaseModel::CbcBaseModel (CbcModel & model,  int type)
         CbcStrategy * saveStrategy = model.strategy();
         model.setStrategy(NULL);
         for (int i = 0; i < numberThreads_; i++) {
-            threadModel_[i] = new CbcModel(model, true);
+            //threadModel_[i] = new CbcModel(model, true);
+            threadModel_[i] = model. clone (true);
             threadModel_[i]->synchronizeHandlers(1);
 #ifdef COIN_HAS_CLP
             // Solver may need to know about model

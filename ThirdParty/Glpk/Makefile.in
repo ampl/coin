@@ -81,7 +81,9 @@ am__installdirs = "$(DESTDIR)$(libdir)" "$(DESTDIR)$(pkgconfiglibdir)" \
 	"$(DESTDIR)$(thirdpartyincludedir)"
 libLTLIBRARIES_INSTALL = $(INSTALL)
 LTLIBRARIES = $(lib_LTLIBRARIES)
-libcoinglpk_la_LIBADD =
+am__DEPENDENCIES_1 =
+@DEPENDENCY_LINKING_TRUE@libcoinglpk_la_DEPENDENCIES =  \
+@DEPENDENCY_LINKING_TRUE@	$(am__DEPENDENCIES_1)
 am_libcoinglpk_la_OBJECTS = glpapi01.lo glpapi02.lo glpapi03.lo \
 	glpapi04.lo glpapi05.lo glpapi06.lo glpapi07.lo glpapi08.lo \
 	glpapi09.lo glpapi10.lo glpapi11.lo glpapi12.lo glpapi13.lo \
@@ -173,6 +175,8 @@ CYGPATH_W = @CYGPATH_W@
 DBG_CFLAGS = @DBG_CFLAGS@
 DEFS = @DEFS@
 DEPDIR = @DEPDIR@
+DEPENDENCY_LINKING_FALSE = @DEPENDENCY_LINKING_FALSE@
+DEPENDENCY_LINKING_TRUE = @DEPENDENCY_LINKING_TRUE@
 ECHO = @ECHO@
 ECHO_C = @ECHO_C@
 ECHO_N = @ECHO_N@
@@ -419,6 +423,7 @@ AM_CPPFLAGS = \
   -I`$(CYGPATH_W) $(srcdir)/$(GLPKDIR)/src/minisat` \
   -I$(GLPKDIR)
 
+@DEPENDENCY_LINKING_TRUE@libcoinglpk_la_LIBADD = $(GLPK_PCLIBS)
 libcoinglpk_la_LDFLAGS = $(LT_LDFLAGS)
 thirdpartyincludedir = $(includedir)/coin/ThirdParty
 thirdpartyinclude_HEADERS = $(GLPKDIR)/src/glpk.h $(GLPKDIR)/src/amd/amd.h

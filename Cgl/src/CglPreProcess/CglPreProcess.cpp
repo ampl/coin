@@ -3125,8 +3125,8 @@ CglPreProcess::tightenPrimalBounds(OsiSolverInterface & model,double factor)
     if (numberInfeasible) break;
   }
   if (!numberInfeasible) {
-    // Set bounds slightly loose unless integral
-    double useTolerance = 1.0e-2;
+    // Set bounds slightly loose unless integral - now tighter
+    double useTolerance = 1.0e-5;
     for (iColumn=0;iColumn<numberColumns;iColumn++) {
       if (columnUpper[iColumn]>columnLower[iColumn]) {
         double lower = newLower[iColumn];
@@ -3894,6 +3894,7 @@ CglPreProcess::modified(OsiSolverInterface * model,
       number01Integers++;
   }
   OsiRowCut ** whichCut = new OsiRowCut * [numberRows+1];
+  memset(whichCut, 0, (numberRows+1)*sizeof(OsiRowCut *));
   numberChanges=0;
   CoinThreadRandom randomGenerator;
   CglTreeProbingInfo info(model);
@@ -3956,6 +3957,7 @@ CglPreProcess::modified(OsiSolverInterface * model,
 	  generator_[iGenerator]->generateCuts(*newModel,cs,info);
 	} else {
 	  info.options=64;
+          probingCut->setMode(4);
 	  probingCut->generateCutsAndModify(*newModel,cs,&info);
 	}
 #if 1 //def CLIQUE_ANALYSIS
@@ -4081,10 +4083,10 @@ CglPreProcess::modified(OsiSolverInterface * model,
 	// out for now - think about cliques
         if(!generator1.snapshot(*newModel,NULL,false)) {
           generator1.createCliques(*newModel,2,1000,true);
-          generator1.setMode(0);
           // To get special stuff
           info.pass=4;
           CoinZeroN(whichCut,numberRows);
+          generator1.setMode(4);
           generator1.generateCutsAndModify(*newModel,cs,&info);
 #ifdef CLIQUE_ANALYSIS
 	  printf("special probing\n");

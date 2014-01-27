@@ -169,6 +169,8 @@ DBG_CFLAGS = @DBG_CFLAGS@
 DBG_CXXFLAGS = @DBG_CXXFLAGS@
 DEFS = @DEFS@
 DEPDIR = @DEPDIR@
+DEPENDENCY_LINKING_FALSE = @DEPENDENCY_LINKING_FALSE@
+DEPENDENCY_LINKING_TRUE = @DEPENDENCY_LINKING_TRUE@
 ECHO = @ECHO@
 ECHO_C = @ECHO_C@
 ECHO_N = @ECHO_N@
@@ -376,7 +378,7 @@ DEFAULT_INCLUDES = -I. -I`$(CYGPATH_W) $(srcdir)`
 # Here list all the header files that are required by a user of the library,
 # and that therefore should be installed in 'include/coin'
 includecoindir = $(includedir)/coin
-includecoin_HEADERS = CglZeroHalf.hpp
+includecoin_HEADERS = CglZeroHalf.hpp Cgl012cut.hpp
 all: all-am
 
 .SUFFIXES:

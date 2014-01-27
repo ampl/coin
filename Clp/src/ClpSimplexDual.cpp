@@ -1,4 +1,4 @@
-/* $Id: ClpSimplexDual.cpp 1931 2013-04-06 20:44:29Z stefan $ */
+/* $Id: ClpSimplexDual.cpp 2006 2013-12-12 15:40:41Z forrest $ */
 // Copyright (C) 2002, International Business Machines
 // Corporation and others.  All Rights Reserved.
 // This code is licensed under the terms of the Eclipse Public License (EPL).
@@ -441,7 +441,7 @@ ClpSimplexDual::gutsOfDual(int ifValuesPass, double * & saveDuals, int initialSt
           matrix_->refresh(this);
           // If getting nowhere - why not give it a kick
           // does not seem to work too well - do some more work
-          if (perturbation_ < 101 && numberIterations_ > 2 * (numberRows_ + numberColumns_)
+          if (perturbation_ < 101 && numberIterations_ > 2 * (numberRows_ + numberColumns_) && (moreSpecialOptions_&1048576)==0
                     && initialStatus != 10) {
                perturb();
                // Can't get here if values pass
@@ -783,7 +783,7 @@ int ClpSimplexDual::dual (int ifValuesPass , int startFinishOptions)
                matrix_->refresh(this);
                // If getting nowhere - why not give it a kick
                // does not seem to work too well - do some more work
-               if (perturbation_ < 101 && numberIterations_ > 2 * (numberRows_ + numberColumns_)
+               if (perturbation_ < 101 && numberIterations_ > 2 * (numberRows_ + numberColumns_) && (moreSpecialOptions_&1048576)==0
                          && initialStatus != 10) {
                     perturb();
                     // Can't get here if values pass
@@ -3675,8 +3675,7 @@ ClpSimplexDual::dualColumn(CoinIndexedVector * rowArray,
                          // If we have done pivots and things look bad set alpha_ 0.0 to force factorization
                          if (sumBadPivots > 1.0e4) {
                               if (handler_->logLevel() > 1)
-                                   printf("maybe forcing re-factorization - sum %g  %d pivots\n", sumBadPivots,
-                                          factorization_->pivots());
+                                   *handler_ << "maybe forcing re-factorization - sum " << sumBadPivots << " " << factorization_->pivots() << " pivots" << CoinMessageEol;
                               if(factorization_->pivots() > 3) {
                                    badSumPivots = true;
                                    break;
@@ -3874,7 +3873,7 @@ ClpSimplexDual::dualColumn(CoinIndexedVector * rowArray,
      if ((badSumPivots ||
                fabs(theta_ * badFree) > 10.0 * dualTolerance_) && factorization_->pivots()) {
           if (handler_->logLevel() > 1)
-               printf("forcing re-factorization\n");
+               *handler_ << "forcing re-factorization" << CoinMessageEol;
           sequenceIn_ = -1;
      }
 #endif
@@ -6330,7 +6329,7 @@ int ClpSimplexDual::fastDual(bool alwaysFinish)
           // If getting nowhere - why not give it a kick
           // does not seem to work too well - do some more work
           if ((specialOptions_ & 524288) != 0 && (moreSpecialOptions_&2048) == 0 &&
-                    perturbation_ < 101 && numberIterations_ > 2 * (numberRows_ + numberColumns_)) {
+                    perturbation_ < 101 && numberIterations_ > 2 * (numberRows_ + numberColumns_) && (moreSpecialOptions_&1048576)==0) {
                perturb();
                // Can't get here if values pass
                gutsOfSolution(NULL, NULL);

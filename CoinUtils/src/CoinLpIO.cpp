@@ -1,4 +1,4 @@
-/* $Id: CoinLpIO.cpp 1602 2013-07-12 12:15:37Z tkr $ */
+/* $Id: CoinLpIO.cpp 1652 2013-10-18 10:35:37Z stefan $ */
 // Last edit: 11/5/08
 //
 // Name:     CoinLpIO.cpp; Support for Lp files
@@ -38,22 +38,22 @@ CoinLpIO::CoinLpIO() :
   numberRows_(0),
   numberColumns_(0),
   numberElements_(0),
-  matrixByColumn_(NULL),
+  rowsense_(NULL),
+  rhs_(NULL),
+  rowrange_(NULL),
   matrixByRow_(NULL),
+  matrixByColumn_(NULL),
   rowlower_(NULL),
   rowupper_(NULL),
   collower_(NULL),
   colupper_(NULL),
-  rhs_(NULL),
-  rowrange_(NULL),
-  rowsense_(NULL),
   objective_(NULL),
   objectiveOffset_(0),
   integerType_(NULL),
   fileName_(NULL),
   infinity_(COIN_DBL_MAX),
-  epsilon_(1e-5),
   numberAcross_(10),
+  epsilon_(1e-5),
   decimals_(5),
   objName_(NULL)
 {
@@ -493,7 +493,7 @@ void CoinLpIO::checkRowNames() {
       if(findHash(rName, 0) != -1) {
 	setDefaultRowNames();
 	char printBuffer[512];
-	sprintf(printBuffer,"### CoinLpIO::checkRowNames(): ranged constraint %d hasa name %s identical to another constraint name or objective function name.\nUse getPreviousNames() to get the old row names.\nNow using default row names.", i, rName);
+	sprintf(printBuffer,"### CoinLpIO::checkRowNames(): ranged constraint %d has a name %s identical to another constraint name or objective function name.\nUse getPreviousNames() to get the old row names.\nNow using default row names.", i, rName);
 	handler_->message(COIN_GENERAL_WARNING,messages_)<<printBuffer
 						  <<CoinMessageEol;
 	break;
@@ -2513,10 +2513,8 @@ CoinLpIO::insertHash(const char *thisName, int section)
 void 
 CoinLpIO::passInMessageHandler(CoinMessageHandler * handler)
 {
-  if (defaultHandler_){ 
+  if (defaultHandler_)
     delete handler_;
-    handler = NULL; 
-    }
   defaultHandler_=false;
   handler_=handler;
 }

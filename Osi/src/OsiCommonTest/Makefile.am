@@ -2,7 +2,7 @@
 # All Rights Reserved.
 # This file is distributed under the Eclipse Public License.
 
-## $Id: Makefile.am 1881 2013-01-28 00:05:47Z stefan $
+## $Id: Makefile.am 1953 2013-12-14 23:53:52Z tkr $
 
 # Author:  Lou Hafer	SFU	2010-11-20
 
@@ -28,6 +28,11 @@ libOsiCommonTests_la_SOURCES = \
 	OsiNetlibTest.cpp \
 	OsiUnitTestUtils.cpp \
 	OsiSolverInterfaceTest.cpp
+
+# List all additionally required libraries
+if DEPENDENCY_LINKING
+libOsiCommonTests_la_LIBADD = $(OSILIB_LIBS) ../Osi/libOsi.la
+endif
 
 # Libtool flags
 libOsiCommonTests_la_LDFLAGS = $(LT_LDFLAGS)

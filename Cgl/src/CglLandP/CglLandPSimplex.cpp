@@ -4,7 +4,7 @@
 //           Carnegie Mellon University, Pittsburgh, PA 15213
 // Date:     21/07/05
 //
-// $Id: CglLandPSimplex.cpp 1123 2013-04-06 20:47:24Z stefan $
+// $Id: CglLandPSimplex.cpp 1152 2013-10-29 14:52:29Z forrest $
 //
 // This code is licensed under the terms of the Eclipse Public License (EPL).
 //---------------------------------------------------------------------------
@@ -2104,7 +2104,7 @@ struct reducedCost
     double value2;
     /** index of the row.*/
     int row;
-    bool operator<(const reducedCost & other)
+    bool operator<(const reducedCost & other) const
     {
         return (value>other.value);
     }

@@ -1,4 +1,4 @@
-// $Id: Cgl012cut.hpp 1123 2013-04-06 20:47:24Z stefan $
+// $Id: Cgl012cut.hpp 1150 2013-10-21 18:24:45Z tkr $
 // Copyright (C) 2010, International Business Machines
 // Corporation and others.  All Rights Reserved.
 // This code is licensed under the terms of the Eclipse Public License (EPL).
@@ -199,7 +199,7 @@ int n_it_zero; /* number of consecutive iterations (starting from the
                    last and going backward) in which each variable took
                    the value 0 in the LP solution */
 } log_var;
-/** 012Cut Generator Class<br> 
+/** 012Cut Generator Class
 
  This class is to make Cgl01cut thread safe etc
 */

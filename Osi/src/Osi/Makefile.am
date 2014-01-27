@@ -2,7 +2,7 @@
 # All Rights Reserved.
 # This file is distributed under the Eclipse Public License.
 
-## $Id: Makefile.am 1881 2013-01-28 00:05:47Z stefan $
+## $Id: Makefile.am 1953 2013-12-14 23:53:52Z tkr $
 
 # Author:  Lou Hafer        SFU        2010-07-29
 
@@ -33,6 +33,11 @@ libOsi_la_SOURCES = \
 	OsiSolverBranch.cpp OsiSolverBranch.hpp \
 	OsiSolverInterface.cpp OsiSolverInterface.hpp \
 	OsiSolverParameters.hpp
+
+# List all additionally required libraries
+if DEPENDENCY_LINKING
+libOsi_la_LIBADD = $(OSILIB_LIBS)
+endif
 
 # This is for libtool
 libOsi_la_LDFLAGS = $(LT_LDFLAGS)

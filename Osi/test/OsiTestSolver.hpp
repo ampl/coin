@@ -11,6 +11,7 @@
 #include <algorithm>
 #include <cstdio>
 #include <cmath>
+#include <cstdlib>
 
 #include "CoinFinite.hpp"
 

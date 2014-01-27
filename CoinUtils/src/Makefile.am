@@ -2,7 +2,7 @@
 # All Rights Reserved.
 # This file is distributed under the Eclipse Public License.
 
-## $Id: Makefile.am 1510 2011-12-08 23:56:01Z lou $
+## $Id: Makefile.am 1681 2013-12-14 23:52:56Z tkr $
 
 # Author:  Andreas Waechter           IBM    2006-04-13
 
@@ -92,6 +92,11 @@ libCoinUtils_la_SOURCES = \
 	CoinWarmStartVector.cpp CoinWarmStartVector.hpp \
 	CoinWarmStartDual.cpp CoinWarmStartDual.hpp \
 	CoinWarmStartPrimalDual.cpp CoinWarmStartPrimalDual.hpp
+
+# List all additionally required libraries
+if DEPENDENCY_LINKING
+libCoinUtils_la_LIBADD = $(COINUTILSLIB_LIBS)
+endif
 
 # This is for libtool
 libCoinUtils_la_LDFLAGS = $(LT_LDFLAGS)

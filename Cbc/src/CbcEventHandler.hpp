@@ -4,7 +4,7 @@
 
   This code is licensed under the terms of the Eclipse Public License (EPL).
 
-  $Id: CbcEventHandler.hpp 1632 2011-03-29 14:40:46Z forrest $
+  $Id: CbcEventHandler.hpp 1986 2013-11-29 17:24:44Z forrest $
 */
 
 #ifndef CbcEventHandler_H
@@ -45,7 +45,7 @@
   clp-specific code.
 
 */
-
+#include <cstddef>
 #include <map>
 
 /* May well already be declared, but can't hurt. */
@@ -53,7 +53,7 @@
 class CbcModel ;
 
 /*
-  cvs/svn: $Id: CbcEventHandler.hpp 1632 2011-03-29 14:40:46Z forrest $
+  cvs/svn: $Id: CbcEventHandler.hpp 1986 2013-11-29 17:24:44Z forrest $
 */
 
 /*! \class CbcEventHandler

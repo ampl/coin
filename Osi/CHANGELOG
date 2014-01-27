@@ -1,3 +1,15 @@
+11/18/2013 OsiMsk
+  - changed MIP optimizer to Mosek's own conic MIP optimizer, if Mosek version >= 7
+
+09/11/2013 OsiCpx
+  - fixed getIterationCount() for MIPs (use CPXgetmipitcnt instead of CPXgetitcnt)
+
+08/30/2013 OsiGrb
+  - fixed bug in getObjectiveCoefficients and getBasisStatus for LPs without ranged rows
+
+08/23/2013 OsiGrb
+  - fixed bug in deleting row or column names when deleting several rows/columns at once
+
 04/02/2013 OsiMsk
   - update to work with Mosek 7, too (contributed by Erling D. Andersen)
 

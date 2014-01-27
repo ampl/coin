@@ -1,4 +1,4 @@
-/* $Id: CoinMpsIO.hpp 1419 2011-04-29 17:39:07Z stefan $ */
+/* $Id: CoinMpsIO.hpp 1643 2013-10-16 03:43:21Z tkr $ */
 // Copyright (C) 2000, International Business Machines
 // Corporation and others.  All Rights Reserved.
 // This code is licensed under the terms of the Eclipse Public License (EPL).
@@ -48,7 +48,8 @@ enum COINMpsType { COIN_N_ROW, COIN_E_ROW, COIN_L_ROW, COIN_G_ROW,
   COIN_BLANK_COLUMN, COIN_S1_COLUMN, COIN_S2_COLUMN, COIN_S3_COLUMN,
   COIN_INTORG, COIN_INTEND, COIN_SOSEND, COIN_UNSET_BOUND,
   COIN_UP_BOUND, COIN_FX_BOUND, COIN_LO_BOUND, COIN_FR_BOUND,
-                   COIN_MI_BOUND, COIN_PL_BOUND, COIN_BV_BOUND, COIN_UI_BOUND, COIN_LI_BOUND,
+                   COIN_MI_BOUND, COIN_PL_BOUND, COIN_BV_BOUND, 
+				   COIN_UI_BOUND, COIN_LI_BOUND, COIN_BOTH_BOUNDS_SET,
 		   COIN_SC_BOUND, COIN_S1_BOUND, COIN_S2_BOUND,
 		   COIN_BS_BASIS, COIN_XL_BASIS, COIN_XU_BASIS,
 		   COIN_LL_BASIS, COIN_UL_BASIS, COIN_UNKNOWN_MPS_TYPE
@@ -740,9 +741,11 @@ public:
       -3 empty section
 
       columnStart is numberCones+1 long, other number of columns in matrix
-    */
-    int readConicMps(const char * filename,
-		     int * &columnStart, int * &column, int & numberCones);
+
+	  coneType is 1 for QUAD, 2 for RQUAD (numberCones long)
+*/	
+	int readConicMps(const char * filename,
+			int * &columnStart, int * &column, int * &coneType, int & numberCones);
     /// Set whether to move objective from matrix
     inline void setConvertObjective(bool trueFalse)
     { convertObjective_=trueFalse;}
@@ -1050,3 +1053,4 @@ void
 CoinConvertDouble(int section, int formatType, double value, char outputValue[24]);
 
 #endif
+

@@ -2,13 +2,11 @@
 # All Rights Reserved.
 # This file is distributed under the Eclipse Public License.
 
-## $Id: Makefile.am 1936 2013-07-03 09:12:23Z stefan $
+## $Id: Makefile.am 1999 2013-12-26 23:12:36Z tkr $
 
 # Author:  Andreas Waechter           IBM    2006-04-13
 
 AUTOMAKE_OPTIONS = foreign
-
-SUBDIRS = OsiCbc
 
 ########################################################################
 #                               libCbc                                 #
@@ -102,6 +100,12 @@ libCbcSolver_la_SOURCES = \
 	CbcSolverAnalyze.cpp CbcSolverAnalyze.hpp \
 	CbcMipStartIO.cpp CbcMipStartIO.hpp \
 	CbcSolverExpandKnapsack.cpp CbcSolverExpandKnapsack.hpp
+
+# List all additionally required libraries
+if DEPENDENCY_LINKING
+libCbc_la_LIBADD = $(CBCLIB_LIBS)
+libCbcSolver_la_LIBADD = $(CBCLIB_LIBS) libCbc.la
+endif
 
 # This is for libtool
 
@@ -267,7 +271,7 @@ if COIN_CXX_IS_CL
 install-exec-hook:
 	test -s cbc.exe.manifest && \
 	mt -manifest cbc.exe.manifest -outputresource:cbc.exe;\
-	cp cbc.exe $(bindir)/clp.exe
+	cp cbc.exe $(bindir)/cbc.exe
 endif
 
 #######################################################################

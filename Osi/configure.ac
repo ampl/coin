@@ -2,7 +2,7 @@
 # All Rights Reserved.
 # This file is distributed under the Eclipse Public License.
 
-## $Id: configure.ac 1912 2013-06-14 15:40:43Z stefan $
+## $Id: configure.ac 1954 2013-12-17 21:46:39Z tkr $
 
 # Author:  Andreas Waechter            IBM    2006-04-13
 
@@ -12,7 +12,7 @@
 
 AC_PREREQ(2.59)
 
-AC_INIT([Osi],[0.106.1],[osi@list.coin-or.org])
+AC_INIT([Osi],[0.106.5],[osi@list.coin-or.org])
 
 AC_COPYRIGHT([
 Copyright 2006 International Business Machines and others.
@@ -38,7 +38,7 @@ AC_PREFIX_DEFAULT([`pwd`])
 AC_CANONICAL_BUILD
 
 # A bit of initial setup
-AC_COIN_PROJECTDIR_INIT(Osi,12:1:11)
+AC_COIN_PROJECTDIR_INIT(Osi,12:5:11)
 
 # Check if user wants to produce debugging code
 AC_COIN_DEBUG_COMPILE(Osi)

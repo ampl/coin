@@ -2,7 +2,7 @@
 # All Rights Reserved.
 # This file is distributed under the Eclipse Public License.
 
-## $Id: Makefile.am 1739 2011-10-13 20:36:06Z stefan $
+## $Id: Makefile.am 1992 2013-12-15 23:57:12Z tkr $
 
 # Author:  Andreas Waechter           IBM    2006-04-13
 
@@ -13,6 +13,9 @@ AUTOMAKE_OPTIONS = foreign
 ########################################################################
 
 SUBDIRS = src
+
+# Don't do src/OsiCbc recursively, since src/OsiCbc/libOsiCbc depends on src/libCbc
+SUBDIRS += src/OsiCbc
 
 # We don't want to compile the test subdirectory, unless the test target is
 # specified.  But we need to list it as subdirectory to make sure that it is
@@ -139,7 +142,7 @@ else
 if COIN_CXX_IS_CL
 	echo "-libpath:`$(CYGPATH_W) @abs_lib_dir@` libCbc.lib @CBCLIB_LIBS_INSTALLED@" > $(addlibsdir)/cbc_addlibs.txt
 else
-	echo -L@abs_lib_dir@ -lCbc @CBCLIB_LIBS_INSTALLED@ > $(addlibsdir)/cbc_addlibs.txt
+	echo -L@abs_lib_dir@ -lCbcSolver -lCbc @CBCLIB_LIBS_INSTALLED@ > $(addlibsdir)/cbc_addlibs.txt
 endif
 endif
 

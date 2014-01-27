@@ -2,7 +2,7 @@
 # All Rights Reserved.
 # This file is distributed under the Eclipse Public License.
 
-## $Id: Makefile.am 2315 2011-06-19 14:38:54Z stefan $
+## $Id: Makefile.am 3153 2013-12-16 18:48:39Z tkr $
 
 AUTOMAKE_OPTIONS = foreign
 
@@ -51,6 +51,9 @@ AM_CPPFLAGS = \
 	-I`$(CYGPATH_W) $(srcdir)/$(MUMPSDIR)/libseq` \
 	-I`$(CYGPATH_W) $(srcdir)/$(MUMPSDIR)/include`
 
+if DEPENDENCY_LINKING
+libcoinmumps_la_LIBADD = $(MUMPS_LIBS) $(MUMPS_PCLIBS)
+endif
 
 libcoinmumps_la_LDFLAGS = $(LT_LDFLAGS)
 

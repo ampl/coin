@@ -2,7 +2,7 @@
 # All Rights Reserved.
 # This file is distributed under the Eclipse Public License.
 
-## $Id: Makefile.am 1803 2011-10-13 20:13:10Z stefan $
+## $Id: Makefile.am 2010 2013-12-16 16:30:10Z tkr $
 
 # Author:  Andreas Waechter           IBM    2006-04-13
 
@@ -13,6 +13,11 @@ AUTOMAKE_OPTIONS = foreign
 ########################################################################
 
 SUBDIRS = src
+
+# Don't do src/OsiClp recursively, since src/OsiClp/libOsiClp depends on src/libClp
+if COIN_HAS_OSI
+  SUBDIRS += src/OsiClp
+endif
 
 # We don't want to compile the test subdirectory, unless the test target is
 # specified.  But we need to list it as subdirectory to make sure that it is

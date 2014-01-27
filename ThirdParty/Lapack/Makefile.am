@@ -2,7 +2,7 @@
 # All Rights Reserved.
 # This file is distributed under the Eclipse Public License.
 
-## $Id: Makefile.am 2640 2012-11-20 18:34:33Z stefan $
+## $Id: Makefile.am 3151 2013-12-16 18:16:29Z tkr $
 
 AUTOMAKE_OPTIONS = foreign
 
@@ -125,6 +125,9 @@ LAPACK_FILES = \
 	dpotf2.f \
 	dpotrf.f \
 	dpotrs.f \
+	dppsv.f \
+	dpptrf.f \
+	dpptrs.f \
 	dstebz.f \
 	dstein.f \
 	dstemr.f \
@@ -166,6 +169,10 @@ LAPACK_FILES = \
 	zsytri.f
 
 libcoinlapack_la_SOURCES = $(LAPACK_FILES)
+
+if DEPENDENCY_LINKING
+libcoinlapack_la_LIBADD = $(LAPACKLIB_LIBS)
+endif
 
 libcoinlapack_la_LDFLAGS = $(LT_LDFLAGS)
 

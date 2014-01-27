@@ -1,4 +1,4 @@
-/* $Id: CoinMpsIO.cpp 1581 2013-04-06 12:48:50Z stefan $ */
+/* $Id: CoinMpsIO.cpp 1646 2013-10-16 15:06:38Z tkr $ */
 // Copyright (C) 2000, International Business Machines
 // Corporation and others.  All Rights Reserved.
 // This code is licensed under the terms of the Eclipse Public License (EPL).
@@ -2312,7 +2312,8 @@ int CoinMpsIO::readMps(int & numberSets,CoinSet ** &sets)
 	      if ( value < 0.0 ) {
 		collower_[icolumn] = -infinity_;
 	      }
-	    } else if ( columnType[icolumn] == COIN_LO_BOUND ) {
+	    } else if ( columnType[icolumn] == COIN_LO_BOUND ||
+                        columnType[icolumn] == COIN_LI_BOUND) {
 	      if ( value < collower_[icolumn] ) {
 		ifError = true;
 	      } else if ( value < collower_[icolumn] + smallElement_ ) {
@@ -2325,7 +2326,11 @@ int CoinMpsIO::readMps(int & numberSets,CoinSet ** &sets)
             if (value>1.0e25)
               value=infinity_;
 	    colupper_[icolumn] = value;
-	    columnType[icolumn] = COIN_UP_BOUND;
+	    if ( columnType[icolumn] == COIN_UNSET_BOUND ) {
+ 	        columnType[icolumn] = COIN_UP_BOUND;
+            } else {
+ 	        columnType[icolumn] = COIN_BOTH_BOUNDS_SET;
+            }
 	    break;
 	  case COIN_LO_BOUND:
 	    if ( value == -1.0e100 )
@@ -2345,13 +2350,18 @@ int CoinMpsIO::readMps(int & numberSets,CoinSet ** &sets)
 	      } else if ( value > colupper_[icolumn] - smallElement_ ) {
 		value = colupper_[icolumn];
 	      }
+	    } else if ( columnType[icolumn] == COIN_PL_BOUND ) {
 	    } else {
 	      ifError = true;
 	    }
             if (value<-1.0e25)
               value=-infinity_;
 	    collower_[icolumn] = value;
-	    columnType[icolumn] = COIN_LO_BOUND;
+	    if ( columnType[icolumn] == COIN_UNSET_BOUND ) {
+ 	        columnType[icolumn] = COIN_LO_BOUND;
+            } else {
+ 	        columnType[icolumn] = COIN_BOTH_BOUNDS_SET;
+            }
 	    break;
 	  case COIN_FX_BOUND:
 	    if ( value == -1.0e100 )
@@ -2364,9 +2374,10 @@ int CoinMpsIO::readMps(int & numberSets,CoinSet ** &sets)
 	      addString(numberRows_+1,icolumn,s+1);
 	      addString(numberRows_+2,icolumn,s+1);
 	    }
-	    if ( columnType[icolumn] == COIN_UNSET_BOUND ) {
-	    } else if ( columnType[icolumn] == COIN_UI_BOUND ||
-			columnType[icolumn] == COIN_BV_BOUND) {
+	    if ( columnType[icolumn] == COIN_UNSET_BOUND ) {    
+	    } else if (columnType[icolumn] == COIN_FX_BOUND ) {
+		ifError=true;
+            } else if (integerType_[icolumn] ) {
 	      // Allow so people can easily put FX's at end
 	      double value2 = floor(value);
 	      if (fabs(value2-value)>1.0e-12||
@@ -2375,9 +2386,8 @@ int CoinMpsIO::readMps(int & numberSets,CoinSet ** &sets)
 		ifError=true;
 	      } else {
 		// take off integer list
-		assert(integerType_[icolumn] );
-		numberIntegers--;
-		integerType_[icolumn] = 0;
+		    numberIntegers--;
+		    integerType_[icolumn] = 0;
 	      }
 	    } else {
 	      ifError = true;
@@ -2398,12 +2408,17 @@ int CoinMpsIO::readMps(int & numberSets,CoinSet ** &sets)
 	  case COIN_MI_BOUND:
 	    if ( columnType[icolumn] == COIN_UNSET_BOUND ) {
 	      colupper_[icolumn] = COIN_DBL_MAX;
-	    } else if ( columnType[icolumn] == COIN_UP_BOUND ) {
+	    } else if ( columnType[icolumn] == COIN_UP_BOUND ||
+			columnType[icolumn] == COIN_UI_BOUND ) {
 	    } else {
 	      ifError = true;
 	    }
 	    collower_[icolumn] = -infinity_;
-	    columnType[icolumn] = COIN_MI_BOUND;
+	    if ( columnType[icolumn] == COIN_UNSET_BOUND ) {
+ 	        columnType[icolumn] = COIN_MI_BOUND;
+            } else {
+ 	        columnType[icolumn] = COIN_BOTH_BOUNDS_SET;
+            }
 	    break;
 	  case COIN_PL_BOUND:
 	    // change to allow if no upper bound set
@@ -2412,7 +2427,11 @@ int CoinMpsIO::readMps(int & numberSets,CoinSet ** &sets)
 	    } else {
 	      ifError = true;
 	    }
-	    columnType[icolumn] = COIN_PL_BOUND;
+	    if ( columnType[icolumn] == COIN_UNSET_BOUND ) {
+ 	        columnType[icolumn] = COIN_PL_BOUND;
+            } else {
+ 	        columnType[icolumn] = COIN_BOTH_BOUNDS_SET;
+            }
 	    break;
 	  case COIN_UI_BOUND:
 	    if (value==STRING_VALUE) {
@@ -2426,12 +2445,14 @@ int CoinMpsIO::readMps(int & numberSets,CoinSet ** &sets)
 	    if ( value == -1.0e100 ) 
 	      ifError = true;
 	    if ( columnType[icolumn] == COIN_UNSET_BOUND ) {
-	    } else if ( columnType[icolumn] == COIN_LO_BOUND ) {
+	    } else if ( columnType[icolumn] == COIN_LO_BOUND ||
+                        columnType[icolumn] == COIN_LI_BOUND) {
 	      if ( value < collower_[icolumn] ) {
 		ifError = true;
 	      } else if ( value < collower_[icolumn] + smallElement_ ) {
 		value = collower_[icolumn];
 	      }
+	    } else if ( columnType[icolumn] == COIN_MI_BOUND ) {
 	    } else {
 	      ifError = true;
 	    }
@@ -2439,12 +2460,15 @@ int CoinMpsIO::readMps(int & numberSets,CoinSet ** &sets)
 	    if ( value == -1.0e100 ) {
 	       value = infinity_;
 	       if (columnType[icolumn] != COIN_UNSET_BOUND &&
-		   columnType[icolumn] != COIN_LO_BOUND) {
-		  ifError = true;
+		       columnType[icolumn] != COIN_LO_BOUND &&
+		       columnType[icolumn] != COIN_LI_BOUND &&
+		       columnType[icolumn] != COIN_MI_BOUND) {
+		     ifError = true;
 	       }
 	    } else {
 	       if ( columnType[icolumn] == COIN_UNSET_BOUND ) {
 	       } else if ( columnType[icolumn] == COIN_LO_BOUND ||
+			   columnType[icolumn] == COIN_LI_BOUND ||
                            columnType[icolumn] == COIN_MI_BOUND ) {
 		  if ( value < collower_[icolumn] ) {
 		     ifError = true;
@@ -2459,7 +2483,11 @@ int CoinMpsIO::readMps(int & numberSets,CoinSet ** &sets)
             if (value>1.0e25)
               value=infinity_;
 	    colupper_[icolumn] = value;
-	    columnType[icolumn] = COIN_UI_BOUND;
+	    if ( columnType[icolumn] == COIN_UNSET_BOUND ) {
+ 	        columnType[icolumn] = COIN_UI_BOUND;
+            } else {
+ 	        columnType[icolumn] = COIN_BOTH_BOUNDS_SET;
+            }
 	    if ( !integerType_[icolumn] ) {
 	      numberIntegers++;
 	      integerType_[icolumn] = 1;
@@ -2483,13 +2511,18 @@ int CoinMpsIO::readMps(int & numberSets,CoinSet ** &sets)
 	      } else if ( value > colupper_[icolumn] - smallElement_ ) {
 		value = colupper_[icolumn];
 	      }
+	    } else if ( columnType[icolumn] == COIN_PL_BOUND ) {
 	    } else {
 	      ifError = true;
 	    }
             if (value<-1.0e25)
               value=-infinity_;
 	    collower_[icolumn] = value;
-	    columnType[icolumn] = COIN_LI_BOUND;
+	    if ( columnType[icolumn] == COIN_UNSET_BOUND ) {
+ 	        columnType[icolumn] = COIN_LI_BOUND;
+            } else {
+ 	        columnType[icolumn] = COIN_BOTH_BOUNDS_SET;
+            }
 	    if ( !integerType_[icolumn] ) {
 	      numberIntegers++;
 	      integerType_[icolumn] = 1;
@@ -2635,7 +2668,8 @@ int CoinMpsIO::readMps(int & numberSets,CoinSet ** &sets)
     }
     free ( columnType );
     if ( cardReader_->whichSection (  ) != COIN_ENDATA_SECTION &&
-	 cardReader_->whichSection (  ) != COIN_QUAD_SECTION ) {
+	 cardReader_->whichSection (  ) != COIN_QUAD_SECTION &&
+	 cardReader_->whichSection (  ) != COIN_CONIC_SECTION ) {
       handler_->message(COIN_MPS_BADIMAGE,messages_)<<cardReader_->cardNumber()
 						    <<cardReader_->card()
 						    <<CoinMessageEol;
@@ -5537,14 +5571,16 @@ CoinMpsIO::readQuadraticMps(const char * filename,
   }
   // See if QUADOBJ just found
   if (!filename&&cardReader_->whichSection (  ) == COIN_QUAD_SECTION ) {
-    cardReader_->setWhichSection(COIN_QUADRATIC_SECTION);
+    cardReader_->setWhichSection(COIN_QUAD_SECTION);
+  } else if (cardReader_->whichSection (  ) == COIN_CONIC_SECTION ) {
+      return -3;
   } else {
     cardReader_->readToNextSection();
     
     // Skip NAME
     if ( cardReader_->whichSection (  ) == COIN_NAME_SECTION ) 
       cardReader_->readToNextSection();
-    if ( cardReader_->whichSection (  ) == COIN_QUADRATIC_SECTION ) {
+    if ( cardReader_->whichSection (  ) == COIN_QUAD_SECTION ) {
       // save name of section
       free(problemName_);
       problemName_=CoinStrdup(cardReader_->columnName());
@@ -5573,7 +5609,7 @@ CoinMpsIO::readQuadraticMps(const char * filename,
   startHash(1);
   int numberElements=0;
 
-  while ( cardReader_->nextField (  ) == COIN_QUADRATIC_SECTION ) {
+  while ( cardReader_->nextField (  ) == COIN_QUAD_SECTION ) {
     switch ( cardReader_->mpsType (  ) ) {
     case COIN_BLANK_COLUMN:
       if ( fabs ( cardReader_->value (  ) ) > smallElement_ ) {
@@ -5632,6 +5668,15 @@ CoinMpsIO::readQuadraticMps(const char * filename,
       }
     }
   }
+  if ( cardReader_->whichSection (  ) != COIN_ENDATA_SECTION &&
+	 cardReader_->whichSection (  ) != COIN_CONIC_SECTION ) {
+      handler_->message(COIN_MPS_BADIMAGE,messages_)<<cardReader_->cardNumber()
+						    <<cardReader_->card()
+						    <<CoinMessageEol;
+      handler_->message(COIN_MPS_RETURNING,messages_)<<CoinMessageEol;
+      return numberErrors+100000;
+    }
+
   stopHash(1);
   // Do arrays as new [] and make column ordered
   columnStart = new int [numberColumns_+1];
@@ -5742,10 +5787,12 @@ CoinMpsIO::readQuadraticMps(const char * filename,
    Returns number of errors, -1 bad file, -2 no conic section, -3 empty section
    
    columnStart is numberCones+1 long, other number of columns in matrix
+
+   coneType is 1 for QUAD, 2 for RQUAD (numberCones long)
 */
 int 
 CoinMpsIO::readConicMps(const char * filename,
-		     int * &columnStart, int * &column, int & numberCones)
+			int * &columnStart, int * &column, int * &coneType, int & numberCones)
 {
   // Deal with filename - +1 if new, 0 if same as before, -1 if error
   CoinFileInput *input = 0;
@@ -5757,32 +5804,67 @@ CoinMpsIO::readConicMps(const char * filename,
     cardReader_ = new CoinMpsCardReader ( input, this);
   }
 
-  cardReader_->readToNextSection();
+  // See if CSECTION just found
+  if (!filename&&cardReader_->whichSection (  ) == COIN_CONIC_SECTION ) {
+    cardReader_->setWhichSection(COIN_CONIC_SECTION);
+  } else {
+    cardReader_->readToNextSection();
 
   // Skip NAME
   if ( cardReader_->whichSection (  ) == COIN_NAME_SECTION ) 
     cardReader_->readToNextSection();
+    if ( cardReader_->whichSection (  ) == COIN_CONIC_SECTION ) {
+      // looks good
+    } else if ( cardReader_->whichSection (  ) == COIN_EOF_SECTION ) {
+      handler_->message(COIN_MPS_EOF,messages_)<<fileName_
+					       <<CoinMessageEol;
+      return -3;
+    } else {
+    handler_->message(COIN_MPS_BADFILE1,messages_)<<cardReader_->card()
+						  <<cardReader_->cardNumber()
+						  <<fileName_
+						  <<CoinMessageEol;
+    return -2;
+    }
+  }    
+
   numberCones=0;
 
-  // Get arrays
+  // Get arrays (some too big, but ...)
   columnStart = new int [numberColumns_+1];
   column = new int [numberColumns_];
+  coneType = new int [numberColumns_];
+  // check QUAD or RQUAD (by hand) - card has had end stripped 
+  const char * quad = cardReader_->card()+strlen(cardReader_->card())-4; 
+  // Should be QUAD but if not don't complain
+  int type=1;
+  if (!strcmp(quad,"QUAD")) {
+    if (*(quad-1)=='R')
+      type=2;
+  }
+  coneType[0] = type;
   int numberErrors = 0;
   columnStart[0]=0;
   int numberElements=0;
   startHash(1);
   
-  //if (cardReader_->whichSection()==COIN_CONIC_SECTION) 
-  //cardReader_->cleanCard(); // skip doing last
   while ( cardReader_->nextField (  ) == COIN_CONIC_SECTION ) {
-    // should check QUAD
-    // Have to check by hand
-    if (!strncmp(cardReader_->card(),"CSECTION",8)) {
+    const char * card = cardReader_->card();
+    if (!strncmp(card,"CSECTION",8)) {
+      // check QUAD or RQUAD (by hand) - card has had end stripped 
+      const char * quad = card+strlen(card)-4; 
+      // Should be QUAD but if not don't complain
+      int type=1;
+      if (!strcmp(quad,"QUAD")) {
+	if (*(quad-1)=='R')
+	  type=2;
+      }
       if (numberElements==columnStart[numberCones]) {
 	printf("Cone must have at least one column\n");
 	abort();
       }
       columnStart[++numberCones]=numberElements;
+      coneType[numberCones] = type;
       continue;
     }
     COINColumnIndex iColumn1;
@@ -5824,8 +5906,10 @@ CoinMpsIO::readConicMps(const char * filename,
 					       <<CoinMessageEol;
       delete [] columnStart;
       delete [] column;
+      delete [] coneType;
       columnStart = NULL;
       column = NULL;
+      coneType = NULL;
       return -3;
     } else {
       columnStart[++numberCones]=numberElements;
@@ -5835,11 +5919,12 @@ CoinMpsIO::readConicMps(const char * filename,
 						  <<cardReader_->cardNumber()
 						 <<fileName_
 						  <<CoinMessageEol;
-    delete [] columnStart;
-    delete [] column;
-    columnStart = NULL;
-    column = NULL;
-    numberCones=0;
+      delete [] columnStart;
+      delete [] column;
+      delete [] coneType;
+      columnStart = NULL;
+      column = NULL;
+      coneType = NULL;
     return -2;
   }
 

@@ -1,4 +1,4 @@
-/* $Id: CoinHelperFunctions.hpp 1581 2013-04-06 12:48:50Z stefan $ */
+/* $Id: CoinHelperFunctions.hpp 1678 2013-12-05 11:27:05Z forrest $ */
 // Copyright (C) 2000, International Business Machines
 // Corporation and others.  All Rights Reserved.
 // This code is licensed under the terms of the Eclipse Public License (EPL).
@@ -10,7 +10,9 @@
 
 #if defined(_MSC_VER)
 #  include <direct.h>
+#  include <cctype>
 #  define getcwd _getcwd
+#  include <cctype>
 #else
 #  include <unistd.h>
 #endif
@@ -840,8 +842,8 @@ inline int CoinStrNCaseCmp(const char* s0, const char* s1,
 	if (s1[i] == 0) {
 	    return 1;
 	}
-	const int c0 = tolower(s0[i]);
-	const int c1 = tolower(s1[i]);
+	const int c0 = std::tolower(s0[i]);
+	const int c1 = std::tolower(s1[i]);
 	if (c0 < c1)
 	    return -1;
 	if (c0 > c1)

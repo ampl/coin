@@ -77,7 +77,9 @@ am__strip_dir = `echo $$p | sed -e 's|^.*/||'`;
 am__installdirs = "$(DESTDIR)$(libdir)" "$(DESTDIR)$(pkgconfiglibdir)"
 libLTLIBRARIES_INSTALL = $(INSTALL)
 LTLIBRARIES = $(lib_LTLIBRARIES)
-libcoinlapack_la_LIBADD =
+am__DEPENDENCIES_1 =
+@DEPENDENCY_LINKING_TRUE@libcoinlapack_la_DEPENDENCIES =  \
+@DEPENDENCY_LINKING_TRUE@	$(am__DEPENDENCIES_1)
 am__objects_1 = dbdsqr.lo dgebal.lo dgebak.lo dgebd2.lo dgebrd.lo \
 	dgeev.lo dgehd2.lo dgehrd.lo dgelq2.lo dgelqf.lo dgels.lo \
 	dgeqr2.lo dgeqrf.lo dgesvd.lo dgesv.lo dgetf2.lo dgetrf.lo \
@@ -97,13 +99,14 @@ am__objects_1 = dbdsqr.lo dgebal.lo dgebak.lo dgebd2.lo dgebrd.lo \
 	dorgbr.lo dorghr.lo dorglq.lo dorgl2.lo dorgql.lo dorgqr.lo \
 	dorgtr.lo dorm2r.lo dormbr.lo dormhr.lo dorml2.lo dormlq.lo \
 	dormql.lo dormqr.lo dormtr.lo dorm2l.lo dpotf2.lo dpotrf.lo \
-	dpotrs.lo dstebz.lo dstein.lo dstemr.lo dsteqr.lo dsterf.lo \
-	dsyev.lo dsyevr.lo dsyevx.lo dsytd2.lo dsytf2.lo dsytrd.lo \
-	dsytrf.lo dsytri.lo dtgevc.lo dtrevc.lo dtrexc.lo dtrti2.lo \
-	dtrtri.lo dtrtrs.lo ieeeck.lo iladlc.lo iladlr.lo ilaenv.lo \
-	iparmq.lo sgetf2.lo sgetrf.lo slamch.lo slaswp.lo zgetf2.lo \
-	zgetrf.lo zlacgv.lo zlacpy.lo zlaev2.lo zlaswp.lo zpotf2.lo \
-	zrot.lo zsymv.lo zsyr.lo zsytri.lo
+	dpotrs.lo dppsv.lo dpptrf.lo dpptrs.lo dstebz.lo dstein.lo \
+	dstemr.lo dsteqr.lo dsterf.lo dsyev.lo dsyevr.lo dsyevx.lo \
+	dsytd2.lo dsytf2.lo dsytrd.lo dsytrf.lo dsytri.lo dtgevc.lo \
+	dtrevc.lo dtrexc.lo dtrti2.lo dtrtri.lo dtrtrs.lo ieeeck.lo \
+	iladlc.lo iladlr.lo ilaenv.lo iparmq.lo sgetf2.lo sgetrf.lo \
+	slamch.lo slaswp.lo zgetf2.lo zgetrf.lo zlacgv.lo zlacpy.lo \
+	zlaev2.lo zlaswp.lo zpotf2.lo zrot.lo zsymv.lo zsyr.lo \
+	zsytri.lo
 am_libcoinlapack_la_OBJECTS = $(am__objects_1)
 libcoinlapack_la_OBJECTS = $(am_libcoinlapack_la_OBJECTS)
 DEFAULT_INCLUDES = -I. -I$(srcdir)
@@ -176,6 +179,8 @@ DBG_CFLAGS = @DBG_CFLAGS@
 DBG_FFLAGS = @DBG_FFLAGS@
 DEFS = @DEFS@
 DEPDIR = @DEPDIR@
+DEPENDENCY_LINKING_FALSE = @DEPENDENCY_LINKING_FALSE@
+DEPENDENCY_LINKING_TRUE = @DEPENDENCY_LINKING_TRUE@
 DLAMCH_FFLAGS = @DLAMCH_FFLAGS@
 ECHO = @ECHO@
 ECHO_C = @ECHO_C@
@@ -406,6 +411,9 @@ LAPACK_FILES = \
 	dpotf2.f \
 	dpotrf.f \
 	dpotrs.f \
+	dppsv.f \
+	dpptrf.f \
+	dpptrs.f \
 	dstebz.f \
 	dstein.f \
 	dstemr.f \
@@ -447,6 +455,7 @@ LAPACK_FILES = \
 	zsytri.f
 
 libcoinlapack_la_SOURCES = $(LAPACK_FILES)
+@DEPENDENCY_LINKING_TRUE@libcoinlapack_la_LIBADD = $(LAPACKLIB_LIBS)
 libcoinlapack_la_LDFLAGS = $(LT_LDFLAGS)
 pkgconfiglibdir = $(libdir)/pkgconfig
 pkgconfiglib_DATA = coinlapack.pc

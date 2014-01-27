@@ -1,4 +1,4 @@
-// $Id: CglSimpleRounding.hpp 1123 2013-04-06 20:47:24Z stefan $
+// $Id: CglSimpleRounding.hpp 1150 2013-10-21 18:24:45Z tkr $
 // Copyright (C) 2000, International Business Machines
 // Corporation and others.  All Rights Reserved.
 // This code is licensed under the terms of the Eclipse Public License (EPL).
@@ -11,7 +11,7 @@
 #include "CglCutGenerator.hpp"
 #include "CoinPackedMatrix.hpp"
 
-/** Simple Rounding Cut Generator Class<br> 
+/** Simple Rounding Cut Generator Class
 
  This class generates simple rounding cuts via the following method:
     For each contraint,

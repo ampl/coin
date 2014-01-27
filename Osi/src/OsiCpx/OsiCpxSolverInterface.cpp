@@ -1657,7 +1657,10 @@ int OsiCpxSolverInterface::getIterationCount() const
      return 0;
 #endif
 
-  return CPXgetitcnt( env_, getMutableLpPtr() );
+  if( probtypemip_ )
+    return CPXgetmipitcnt( env_, getMutableLpPtr() );
+  else
+    return CPXgetitcnt( env_, getMutableLpPtr() );
 }
 //------------------------------------------------------------------
 std::vector<double*> OsiCpxSolverInterface::getDualRays(int maxNumRays,

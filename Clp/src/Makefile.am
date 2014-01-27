@@ -2,15 +2,11 @@
 # All Rights Reserved.
 # This file is distributed under the Eclipse Public License.
 
-## $Id: Makefile.am 1968 2013-07-03 09:04:17Z stefan $
+## $Id: Makefile.am 2010 2013-12-16 16:30:10Z tkr $
 
 # Author:  Andreas Waechter           IBM    2006-04-13
 
 AUTOMAKE_OPTIONS = foreign
-
-if COIN_HAS_OSI
-  SUBDIRS = OsiClp
-endif
 
 ########################################################################
 #                               libClp                                 #
@@ -136,6 +132,11 @@ endif
 
 if COIN_HAS_WSMP
 libClp_la_SOURCES += ClpCholeskyWssmp.cpp ClpCholeskyWssmp.hpp ClpCholeskyWssmpKKT.cpp ClpCholeskyWssmpKKT.hpp
+endif
+
+# List all additionally required libraries
+if DEPENDENCY_LINKING
+libClp_la_LIBADD = $(CLPLIB_LIBS)
 endif
 
 # This is for libtool

@@ -1,4 +1,4 @@
-/* $Id: Idiot.cpp 1931 2013-04-06 20:44:29Z stefan $ */
+/* $Id: Idiot.cpp 2006 2013-12-12 15:40:41Z forrest $ */
 // Copyright (C) 2002, International Business Machines
 // Corporation and others.  All Rights Reserved.
 // This code is licensed under the terms of the Eclipse Public License (EPL).
@@ -1071,7 +1071,7 @@ Idiot::solve2(CoinMessageHandler * handler, const CoinMessages * messages)
      }
      muAtExit_ = mu;
      // For last iteration make as feasible as possible
-     if (oddSlacks)
+     if (oddSlacks && (strategy_&32768)==0)
           strategy_ |= 16384;
      // not scaled
      n = cleanIteration(iteration, ordStart, ordEnd,

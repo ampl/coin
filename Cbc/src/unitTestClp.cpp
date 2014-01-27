@@ -1,4 +1,4 @@
-/* $Id: unitTestClp.cpp 1883 2013-04-06 13:33:15Z stefan $ */
+/* $Id: unitTestClp.cpp 1985 2013-11-25 15:50:40Z tkr $ */
 // Copyright (C) 2002, International Business Machines
 // Corporation and others.  All Rights Reserved.
 // This code is licensed under the terms of the Eclipse Public License (EPL).
@@ -140,7 +140,7 @@ int CbcClpUnitTest (const CbcModel &saveModel, const std::string &dirMiplib,
       << "Not doing miplib run as can't find mps files." << std::endl
       << "Perhaps you're trying to read gzipped (.gz) files without libz?"
       << std::endl ;
-    return (-1) ;
+    return (0) ;
   }
   int dfltPrecision = static_cast<int>(std::cout.precision()) ;
 /*

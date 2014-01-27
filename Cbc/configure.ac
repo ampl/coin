@@ -2,7 +2,7 @@
 # All Rights Reserved.
 # This file is distributed under the Eclipse Public License.
 
-## $Id: configure.ac 1940 2013-07-16 09:27:16Z stefan $
+## $Id: configure.ac 1994 2013-12-18 00:33:48Z tkr $
 
 # Author:  Andreas Waechter            IBM    2006-04-13
 
@@ -12,7 +12,7 @@
 
 AC_PREREQ(2.59)
 
-AC_INIT([Cbc],[2.8.3],[cbc@lists.coin-or.org])
+AC_INIT([Cbc],[2.8.8],[cbc@lists.coin-or.org])
 
 AC_COPYRIGHT([
 Copyright 2006 International Business Machines and others.
@@ -41,7 +41,7 @@ AC_CANONICAL_BUILD
 # the source root directory contains definition of where to find those
 # externals.  The following macro ensures that those externals are
 # retrieved by svn if they are not there yet.
-AC_COIN_PROJECTDIR_INIT(Cbc,11:3:8)
+AC_COIN_PROJECTDIR_INIT(Cbc,11:8:8)
 
 # Check if user wants to produce debugging code
 AC_COIN_DEBUG_COMPILE(Cbc)

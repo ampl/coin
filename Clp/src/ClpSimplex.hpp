@@ -1,4 +1,4 @@
-/* $Id: ClpSimplex.hpp 1928 2013-04-06 12:54:16Z stefan $ */
+/* $Id: ClpSimplex.hpp 2006 2013-12-12 15:40:41Z forrest $ */
 // Copyright (C) 2002, International Business Machines
 // Corporation and others.  All Rights Reserved.
 // This code is licensed under the terms of the Eclipse Public License (EPL).
@@ -1184,7 +1184,6 @@ public:
 	 16384 bit - in initialSolve so be more flexible
 	 debug
 	 32768 bit - do dual in netlibd
-	 65536 (*3) initial stateDualColumn
      */
      inline int moreSpecialOptions() const {
           return moreSpecialOptions_;
@@ -1205,6 +1204,9 @@ public:
 	 4096 bit - try more for complete fathoming
 	 8192 bit - don't even think of using primal if user asks for dual (and vv)
 	 16384 bit - in initialSolve so be more flexible
+	 32768 bit - don't swap algorithms from dual if small infeasibility
+	 65536 bit - perturb in postsolve cleanup (even if < 10000 rows)
+	 1048576 bit - don't perturb even if long time
      */
      inline void setMoreSpecialOptions(int value) {
           moreSpecialOptions_ = value;

@@ -2,7 +2,7 @@
 # All Rights Reserved.
 # This file is distributed under the Eclipse Public License.
 
-## $Id: configure.ac 2788 2013-06-14 13:39:40Z stefan $
+## $Id: configure.ac 3170 2013-12-17 19:19:29Z tkr $
 
 # Author:  Andreas Waechter            IBM    2009-04-20
 
@@ -12,7 +12,7 @@
 
 AC_PREREQ(2.59)
 
-AC_INIT([ThirdPartyMetis],[1.2.5],[http://projects.coin-or.org/BuildTools/newticket])
+AC_INIT([ThirdPartyMetis],[1.2.9],[http://projects.coin-or.org/BuildTools/newticket])
 
 AC_COPYRIGHT([
 Copyright 2009 International Business Machines and others.
@@ -30,7 +30,7 @@ AC_CONFIG_SRCDIR(metis-4.0/Lib/balance.c)
 # /usr/local.
 AC_PREFIX_DEFAULT([`pwd`])
 
-AC_COIN_PROJECTDIR_INIT(Metis,3:5:2)
+AC_COIN_PROJECTDIR_INIT(Metis,3:9:2)
 
 #############################################################################
 #                         Standard build tool stuff                         #
@@ -56,6 +56,9 @@ AC_COIN_HAS_PKGCONFIG
 # Initialize automake
 AC_COIN_INIT_AUTO_TOOLS
 
+# Metis depends on libm
+AC_COIN_CHECK_LIBM(Metis)
+
 # We may need to create a dummy header file for Windows
 AC_CHECK_HEADER([strings.h], [], [touch strings.h])
 
@@ -67,5 +70,7 @@ METISDIR=metis-4.0
 AC_SUBST(METISDIR)
 
 AC_CONFIG_FILES([Makefile coinmetis.pc coinmetis-uninstalled.pc])
+
+AC_SUBST(METIS_PCLIBS)
 
 AC_COIN_FINALIZE
