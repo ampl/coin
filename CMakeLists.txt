@@ -3,7 +3,7 @@
 
 cmake_minimum_required(VERSION 2.6)
 
-project(CBC)
+project(CBC CXX C Fortran)
 
 # Output binaries to bin/ to avoid name clash between "Cbc" (directory)
 # and "cbc" (executable) on case-insensitive filesystems (on Mac OS X).
@@ -288,8 +288,10 @@ endif ()
 
 # Check C++ headers.
 include(CheckIncludeFileCXX)
-check_include_file_cxx(cfloat HAVE_CFLOAT)
-check_include_file_cxx(cmath HAVE_CMATH)
+foreach (header cassert cctype cfloat cmath cstdarg cstddef cstdio cstdlib cstring ctime)
+  string(TOUPPER ${header} var)
+  check_include_file_cxx(${header} HAVE_${var})
+endforeach ()
 if (NOT HAVE_CMATH)
   check_include_files(math.h HAVE_MATH_H)
 endif ()
@@ -431,8 +433,45 @@ if (NOT MSVC)
   add_definitions(-DHAVE_CONFIG_H)
 endif ()
 
+# Define FORTRAN_INTEGER_TYPE for Ipopt.
+set(FORTRAN_INTEGER_TYPE_C int)
+
 configure(CoinUtils src/config.h src/config_coinutils.h)
 configure(Osi src/Osi/config.h src/Osi/config_osi.h)
 configure(Clp src/config.h src/config_clp.h)
 configure(Cgl src/config.h src/config_cgl.h)
 configure(Cbc src/config.h src/config_cbc.h)
+
+if (EXISTS Ipopt)
+  find_package(BLAS REQUIRED)
+  set(COIN_HAS_BLAS 1)
+
+  set(HAVE_LINEARSOLVERLOADER 1)
+  
+  include(FortranCInterface)
+  set(F77_FUNC_C "${FortranCInterface_GLOBAL_MACRO}")
+  set(F77_FUNC__C "${FortranCInterface_GLOBAL__MACRO}")
+  
+  check_symbol_exists(drand48 stdlib.h HAVE_DRAND48)
+  check_symbol_exists(rand stdlib.h HAVE_RAND)
+  check_symbol_exists(std::rand cstdlib HAVE_STD__RAND)
+  check_symbol_exists(snprintf stdio.h HAVE_SNPRINTF)
+  check_symbol_exists(va_copy stdarg.h HAVE_VA_COPY)
+  check_symbol_exists(vsnprintf "stdio.h;stdarg.h" HAVE_VSNPRINTF)
+
+  include(CheckTypeSize)
+  check_type_size(int* SIZEOF_INT_P)
+  
+  string(SUBSTRING ${CMAKE_SHARED_LIBRARY_SUFFIX} 1 -1 SHAREDLIBEXT)
+
+  add_coin_library(Ipopt/src/Common NAME common)
+  set_target_properties(common PROPERTIES COMPILE_DEFINITIONS IPOPT_BUILD)
+
+  include_directories(Ipopt/src/Algorithm Ipopt/src/LinAlg Ipopt/src/LinAlg/TMatrices)
+  add_coin_library(Ipopt/src/contrib/CGPenalty NAME cgpenalty)
+  #set_target_properties(common PROPERTIES COMPILE_DEFINITIONS IPOPT_BUILD)
+
+  #IPALLLIBS="../contrib/CGPenalty/libcgpenalty.la ../Algorithm/libipoptalg.la ../Algorithm/LinearSolvers/liblinsolvers.la ../Common/libcommon.la ../LinAlg/liblinalg.la ../LinAlg/TMatrices/libtmatrices.la"
+
+  configure(Ipopt src/Common/config.h src/Common/config_ipopt.h)
+endif()
