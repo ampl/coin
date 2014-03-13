@@ -1,0 +1,10 @@
+prefix=/home/viz/Downloads/Ipopt-3.11.7
+libdir=/home/viz/Downloads/Ipopt-3.11.7/Ipopt/src/Interfaces
+
+Name: IPOPT
+Description: Interior Point Optimizer
+URL: https://projects.coin-or.org/Ipopt
+Version: 3.11.7
+Libs: ${libdir}/libipopt.la -lblas -lm  -ldl
+Cflags: -I/home/viz/Downloads/Ipopt-3.11.7/Ipopt/src/Interfaces -I/home/viz/Downloads/Ipopt-3.11.7/Ipopt/src/Common -I/home/viz/Downloads/Ipopt-3.11.7/Ipopt/src/LinAlg -I/home/viz/Downloads/Ipopt-3.11.7/Ipopt/src/Algorithm -I/home/viz/Downloads/Ipopt-3.11.7/Ipopt/src/contrib/CGPenalty -I/home/viz/Downloads/Ipopt-3.11.7/Ipopt/src/contrib/LinearSolverLoader -I/home/viz/Downloads/Ipopt-3.11.7/Ipopt/src/Common
+Requires: 
