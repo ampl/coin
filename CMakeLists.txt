@@ -487,6 +487,7 @@ if (EXISTS ${COIN_SOURCE_DIR}/Ipopt)
   if (COIN_HAS_ASL)
     add_ipopt_library(ipoptamplinterface Apps/AmplSolver)
     add_executable(ipopt Ipopt/src/Apps/AmplSolver/ampl_ipopt.cpp)
+    target_link_libraries(ipopt ipoptamplinterface ${ASL_LIBRARIES})
     set_target_properties(ipopt PROPERTIES COMPILE_DEFINITIONS IPOPT_BUILD)
   endif ()
 
