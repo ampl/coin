@@ -3,7 +3,7 @@
 
 cmake_minimum_required(VERSION 2.6)
 
-project(CBC CXX C Fortran)
+project(COIN CXX C Fortran)
 
 # Output binaries to bin/ to avoid name clash between "Cbc" (directory)
 # and "cbc" (executable) on case-insensitive filesystems (on Mac OS X).
@@ -114,7 +114,7 @@ function(get_sources path sources_var var)
     if (line MATCHES "^${sources_var} [+]?= (.*)")
       string(REGEX MATCHALL "[^ \t]+" src "${CMAKE_MATCH_1}")
       foreach (s ${src})
-        if (EXISTS ${CBC_SOURCE_DIR}/${path}/${s})
+        if (EXISTS ${COIN_SOURCE_DIR}/${path}/${s})
           set(sources ${sources} ${path}/${s})
         endif ()
       endforeach ()
@@ -131,7 +131,7 @@ function(add_coin_library path)
   get_filename_component(name ${path} NAME)
   set(src_path ${path})
   set(test_path ${path}/test)
-  if (EXISTS ${CBC_SOURCE_DIR}/${path}/src)
+  if (EXISTS ${COIN_SOURCE_DIR}/${path}/src)
     set(src_path ${path}/src)
   endif ()
   # Process optional arguments.
@@ -166,7 +166,7 @@ function(add_coin_library path)
   set(COIN_HAS_${uppercase_name} 1 PARENT_SCOPE)
   target_link_libraries(${name} ${dependencies})
   # Add tests.
-  if (NOT notests AND EXISTS ${CBC_SOURCE_DIR}/${test_path})
+  if (NOT notests AND EXISTS ${COIN_SOURCE_DIR}/${test_path})
     read_am_file(${test_path}/Makefile.am LINES)
     foreach (line ${LINES})
       if (line MATCHES "^(.*)_SOURCES [+]?= (.*)")
@@ -450,7 +450,7 @@ function(add_ipopt_library name path)
   set_target_properties(${name} PROPERTIES COMPILE_DEFINITIONS IPOPT_BUILD)
 endfunction()
 
-if (EXISTS Ipopt)
+if (EXISTS ${COIN_SOURCE_DIR}/Ipopt)
   find_package(BLAS REQUIRED)
   set(COIN_HAS_BLAS 1)
 
