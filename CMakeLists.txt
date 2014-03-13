@@ -253,6 +253,9 @@ function(configure package)
         if (${var}_C)
           # Variables with suffix "_C" are defined unquoted.
           set(line "#${space}define ${var} ${${var}_C}")
+        elseif (var MATCHES "F77_FUNC")
+          # F77_FUNC shouldn't have space between macro name and args.
+          set(line "#${space}define ${var}${${var}}")
         elseif (NOT DEFINED ${var} OR (var MATCHES "HAVE_.*_H" AND NOT ${var}))
           set(line "/* #${space}undef ${var} */")
         else ()
@@ -442,6 +445,11 @@ configure(Clp src/config.h src/config_clp.h)
 configure(Cgl src/config.h src/config_cgl.h)
 configure(Cbc src/config.h src/config_cbc.h)
 
+function(add_ipopt_library name path)
+  add_coin_library(Ipopt/src/${path} NAME ${name})
+  set_target_properties(${name} PROPERTIES COMPILE_DEFINITIONS IPOPT_BUILD)
+endfunction()
+
 if (EXISTS Ipopt)
   find_package(BLAS REQUIRED)
   set(COIN_HAS_BLAS 1)
@@ -449,8 +457,8 @@ if (EXISTS Ipopt)
   set(HAVE_LINEARSOLVERLOADER 1)
   
   include(FortranCInterface)
-  set(F77_FUNC_C "${FortranCInterface_GLOBAL_MACRO}")
-  set(F77_FUNC__C "${FortranCInterface_GLOBAL__MACRO}")
+  set(F77_FUNC "${FortranCInterface_GLOBAL_MACRO}")
+  set(F77_FUNC_ "${FortranCInterface_GLOBAL__MACRO}")
   
   check_symbol_exists(drand48 stdlib.h HAVE_DRAND48)
   check_symbol_exists(rand stdlib.h HAVE_RAND)
@@ -464,14 +472,23 @@ if (EXISTS Ipopt)
   
   string(SUBSTRING ${CMAKE_SHARED_LIBRARY_SUFFIX} 1 -1 SHAREDLIBEXT)
 
-  add_coin_library(Ipopt/src/Common NAME common)
-  set_target_properties(common PROPERTIES COMPILE_DEFINITIONS IPOPT_BUILD)
+  include_directories(
+    Ipopt/src/Algorithm Ipopt/src/Algorithm/LinearSolvers
+    Ipopt/src/LinAlg Ipopt/src/LinAlg/TMatrices
+    Ipopt/src/contrib/LinearSolverLoader Ipopt/src/Interfaces)
 
-  include_directories(Ipopt/src/Algorithm Ipopt/src/LinAlg Ipopt/src/LinAlg/TMatrices)
-  add_coin_library(Ipopt/src/contrib/CGPenalty NAME cgpenalty)
-  #set_target_properties(common PROPERTIES COMPILE_DEFINITIONS IPOPT_BUILD)
+  add_ipopt_library(cgpenalty contrib/CGPenalty)
+  add_ipopt_library(ipoptalg Algorithm)
+  add_ipopt_library(linsolvers Algorithm/LinearSolvers)
+  add_ipopt_library(common Common)
+  add_ipopt_library(linalg LinAlg)
+  add_ipopt_library(tmatrices LinAlg/TMatrices)
 
-  #IPALLLIBS="../contrib/CGPenalty/libcgpenalty.la ../Algorithm/libipoptalg.la ../Algorithm/LinearSolvers/liblinsolvers.la ../Common/libcommon.la ../LinAlg/liblinalg.la ../LinAlg/TMatrices/libtmatrices.la"
+  if (COIN_HAS_ASL)
+    add_ipopt_library(ipoptamplinterface Apps/AmplSolver)
+    add_executable(ipopt Ipopt/src/Apps/AmplSolver/ampl_ipopt.cpp)
+    set_target_properties(ipopt PROPERTIES COMPILE_DEFINITIONS IPOPT_BUILD)
+  endif ()
 
   configure(Ipopt src/Common/config.h src/Common/config_ipopt.h)
 endif()
