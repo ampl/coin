@@ -483,6 +483,7 @@ if (EXISTS ${COIN_SOURCE_DIR}/Ipopt)
   add_ipopt_library(common Common)
   add_ipopt_library(linalg LinAlg)
   add_ipopt_library(tmatrices LinAlg/TMatrices)
+  add_ipopt_library(ipopt Interfaces)
 
   if (COIN_HAS_ASL)
     add_ipopt_library(ipoptamplinterface Apps/AmplSolver)
