@@ -479,6 +479,7 @@ if (EXISTS ${COIN_SOURCE_DIR}/Ipopt)
 
   add_ipopt_library(cgpenalty contrib/CGPenalty)
   add_ipopt_library(ipoptalg Algorithm)
+  add_ipopt_library(LinearSolverLoader contrib/LinearSolverLoader)
   add_ipopt_library(linsolvers Algorithm/LinearSolvers)
   add_ipopt_library(common Common)
   add_ipopt_library(linalg LinAlg)
