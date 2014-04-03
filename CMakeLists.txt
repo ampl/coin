@@ -456,6 +456,7 @@ if (EXISTS ${COIN_SOURCE_DIR}/Ipopt)
 
   set(HAVE_LINEARSOLVERLOADER 1)
   set(BUILD_LINEARSOLVERLOADER 1)
+  set(BUILD_PARDISOLOADER 1)
   
   include(FortranCInterface)
   set(F77_FUNC "${FortranCInterface_GLOBAL_MACRO}")
