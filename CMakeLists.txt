@@ -3,7 +3,7 @@
 
 cmake_minimum_required(VERSION 2.6)
 
-project(COIN CXX C Fortran)
+project(COIN CXX C)
 
 # Output binaries to bin/ to avoid name clash between "Cbc" (directory)
 # and "cbc" (executable) on case-insensitive filesystems (on Mac OS X).
@@ -464,7 +464,8 @@ function(add_ipopt_test name)
   target_link_libraries(${name} ipopt)
 endfunction()
 
-if (EXISTS ${COIN_SOURCE_DIR}/Ipopt)
+enable_language(Fortran OPTIONAL)
+if (CMAKE_Fortran_COMPILER AND EXISTS ${COIN_SOURCE_DIR}/Ipopt)
   find_package(BLAS REQUIRED)
   set(COIN_HAS_BLAS 1)
 
