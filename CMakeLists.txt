@@ -464,6 +464,11 @@ function(add_ipopt_test name)
   target_link_libraries(${name} ipopt)
 endfunction()
 
+# Work-around for CMake issue 0009220.
+if (DEFINED CMAKE_Fortran_COMPILER AND CMAKE_Fortran_COMPILER MATCHES "^$")
+  set(CMAKE_Fortran_COMPILER CMAKE_Fortran_COMPILER-NOTFOUND)
+endif ()
+
 enable_language(Fortran OPTIONAL)
 if (CMAKE_Fortran_COMPILER AND EXISTS ${COIN_SOURCE_DIR}/Ipopt)
   find_package(BLAS REQUIRED)
