@@ -530,6 +530,8 @@ if (EXISTS ${COIN_SOURCE_DIR}/Ipopt)
   add_ipopt_test(hs071_cpp hs071_main.cpp hs071_nlp.cpp hs071_nlp.hpp)
   add_ipopt_test(hs071_c hs071_c.c)
   add_ipopt_test(hs071_f hs071_f.f)
+  add_test(NAME Ipopt-unitTest
+    WORKING_DIRECTORY ${COIN_BINARY_DIR}/bin COMMAND sh ../Ipopt/test/run_unitTests)
 
   configure(Ipopt src/Common/config.h src/Common/config_ipopt.h)
 endif()
