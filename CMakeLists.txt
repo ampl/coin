@@ -525,6 +525,9 @@ if (EXISTS ${COIN_SOURCE_DIR}/Ipopt)
     target_link_libraries(ipopt-executable ipoptamplinterface ipopt ${ASL_LIBRARIES})
     set_target_properties(ipopt-executable PROPERTIES
       COMPILE_DEFINITIONS IPOPT_BUILD OUTPUT_NAME ipopt IMPORT_PREFIX imp)
+
+  add_test(NAME Ipopt-amplTest
+    COMMAND sh -c "bin/ipopt Ipopt/test/mytoy.nl | grep 'EXIT: Optimal Solution Found.'")
   endif ()
   
   add_ipopt_test(hs071_cpp hs071_main.cpp hs071_nlp.cpp hs071_nlp.hpp)
