@@ -455,6 +455,15 @@ function(add_ipopt_library name path)
   set_target_properties(${name} PROPERTIES COMPILE_DEFINITIONS IPOPT_BUILD)
 endfunction()
 
+function(add_ipopt_test name)
+  set(sources )
+  foreach (arg ${ARGN})
+    set(sources ${sources} Ipopt/examples/${name}/${arg})
+  endforeach ()
+  add_executable(${name} ${sources})
+  target_link_libraries(${name} ipopt)
+endfunction()
+
 if (EXISTS ${COIN_SOURCE_DIR}/Ipopt)
   find_package(BLAS REQUIRED)
   set(COIN_HAS_BLAS 1)
@@ -485,8 +494,10 @@ if (EXISTS ${COIN_SOURCE_DIR}/Ipopt)
     Ipopt/src/LinAlg Ipopt/src/LinAlg/TMatrices
     Ipopt/src/contrib/LinearSolverLoader Ipopt/src/Interfaces)
 
+  find_library(DL_LIBRARY dl)
+
   add_ipopt_library(cgpenalty contrib/CGPenalty)
-  add_ipopt_library(LinearSolverLoader contrib/LinearSolverLoader)
+  add_ipopt_library(LinearSolverLoader contrib/LinearSolverLoader ${DL_LIBRARY})
   add_ipopt_library(linsolvers Algorithm/LinearSolvers coinmumps)
   add_ipopt_library(ipoptalg Algorithm cgpenalty LinearSolverLoader linsolvers)
   add_ipopt_library(common Common)
@@ -515,6 +526,10 @@ if (EXISTS ${COIN_SOURCE_DIR}/Ipopt)
     set_target_properties(ipopt-executable PROPERTIES
       COMPILE_DEFINITIONS IPOPT_BUILD OUTPUT_NAME ipopt IMPORT_PREFIX imp)
   endif ()
+  
+  add_ipopt_test(hs071_cpp hs071_main.cpp hs071_nlp.cpp hs071_nlp.hpp)
+  add_ipopt_test(hs071_c hs071_c.c)
+  add_ipopt_test(hs071_f hs071_f.f)
 
   configure(Ipopt src/Common/config.h src/Common/config_ipopt.h)
 endif()
