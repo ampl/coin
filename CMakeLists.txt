@@ -3,7 +3,7 @@
 
 cmake_minimum_required(VERSION 2.6)
 
-project(COIN CXX C)
+project(COIN)
 
 # Output binaries to bin/ to avoid name clash between "Cbc" (directory)
 # and "cbc" (executable) on case-insensitive filesystems (on Mac OS X).
@@ -468,20 +468,10 @@ function(add_ipopt_test name)
   target_link_libraries(${name} ipopt)
 endfunction()
 
-# Work-around for CMake issue 0009220.
-if (DEFINED CMAKE_Fortran_COMPILER AND CMAKE_Fortran_COMPILER MATCHES "^$")
-  set(CMAKE_Fortran_COMPILER CMAKE_Fortran_COMPILER-NOTFOUND)
-endif ()
-
-enable_language(Fortran OPTIONAL)
-if (CMAKE_Fortran_COMPILER AND EXISTS ${COIN_SOURCE_DIR}/Ipopt)
+if (EXISTS ${COIN_SOURCE_DIR}/Ipopt)
   set(HAVE_LINEARSOLVERLOADER 1)
   set(BUILD_LINEARSOLVERLOADER 1)
   set(BUILD_PARDISOLOADER 1)
-  
-  include(FortranCInterface)
-  set(F77_FUNC "${FortranCInterface_GLOBAL_MACRO}")
-  set(F77_FUNC_ "${FortranCInterface_GLOBAL__MACRO}")
   
   check_symbol_exists(drand48 stdlib.h HAVE_DRAND48)
   check_symbol_exists(rand stdlib.h HAVE_RAND)
@@ -502,14 +492,6 @@ if (CMAKE_Fortran_COMPILER AND EXISTS ${COIN_SOURCE_DIR}/Ipopt)
 
   find_library(DL_LIBRARY dl)
 
-  if (FortranCInterface_GLOBAL_CASE STREQUAL "UPPER")
-    add_definitions(-DUPPER)
-  elseif (FortranCInterface_GLOBAL_SUFFIX STREQUAL "_")
-    add_definitions(-DAdd_)
-  elseif (FortranCInterface_GLOBAL_SUFFIX STREQUAL "__")
-    add_definitions(-DAdd__)
-  endif ()
-  
   set(MUMPSDIR MUMPS)
   add_definitions(-DMUMPS_ARITH=MUMPS_ARITH_d)
   include_directories(ThirdParty/Mumps/MUMPS/include ThirdParty/Mumps/MUMPS/libseq)
@@ -553,7 +535,8 @@ if (CMAKE_Fortran_COMPILER AND EXISTS ${COIN_SOURCE_DIR}/Ipopt)
   
   add_ipopt_test(hs071_cpp hs071_main.cpp hs071_nlp.cpp hs071_nlp.hpp)
   add_ipopt_test(hs071_c hs071_c.c)
-  add_ipopt_test(hs071_f hs071_f.f)
+  # TODO
+  #add_ipopt_test(hs071_f hs071_f.f)
   add_test(NAME Ipopt-unitTest
     WORKING_DIRECTORY ${COIN_BINARY_DIR}/bin COMMAND sh ../Ipopt/test/run_unitTests)
 
