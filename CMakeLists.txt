@@ -504,18 +504,18 @@ if (EXISTS ${COIN_SOURCE_DIR}/Ipopt)
     LINK_LIBRARIES
     NO_EXTERNAL_INSTALL)
   set(COIN_HAS_BLAS 1)
-  cmake_add_fortran_subdirectory(ThirdParty/Mumps/MUMPS
-    PROJECT MUMPS
+  cmake_add_fortran_subdirectory(Ipopt
+    PROJECT IPOPTFORT
     ARCHIVE_DIR lib
     RUNTIME_DIR bin
-    LIBRARIES mumps
+    LIBRARIES ipoptfort
     LINK_LIBRARIES
     NO_EXTERNAL_INSTALL)
   set(COIN_HAS_MUMPS 1)
 
   add_ipopt_library(cgpenalty contrib/CGPenalty)
   add_ipopt_library(LinearSolverLoader contrib/LinearSolverLoader ${DL_LIBRARY})
-  add_ipopt_library(linsolvers Algorithm/LinearSolvers mumps)
+  add_ipopt_library(linsolvers Algorithm/LinearSolvers ipoptfort)
   add_ipopt_library(ipoptalg Algorithm cgpenalty LinearSolverLoader linsolvers)
   add_ipopt_library(common Common)
   add_ipopt_library(linalg LinAlg blas)

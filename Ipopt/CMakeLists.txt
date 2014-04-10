@@ -1,10 +1,10 @@
-cmake_minimum_required(VERSION 2.8)
-project(MUMPS Fortran)
+# A CMake build script for the Fortran part of Ipopt.
+# It is separate from the main build script to be able to use
+# cmake_add_fortran_subdirectory and build Fortran part with a
+# MinGW gfortran on Windows while the rest is built with Visual C++.
 
-# Work-around for CMake issue 0009220.
-if (DEFINED CMAKE_Fortran_COMPILER AND CMAKE_Fortran_COMPILER MATCHES "^$")
-  set(CMAKE_Fortran_COMPILER CMAKE_Fortran_COMPILER-NOTFOUND)
-endif ()
+cmake_minimum_required(VERSION 2.8)
+project(IPOPTFORT Fortran)
 
 include(FortranCInterface)
 
@@ -21,7 +21,8 @@ endif ()
 
 include_directories(include libseq)
 
-add_library(mumps
+set(mumps_src )
+foreach (src
   src/tools_common_mod.F
   src/dmumps_comm_buffer.F
   src/dmumps_struc_def.F
@@ -51,10 +52,14 @@ add_library(mumps
   libseq/mpi.f
   libseq/mpic.c
   libseq/elapse.c)
+  set(mumps_src ${mumps_src} ../ThirdParty/Mumps/MUMPS/${src})
+endforeach ()
+  
+add_library(ipoptfort ${mumps_src} src/Algorithm/LinearSolvers/IpMa28Partition.F)
 
 find_package(Threads)
-target_link_libraries(mumps ${CMAKE_THREAD_LIBS_INIT})
+target_link_libraries(ipoptfort ${CMAKE_THREAD_LIBS_INIT})
 
 if (CMAKE_Fortran_COMPILER_ID STREQUAL GNU)
-  target_link_libraries(mumps gfortran)
+  target_link_libraries(ipoptfort gfortran)
 endif ()
