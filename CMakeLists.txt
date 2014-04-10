@@ -490,8 +490,6 @@ if (EXISTS ${COIN_SOURCE_DIR}/Ipopt)
     Ipopt/src/LinAlg Ipopt/src/LinAlg/TMatrices
     Ipopt/src/contrib/LinearSolverLoader Ipopt/src/Interfaces)
 
-  find_library(DL_LIBRARY dl)
-
   set(MUMPSDIR MUMPS)
   add_definitions(-DMUMPS_ARITH=MUMPS_ARITH_d)
   include_directories(ThirdParty/Mumps/MUMPS/include ThirdParty/Mumps/MUMPS/libseq)
@@ -513,8 +511,13 @@ if (EXISTS ${COIN_SOURCE_DIR}/Ipopt)
     NO_EXTERNAL_INSTALL)
   set(COIN_HAS_MUMPS 1)
 
+  add_ipopt_library(LinearSolverLoader contrib/LinearSolverLoader)
+  find_library(DL_LIBRARY dl)
+  if (DL_LIBRARY)
+    target_link_libraries(LinearSolverLoader ${DL_LIBRARY})
+  endif ()
+
   add_ipopt_library(cgpenalty contrib/CGPenalty)
-  add_ipopt_library(LinearSolverLoader contrib/LinearSolverLoader ${DL_LIBRARY})
   add_ipopt_library(linsolvers Algorithm/LinearSolvers ipoptfort)
   add_ipopt_library(ipoptalg Algorithm cgpenalty LinearSolverLoader linsolvers)
   add_ipopt_library(common Common)
