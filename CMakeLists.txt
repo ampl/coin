@@ -471,13 +471,9 @@ endif ()
 
 enable_language(Fortran OPTIONAL)
 if (CMAKE_Fortran_COMPILER AND EXISTS ${COIN_SOURCE_DIR}/Ipopt)
-  find_package(BLAS REQUIRED)
-  set(COIN_HAS_BLAS 1)
-
   set(HAVE_LINEARSOLVERLOADER 1)
   set(BUILD_LINEARSOLVERLOADER 1)
   set(BUILD_PARDISOLOADER 1)
-  set(COIN_HAS_MUMPS 1)
   
   include(FortranCInterface)
   set(F77_FUNC "${FortranCInterface_GLOBAL_MACRO}")
@@ -502,15 +498,6 @@ if (CMAKE_Fortran_COMPILER AND EXISTS ${COIN_SOURCE_DIR}/Ipopt)
 
   find_library(DL_LIBRARY dl)
 
-  add_ipopt_library(cgpenalty contrib/CGPenalty)
-  add_ipopt_library(LinearSolverLoader contrib/LinearSolverLoader ${DL_LIBRARY})
-  add_ipopt_library(linsolvers Algorithm/LinearSolvers mumps)
-  add_ipopt_library(ipoptalg Algorithm cgpenalty LinearSolverLoader linsolvers)
-  add_ipopt_library(common Common)
-  add_ipopt_library(linalg LinAlg blas)
-  add_ipopt_library(tmatrices LinAlg/TMatrices linalg)
-  add_ipopt_library(ipopt Interfaces cgpenalty common ipoptalg tmatrices)
-  
   if (FortranCInterface_GLOBAL_CASE STREQUAL "UPPER")
     add_definitions(-DUPPER)
   elseif (FortranCInterface_GLOBAL_SUFFIX STREQUAL "_")
@@ -523,6 +510,14 @@ if (CMAKE_Fortran_COMPILER AND EXISTS ${COIN_SOURCE_DIR}/Ipopt)
   add_definitions(-DMUMPS_ARITH=MUMPS_ARITH_d)
   include_directories(ThirdParty/Mumps/MUMPS/include ThirdParty/Mumps/MUMPS/libseq)
   include(CMakeAddFortranSubdirectory)
+  cmake_add_fortran_subdirectory(ThirdParty/lapack
+    PROJECT LAPACK
+    ARCHIVE_DIR lib
+    RUNTIME_DIR bin
+    LIBRARIES blas
+    LINK_LIBRARIES
+    NO_EXTERNAL_INSTALL)
+  set(COIN_HAS_BLAS 1)
   cmake_add_fortran_subdirectory(ThirdParty/Mumps/MUMPS
     PROJECT MUMPS
     ARCHIVE_DIR lib
@@ -530,6 +525,16 @@ if (CMAKE_Fortran_COMPILER AND EXISTS ${COIN_SOURCE_DIR}/Ipopt)
     LIBRARIES mumps
     LINK_LIBRARIES
     NO_EXTERNAL_INSTALL)
+  set(COIN_HAS_MUMPS 1)
+
+  add_ipopt_library(cgpenalty contrib/CGPenalty)
+  add_ipopt_library(LinearSolverLoader contrib/LinearSolverLoader ${DL_LIBRARY})
+  add_ipopt_library(linsolvers Algorithm/LinearSolvers mumps)
+  add_ipopt_library(ipoptalg Algorithm cgpenalty LinearSolverLoader linsolvers)
+  add_ipopt_library(common Common)
+  add_ipopt_library(linalg LinAlg blas)
+  add_ipopt_library(tmatrices LinAlg/TMatrices linalg)
+  add_ipopt_library(ipopt Interfaces cgpenalty common ipoptalg tmatrices)
 
   if (COIN_HAS_ASL)
     add_ipopt_library(ipoptamplinterface Apps/AmplSolver)
