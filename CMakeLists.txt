@@ -504,7 +504,7 @@ if (CMAKE_Fortran_COMPILER AND EXISTS ${COIN_SOURCE_DIR}/Ipopt)
 
   add_ipopt_library(cgpenalty contrib/CGPenalty)
   add_ipopt_library(LinearSolverLoader contrib/LinearSolverLoader ${DL_LIBRARY})
-  add_ipopt_library(linsolvers Algorithm/LinearSolvers coinmumps)
+  add_ipopt_library(linsolvers Algorithm/LinearSolvers mumps)
   add_ipopt_library(ipoptalg Algorithm cgpenalty LinearSolverLoader linsolvers)
   add_ipopt_library(common Common)
   add_ipopt_library(linalg LinAlg blas)
@@ -522,8 +522,14 @@ if (CMAKE_Fortran_COMPILER AND EXISTS ${COIN_SOURCE_DIR}/Ipopt)
   set(MUMPSDIR MUMPS)
   add_definitions(-DMUMPS_ARITH=MUMPS_ARITH_d)
   include_directories(ThirdParty/Mumps/MUMPS/include ThirdParty/Mumps/MUMPS/libseq)
-  add_coin_library(ThirdParty/Mumps NAME coinmumps)
-  target_link_libraries(coinmumps ${CMAKE_THREAD_LIBS_INIT})
+  include(CMakeAddFortranSubdirectory)
+  cmake_add_fortran_subdirectory(ThirdParty/Mumps/MUMPS
+    PROJECT MUMPS
+    ARCHIVE_DIR lib
+    RUNTIME_DIR bin
+    LIBRARIES mumps
+    LINK_LIBRARIES
+    NO_EXTERNAL_INSTALL)
 
   if (COIN_HAS_ASL)
     add_ipopt_library(ipoptamplinterface Apps/AmplSolver)
