@@ -19,6 +19,8 @@ elseif (FortranCInterface_GLOBAL_SUFFIX STREQUAL "__")
   add_definitions(-DAdd__)
 endif ()
 
+add_definitions(-DMUMPS_ARITH=MUMPS_ARITH_d)
+
 include_directories(../ThirdParty/Mumps/MUMPS/include ../ThirdParty/Mumps/MUMPS/libseq)
 
 set(mumps_src )

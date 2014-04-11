@@ -501,8 +501,6 @@ if (EXISTS ${COIN_SOURCE_DIR}/Ipopt)
     Ipopt/src/LinAlg Ipopt/src/LinAlg/TMatrices
     Ipopt/src/contrib/LinearSolverLoader Ipopt/src/Interfaces)
 
-  set(MUMPSDIR MUMPS)
-  add_definitions(-DMUMPS_ARITH=MUMPS_ARITH_d)
   include_directories(ThirdParty/Mumps/MUMPS/include ThirdParty/Mumps/MUMPS/libseq)
   include(CMakeAddFortranSubdirectory)
   cmake_add_fortran_subdirectory(ThirdParty/lapack
