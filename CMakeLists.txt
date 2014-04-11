@@ -1,4 +1,4 @@
-# CMake build script for CBC.
+# CMake build script for COIN-OR projects.
 # Author: Victor Zverovich
 
 cmake_minimum_required(VERSION 2.6)
