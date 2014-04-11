@@ -4,7 +4,7 @@
 # MinGW gfortran on Windows while the rest is built with Visual C++.
 
 cmake_minimum_required(VERSION 2.8)
-project(IPOPTFORT Fortran)
+project(IPOPTFORT C Fortran)
 
 include(FortranCInterface)
 
@@ -19,7 +19,7 @@ elseif (FortranCInterface_GLOBAL_SUFFIX STREQUAL "__")
   add_definitions(-DAdd__)
 endif ()
 
-include_directories(include libseq)
+include_directories(../ThirdParty/Mumps/MUMPS/include ../ThirdParty/Mumps/MUMPS/libseq)
 
 set(mumps_src )
 foreach (src
