@@ -457,6 +457,11 @@ add_definitions(-DHAVE_CONFIG_H)
 # Define FORTRAN_INTEGER_TYPE for Ipopt.
 set(FORTRAN_INTEGER_TYPE_C int)
 
+if (MSVC)
+  set(F77_FUNC "(name,NAME) name##_")
+  set(F77_FUNC_ "${F77_FUNC}")
+endif ()
+
 configure(CoinUtils src/config.h src/config_coinutils.h)
 configure(Osi src/Osi/config.h src/Osi/config_osi.h)
 configure(Clp src/config.h src/config_clp.h)
