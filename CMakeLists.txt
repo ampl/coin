@@ -350,6 +350,9 @@ if (BZIP2_FOUND)
 endif ()
 
 include(CheckTypeSize)
+check_type_size(int* SIZEOF_INT_P)
+
+include(CheckTypeSize)
 check_cxx_source_compiles("
   #include <stdint.h>
   int main() {
@@ -357,7 +360,15 @@ check_cxx_source_compiles("
     uint64_t y;
     intptr_t z;
   }" COIN_HAS_STDINT)
-if (COIN_HAS_STDINT)
+if (MSVC)
+  set(COIN_INT64_T_C __int64)
+  set(COIN_UINT64_T_C __int64)
+  if (SIZEOF_INT_P EQUAL 8)
+    set(COIN_INTPTR_T_C __int64)
+  else ()
+    set(COIN_INTPTR_T_C __int32)
+  endif ()
+elseif (COIN_HAS_STDINT)
   set(COIN_INT64_T_C int64_t)
   # Define COIN_UINT64_T as int64_t for compatibility,
   # may be a bug in CoinUtils.
@@ -477,9 +488,6 @@ if (EXISTS ${COIN_SOURCE_DIR}/Ipopt)
   check_symbol_exists(snprintf stdio.h HAVE_SNPRINTF)
   check_symbol_exists(va_copy stdarg.h HAVE_VA_COPY)
   check_symbol_exists(vsnprintf "stdio.h;stdarg.h" HAVE_VSNPRINTF)
-
-  include(CheckTypeSize)
-  check_type_size(int* SIZEOF_INT_P)
   
   string(SUBSTRING ${CMAKE_SHARED_LIBRARY_SUFFIX} 1 -1 SHAREDLIBEXT)
 
