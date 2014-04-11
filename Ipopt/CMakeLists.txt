@@ -20,6 +20,9 @@ elseif (FortranCInterface_GLOBAL_SUFFIX STREQUAL "__")
 endif ()
 
 add_definitions(-DMUMPS_ARITH=MUMPS_ARITH_d)
+if (WIN32)
+  add_definitions(-DMUMPS_WIN32=1)
+endif ()
 
 include_directories(../ThirdParty/Mumps/MUMPS/include ../ThirdParty/Mumps/MUMPS/libseq)
 
