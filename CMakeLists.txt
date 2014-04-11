@@ -441,9 +441,7 @@ set_target_properties(cbc-executable
 target_link_libraries(cbc-executable CbcSolver)
 add_test(Cbc-unitTest bin/cbc -dirSample Data/Sample -unitTest)
 
-if (NOT MSVC)
-  add_definitions(-DHAVE_CONFIG_H)
-endif ()
+add_definitions(-DHAVE_CONFIG_H)
 
 # Define FORTRAN_INTEGER_TYPE for Ipopt.
 set(FORTRAN_INTEGER_TYPE_C int)
