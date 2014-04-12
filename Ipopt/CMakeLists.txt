@@ -27,7 +27,7 @@ endif ()
 
 add_definitions(-DMUMPS_ARITH=MUMPS_ARITH_d)
 if (WIN32)
-  add_definitions(-DMUMPS_WIN32=1)
+  add_definitions(-DWITHOUT_PTHREAD=1)
 endif ()
 
 include_directories(
