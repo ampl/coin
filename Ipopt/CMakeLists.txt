@@ -8,8 +8,14 @@ project(IPOPTFORT C Fortran)
 
 include(FortranCInterface)
 
-set(F77_FUNC "${FortranCInterface_GLOBAL_MACRO}" CACHE INTERNAL "")
-set(F77_FUNC_ "${FortranCInterface_GLOBAL__MACRO}" CACHE INTERNAL "")
+# Organize output files.
+set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${IPOPTFORT_BINARY_DIR}/bin)
+set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${IPOPTFORT_BINARY_DIR}/lib)
+set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${IPOPTFORT_BINARY_DIR}/lib)
+
+# Set F77_FUNC & F77_FUNC_ globally as they are used in the parent project.
+set(F77_FUNC "${FortranCInterface_GLOBAL_MACRO}" GLOBAL)
+set(F77_FUNC_ "${FortranCInterface_GLOBAL__MACRO}" GLOBAL)
 
 if (FortranCInterface_GLOBAL_CASE STREQUAL "UPPER")
   add_definitions(-DUPPER)
@@ -24,7 +30,8 @@ if (WIN32)
   add_definitions(-DMUMPS_WIN32=1)
 endif ()
 
-include_directories(../ThirdParty/Mumps/MUMPS/include ../ThirdParty/Mumps/MUMPS/libseq)
+include_directories(
+  ../ThirdParty/Mumps/MUMPS/include ../ThirdParty/Mumps/MUMPS/libseq)
 
 set(mumps_src )
 foreach (src

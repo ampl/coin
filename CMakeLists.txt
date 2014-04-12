@@ -502,23 +502,36 @@ if (EXISTS ${COIN_SOURCE_DIR}/Ipopt)
     Ipopt/src/contrib/LinearSolverLoader Ipopt/src/Interfaces)
 
   include_directories(ThirdParty/Mumps/MUMPS/include ThirdParty/Mumps/MUMPS/libseq)
+
   include(CMakeAddFortranSubdirectory)
   cmake_add_fortran_subdirectory(ThirdParty/lapack
     PROJECT LAPACK
-    ARCHIVE_DIR lib
-    RUNTIME_DIR bin
+    ARCHIVE_DIR ThirdParty/lapack/lib
+    RUNTIME_DIR ThirdParty/lapack/bin
     LIBRARIES blas
-    LINK_LIBRARIES
     NO_EXTERNAL_INSTALL)
   set(COIN_HAS_BLAS 1)
   cmake_add_fortran_subdirectory(Ipopt
     PROJECT IPOPTFORT
-    ARCHIVE_DIR lib
-    RUNTIME_DIR bin
+    ARCHIVE_DIR Ipopt/lib
+    RUNTIME_DIR Ipopt/bin
     LIBRARIES ipoptfort
-    LINK_LIBRARIES
     NO_EXTERNAL_INSTALL)
   set(COIN_HAS_MUMPS 1)
+  
+  if (MSVC)
+    add_dependencies(IPOPTFORT_build LAPACK_build)
+    add_custom_command(OUTPUT ${CMAKE_CFG_INTDIR}/libblas.dll
+      COMMAND ${CMAKE_COMMAND} -E copy_if_different
+              ${PROJECT_BINARY_DIR}/ThirdParty/lapack/bin/libblas.dll
+              ${CMAKE_CFG_INTDIR})
+    add_custom_command(OUTPUT ${CMAKE_CFG_INTDIR}/libipoptfort.dll
+      COMMAND ${CMAKE_COMMAND} -E copy_if_different
+              ${PROJECT_BINARY_DIR}/Ipopt/bin/libipoptfort.dll
+              ${CMAKE_CFG_INTDIR})
+    set(IPOPT_DLLS ${CMAKE_CFG_INTDIR}/libblas.dll ${CMAKE_CFG_INTDIR}/libipoptfort.dll)
+  endif ()
+
 
   add_ipopt_library(LinearSolverLoader contrib/LinearSolverLoader)
   find_library(DL_LIBRARY dl)
@@ -536,7 +549,7 @@ if (EXISTS ${COIN_SOURCE_DIR}/Ipopt)
 
   if (COIN_HAS_ASL)
     add_ipopt_library(ipoptamplinterface Apps/AmplSolver)
-    add_executable(ipopt-executable Ipopt/src/Apps/AmplSolver/ampl_ipopt.cpp)
+    add_executable(ipopt-executable Ipopt/src/Apps/AmplSolver/ampl_ipopt.cpp ${IPOPT_DLLS})
     target_link_libraries(ipopt-executable ipoptamplinterface ipopt ${ASL_LIBRARIES})
     set_target_properties(ipopt-executable PROPERTIES
       COMPILE_DEFINITIONS IPOPT_BUILD OUTPUT_NAME ipopt IMPORT_PREFIX imp)
