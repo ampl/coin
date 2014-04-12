@@ -72,6 +72,13 @@ add_library(ipoptfort ${mumps_src} src/Algorithm/LinearSolvers/IpMa28Partition.F
 find_package(Threads)
 target_link_libraries(ipoptfort ${CMAKE_THREAD_LIBS_INIT})
 
+if (CMAKE_GNUtoMS)
+  target_link_libraries(ipoptfort
+    ${CMAKE_CURRENT_BINARY_DIR}/../ThirdParty/lapack/lib/libblas.dll.a)
+else ()
+  target_link_libraries(ipoptfort blas)
+endif ()
+
 if (CMAKE_Fortran_COMPILER_ID STREQUAL GNU)
   target_link_libraries(ipoptfort gfortran)
 endif ()
