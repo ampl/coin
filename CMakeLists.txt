@@ -265,7 +265,7 @@ function(configure package)
         elseif (var MATCHES "F77_FUNC")
           # F77_FUNC shouldn't have space between macro name and args.
           set(line "#${space}define ${var}${${var}}")
-        elseif (NOT DEFINED ${var} OR (var MATCHES "HAVE_.*_H" AND NOT ${var}))
+        elseif (NOT DEFINED ${var} OR (var MATCHES "HAVE_.*" AND NOT ${var}))
           set(line "/* #${space}undef ${var} */")
         else ()
           if (${var} MATCHES "^-?[0-9]+$")
