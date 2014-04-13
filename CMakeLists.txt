@@ -491,7 +491,7 @@ if (EXISTS ${COIN_SOURCE_DIR}/Ipopt)
   check_symbol_exists(rand stdlib.h HAVE_RAND)
   check_symbol_exists(std::rand cstdlib HAVE_STD__RAND)
   check_symbol_exists(snprintf stdio.h HAVE_SNPRINTF)
-  check_symbol_exists(_snprintf stdio.h HAVE_SNPRINTF)
+  check_symbol_exists(_snprintf stdio.h HAVE__SNPRINTF)
   check_symbol_exists(va_copy stdarg.h HAVE_VA_COPY)
   check_symbol_exists(vsnprintf "stdio.h;stdarg.h" HAVE_VSNPRINTF)
   
