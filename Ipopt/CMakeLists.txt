@@ -17,6 +17,8 @@ set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${IPOPTFORT_BINARY_DIR}/lib)
 set(F77_FUNC "${FortranCInterface_GLOBAL_MACRO}" CACHE INTERNAL "")
 set(F77_FUNC_ "${FortranCInterface_GLOBAL__MACRO}" CACHE INTERNAL "")
 
+# Convert the information about Fortran name mangling into the format
+# required by MUMPS.
 if (FortranCInterface_GLOBAL_CASE STREQUAL "UPPER")
   add_definitions(-DUPPER)
 elseif (FortranCInterface_GLOBAL_SUFFIX STREQUAL "_")
@@ -31,10 +33,31 @@ if (WIN32)
 endif ()
 
 include_directories(
+  ../BuildTools/headers src/Common
   ../ThirdParty/Mumps/MUMPS/include ../ThirdParty/Mumps/MUMPS/libseq)
 
-set(mumps_src )
-foreach (src
+add_definitions(-DIPOPT_BUILD -DHAVE_CONFIG_H)
+
+# Prepend directory to each filename passed as varargs and assign the result to var.
+function (prepend_dir var dir)
+  set(paths )
+  foreach (filename ${ARGN})
+    set(paths ${paths} ${dir}/${filename})
+  endforeach ()
+  set(${var} ${paths} PARENT_SCOPE)
+endfunction ()
+
+prepend_dir(LinearSolverLoader_src src/contrib/LinearSolverLoader
+  LibraryHandler.c LibraryHandler.h
+  HSLLoader.c HSLLoader.h
+  PardisoLoader.c PardisoLoader.h)
+add_library(LinearSolverLoader STATIC ${LinearSolverLoader_src})
+find_library(DL_LIBRARY dl)
+if (DL_LIBRARY)
+  target_link_libraries(LinearSolverLoader ${DL_LIBRARY})
+endif ()
+
+prepend_dir(mumps_src ../ThirdParty/Mumps/MUMPS
   src/tools_common_mod.F
   src/dmumps_comm_buffer.F
   src/dmumps_struc_def.F
@@ -64,10 +87,9 @@ foreach (src
   libseq/mpi.f
   libseq/mpic.c
   libseq/elapse.c)
-  set(mumps_src ${mumps_src} ../ThirdParty/Mumps/MUMPS/${src})
-endforeach ()
-  
+
 add_library(ipoptfort ${mumps_src} src/Algorithm/LinearSolvers/IpMa28Partition.F)
+target_link_libraries(ipoptfort LinearSolverLoader)
 
 find_package(Threads)
 target_link_libraries(ipoptfort ${CMAKE_THREAD_LIBS_INIT})

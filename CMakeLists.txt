@@ -533,16 +533,9 @@ if (EXISTS ${COIN_SOURCE_DIR}/Ipopt)
     set(IPOPT_DLLS ${CMAKE_CFG_INTDIR}/libblas.dll ${CMAKE_CFG_INTDIR}/libipoptfort.dll)
   endif ()
 
-
-  add_ipopt_library(LinearSolverLoader contrib/LinearSolverLoader)
-  find_library(DL_LIBRARY dl)
-  if (DL_LIBRARY)
-    target_link_libraries(LinearSolverLoader ${DL_LIBRARY})
-  endif ()
-
   add_ipopt_library(cgpenalty contrib/CGPenalty)
   add_ipopt_library(linsolvers Algorithm/LinearSolvers ipoptfort)
-  add_ipopt_library(ipoptalg Algorithm cgpenalty LinearSolverLoader linsolvers)
+  add_ipopt_library(ipoptalg Algorithm cgpenalty linsolvers)
   add_ipopt_library(common Common)
   add_ipopt_library(linalg LinAlg blas)
   add_ipopt_library(tmatrices LinAlg/TMatrices linalg)
