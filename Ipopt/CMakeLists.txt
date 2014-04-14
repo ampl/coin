@@ -51,11 +51,6 @@ prepend_dir(LinearSolverLoader_src src/contrib/LinearSolverLoader
   LibraryHandler.c LibraryHandler.h
   HSLLoader.c HSLLoader.h
   PardisoLoader.c PardisoLoader.h)
-add_library(LinearSolverLoader STATIC ${LinearSolverLoader_src})
-find_library(DL_LIBRARY dl)
-if (DL_LIBRARY)
-  target_link_libraries(LinearSolverLoader ${DL_LIBRARY})
-endif ()
 
 prepend_dir(mumps_src ../ThirdParty/Mumps/MUMPS
   src/tools_common_mod.F
@@ -88,8 +83,12 @@ prepend_dir(mumps_src ../ThirdParty/Mumps/MUMPS
   libseq/mpic.c
   libseq/elapse.c)
 
-add_library(ipoptfort ${mumps_src} src/Algorithm/LinearSolvers/IpMa28Partition.F)
-target_link_libraries(ipoptfort LinearSolverLoader)
+add_library(ipoptfort ${mumps_src} ${LinearSolverLoader_src}
+  src/Algorithm/LinearSolvers/IpMa28Partition.F)
+find_library(DL_LIBRARY dl)
+if (DL_LIBRARY)
+  target_link_libraries(ipoptfort ${DL_LIBRARY})
+endif ()
 
 find_package(Threads)
 target_link_libraries(ipoptfort ${CMAKE_THREAD_LIBS_INIT})
