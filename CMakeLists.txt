@@ -13,6 +13,14 @@ set(CMAKE_RUNTIME_OUTPUT_DIRECTORY "bin/")
 string(REPLACE "-std=c++11" "" CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS}")
 string(REPLACE "-stdlib=libc++" "" CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS}")
 
+# Adds flags passed as varargs to CMAKE_CXX_FLAGS.
+function(add_cxx_flags)
+  foreach (flag ${ARGN})
+    set(flags "${flags} ${flag}")
+  endforeach ()
+  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${flags}" PARENT_SCOPE)
+endfunction()
+
 include(CheckCXXCompilerFlag)
 if (COIN_DISABLE_WARNINGS)
   # Disable warnings.
@@ -27,10 +35,10 @@ if (COIN_DISABLE_WARNINGS)
     string(REPLACE "-Wextra" "" CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS}")
     string(REPLACE "-Wall" "" CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS}")
     if (CMAKE_COMPILER_IS_GNUCXX)
-      add_definitions(
+      add_cxx_flags(
         -Wno-format-security -Wno-overloaded-virtual -Wno-unused-result)
     elseif (CMAKE_CXX_COMPILER_ID STREQUAL "Clang")
-      add_definitions(
+      add_cxx_flags(
         -Wno-constant-conversion -Wno-constant-logical-operand
         -Wno-format-security -Wno-language-extension-token -Wno-newline-eof
         -Wno-parentheses -Wno-parentheses-equality -Wno-self-assign-field
