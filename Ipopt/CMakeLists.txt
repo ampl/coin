@@ -98,6 +98,7 @@ if (CMAKE_GNUtoMS)
     ${CMAKE_CURRENT_BINARY_DIR}/../ThirdParty/lapack/lib/libblas.dll.a)
 else ()
   target_link_libraries(ipoptfort blas)
+  add_ipopt_test(hs071_f hs071_f.f)
 endif ()
 
 if (CMAKE_Fortran_COMPILER_ID STREQUAL GNU)
