@@ -42,7 +42,7 @@ endif ()
 
 option(ENABLE_CBC_PARALLEL "Enables compilation of the SMP version of Cbc" ON)
 find_package(Threads)
-if (ENABLE_CBC_PARALLEL AND Threads_FOUND)
+if (ENABLE_CBC_PARALLEL AND CMAKE_USE_PTHREADS_INIT)
   set(CBC_THREAD 1)
 endif ()
 
