@@ -4,8 +4,8 @@ language: cpp
 # support CMakeAddFortranSubdirectory.
 before_install:
   - sudo apt-get remove cmake
-  - wget http://mirrors.kernel.org/ubuntu/pool/main/c/cmake/cmake-data_2.8.9-0ubuntu1_all.deb
-  - wget http://mirrors.kernel.org/ubuntu/pool/main/c/cmake/cmake_2.8.9-0ubuntu1_amd64.deb
+  - wget http://mirrors.kernel.org/ubuntu/pool/main/c/cmake/cmake_2.8.10.1-0ubuntu6_amd64.deb
+  - wget http://mirrors.kernel.org/ubuntu/pool/main/c/cmake/cmake-data_2.8.10.1-0ubuntu6_all.deb
 
 install:
   - sudo dpkg -i cmake-data_2.8.9-0ubuntu1_all.deb
