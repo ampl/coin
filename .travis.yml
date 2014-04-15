@@ -1,5 +1,8 @@
 language: cpp
 
+env:
+  - ARCH=x64
+
 # Install newer CMake version as the one that comes preinstalled doesn't
 # support CMakeAddFortranSubdirectory.
 install:
