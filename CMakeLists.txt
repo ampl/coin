@@ -562,8 +562,10 @@ if (EXISTS ${COIN_SOURCE_DIR}/Ipopt)
     set_target_properties(ipopt-executable PROPERTIES
       COMPILE_DEFINITIONS IPOPT_BUILD OUTPUT_NAME ipopt IMPORT_PREFIX imp)
 
-  add_test(NAME Ipopt-amplTest
-    COMMAND sh -c "bin/ipopt Ipopt/test/mytoy.nl | grep 'EXIT: Optimal Solution Found.'")
+    if (NOT WIN32)
+      add_test(NAME Ipopt-amplTest
+        COMMAND sh -c "bin/ipopt Ipopt/test/mytoy.nl | grep 'EXIT: Optimal Solution Found.'")
+    endif ()
   endif ()
   
   add_ipopt_test(hs071_cpp hs071_main.cpp hs071_nlp.cpp hs071_nlp.hpp)
