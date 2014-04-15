@@ -8,8 +8,8 @@ before_install:
   - wget http://mirrors.kernel.org/ubuntu/pool/main/c/cmake/cmake-data_2.8.10.1-0ubuntu6_all.deb
 
 install:
-  - sudo dpkg -i cmake-data_2.8.9-0ubuntu1_all.deb
-  - sudo dpkg -i cmake_2.8.9-0ubuntu1_amd64.deb
+  - sudo dpkg -i cmake-data_2.8.10.1-0ubuntu6_all.deb
+  - sudo dpkg -i cmake_2.8.10.1-0ubuntu6_amd64.deb
   - sudo apt-get install gfortran
 
 script:
