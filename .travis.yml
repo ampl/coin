@@ -3,11 +3,12 @@ language: cpp
 # Install newer CMake version as the one that comes preinstalled doesn't
 # support CMakeAddFortranSubdirectory.
 before_install:
-  - sudo apt-get remove cmake
+  - wget http://mirrors.kernel.org/ubuntu/pool/main/liba/libarchive/libarchive13_3.1.2-5ubuntu1_amd64.deb
   - wget http://mirrors.kernel.org/ubuntu/pool/main/c/cmake/cmake_2.8.10.1-0ubuntu6_amd64.deb
   - wget http://mirrors.kernel.org/ubuntu/pool/main/c/cmake/cmake-data_2.8.10.1-0ubuntu6_all.deb
 
 install:
+  - sudo dpkg -i libarchive13_3.1.2-5ubuntu1_amd64.deb
   - sudo dpkg -i cmake-data_2.8.10.1-0ubuntu6_all.deb
   - sudo dpkg -i cmake_2.8.10.1-0ubuntu6_amd64.deb
   - sudo apt-get install gfortran
