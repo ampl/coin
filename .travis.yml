@@ -1,3 +1,11 @@
 language: cpp
 
-script: cmake . && make
+# Install newer CMake version as the one that comes preinstalled doesn't
+# support CMakeAddFortranSubdirectory.
+install:
+  - wget http://www.cmake.org/files/v2.8/cmake-2.8.12.2-Linux-i386.tar.gz
+  - tar xzf cmake-2.8.12.2-Linux-i386.tar.gz
+
+script:
+  - ~/cmake-2.8.12.2-Linux-i386/bin/cmake .
+  - make
