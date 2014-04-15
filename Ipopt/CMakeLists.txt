@@ -4,8 +4,9 @@
 # MinGW gfortran on Windows while the rest is built with Visual C++.
 
 cmake_minimum_required(VERSION 2.8)
-project(IPOPTFORT C Fortran)
+project(IPOPTFORT C)
 
+enable_language(Fortran)
 include(FortranCInterface)
 
 # Organize output files.
