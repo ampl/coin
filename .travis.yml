@@ -7,5 +7,5 @@ install:
   - tar xzf cmake-2.8.12.2-Linux-i386.tar.gz
 
 script:
-  - ~/cmake-2.8.12.2-Linux-i386/bin/cmake .
+  - cmake-2.8.12.2-Linux-i386/bin/cmake .
   - make
