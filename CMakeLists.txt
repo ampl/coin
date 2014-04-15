@@ -327,6 +327,8 @@ else ()
   check_symbol_exists(isfinite math.h COIN_HAS_ISFINITE)
   if (COIN_HAS_ISFINITE)
     set(COIN_C_FINITE_C isfinite)
+  elseif (MSVC)
+    set(COIN_C_FINITE_C _finite)
   endif ()
 endif ()
 check_cxx_source_compiles("
@@ -338,8 +340,10 @@ else ()
   check_cxx_source_compiles("
     #include <math.h>
     int main() { isnan(4.2); }" COIN_HAS_ISNAN)
-  if (COIN_HAS_FINITE)
+  if (COIN_HAS_ISNAN)
     set(COIN_C_ISNAN_C isnan)
+  elseif (MSVC)
+    set(COIN_C_ISNAN_C _isnan)
   endif ()
 endif ()
 
