@@ -556,9 +556,9 @@ if (EXISTS ${COIN_SOURCE_DIR}/Ipopt)
   add_ipopt_library(ipopt Interfaces cgpenalty common ipoptalg tmatrices)
 
   if (COIN_HAS_ASL)
-    add_ipopt_library(ipoptamplinterface Apps/AmplSolver)
+    add_ipopt_library(ipoptamplinterface Apps/AmplSolver ${ASL_LIBRARIES})
     add_executable(ipopt-executable Ipopt/src/Apps/AmplSolver/ampl_ipopt.cpp ${IPOPT_DLLS})
-    target_link_libraries(ipopt-executable ipoptamplinterface ipopt ${ASL_LIBRARIES})
+    target_link_libraries(ipopt-executable ipoptamplinterface ipopt)
     set_target_properties(ipopt-executable PROPERTIES
       COMPILE_DEFINITIONS IPOPT_BUILD OUTPUT_NAME ipopt IMPORT_PREFIX imp)
 
