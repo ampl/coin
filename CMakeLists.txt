@@ -525,7 +525,7 @@ if (EXISTS ${COIN_SOURCE_DIR}/Ipopt)
     find_program(WINSDK_SETENV NAMES SetEnv.cmd
       PATHS "[HKEY_LOCAL_MACHINE\\SOFTWARE\\Microsoft\\Microsoft SDKs\\Windows;CurrentInstallFolder]/bin")
     if (EXISTS "${WINSDK_SETENV}")
-      file(WRITE setenv.bat "call \"C:\Program Files\Microsoft SDKs\Windows\v7.1\Bin\SetEnv.cmd\"")
+      file(WRITE setenv.bat "call \"${WINSDK_SETENV}\"")
       # Extra command line flags to pass to CMake in cmake_add_fortran_subdirectory.
       set(FORTRAN_CMAKE_FLAGS "-DCMAKE_GNUtoMS_VCVARS=${CMAKE_CURRENT_BINARY_DIR}/setenv.bat")
     endif ()
