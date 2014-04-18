@@ -518,12 +518,26 @@ if (EXISTS ${COIN_SOURCE_DIR}/Ipopt)
 
   include_directories(ThirdParty/Mumps/MUMPS/include ThirdParty/Mumps/MUMPS/libseq)
 
+  if (MSVC)
+    # Check if Microsoft SDK is installed and, if yes, make CMAKE_GNUtoMS_VCVARS point
+    # to the script that configures build environment. It is useful when building
+    # Visual Studio projects without Visual C++ installed.
+    find_program(WINSDK_SETENV NAMES SetEnv.cmd
+      PATHS "[HKEY_LOCAL_MACHINE\\SOFTWARE\\Microsoft\\Microsoft SDKs\\Windows;CurrentInstallFolder]/bin")
+    if (EXISTS "${WINSDK_SETENV}")
+      file(WRITE setenv.bat "call \"C:\Program Files\Microsoft SDKs\Windows\v7.1\Bin\SetEnv.cmd\"")
+      # Extra command line flags to pass to CMake in cmake_add_fortran_subdirectory.
+      set(FORTRAN_CMAKE_FLAGS "-DCMAKE_GNUtoMS_VCVARS=${CMAKE_CURRENT_BINARY_DIR}/setenv.bat")
+    endif ()
+  endif ()
+
   include(CMakeAddFortranSubdirectory)
   cmake_add_fortran_subdirectory(ThirdParty/lapack
     PROJECT LAPACK
     ARCHIVE_DIR ThirdParty/lapack/lib
     RUNTIME_DIR ThirdParty/lapack/bin
     LIBRARIES blas
+    CMAKE_COMMAND_LINE "${FORTRAN_CMAKE_FLAGS}"
     NO_EXTERNAL_INSTALL)
   set(COIN_HAS_BLAS 1)
   cmake_add_fortran_subdirectory(Ipopt
@@ -531,6 +545,7 @@ if (EXISTS ${COIN_SOURCE_DIR}/Ipopt)
     ARCHIVE_DIR Ipopt/lib
     RUNTIME_DIR Ipopt/bin
     LIBRARIES ipoptfort
+    CMAKE_COMMAND_LINE "${FORTRAN_CMAKE_FLAGS}"
     NO_EXTERNAL_INSTALL)
   set(COIN_HAS_MUMPS 1)
   
