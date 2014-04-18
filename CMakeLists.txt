@@ -527,7 +527,7 @@ if (EXISTS ${COIN_SOURCE_DIR}/Ipopt)
     if (EXISTS "${WINSDK_SETENV}")
       file(WRITE setenv.bat "call \"${WINSDK_SETENV}\"")
       # Extra command line flags to pass to CMake in cmake_add_fortran_subdirectory.
-      set(FORTRAN_CMAKE_FLAGS "-DCMAKE_GNUtoMS_VCVARS=${CMAKE_CURRENT_BINARY_DIR}/setenv.bat")
+      set(FORTRAN_CMAKE_FLAGS "-DCMAKE_GNUtoMS_VCVARS=setenv.bat")
     endif ()
   endif ()
 
