@@ -518,22 +518,6 @@ if (EXISTS ${COIN_SOURCE_DIR}/Ipopt)
 
   include_directories(ThirdParty/Mumps/MUMPS/include ThirdParty/Mumps/MUMPS/libseq)
 
-  if (MSVC)
-    # Check if Microsoft SDK is installed and, if yes, make CMAKE_GNUtoMS_VCVARS point
-    # to the script that configures build environment. It is useful when building
-    # Visual Studio projects without Visual C++ installed.
-    find_program(WINSDK_SETENV NAMES SetEnv.cmd
-      PATHS "[HKEY_LOCAL_MACHINE\\SOFTWARE\\Microsoft\\Microsoft SDKs\\Windows;CurrentInstallFolder]/bin")
-    if (EXISTS "${WINSDK_SETENV}")
-      file(WRITE setenv.bat "call \"${WINSDK_SETENV}\"")
-      file(WRITE msbuild.bat
-        "call \"${WINSDK_SETENV}\"
-         ${CMAKE_MAKE_PROGRAM} %*")
-      # Extra command line flags to pass to CMake in cmake_add_fortran_subdirectory.
-      set(FORTRAN_CMAKE_FLAGS "-DCMAKE_GNUtoMS_VCVARS=setenv.bat")
-    endif ()
-  endif ()
-
   include(CMakeAddFortranSubdirectory)
   cmake_add_fortran_subdirectory(ThirdParty/lapack
     PROJECT LAPACK
