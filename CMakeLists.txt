@@ -203,7 +203,8 @@ function(add_coin_library path)
         if (test MATCHES "^Cgl-")
           add_test(${test} bin/${test} Data/Sample Data/Netlib)
         else ()
-          add_test(${test} bin/${test} -mpsDir=Data/Sample -netlibDir=Data/Netlib)
+          add_test(${test}
+            bin/${test} -mpsDir=Data/Sample -netlibDir=Data/Netlib)
         endif ()
       endif ()
     endforeach ()
@@ -308,7 +309,8 @@ endif ()
 
 # Check C++ headers.
 include(CheckIncludeFileCXX)
-foreach (header cassert cctype cfloat cmath cstdarg cstddef cstdio cstdlib cstring ctime)
+foreach (header cassert cctype cfloat cmath cstdarg
+                cstddef cstdio cstdlib cstring ctime)
   string(TOUPPER ${header} var)
   check_include_file_cxx(${header} HAVE_${var})
 endforeach ()
@@ -516,8 +518,11 @@ if (EXISTS ${COIN_SOURCE_DIR}/Ipopt)
     Ipopt/src/LinAlg Ipopt/src/LinAlg/TMatrices
     Ipopt/src/contrib/LinearSolverLoader Ipopt/src/Interfaces)
 
-  include_directories(ThirdParty/Mumps/MUMPS/include ThirdParty/Mumps/MUMPS/libseq)
+  include_directories(
+    ThirdParty/Mumps/MUMPS/include ThirdParty/Mumps/MUMPS/libseq)
 
+  # FORTRAN_CMAKE_FLAGS is used to pass additional CMake arguments to
+  # Fortran subprojects.
   include(CMakeAddFortranSubdirectory)
   cmake_add_fortran_subdirectory(ThirdParty/lapack
     PROJECT LAPACK
@@ -546,7 +551,8 @@ if (EXISTS ${COIN_SOURCE_DIR}/Ipopt)
       COMMAND ${CMAKE_COMMAND} -E copy_if_different
               ${PROJECT_BINARY_DIR}/Ipopt/bin/libipoptfort.dll
               ${CMAKE_CFG_INTDIR})
-    set(IPOPT_DLLS ${CMAKE_CFG_INTDIR}/libblas.dll ${CMAKE_CFG_INTDIR}/libipoptfort.dll)
+    set(IPOPT_DLLS
+      ${CMAKE_CFG_INTDIR}/libblas.dll ${CMAKE_CFG_INTDIR}/libipoptfort.dll)
   endif ()
 
   add_ipopt_library(cgpenalty contrib/CGPenalty)
@@ -559,7 +565,8 @@ if (EXISTS ${COIN_SOURCE_DIR}/Ipopt)
 
   if (COIN_HAS_ASL)
     add_ipopt_library(ipoptamplinterface Apps/AmplSolver ${ASL_LIBRARIES})
-    add_executable(ipopt-executable Ipopt/src/Apps/AmplSolver/ampl_ipopt.cpp ${IPOPT_DLLS})
+    add_executable(ipopt-executable
+      Ipopt/src/Apps/AmplSolver/ampl_ipopt.cpp ${IPOPT_DLLS})
     target_link_libraries(ipopt-executable ipoptamplinterface ipopt)
     set_target_properties(ipopt-executable PROPERTIES
       COMPILE_DEFINITIONS IPOPT_BUILD OUTPUT_NAME ipopt IMPORT_PREFIX imp)
@@ -574,7 +581,8 @@ if (EXISTS ${COIN_SOURCE_DIR}/Ipopt)
   add_ipopt_test(hs071_c hs071_c.c)
   if (NOT WIN32)
     add_test(NAME Ipopt-unitTest
-      WORKING_DIRECTORY ${COIN_BINARY_DIR}/bin COMMAND sh ../Ipopt/test/run_unitTests)
+      WORKING_DIRECTORY ${COIN_BINARY_DIR}/bin
+      COMMAND sh ../Ipopt/test/run_unitTests)
   endif ()
 
   configure(Ipopt src/Common/config.h src/Common/config_ipopt.h)
