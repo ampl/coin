@@ -35,7 +35,9 @@ endif ()
 
 include_directories(
   ../BuildTools/headers src/Common
-  ../ThirdParty/Mumps/MUMPS/include ../ThirdParty/Mumps/MUMPS/libseq)
+  ../ThirdParty/Mumps/MUMPS/include
+  ../ThirdParty/Mumps/MUMPS/libseq
+  ../ThirdParty/Mumps/MUMPS/src)
 
 add_definitions(-DIPOPT_BUILD -DHAVE_CONFIG_H)
 
