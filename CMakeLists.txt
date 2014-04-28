@@ -29,7 +29,7 @@ if (COIN_DISABLE_WARNINGS)
     foreach (flag_var
              CMAKE_CXX_FLAGS CMAKE_CXX_FLAGS_DEBUG CMAKE_CXX_FLAGS_RELEASE
              CMAKE_CXX_FLAGS_MINSIZEREL CMAKE_CXX_FLAGS_RELWITHDEBINFO)
-      string(REPLACE "/W3" "/w" ${flag_var} "${${flag_var}}")
+      string(REGEX REPLACE "/W[13]" "/w" ${flag_var} "${${flag_var}}")
     endforeach()
   else ()
     foreach (flag -Wall -Wextra -pedantic)
