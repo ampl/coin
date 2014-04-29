@@ -2,7 +2,7 @@
 // All Rights Reserved.
 // This code is published under the Eclipse Public License.
 //
-// $Id: IpStdInterfaceTNLP.cpp 2386 2013-09-12 10:50:10Z stefan $
+// $Id: IpStdInterfaceTNLP.cpp 2463 2014-02-01 07:16:40Z stefan $
 //
 // Authors:  Carl Laird, Andreas Waechter     IBM    2004-09-02
 
@@ -387,7 +387,6 @@ namespace Ipopt
         non_const_x_[i] = x[i];
       }
     }
-    DBG_ASSERT(non_const_x_ && "non_const_x is NULL after apply_new_x");
   }
 
 } // namespace Ipopt

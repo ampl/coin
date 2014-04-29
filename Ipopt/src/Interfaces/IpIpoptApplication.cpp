@@ -2,7 +2,7 @@
 // All Rights Reserved.
 // This code is published under the Eclipse Public License.
 //
-// $Id: IpIpoptApplication.cpp 2443 2013-11-26 11:34:33Z stefan $
+// $Id: IpIpoptApplication.cpp 2474 2014-04-08 09:22:14Z stefan $
 //
 // Authors:  Carl Laird, Andreas Waechter     IBM    2004-09-02
 
@@ -1036,7 +1036,7 @@ namespace Ipopt
       }
     }
     catch (TOO_FEW_DOF& exc) {
-      exc.ReportException(*jnlst_, J_ERROR);
+      exc.ReportException(*jnlst_, J_STRONGWARNING);
       jnlst_->Printf(J_SUMMARY, J_MAIN, "\nEXIT: Problem has too few degrees of freedom.\n");
       retValue = Not_Enough_Degrees_Of_Freedom;
       status = TOO_FEW_DEGREES_OF_FREEDOM;

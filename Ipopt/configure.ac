@@ -2,7 +2,7 @@
 # All Rights Reserved.
 # This file is distributed under the Eclipse Public License.
 
-## $Id: configure.ac 2455 2013-12-18 14:48:36Z stefan $
+## $Id: configure.ac 2479 2014-04-08 10:23:28Z stefan $
 
 # Authors:  Carl Laird, Andreas Waechter     IBM    2004-08-13
 
@@ -12,7 +12,7 @@
 
 AC_PREREQ(2.59)
 
-AC_INIT([Ipopt],[3.11.7],[http://projects.coin-or.org/Ipopt/newticket])
+AC_INIT([Ipopt],[3.11.8],[http://projects.coin-or.org/Ipopt/newticket])
 
 AC_COPYRIGHT(
 [Copyright 2004, 2011 International Business Machines and others.
@@ -41,7 +41,7 @@ AC_CANONICAL_BUILD
 # the source root directory contains definition of where to find those
 # externals.  The following macro ensures that those externals are
 # retrieved by svn if they are not there yet.
-AC_COIN_PROJECTDIR_INIT(Ipopt,10:7:9)
+AC_COIN_PROJECTDIR_INIT(Ipopt,10:8:9)
 
 # Check if user wants to produce debugging code
 AC_COIN_DEBUG_COMPILE(Ipopt)
@@ -397,6 +397,11 @@ fi
 if test "$have_ma27" != "yes" -a "$have_ma57" != "yes" -a "$have_ma77" != "yes" -a "$have_ma86" != "yes" -a "$use_pardiso" = "no" -a "$use_taucs" = no -a "$use_wsmp" = no -a "$coin_has_mumps" != yes; then
   AC_MSG_WARN("You are compiling Ipopt without any linear solver (such as MUMPS).  You will only be able to run Ipopt if you compile a shared library with a linear solver.")
 fi
+
+# Check whether MPI_Initialized is available
+#   we assume that MPI_Finalized is present if MPI_Initialized is present
+
+AC_CHECK_FUNCS([MPI_Initialized])
 
 ###################################################
 # Check if user wants inexact algorithm available #

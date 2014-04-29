@@ -11,7 +11,7 @@
 %%     Stefan Vigerske                        GAMS
 %%
 %%
-%% $Id: documentation.tex 2422 2013-11-09 17:01:38Z stefan $
+%% $Id: documentation.tex 2474 2014-04-08 09:22:14Z stefan $
 %%
 \documentclass[10pt]{article}
 \setlength{\textwidth}{6.3in}       % Text width
@@ -42,7 +42,7 @@
 \title{Introduction to \Ipopt:\\
 A tutorial for downloading, installing, and using \Ipopt}
 
-\author{Revision number of this document: $Revision: 2422 $}
+\author{Revision number of this document: $Revision: 2474 $}
 
 %\date{\today}
 \maketitle
@@ -2767,7 +2767,8 @@ the screen.
 void HS071_NLP::finalize_solution(SolverReturn status,
                                   Index n, const Number* x, const Number* z_L,
                                   const Number* z_U, Index m, const Number* g,
-                                  const Number* lambda, Number obj_value)
+                                  const Number* lambda, Number obj_value,
+                                  const IpoptData* ip_data, IpoptCalculatedQuantities* ip_cq)                                  
 {
   // here is where we would store the solution to variables, or write to a file, etc
   // so we could use the solution. 

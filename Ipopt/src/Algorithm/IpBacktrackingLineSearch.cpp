@@ -2,7 +2,7 @@
 // All Rights Reserved.
 // This code is published under the Eclipse Public License.
 //
-// $Id: IpBacktrackingLineSearch.cpp 1861 2010-12-21 21:34:47Z andreasw $
+// $Id: IpBacktrackingLineSearch.cpp 2461 2014-01-17 12:15:35Z stefan $
 //
 // Authors:  Carl Laird, Andreas Waechter     IBM    2004-08-13
 //           Andreas Waechter                 IBM    2005-10-13
@@ -556,7 +556,7 @@ namespace Ipopt
             }
             else {
               // ToDo does that happen too often?
-              Jnlst().Printf(J_ERROR, J_LINE_SEARCH,
+              Jnlst().Printf(J_STRONGWARNING, J_LINE_SEARCH,
                              "Restoration phase is called at point that is almost feasible,\n  with constraint violation %e. Abort.\n", IpCq().curr_constraint_violation());
               THROW_EXCEPTION(RESTORATION_FAILED,
                               "Restoration phase called, but point is almost feasible.");

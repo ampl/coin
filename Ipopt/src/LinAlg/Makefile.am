@@ -2,7 +2,7 @@
 # All Rights Reserved.
 # This file is distributed under the Eclipse Public License.
 
-## $Id: Makefile.am 2005 2011-06-06 12:55:16Z stefan $
+## $Id: Makefile.am 2474 2014-04-08 09:22:14Z stefan $
 
 # Authors:  Carl Laird, Andreas Waechter     IBM    2004-08-13
 
@@ -14,6 +14,7 @@ includeipoptdir = $(includedir)/coin
 includeipopt_HEADERS = \
 	IpMatrix.hpp \
 	IpSymMatrix.hpp \
+	IpExpansionMatrix.hpp \
 	IpVector.hpp \
 	IpDenseVector.hpp \
 	IpCompoundVector.hpp \

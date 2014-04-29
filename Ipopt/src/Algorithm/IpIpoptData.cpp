@@ -2,7 +2,7 @@
 // All Rights Reserved.
 // This code is published under the Eclipse Public License.
 //
-// $Id: IpIpoptData.cpp 2276 2013-05-05 12:33:44Z stefan $
+// $Id: IpIpoptData.cpp 2476 2014-04-08 09:41:07Z stefan $
 //
 // Authors:  Carl Laird, Andreas Waechter     IBM    2004-08-13
 
@@ -150,12 +150,12 @@ namespace Ipopt
 
     debug_curr_tag_ = curr_->GetTag();
     debug_curr_tag_sum_ = curr_->GetTagSum();
-    debug_trial_tag_ = TaggedObject::Tag();
-    debug_trial_tag_sum_ = TaggedObject::Tag();
-    debug_delta_tag_ = TaggedObject::Tag();
-    debug_delta_tag_sum_ = TaggedObject::Tag();
-    debug_delta_aff_tag_ = TaggedObject::Tag();
-    debug_delta_aff_tag_sum_ = TaggedObject::Tag();
+    debug_trial_tag_ = 0;
+    debug_trial_tag_sum_ = 0;
+    debug_delta_tag_ = 0;
+    debug_delta_tag_sum_ = 0;
+    debug_delta_aff_tag_ = 0;
+    debug_delta_aff_tag_sum_ = 0;
 #endif
 
     trial_ = NULL;

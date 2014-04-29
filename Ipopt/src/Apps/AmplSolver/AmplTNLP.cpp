@@ -2,7 +2,7 @@
 // All Rights Reserved.
 // This code is published under the Eclipse Public License.
 //
-// $Id: AmplTNLP.cpp 2386 2013-09-12 10:50:10Z stefan $
+// $Id: AmplTNLP.cpp 2478 2014-04-08 09:59:54Z stefan $
 //
 // Authors:  Carl Laird, Andreas Waechter     IBM    2004-08-13
 
@@ -1355,10 +1355,10 @@ namespace Ipopt
                                      "pardiso_matching_strategy",
                                      AmplOptionsList::String_Option,
                                      "Matching strategy for linear solver Pardiso");
-    ampl_options_list->AddAmplOption("pardiso_out_of_core_power",
-                                     "pardiso_out_of_core_power",
-                                     AmplOptionsList::Integer_Option,
-                                     "Enables out-of-core version of linear solver Pardiso");
+    //ampl_options_list->AddAmplOption("pardiso_out_of_core_power",
+    //                                 "pardiso_out_of_core_power",
+    //                                 AmplOptionsList::Integer_Option,
+    //                                 "Enables out-of-core version of linear solver Pardiso");
 
 #ifdef HAVE_WSMP
 

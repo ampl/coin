@@ -2,7 +2,7 @@
 # All Rights Reserved.
 # This file is distributed under the Eclipse Public License.
 
-## $Id: Makefile.am 2276 2013-05-05 12:33:44Z stefan $
+## $Id: Makefile.am 2476 2014-04-08 09:41:07Z stefan $
 
 # Authors:  Carl Laird, Andreas Waechter     IBM    2004-08-13
 
@@ -37,7 +37,7 @@ libcommon_la_SOURCES = \
 	IpRegOptions.cpp IpRegOptions.hpp \
 	IpReferenced.hpp \
 	IpSmartPtr.hpp \
-	IpTaggedObject.hpp \
+	IpTaggedObject.cpp IpTaggedObject.hpp \
 	IpTimedTask.hpp \
 	IpTypes.hpp \
 	IpUtils.cpp IpUtils.hpp
@@ -65,7 +65,7 @@ ASTYLE_FILES = \
 	IpRegOptions.cppbak IpRegOptions.hppbak \
 	IpReferenced.hppbak \
 	IpSmartPtr.hppbak \
-	IpTaggedObject.hppbak \
+	IpTaggedObject.cppbak IpTaggedObject.hppbak \
 	IpTimedTask.hppbak \
 	IpTypes.hppbak \
 	IpUtils.cppbak IpUtils.hppbak

@@ -2,7 +2,7 @@
 // All Rights Reserved.
 // This code is published under the Eclipse Public License.
 //
-// $Id: IpCGPenaltyData.hpp 2276 2013-05-05 12:33:44Z stefan $
+// $Id: IpCGPenaltyData.hpp 2476 2014-04-08 09:41:07Z stefan $
 //
 // Authors:  Andreas Waechter           IBM     2007-06-04
 //                   based on IpIpoptData.hpp
@@ -287,7 +287,7 @@ namespace Ipopt
       debug_delta_cgpen_tag_sum_ = delta_cgpen->GetTagSum();
     }
     else {
-      debug_delta_cgpen_tag_ = TaggedObject::Tag();
+      debug_delta_cgpen_tag_ = 0;
       debug_delta_cgpen_tag_sum_ = delta_cgpen->GetTagSum();
     }
 #endif
@@ -306,7 +306,7 @@ namespace Ipopt
       debug_delta_cgpen_tag_sum_ = delta_cgpen->GetTagSum();
     }
     else {
-      debug_delta_cgpen_tag_ = TaggedObject::Tag();
+      debug_delta_cgpen_tag_ = 0;
       debug_delta_cgpen_tag_sum_ = delta_cgpen->GetTagSum();
     }
 #endif
@@ -325,7 +325,7 @@ namespace Ipopt
       debug_delta_cgfast_tag_sum_ = delta_cgfast->GetTagSum();
     }
     else {
-      debug_delta_cgfast_tag_ = TaggedObject::Tag();
+      debug_delta_cgfast_tag_ = 0;
       debug_delta_cgfast_tag_sum_ = delta_cgfast->GetTagSum();
     }
 #endif

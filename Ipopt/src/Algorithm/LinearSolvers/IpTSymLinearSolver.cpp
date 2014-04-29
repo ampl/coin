@@ -2,7 +2,7 @@
 // All Rights Reserved.
 // This code is published under the Eclipse Public License.
 //
-// $Id: IpTSymLinearSolver.cpp 2386 2013-09-12 10:50:10Z stefan $
+// $Id: IpTSymLinearSolver.cpp 2476 2014-04-08 09:41:07Z stefan $
 //
 // Authors:  Carl Laird, Andreas Waechter     IBM    2004-03-17
 
@@ -21,6 +21,7 @@ namespace Ipopt
    SmartPtr<TSymScalingMethod> scaling_method)
       :
       SymLinearSolver(),
+      atag_(0),
       dim_(0),
       nonzeros_triplet_(0),
       nonzeros_compressed_(0),
@@ -90,7 +91,7 @@ namespace Ipopt
 
     if (!warm_start_same_structure_) {
       // Reset all private data
-      atag_=TaggedObject::Tag();
+      atag_=0;
       dim_=0;
       nonzeros_triplet_=0;
       nonzeros_compressed_=0;
