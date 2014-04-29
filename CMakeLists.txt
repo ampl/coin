@@ -575,6 +575,13 @@ if (EXISTS ${COIN_SOURCE_DIR}/Ipopt)
     endif ()
   endif ()
   
+  if (SIZEOF_INT_P EQUAL 8)
+    set(BIT32FCOMMENT C)
+  else ()
+    set(BIT64FCOMMENT C)
+  endif ()
+  configure_file(Ipopt/examples/hs071_f/hs071_f.f.in Ipopt/examples/hs071_f/hs071_f.f @ONLY)
+  
   add_ipopt_test(hs071_cpp hs071_main.cpp hs071_nlp.cpp hs071_nlp.hpp)
   add_ipopt_test(hs071_c hs071_c.c)
   if (NOT WIN32)
