@@ -63,7 +63,7 @@ namespace Bonmin
     void assignInterface(OsiTMINLPInterface * si);
     /// cut generation method
     virtual void generateCuts( const OsiSolverInterface & si, OsiCuts & cs,
-        const CglTreeInfo info) const;
+        const CglTreeInfo info);
 
 
 

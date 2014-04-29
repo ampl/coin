@@ -5,13 +5,13 @@
 /***************************************************************************/
 
 /* Version number of project */
-#define BONMIN_VERSION "1.5.3"
+#define BONMIN_VERSION "1.7.4"
 
 /* Major Version number of project */
 #define BONMIN_VERSION_MAJOR 1
 
 /* Minor Version number of project */
-#define BONMIN_VERSION_MINOR 5
+#define BONMIN_VERSION_MINOR 7
 
 /* Release Version number of project */
-#define BONMIN_VERSION_RELEASE 3
+#define BONMIN_VERSION_RELEASE 4

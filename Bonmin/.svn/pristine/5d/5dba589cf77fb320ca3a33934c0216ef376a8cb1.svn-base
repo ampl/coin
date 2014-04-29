@@ -1,3 +1,0 @@
-This is an experimental code to hook Bonmin to Bcp instead of Cbc.
-
-This code is not supported anymore (won't compile)

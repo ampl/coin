@@ -107,7 +107,7 @@ namespace Bonmin {
 
   void 
   LinearCutsGenerator::generateCuts(const OsiSolverInterface &solver, OsiCuts &cs,
-                     const CglTreeInfo info) const {
+                     const CglTreeInfo info) {
 
     //const OsiTMINLPInterface * tmp = dynamic_cast<const OsiTMINLPInterface *>(&solver);
     OsiTMINLPInterface * nlp = dynamic_cast<OsiTMINLPInterface *>(solver.clone());//const_cast<OsiTMINLPInterface *>(tmp);
@@ -130,7 +130,7 @@ namespace Bonmin {
         mycuts[i] = cuts.rowCutPtr(i);
         cs.insert(*mycuts[i]);
       }
-      nlp->applyRowCuts(mycuts.size(), const_cast<const OsiRowCut **> (&mycuts[0]));
+      nlp->applyRowCuts((int)mycuts.size(), const_cast<const OsiRowCut **> (&mycuts[0]));
     }
 
     // Take off slack cuts

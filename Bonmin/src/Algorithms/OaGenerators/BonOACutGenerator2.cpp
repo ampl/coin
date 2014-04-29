@@ -75,21 +75,29 @@ namespace Bonmin
     subMip_->setLpSolver(lpManip.si());
     OsiSolverInterface * lp = subMip_->solver();
     lp->resolve();
+
+    if(IsValid(nlp_->linearizer())){
+      nlp_->linearizer()->get_refined_oa(cs);
+      installCuts(*lp, cs, cs.sizeRowCuts());
+    }
+    lp->resolve();
+
     OsiBranchingInformation branch_info(lp, false);
     bool milpOptimal = 1;
 
 
     double milpBound = -COIN_DBL_MAX;
-    bool milpFeasible = 1;
+    //bool milpFeasible = 1;
     bool feasible = 1;
 
     subMip_->solve(cutoff, parameters_.subMilpLogLevel_,
-        (parameters_.maxLocalSearchTime_ + timeBegin_ - CoinCpuTime()));
+                   parameters_.maxLocalSearchTime_ + timeBegin_ - CoinCpuTime());
+
     milpBound = std::max(milpBound, subMip_->lowBound());
     milpOptimal = subMip_->optimal();
 
     feasible = milpBound < cutoff;
-    milpFeasible = feasible;
+    //milpFeasible = feasible;
     isInteger = (subMip_->getLastSolution() != NULL);
     nLocalSearch_++;
 
@@ -148,10 +156,14 @@ namespace Bonmin
       nlpSol = const_cast<double *>(nlp_->getColSolution());
 
       // Get the cuts outer approximation at the current point
-      const double * toCut = (parameter().addOnlyViolated_)?
-          colsol:NULL;
-      nlp_->getOuterApproximation(cs, nlpSol, 1, toCut,
-                                  parameter().global_);
+      if(parameter().addOnlyViolated_){
+        nlp_->getOuterApproximation(cs, nlpSol, 1, colsol,
+                                     parameter().global_);
+      }
+      else {
+        nlp_->getOuterApproximation(cs, nlpSol, 1, NULL,
+                                     parameter().global_);
+      }
 
       int numberCuts = cs.sizeRowCuts() - numberCutsBefore;
       assert(numberCuts);
@@ -195,8 +207,6 @@ namespace Bonmin
       if (gap < gap_tol){
 		 milpBound = 1e50;
 		 feasible = 0;
-		 handler_->message(OASUCCESS, messages_)<<"OA finished due to gap tolerance"<<CoinCpuTime() - timeBegin_ 
-		 <<ub<<CoinMessageEol;
 	   }
       //do we perform a new local search ?
       if (feasible && 
@@ -210,15 +220,11 @@ namespace Bonmin
 	  if (gap < gap_tol){
 		 milpBound = 1e50;
 		 feasible = 0;
-		 handler_->message(OASUCCESS, messages_)<<"OA finished due to gap tolerance"<<CoinCpuTime() - timeBegin_ 
-		 <<ub<<CoinMessageEol;
 	   }
         nLocalSearch_++;
 
-        assert(cutoff <= ub);
         subMip_->solve(cutoff, parameters_.subMilpLogLevel_,
-            parameters_.maxLocalSearchTime_ + timeBegin_ - CoinCpuTime()
-            );
+            parameters_.maxLocalSearchTime_ + timeBegin_ - CoinCpuTime());
 
         milpBound = std::max(milpBound, subMip_->lowBound());
 
@@ -244,7 +250,7 @@ namespace Bonmin
             feasible = 0;
             milpBound = 1e50;
           }
-          milpFeasible = feasible;
+          //milpFeasible = feasible;
         }
         if (subMip_->optimal())
           milpOptimal = 1;
@@ -256,14 +262,19 @@ namespace Bonmin
 		else {
 		  milpBound = 1e50;
 		  feasible = 0;
-		  handler_->message(OASUCCESS, messages_)<<"OA"<<CoinCpuTime() - timeBegin_ 
-		  <<ub<<CoinMessageEol;
 		}
       }
       
     }
 
-
+   if(milpBound >= cutoff){
+      handler_->message(OASUCCESS, messages_)<<"OA "<<CoinCpuTime() - timeBegin_ 
+                                             <<ub<<milpBound<<CoinMessageEol;
+   }
+   else {
+      handler_->message(OAABORT, messages_)<<"OA "<<CoinCpuTime() - timeBegin_           
+                                             <<ub<<milpBound<<CoinMessageEol;
+   }
    handler_->message(OA_STATS, messages_)<<numberPasses<<nodeCount
                                          <<CoinMessageEol;
 #ifdef OA_DEBUG
@@ -276,7 +287,7 @@ namespace Bonmin
   void
   OACutGenerator2::registerOptions(Ipopt::SmartPtr<Bonmin::RegisteredOptions> roptions)
   {
-    roptions->SetRegisteringCategory("Options for OA decomposition", RegisteredOptions::BonminCategory);
+    roptions->SetRegisteringCategory("Outer Approximation Decomposition (B-OA)", RegisteredOptions::BonminCategory);
     roptions->AddStringOption2("oa_decomposition", "If yes do initial OA decomposition",
                                "no",
                                "no","",
@@ -284,6 +295,7 @@ namespace Bonmin
                                "");
     roptions->setOptionExtraInfo("oa_decomposition",19);
 
+    roptions->SetRegisteringCategory("Output and Loglevel", RegisteredOptions::BonminCategory);
     roptions->AddBoundedIntegerOption("oa_log_level",
         "specify OA iterations log level.",
         0,2,1,

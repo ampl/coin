@@ -1,10 +1,7 @@
 // Copyright (C) 2006, 2007 International Business Machines
 // Corporation and others.  All Rights Reserved.
-#if defined(_MSC_VER)
-// Turn off compiler warning about long names
-#  pragma warning(disable:4786)
-#endif
 
+#include "CoinPragma.hpp"
 #include "BonLpBranchingSolver.hpp"
 #include "OsiClpSolverInterface.hpp"
 #include <vector>
@@ -117,12 +114,6 @@ namespace Bonmin
     std::vector<int> diff_up_bnd_index;
     std::vector<double> diff_up_bnd_value;
 
-#if 0
-    // deleteme
-    for (int i=0; i<tminlp_interface->getNumCols(); i++) {
-      printf("%3d ol = %e nl = %e   ou = %e nu = %e\n",i,tminlp_interface->getColLower()[i],lin_->getColLower()[i],tminlp_interface->getColUpper()[i],lin_->getColUpper()[i]);
-    }
-#endif
     // Get the bounds.  We assume that the bounds in the linear solver
     // are always the original ones
     const int numCols = tminlp_interface->getNumCols();
@@ -158,12 +149,6 @@ namespace Bonmin
       }
     }
 
-#if 0
-    // deleteme
-    for (int i=0; i<numCols; i++) {
-      printf("%3d ol = %e nl = %e   ou = %e nu = %e\n",i,tminlp_interface->getColLower()[i],lin_->getColLower()[i],tminlp_interface->getColUpper()[i],lin_->getColUpper()[i]);
-    }
-#endif
     if(warm_start_mode_ == Basis){
       lin->setWarmStart(warm_);
     }
@@ -214,7 +199,7 @@ namespace Bonmin
   void
   LpBranchingSolver::registerOptions(Ipopt::SmartPtr<Bonmin::RegisteredOptions> roptions)
   {
-    roptions->SetRegisteringCategory("Bonmin ecp based strong branching",RegisteredOptions::UndocumentedCategory);
+    roptions->SetRegisteringCategory("ECP based strong branching",RegisteredOptions::UndocumentedCategory);
     roptions->AddLowerBoundedIntegerOption
     ("ecp_max_rounds_strong",
      "Set the maximal number of rounds of ECP cuts in strong branching.",

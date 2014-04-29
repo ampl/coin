@@ -2,7 +2,7 @@
 # All Rights Reserved.
 # This file is distributed under the Common Public License.
 
-## $Id: configure.ac 1968 2012-03-01 17:26:59Z pbonami $
+## $Id: configure.ac 2094 2013-12-18 15:34:08Z stefan $
 
 # Author:  Andreas Waechter            IBM    2006-04-13
 
@@ -12,7 +12,7 @@
 
 AC_PREREQ(2.59)
 
-AC_INIT([Bonmin],[1.5.3],[bonmin@list.coin-or.org])
+AC_INIT([Bonmin],[1.7.4],[bonmin@list.coin-or.org])
 
 AC_COPYRIGHT([
 Copyright 2006, 2008 International Business Machines and others.
@@ -41,7 +41,7 @@ AC_CANONICAL_BUILD
 # the source root directory contains definition of where to find those
 # externals.  The following macro ensures that those externals are
 # retrieved by svn if they are not there yet.
-AC_COIN_PROJECTDIR_INIT(Bonmin,9:3:5)
+AC_COIN_PROJECTDIR_INIT(Bonmin,11:4:7)
 
 # Check if user wants to produce debugging code
 AC_COIN_DEBUG_COMPILE(Bonmin)
@@ -49,14 +49,6 @@ AC_COIN_DEBUG_COMPILE(Bonmin)
 # Get the name of the C++ compiler and appropriate compiler options
 AC_COIN_PROG_CXX
 
-# AW: I'm adding the Fortran compiler now for FilterSQP - we should
-# make this optional
-
-# Get the name of the Fortran compiler and appropriate compiler options
-AC_COIN_PROG_F77
-
-# Find out how to call Fortran from C and determine Fortran runtime libraries
-AC_COIN_F77_WRAPPERS
 
 # Initialize automake and libtool
 AC_COIN_INIT_AUTO_TOOLS
@@ -106,6 +98,15 @@ AC_ARG_WITH([filtersqp],
             [filtersqp_libs="$withval"])
 
 AC_COIN_CHECK_PACKAGE(FilterSQP, [coinfiltersqp], [BonminLib])
+
+if test $coin_has_filtersqp = yes
+then
+  # Get the name of the Fortran compiler and appropriate compiler options
+  AC_COIN_PROG_F77
+
+  # Find out how to call Fortran from C and determine Fortran runtime libraries
+  AC_COIN_F77_WRAPPERS
+fi
 
 # we want to keep the linking check for FilterSQP, but cannot do this if FilterSQP will be build later (in ThirdParty)
 #if test $coin_has_filtersqp = yes ; then
@@ -179,6 +180,7 @@ AC_CONFIG_FILES([Makefile
                  src/CbcBonmin/Heuristics/Makefile
                  examples/OptionDocGen/Makefile
                  experimental/Separable/Makefile
+                 experimental/RobotBonmin/Makefile
                  test/Makefile
                  examples/CppExample/Makefile
                  bonmin.pc bonmin-uninstalled.pc])

@@ -27,6 +27,7 @@
 namespace Bonmin {
   class TMINLP;
   class TMINLP2TNLP;
+  class TMINLP2OsiLP;
   class TNLP2FPNLP;
   class TNLPSolver;
   class RegisteredOptions;
@@ -89,7 +90,7 @@ class SimpleError : public CoinError
    Optimum,
    InteriorPoint};
 
-  /** Type of the messages specifically outputed by OsiTMINLPInterface.*/
+  /** Type of the messages specifically written by OsiTMINLPInterface.*/
   enum MessagesTypes{
     SOLUTION_FOUND/**found a feasible solution*/,
     INFEASIBLE_SOLUTION_FOUND/**found an infeasible problem*/,
@@ -119,7 +120,7 @@ class SimpleError : public CoinError
   //#############################################################################
 
 
-  /** Messages outputed by an OsiTMINLPInterface. */
+  /** Messages written by an OsiTMINLPInterface. */
 class Messages : public CoinMessages
   {
   public:
@@ -1079,12 +1080,16 @@ void getBendersCut(OsiCuts &cs, bool global);
   //@}
 
   /// Get values of tiny_ and very_tiny_
-  void get_tolerances(double &tiny, double&very_tiny, double &infty){
+  void get_tolerances(double &tiny, double&very_tiny, double &rhsRelax, double &infty){
     tiny = tiny_;
     very_tiny = veryTiny_;
+    rhsRelax = rhsRelax_;
     infty = infty_;
   }
 
+  void set_linearizer(Ipopt::SmartPtr<TMINLP2OsiLP> linearizer);
+
+  Ipopt::SmartPtr<TMINLP2OsiLP> linearizer();
 protected:
   
   //@}
@@ -1227,7 +1232,7 @@ protected:
   /** did we ever continue optimization ignoring a failure. */
   bool hasContinuedAfterNlpFailure_;
   /** number iterations above which a problem is considered suspect (-1 is considered \f$+ \infty \f$).
-  	If in a call to solve a problem takes more than that number of iterations it will be outputed to files.*/
+  	If in a call to solve a problem takes more than that number of iterations it will be output to files.*/
   int numIterationSuspect_ ;
   /** Has problem been optimized since last change (include setColSolution).
      If yes getColSolution will return Ipopt point, otherwise will return
@@ -1243,6 +1248,8 @@ protected:
   /** Adapter for TNLP to a feasibility problem */
   Ipopt::SmartPtr<TNLP2FPNLP> feasibilityProblem_;
 
+  /** Adapter for TMINLP to an Osi LP  */
+  Ipopt::SmartPtr<TMINLP2OsiLP> linearizer_;
 
   /** \name Arrays to store Jacobian matrix */
   //@{
@@ -1265,6 +1272,8 @@ protected:
   double tiny_;
   /** Value for small non-zero element which we will take the risk to ignore in OA cuts.*/
   double veryTiny_;
+  /** Amount by which to relax OA constraints RHSes*/
+  double rhsRelax_;
   /** Value for infinity. */
   double infty_;
   /** status of last optimization. */

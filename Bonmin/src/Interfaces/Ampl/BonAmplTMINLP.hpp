@@ -19,6 +19,7 @@
 #include "CoinPackedMatrix.hpp"
 #include "OsiCuts.hpp"
 #include "BonRegisteredOptions.hpp"
+#include "BonTypes.hpp"
 
 /* non Ipopt forward declaration */
 struct ASL_pfgh;
@@ -72,6 +73,9 @@ namespace Bonmin
 
     /** Read suffixes which indicate which constraints are convex.*/
     void read_convexities();
+
+    /** Read suffixes used to apply perspective in OA to some of the constraints.*/
+    void read_onoff();
 
     /** Read suffixes on objective functions for upper bounding*/
     void read_obj_suffixes();
@@ -169,8 +173,8 @@ namespace Bonmin
       * <tr> <td> <b> <center> Code </center> </b> </td> <td> <b> <center> Status </center> </b> </td> </tr>
       * <tr> <td> 3 </td> <td> Integer optimal </td> </tr>
       * <tr> <td> 220 </td> <td> problem is proven infeasible. </td> </tr>
-      * <tr> <td> 421 </td> <td> limit reached with integer feasible solution found. </td> </tr>
-      * <tr> <td> 410 </td> <td> limit reached without any integer feasible solution. </td> </tr>
+      * <tr> <td> 421 </td> <td> limit reached or user interrupt with integer feasible solution found. </td> </tr>
+      * <tr> <td> 410 </td> <td> limit reached or user interrupt without any integer feasible solution. </td> </tr>
       * <tr> <td> 500 </td> <td> error. </td> </tr>
       * <caption> Status codes for optimization. </caption>
       * </table>
@@ -261,6 +265,11 @@ namespace Bonmin
     {
       return hasLinearObjective_;
     }
+
+  /** Access array describing onoff constraint.*/
+  virtual const int * get_const_xtra_id() const{
+    return c_extra_id_();
+  }
   private:
     /**@name Default Compiler Generated Methods
      * (Hidden to avoid implicit creation/calling).
@@ -298,6 +307,9 @@ namespace Bonmin
 
     /** Store constraints types.*/
     TMINLP::Convexity * constraintsConvexities_;
+
+    /** Store onoff information.*/
+    vector<int> c_extra_id_; 
 
     /** Ipopt::Number of nonConvex constraints.*/
     int numberNonConvex_;

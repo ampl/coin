@@ -9,7 +9,6 @@
 
 
 #include "BonTNLP2FPNLP.hpp"
-#include "IpBlas.hpp"
 
 using namespace Ipopt;
 
@@ -64,17 +63,17 @@ namespace Bonmin
   }
 
   void
-  TNLP2FPNLP::set_dist2point_obj(int n, const Number * vals, const Index * inds)
+  TNLP2FPNLP::set_dist_to_point_obj(size_t n, const Number * vals, const Index * inds)
   {
     inds_.resize(n);
     vals_.resize(n);
-    IpBlasDcopy(n, vals, 1, vals_(), 1);
-    CoinCopyN(inds, n, inds_());
+    std::copy(vals, vals + n, vals_.begin());
+    std::copy(inds, inds + n, inds_.begin());
   }
 
   /** Compute the distance to the current point to which distance is minimized. */
   double
-  TNLP2FPNLP::dist2point(const Number *x)
+  TNLP2FPNLP::dist_to_point(const Number *x)
   {
     double ret_val = 0;
     assert(vals_.size() == inds_.size());
@@ -108,11 +107,11 @@ namespace Bonmin
                                 // other that uses index_style_
 
     if(use_feasibility_pump_objective_ && norm_ == 2)
-      nnz_h_lag += vals_.size();
+      nnz_h_lag += (int)vals_.size();
 
     if(use_cutoff_constraint_ && use_local_branching_constraint_) {
       m += 2;
-      nnz_jac_g += (n + vals_.size());
+      nnz_jac_g += (n + (int)vals_.size());
     }
     else if(use_cutoff_constraint_) {
       m++;
@@ -120,7 +119,7 @@ namespace Bonmin
     }
     else if(use_local_branching_constraint_) {
       m++;
-      nnz_jac_g += vals_.size();
+      nnz_jac_g += (int)vals_.size();
     }
 
     return ret_code;
@@ -163,7 +162,7 @@ namespace Bonmin
 
     if(use_feasibility_pump_objective_) {
       obj_value *= (1 - lambda_) * sigma_;
-      obj_value += objectiveScalingFactor_*lambda_*dist2point(x);
+      obj_value += objectiveScalingFactor_*lambda_*dist_to_point(x);
     }
 
     return ret_code;
@@ -254,7 +253,7 @@ namespace Bonmin
     bool ret_code;
 
     if(use_cutoff_constraint_ && use_local_branching_constraint_) {
-      int n_integers = vals_.size();
+      int n_integers = (int)vals_.size();
       ret_code = tnlp_->eval_jac_g(n, x, new_x, m, nele_jac - n - n_integers, 
 				   iRow, jCol, values);
 
@@ -338,7 +337,7 @@ namespace Bonmin
       }
     }
     else if(use_local_branching_constraint_) {
-      int n_integers = vals_.size();
+      int n_integers = (int)vals_.size();
       ret_code = tnlp_->eval_jac_g(n, x, new_x, m, nele_jac - n_integers, 
 				   iRow, jCol, values);
       
@@ -381,7 +380,7 @@ namespace Bonmin
   {
     bool ret_code;
 
-    int  nnz_obj_h = (norm_ == 2) ? inds_.size() : 0;
+    int  nnz_obj_h = (norm_ == 2) ? (int)inds_.size() : 0;
 
     if(use_cutoff_constraint_ && use_local_branching_constraint_) {
       double coef_obj = (iRow != NULL)?0 : lambda[m - 2];

@@ -85,7 +85,7 @@ namespace Bonmin
   MilpRounding::solution(double &solutionValue, double *betterSolution)
   {
     if(model_->getCurrentPassNumber() > 1) return 0;
-    if ((model_->getNodeCount()%howOften_)!=0||model_->getCurrentPassNumber()>1)
+    if (model_->currentDepth() > 2 && (model_->getNodeCount()%howOften_)!=0)
       return 0;
  
     int returnCode = 0; // 0 means it didn't find a feasible solution
@@ -304,10 +304,6 @@ namespace Bonmin
 	if (variableType[iColumn] != Bonmin::TMINLP::CONTINUOUS) {
 	  double value=newSolution[iColumn];
 	  if (fabs(floor(value+0.5)-value)>integerTolerance) {
-#ifdef DEBUG_BON_HEURISTIC_DIVE_MIP
-	    cout<<"It should be infeasible because: "<<endl;
-	    cout<<"variable "<<iColumn<<" is not integer"<<endl;
-#endif
 	    feasible = false;
 	    break;
 	  }
@@ -355,7 +351,7 @@ namespace Bonmin
   }
   void
   MilpRounding::registerOptions(Ipopt::SmartPtr<Bonmin::RegisteredOptions> roptions){
-    roptions->SetRegisteringCategory("Undocumented Heuristics", RegisteredOptions::UndocumentedCategory);
+    roptions->SetRegisteringCategory("Primal Heuristics (undocumented)", RegisteredOptions::UndocumentedCategory);
    roptions->AddStringOption2(
      "MILP_rounding_heuristic",
      "if yes runs the heuristic",

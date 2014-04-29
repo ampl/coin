@@ -154,8 +154,12 @@ namespace Bonmin
 
 
     // For marking convex/nonconvex constraints
-    suffix_handler->AddAvailableSuffix("id",AmplSuffixHandler::Variable_Source, AmplSuffixHandler::Index_Type);
+    suffix_handler->AddAvailableSuffix("non_conv",AmplSuffixHandler::Variable_Source, AmplSuffixHandler::Index_Type);
     suffix_handler->AddAvailableSuffix("primary_var",AmplSuffixHandler::Constraint_Source, AmplSuffixHandler::Index_Type);
+
+    // For marking onoff constraints and indicator variables
+    suffix_handler->AddAvailableSuffix("onoff_c",AmplSuffixHandler::Constraint_Source, AmplSuffixHandler::Index_Type);
+    suffix_handler->AddAvailableSuffix("onoff_v",AmplSuffixHandler::Variable_Source, AmplSuffixHandler::Index_Type);
 
     // For objectives
     suffix_handler->AddAvailableSuffix("UBObj", AmplSuffixHandler::Objective_Source, AmplSuffixHandler::Index_Type);
@@ -179,6 +183,7 @@ namespace Bonmin
     read_obj_suffixes();
     read_priorities();
     read_convexities();
+    read_onoff();
     read_sos();
 
 
@@ -350,7 +355,7 @@ namespace Bonmin
     DBG_ASSERT(asl);
 
     const AmplSuffixHandler * suffix_handler = GetRawPtr(suffix_handler_);
-    const Index * id = suffix_handler->GetIntegerSuffixValues("id", AmplSuffixHandler::Variable_Source);
+    const Index * id = suffix_handler->GetIntegerSuffixValues("non_conv", AmplSuffixHandler::Variable_Source);
     const Index * primary_var = suffix_handler->GetIntegerSuffixValues("primary_var", AmplSuffixHandler::Constraint_Source);
 
 
@@ -360,7 +365,7 @@ namespace Bonmin
       }
       constraintsConvexities_ = new TMINLP::Convexity[n_con];
       if (id == NULL) {
-        std::cerr<<"Incorrect suffixes description in ampl model. id's are not declared "<<std::endl;
+        std::cerr<<"Incorrect suffixes description in ampl model. n_conv's are not declared "<<std::endl;
         exit(ERROR_IN_AMPL_SUFFIXES);
       }
       int numberSimpleConcave = 0;
@@ -419,6 +424,47 @@ namespace Bonmin
     }
 
   }
+
+
+  void AmplTMINLP::read_onoff()
+  {
+    ASL_pfgh* asl = ampl_tnlp_->AmplSolverObject();
+    DBG_ASSERT(asl);
+
+    const AmplSuffixHandler * suffix_handler = GetRawPtr(suffix_handler_);
+    const Index * onoff_c = suffix_handler->GetIntegerSuffixValues("onoff_c", AmplSuffixHandler::Constraint_Source);
+    const Index * onoff_v = suffix_handler->GetIntegerSuffixValues("onoff_v", AmplSuffixHandler::Variable_Source);
+
+    if(onoff_c == NULL && onoff_v == NULL){//No suffixes
+      return;
+    } 
+    if(onoff_c == NULL || onoff_v == NULL){// If one in non-null both should be
+        std::cerr<<"Incorrect suffixes description in ampl model.  One of per_v or per_c is declared but not the other."<<std::endl;
+        exit(ERROR_IN_AMPL_SUFFIXES);
+    } 
+
+    c_extra_id_.clear();
+    c_extra_id_.resize(n_con, -1);
+    std::map<int, int> id_map;
+
+      for (int i = 0 ; i < n_var ; i++) {
+        if(onoff_v[i] > 0)
+          id_map[onoff_v[i]] = i;
+      }
+
+      for (int i = 0 ; i < n_con ; i++) {
+        if(onoff_c[i] > 0){
+          std::map<int, int >::iterator k = id_map.find(onoff_c[i]);
+          if(k != id_map.end()){
+            c_extra_id_[i] = (*k).second;
+          }
+          else{
+            std::cerr<<"Incorrect suffixes description in ampl model. onoff_c has value attributed to no variable "<<std::endl;
+            exit(ERROR_IN_AMPL_SUFFIXES);
+          }
+        }
+      }
+   }
 
   bool AmplTMINLP::get_nlp_info(Index& n, Index& m, Index& nnz_jac_g, Index& nnz_h_lag, TNLP::IndexStyleEnum& index_style)
   {
@@ -687,11 +733,19 @@ namespace Bonmin
     }
     else if (status == TMINLP::LIMIT_EXCEEDED) {
       status_str = "\t\"Not finished\"";
-      message = "\n" + appName_ + ": Optimization interupted on limit.";
+      message = "\n" + appName_ + ": Optimization interrupted on limit.";
       if(x)
-        solve_result_num = 421; /* Limit reached with integer feasible solution.*/
+        solve_result_num = 421; /* Limit reached or user interrupt with integer feasible solution.*/
       else
-        solve_result_num = 410; /* Limit reached without solution.*/
+        solve_result_num = 410; /* Limit reached or user interrupt without solution.*/
+    }
+    else if (status == TMINLP::USER_INTERRUPT) {
+      status_str = "\t\"Not finished\"";
+      message = "\n" + appName_ + ": Optimization interrupted by user.";
+      if(x)
+        solve_result_num = 422; /* Limit reached or user interrupt with integer feasible solution.*/
+      else
+        solve_result_num = 411; /* Limit reached or user interrupt without solution.*/
     }
     else if (status == TMINLP::MINLP_ERROR) {
       status_str = "\t\"Aborted\"";

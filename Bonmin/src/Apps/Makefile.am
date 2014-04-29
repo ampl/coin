@@ -2,7 +2,7 @@
 # All Rights Reserved.
 # This file is distributed under the Common Public License.
 
-## $Id: Makefile.am 1897 2011-08-14 11:15:48Z stefan $
+## $Id: Makefile.am 2071 2013-07-25 15:16:10Z stefan $
 
 # Author:  Andreas Waechter           IBM    2006-04-13
 
@@ -66,6 +66,19 @@ BonNodeSolver_DEPENDENCIES = \
 	../CbcBonmin/libbonmin.la \
 	$(BONMINLIB_DEPENDENCIES) \
 	$(ASL_DEPENDENCIES)
+
+########################################################################
+#                     Installing manifest (MSVC++)                     #
+########################################################################
+
+if COIN_HAS_ASL
+if COIN_CXX_IS_CL
+install-exec-hook:
+	test -s bonmin.exe.manifest && \
+	mt -manifest bonmin.exe.manifest -outputresource:bonmin.exe;\
+	cp bonmin.exe $(bindir)/bonmin.exe
+endif
+endif
 
 ########################################################################
 #                            Astyle stuff                              #

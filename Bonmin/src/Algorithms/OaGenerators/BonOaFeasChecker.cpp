@@ -65,7 +65,8 @@ namespace Bonmin
       if (post_nlp_solve(babInfo, cutoff)) {
         //nlp solved and feasible
         // Update the cutoff
-        cutoff = nlp_->getObjValue() *(1 - parameters_.cbcCutoffIncrement_);
+        double ub = nlp_->getObjValue();
+        cutoff = ub > 0 ? ub *(1 - parameters_.cbcCutoffIncrement_) : ub*(1 + parameters_.cbcCutoffIncrement_);
         // Update the lp solver cutoff
         lp->setDblParam(OsiDualObjectiveLimit, cutoff);
       }
@@ -106,7 +107,7 @@ namespace Bonmin
       }
       if (changed) {
        branch_info.solution_ = lp->getColSolution();
-        isInteger = integerFeasible(*lp,branch_info, parameters_.cbcIntegerTolerance_,
+       isInteger = integerFeasible(*lp,branch_info, parameters_.cbcIntegerTolerance_,
                                      objects_, nObjects_);
       }
       else {
@@ -138,7 +139,7 @@ namespace Bonmin
   void
   OaFeasibilityChecker::registerOptions(Ipopt::SmartPtr<Bonmin::RegisteredOptions> roptions)
   {
-    roptions->SetRegisteringCategory("Options for feasibility checker using OA cuts", RegisteredOptions::BonminCategory);
+    roptions->SetRegisteringCategory("Feasibility checker using OA cuts", RegisteredOptions::BonminCategory);
     roptions->AddStringOption2("feas_check_cut_types", "Choose the type of cuts generated when an integer feasible solution is found",
                                "outer-approx",
                                "outer-approx", "Generate a set of Outer Approximations cuts.",
@@ -153,7 +154,7 @@ namespace Bonmin
                                "keep-all", "Force cuts from feasibility checker not to be discarded (memory hungry but sometimes better).",
                                "treated-as-normal", "Cuts from memory checker can be discarded as any other cuts (code may cycle then)",
                                "Normally to avoid cycle cuts from feasibility checker should not be discarded in the node where they are generated. "
-                               "However Cbc sometimes does it if no care is taken which can lead to an infinite loop in Bonmin (usualy on simple problems). "
+                               "However Cbc sometimes does it if no care is taken which can lead to an infinite loop in Bonmin (usually on simple problems). "
                                "To avoid this one can instruct Cbc to never discard a cut but if we do that for all cuts it can lead to memory problems. "
                                "The default policy here is to detect cycles and only then impose to Cbc to keep the cut. "
                                "The two other alternative are to instruct Cbc to keep all cuts or to just ignore the problem and hope for the best");

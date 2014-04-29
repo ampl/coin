@@ -48,7 +48,8 @@ namespace Bonmin{
        switch (*i) {
          case ' ':
          case '\t':
-           ret_val +='_';
+         case '_':
+           //ret_val +='_';
            break;
          default:
            ret_val += *i;
@@ -179,8 +180,8 @@ namespace Bonmin{
   of<<"\\tabletail{\\hline \\multicolumn{9}{|c|}{continued on next page}\\\\"
     <<"\\hline}"<<std::endl; 
   of<<"\\tablelasttail{\\hline}"<<std::endl;
-  of<<"{\\tiny"<<std::endl;
-  of<<"\\begin{xtabular}{|l|r|r|r|r|r|r|r|r|}"<<std::endl;
+  of<<"{\\footnotesize"<<std::endl;
+  of<<"\\begin{xtabular}{@{}|@{\\;}l@{\\;}|@{\\;}r@{\\;}|@{\\;}c@{\\;}|@{\\;}c@{\\;}|@{\\;}c@{\\;}|@{\\;}c@{\\;}|@{\\;}c@{\\;}|@{\\;}c@{\\;}|@{\\;}c@{\\;}|@{}}"<<std::endl;
 
   //sort options by categories and alphabetical order
   std::list< Ipopt::RegisteredOption * > sortedOptions;
@@ -286,8 +287,7 @@ namespace Bonmin{
      }
      
      os<<"<tr>"<<std::endl
-       <<"<td> <a href=\"#sec:"<<makeSpaceLess((*i)->Name())<<"\">"
-       <<((*i)->Name())<<"</a> </td>"<<std::endl
+       <<"<td>"<<((*i)->Name())<<"</td>"<<std::endl
        <<"<td>"<<OptionType2Char((*i)->Type())<<"</td>"<<std::endl
        //<<"<td>"<<defaultAsString(*i)<<"</td>"<<std::endl
        <<"<td> "<<( (isValidForBBB((*i)->Name()))? '+' : '-' )<<"</td>"<<std::endl
@@ -301,7 +301,7 @@ namespace Bonmin{
     <<"</table>"<<std::endl;
   }
 
-   /** Output Latex/Html ooptions documentation.*/
+   /** Output Latex/Html options documentation.*/
    void 
    RegisteredOptions::writeLatexHtmlDoc(std::ostream &os, ExtraCategoriesInfo which){
       std::list< Ipopt::RegisteredOption * > options;

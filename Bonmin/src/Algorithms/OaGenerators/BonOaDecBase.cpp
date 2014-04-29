@@ -39,6 +39,7 @@ namespace Bonmin {
       bool reassignLpsolver):
       CglCutGenerator(),
       nlp_(b.nonlinearSolver()),
+      s_(&b),
       lp_(NULL),
       objects_(NULL),
       nObjects_(0),
@@ -76,6 +77,7 @@ namespace Bonmin {
       :
       CglCutGenerator(other),
       nlp_(other.nlp_),
+      s_(other.s_),
       lp_(other.lp_),
       objects_(other.objects_),
       nObjects_(other.nObjects_),
@@ -239,7 +241,7 @@ OaDecompositionBase::passInMessageHandler(CoinMessageHandler * handler)
 /** Standard cut generation methods. */
 void
 OaDecompositionBase::generateCuts(const OsiSolverInterface &si,  OsiCuts & cs,
-    const CglTreeInfo info) const{
+    const CglTreeInfo info) {
   if (nlp_ == NULL) {
     throw CoinError("Error in cut generator for outer approximation no NLP ipopt assigned", "generateCuts", "OaDecompositionBase");
   }
@@ -285,7 +287,7 @@ OaDecompositionBase::generateCuts(const OsiSolverInterface &si,  OsiCuts & cs,
        //Check if cuts off solution
        if(savedCuts_.rowCut(i).violated(colsol) > 0.){
 #ifdef OA_DEBUG
-         printf("A violated cut has been found\n");
+         printf("A violated saved cut has been found\n");
 #endif
          savedCuts_.rowCut(i).setEffectiveness(9.99e99);
          cs.insert(savedCuts_.rowCut(i));

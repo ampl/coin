@@ -55,6 +55,7 @@ namespace Bonmin
   BabSetupBase::BabSetupBase(const CoinMessageHandler * handler):
       nonlinearSolver_(NULL),
       continuousSolver_(NULL),
+      linearizer_(NULL),
       cutGenerators_(),
       heuristics_(),
       branchingMethod_(NULL),
@@ -77,6 +78,7 @@ namespace Bonmin
   BabSetupBase::BabSetupBase(const BabSetupBase & other):
       nonlinearSolver_(NULL),
       continuousSolver_(NULL),
+      linearizer_(other.linearizer_),
       cutGenerators_(),
       heuristics_(),
       branchingMethod_(NULL),
@@ -128,6 +130,7 @@ namespace Bonmin
                              OsiTMINLPInterface &nlp):
       nonlinearSolver_(NULL),
       continuousSolver_(NULL),
+      linearizer_(other.linearizer_),
       cutGenerators_(),
       heuristics_(),
       branchingMethod_(NULL),
@@ -179,6 +182,7 @@ namespace Bonmin
                              const std::string & prefix):
       nonlinearSolver_(other.nonlinearSolver_),
       continuousSolver_(NULL),
+      linearizer_(other.linearizer_),
       cutGenerators_(),
       heuristics_(),
       branchingMethod_(NULL),
@@ -212,6 +216,7 @@ namespace Bonmin
   BabSetupBase::BabSetupBase(Ipopt::SmartPtr<TMINLP> tminlp, const CoinMessageHandler * handler):
       nonlinearSolver_(NULL),
       continuousSolver_(NULL),
+      linearizer_(NULL),
       cutGenerators_(),
       heuristics_(),
       branchingMethod_(NULL),
@@ -263,6 +268,7 @@ namespace Bonmin
   BabSetupBase::BabSetupBase(const OsiTMINLPInterface& nlp):
       nonlinearSolver_(NULL),
       continuousSolver_(NULL),
+      linearizer_(NULL),
       cutGenerators_(),
       heuristics_(),
       branchingMethod_(NULL),
@@ -296,6 +302,7 @@ namespace Bonmin
   BabSetupBase::BabSetupBase( Ipopt::SmartPtr<TNLPSolver> app):
       nonlinearSolver_(NULL),
       continuousSolver_(NULL),
+      linearizer_(NULL),
       cutGenerators_(),
       heuristics_(),
       branchingMethod_(NULL),
@@ -365,8 +372,13 @@ namespace Bonmin
     options->GetNumericValue("integer_tolerance",doubleParam_[IntTol],prefix_.c_str());
     options->GetNumericValue("time_limit", doubleParam_[MaxTime],prefix_.c_str());
 
-
     int ival;
+    int seed = 0;
+    ival = options->GetIntegerValue("random_generator_seed",seed,prefix_.c_str());
+    if(seed == -1)
+      CoinSeedRandom((int)CoinGetTimeOfDay());
+    else if (ival != 0) CoinSeedRandom(seed);
+
     options->GetEnumValue("node_comparison",ival,prefix_.c_str());
     nodeComparisonMethod_ = NodeComparison(ival);
 
@@ -399,7 +411,7 @@ namespace Bonmin
   {
     OsiTMINLPInterface::registerOptions(roptions);
     /* BabSetup options.*/
-    roptions->SetRegisteringCategory("Output and log-level options", RegisteredOptions::BonminCategory);
+    roptions->SetRegisteringCategory("Output and Loglevel", RegisteredOptions::BonminCategory);
 
     roptions->AddBoundedIntegerOption("bb_log_level",
         "specify main branch-and-bound log level.",
@@ -424,13 +436,20 @@ namespace Bonmin
                                      );
     roptions->setOptionExtraInfo("lp_log_level", 119);
 
-    roptions->AddBoundedIntegerOption("nlp_log_at_root"," Specify a different log level "
-                                           "for root relaxtion.",
+    roptions->AddBoundedIntegerOption("nlp_log_at_root","specify a different log level "
+                                           "for root relaxation.",
                                             0,12,0,
                                             "");
     roptions->setOptionExtraInfo("nlp_log_at_root",63);
 
     roptions->SetRegisteringCategory("Branch-and-bound options", RegisteredOptions::BonminCategory);
+
+  roptions->AddLowerBoundedIntegerOption
+  ("random_generator_seed",
+   "Set seed for random number generator (a value of -1 sets seeds to time since Epoch).",
+   -1,0,
+   "");
+  roptions->setOptionExtraInfo("random_generator_seed",127);
 
     roptions->AddLowerBoundedNumberOption("time_limit",
         "Set the global maximum computation time (in secs) for the algorithm.",
@@ -445,7 +464,7 @@ namespace Bonmin
     roptions->setOptionExtraInfo("node_limit", 127);
 
     roptions->AddLowerBoundedIntegerOption("iteration_limit",
-        "Set the cumulated maximum number of iteration in the algorithm used to process nodes continuous relaxations in the branch-and-bound.",
+        "Set the cumulative maximum number of iteration in the algorithm used to process nodes continuous relaxations in the branch-and-bound.",
         0,COIN_INT_MAX,
         "value 0 deactivates option.");
     roptions->setOptionExtraInfo("iteration_limit", 127);
@@ -511,7 +530,7 @@ namespace Bonmin
         "probed-dive",
         "top-node"," Always pick the top node as sorted by the node comparison function",
         "dive","Dive in the tree if possible, otherwise pick top node as sorted by the tree comparison function.",
-        "probed-dive","Dive in the tree exploring two childs before continuing the dive at each level.",
+        "probed-dive","Dive in the tree exploring two children before continuing the dive at each level.",
         "dfs-dive","Dive in the tree if possible doing a depth first search. "
         "Backtrack on leaves or when a prescribed depth is attained or "
         "when estimate of best possible integer feasible solution in subtree "
@@ -547,12 +566,12 @@ namespace Bonmin
         "stop", "Stop when failure happens.",
         "fathom", "Continue when failure happens.",
         "If set to \"fathom\", the algorithm will fathom the node when Ipopt fails to find a solution to the nlp "
-        "at that node whithin the specified tolerances. "
+        "at that node within the specified tolerances. "
         "The algorithm then becomes a heuristic, and the user will be warned that the solution might not be optimal.");
     roptions->setOptionExtraInfo("nlp_failure_behavior", 8);
 
     roptions->AddStringOption2("sos_constraints",
-        "Wether or not to activate SOS constraints.",
+        "Whether or not to activate SOS constraints.",
         "enable",
         "enable","",
         "disable","",
@@ -579,7 +598,7 @@ namespace Bonmin
         "osi-strong", "Osi method to do strong branching",
         "random", "Method to choose branching variable randomly");
 
-    roptions->setOptionExtraInfo("variable_selection", 8);
+    roptions->setOptionExtraInfo("variable_selection", 27);
 
     roptions->AddLowerBoundedIntegerOption("num_cut_passes",
         "Set the maximum number of cut passes at regular nodes of the branch-and-cut.",
@@ -722,22 +741,26 @@ namespace Bonmin
         print_options_documentation, "");
     if (print_options_documentation) {
       std::list<std::string> categories;
-      categories.push_back("Bonmin algorithm choice");
-      categories.push_back("bonmin output options");
-      categories.push_back("bonmin options for robustness");
-      categories.push_back("bonmin options for non-convex problems");
-      categories.push_back("bonmin branch-and-bound options");
+      categories.push_back("Algorithm choice");
+      categories.push_back("Branch-and-bound options");
+      categories.push_back("ECP cuts generation");
+      categories.push_back("Feasibility checker using OA cuts");
+      categories.push_back("MILP Solver");
+      categories.push_back("MILP cutting planes in hybrid algorithm");
+      categories.push_back("Primal Heuristics");
+      categories.push_back("NLP interface");
+      categories.push_back("NLP solution robustness");
+      categories.push_back("NLP solves in hybrid algorithm");
+      categories.push_back("Nonconvex problems");
+      categories.push_back("Outer Approximation Decomposition (B-OA)");
+      categories.push_back("Outer Approximation cuts generation");
+      categories.push_back("Output and Loglevel");
+      categories.push_back("Strong branching setup");
+      // Undocumented categories
       categories.push_back("Diving options");
-      categories.push_back("bonmin options : B-Hyb specific options");
-      categories.push_back("bonmin options : Options for OA decomposition");
-      categories.push_back("bonmin options : Outer Approximation cuts");
-      categories.push_back("bonmin options : Options for MILP subsolver in OA decomposition");
-      categories.push_back("bonmin options for MILP cutting planes");
-      categories.push_back("bonmin options : Options for ecp cuts generation");
-      categories.push_back("Bonmin ecp based strong branching");
-      categories.push_back("bonmin options : Nlp solve options");
-      categories.push_back("bonmin nlp interface option");
-      categories.push_back("bonmin experimental options");
+      categories.push_back("ECP based strong branching");
+      categories.push_back("Primal Heuristics (undocumented)");
+      categories.push_back("Outer Approximation strengthening");
 #ifdef COIN_HAS_FILTERSQP
       categories.push_back("FilterSQP options");
 #endif

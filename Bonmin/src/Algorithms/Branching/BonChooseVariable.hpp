@@ -67,7 +67,7 @@ namespace Bonmin
       infeasibilities_[0] = x;
     }
     private:
-    /// infeasibilities of childs
+    /// infeasibilities of children
     vector<double> infeasibilities_; 
   };
 
@@ -121,6 +121,7 @@ namespace Bonmin
       CANDIDATE_LIST,
       CANDIDATE_LIST2,
       CANDIDATE_LIST3,
+      SB_START,
       SB_HEADER,
       SB_RES,
       BRANCH_VAR,
@@ -150,7 +151,7 @@ namespace Bonmin
 
 
     enum DoStrongReturnStatuses{
-      provenInfeasible = -1 /** One branch has two infeasible childs.*/,
+      provenInfeasible = -1 /** One branch has two infeasible children.*/,
       doneNoFixing /** All done no variable can be fixed.*/,
       doneCanFix /** Several variable can be fixed.*/,
       interuptedCanFix /** Interupted and found a variable to fix.*/,

@@ -63,8 +63,7 @@ class LinearCutsGenerator : public CglCutGenerator {
    void initialize(BabSetupBase& s);
 
    void generateCuts(const OsiSolverInterface &solver, OsiCuts &cs,
-		     const CglTreeInfo info = CglTreeInfo()) const; 
-     
+		     const CglTreeInfo info = CglTreeInfo());
 
    private:
      std::list<Coin::SmartPtr<CuttingMethod> > methods_; 

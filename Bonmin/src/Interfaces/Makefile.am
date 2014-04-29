@@ -2,7 +2,7 @@
 # All Rights Reserved.
 # This file is distributed under the Common Public License.
 
-## $Id: Makefile.am 1897 2011-08-14 11:15:48Z stefan $
+## $Id: Makefile.am 2092 2013-12-16 10:58:03Z stefan $
 
 # Author:  Andreas Waechter           IBM    2006-04-13
 
@@ -32,6 +32,7 @@ libbonmininterfaces_la_SOURCES = \
 	BonStartPointReader.cpp BonStartPointReader.hpp \
 	BonOsiTMINLPInterface.cpp BonOsiTMINLPInterface.hpp \
 	BonTMINLP2TNLP.cpp BonTMINLP2TNLP.hpp \
+	BonTMINLP2OsiLP.cpp BonTMINLP2OsiLP.hpp \
 	BonTMINLP.cpp BonTMINLP.hpp \
 	BonTNLPSolver.hpp BonTNLPSolver.cpp \
 	BonTNLP2FPNLP.cpp BonTNLP2FPNLP.hpp \
@@ -79,8 +80,11 @@ includecoin_HEADERS = \
      BonCutStrengthener.hpp \
      BonTNLPSolver.hpp \
      BonBranchingTQP.hpp \
+     BonStrongBranchingSolver.hpp \
+     BonTMINLP2OsiLP.hpp \
      BonTypes.hpp \
-     BonRegisteredOptions.hpp
+     BonRegisteredOptions.hpp \
+     BonExitCodes.hpp
 
 install-exec-local:
 	$(install_sh_DATA) config_bonmin.h $(DESTDIR)$(includecoindir)/BonminConfig.h

@@ -61,8 +61,7 @@ namespace Bonmin
 /// cut generation method
   void
   OaNlpOptim::generateCuts( const OsiSolverInterface & si, OsiCuts & cs,
-      const CglTreeInfo info) const
-  {
+      const CglTreeInfo info) {
     if (nlp_ == NULL) {
       CoinError("Error in cut generator for outer approximation no ipopt NLP assigned", "generateCuts", "OaNlpOptim");
     }
@@ -176,7 +175,7 @@ namespace Bonmin
   void
   OaNlpOptim::registerOptions(Ipopt::SmartPtr<Bonmin::RegisteredOptions> roptions)
   {
-    roptions->SetRegisteringCategory("Nlp solve options in B-Hyb", RegisteredOptions::BonminCategory);
+    roptions->SetRegisteringCategory("NLP solves in hybrid algorithm (B-Hyb)", RegisteredOptions::BonminCategory);
     roptions->AddLowerBoundedIntegerOption("nlp_solve_frequency",
         "Specify the frequency (in terms of nodes) at which NLP relaxations are solved in B-Hyb.",
         0,10,

@@ -17,6 +17,7 @@
 #include "BonTMINLP.hpp"
 #include "BonTMINLP2TNLP.hpp"
 #include "BonTNLP2FPNLP.hpp"
+#include "BonTMINLP2OsiLP.hpp"
 #include "BonTNLPSolver.hpp"
 #include "CoinTime.hpp"
 #include <climits>
@@ -42,22 +43,36 @@
 using namespace Ipopt;
 
 
+extern bool BonminAbortAll;
 namespace Bonmin {
 ///Register options
 static void
 register_general_options
 (SmartPtr<RegisteredOptions> roptions)
 {
-  roptions->SetRegisteringCategory("nlp interface option", RegisteredOptions::BonminCategory);
+  roptions->SetRegisteringCategory("NLP interface", RegisteredOptions::BonminCategory);
   roptions->AddStringOption3("nlp_solver",
-                             "Choice of the solver for local optima of continuous nlp's",
+                             "Choice of the solver for local optima of continuous NLP's",
                              "Ipopt",
                              "Ipopt", "Interior Point OPTimizer (https://projects.coin-or.org/Ipopt)",
                              "filterSQP", "Sequential quadratic programming trust region "
                                           "algorithm (http://www-unix.mcs.anl.gov/~leyffer/solvers.html)",
                              "all", "run all available solvers at each node",
-                             "Note that option will work only if the specified solver has been installed. Ipopt will usualy be installed with Bonmin by default. For FilterSQP please see http://www-unix.mcs.anl.gov/~leyffer/solvers.html on how to obtain it and https://projects.coin-or.org/Bonmin/wiki/HintTricks on how to configure Bonmin to use it.");
+                             "Note that option will work only if the specified solver has been installed. Ipopt will usually be installed with Bonmin by default. For FilterSQP please see http://www-unix.mcs.anl.gov/~leyffer/solvers.html on how to obtain it and https://projects.coin-or.org/Bonmin/wiki/HintTricks on how to configure Bonmin to use it.");
   roptions->setOptionExtraInfo("nlp_solver",127);
+  
+  roptions->AddStringOption4("warm_start",
+      "Select the warm start method",
+      "none",
+      "none","No warm start, just start NLPs from optimal solution of the root relaxation",
+      "fake_basis", "builds fake basis, useful for cut management in Cbc (warm start is the same as in none)",
+      "optimum","Warm start with direct parent optimum",
+      "interior_point","Warm start with an interior point of direct parent",
+      "This will affect the function getWarmStart(), and as a consequence the warm starting in the various algorithms.");
+  roptions->setOptionExtraInfo("warm_start",8);
+
+  roptions->SetRegisteringCategory("Output and Loglevel", RegisteredOptions::BonminCategory);
+  
   roptions->AddBoundedIntegerOption("nlp_log_level",
                                     "specify NLP solver interface log level (independent from ipopt print_level).",
                                      0,2,1,
@@ -73,17 +88,7 @@ register_general_options
        "no","","");
   roptions->setOptionExtraInfo("file_solution",127);
 
-  roptions->AddStringOption4("warm_start",
-      "Select the warm start method",
-      "none",
-      "none","No warm start, just start NLPs from optimal solution of the root relaxation",
-      "fake_basis", "builds fake basis, useful for cut management in Cbc (warm start is the same as in none)",
-      "optimum","Warm start with direct parent optimum",
-      "interior_point","Warm start with an interior point of direct parent",
-      "This will affect the function getWarmStart(), and as a consequence the warm starting in the various algorithms.");
-  roptions->setOptionExtraInfo("warm_start",8);
-
-  roptions->SetRegisteringCategory("Nlp solution robustness", RegisteredOptions::BonminCategory);
+  roptions->SetRegisteringCategory("NLP solution robustness", RegisteredOptions::BonminCategory);
 
   roptions->AddLowerBoundedNumberOption("max_random_point_radius",
       "Set max value r for coordinate of a random point.",
@@ -101,7 +106,7 @@ register_general_options
   roptions->setOptionExtraInfo("random_point_type",8);
 
     roptions->AddLowerBoundedNumberOption("random_point_perturbation_interval",
-					   "Amount by which starting point is perturbed when choosing to pick random point by perturbating starting point",
+					   "Amount by which starting point is perturbed when choosing to pick random point by perturbing starting point",
 					   0.,true, 1.,
 					   "");
   roptions->setOptionExtraInfo("random_point_perturbation_interval",8);
@@ -112,7 +117,7 @@ register_general_options
    "Number of iterations over which a node is considered \"suspect\" (for debugging purposes only, see detailed documentation).",
    -1,-1,
    "When the number of iterations to solve a node is above this number, the subproblem at this"
-   " node is considered to be suspect and it will be outputed in a file (set to -1 to deactivate this).");
+   " node is considered to be suspect and it will be written into a file (set to -1 to deactivate this).");
   roptions->setOptionExtraInfo("num_iterations_suspect",127);
 
   
@@ -127,16 +132,16 @@ register_general_options
       " or until the problem is solved with success.");
   roptions->setOptionExtraInfo("num_retry_unsolved_random_point",127);
 
- roptions->AddLowerBoundedNumberOption("resolve_on_small_infeasibility",
-					   "If a locally infeasible problem is infeasible by less than this, resolve it "
-                                           "with initial starting point.",
-					   0.,false, 0.,
-					   "It is set to 0 by default with Ipopt. "
-                                           "For filter Bonmin sets it to a small value.");
-  roptions->setOptionExtraInfo("random_point_perturbation_interval",8);
+  roptions->AddLowerBoundedNumberOption("resolve_on_small_infeasibility",
+      "If a locally infeasible problem is infeasible by less than this, resolve it "
+      "with initial starting point.",
+      0.,false, 0.,
+     "It is set to 0 by default with Ipopt. "
+     "When using FilterSQP, Bonmin sets it to a small value.");
+  roptions->setOptionExtraInfo("resolve_on_small_infeasibility",8);
 
 
-  roptions->SetRegisteringCategory("Options for non-convex problems", RegisteredOptions::BonminCategory);
+  roptions->SetRegisteringCategory("Nonconvex problems", RegisteredOptions::BonminCategory);
 
 
   roptions->AddLowerBoundedIntegerOption("num_resolve_at_root",
@@ -164,8 +169,8 @@ register_general_options
   roptions->AddStringOption2("dynamic_def_cutoff_decr",
       "Do you want to define the parameter cutoff_decr dynamically?",
       "no",
-      "no", "No, define it statically",
-      "yes","Yes, define it dynamically");
+      "no", "",
+      "yes", "");
   roptions->setOptionExtraInfo("dynamic_def_cutoff_decr",8);
 
   roptions->AddLowerBoundedNumberOption("coeff_var_threshold",
@@ -192,7 +197,7 @@ static void register_OA_options
 {
 	//
 
-  roptions->SetRegisteringCategory("Outer Approximations strengthening", RegisteredOptions::UndocumentedCategory);
+  roptions->SetRegisteringCategory("Outer Approximation strengthening", RegisteredOptions::UndocumentedCategory);
   roptions->AddStringOption2("disjunctive_cut_type",
       "Determine if and what kind of disjunctive cuts should be computed.",
       "none",
@@ -225,7 +230,7 @@ static void register_OA_options
   roptions->AddStringOption2("add_only_violated_oa","Do we add all OA cuts or only the ones violated by current point?",
 			     "no",
 			     "no","Add all cuts",
-			     "yes","Add only violated Cuts","");
+			     "yes","Add only violated cuts","");
   roptions->setOptionExtraInfo("add_only_violated_oa",119);
 
   
@@ -240,6 +245,14 @@ static void register_OA_options
       "Algorithm will take the risk of neglecting an element lower"
       " than this.");
   roptions->setOptionExtraInfo("very_tiny_element",119);
+
+  roptions->AddLowerBoundedNumberOption("oa_rhs_relax","Value by which to relax OA cut",
+      -0.,0,1e-8,
+      "RHS of OA constraints will be relaxed by this amount times the absolute value of the initial rhs if it is >= 1 (otherwise by this amount)."
+      );
+  roptions->setOptionExtraInfo("oa_rhs_relax",119);
+
+  roptions->SetRegisteringCategory("Output and Loglevel", RegisteredOptions::BonminCategory);
 
   roptions->AddLowerBoundedIntegerOption("oa_cuts_log_level",
                                          "level of log when generating OA cuts.",
@@ -401,6 +414,7 @@ OsiTMINLPInterface::OsiTMINLPInterface():
     nNonLinear_(0),
     tiny_(1e-8),
     veryTiny_(1e-20),
+    rhsRelax_(tiny_),
     infty_(1e100),
     warmStartMode_(None),
     firstSolve_(true),
@@ -564,6 +578,7 @@ OsiTMINLPInterface::OsiTMINLPInterface (const OsiTMINLPInterface &source):
     nNonLinear_(0),
     tiny_(source.tiny_),
     veryTiny_(source.veryTiny_),
+    rhsRelax_(source.rhsRelax_),
     infty_(source.infty_),
     warmStartMode_(source.warmStartMode_),
     firstSolve_(true),
@@ -680,6 +695,7 @@ OsiTMINLPInterface & OsiTMINLPInterface::operator=(const OsiTMINLPInterface& rhs
       }
       tiny_ = rhs.tiny_;
       veryTiny_ = rhs.veryTiny_;
+      rhsRelax_ = rhs.rhsRelax_;
       infty_ = rhs.infty_;
       warmStartMode_ = rhs.warmStartMode_;
       newCutoffDecr = rhs.newCutoffDecr;
@@ -929,38 +945,34 @@ OsiTMINLPInterface::resolveForCost(int numsolve, bool keepWarmStart)
 
 
   if(of_current != NULL){
-     //calculate the mean
-     mean=mean/(numsolve-num_failed-num_infeas);
+    //calculate the mean
+    mean=mean/(numsolve-num_failed-num_infeas);
      
-     std_dev = 0;
+    std_dev = 0;
      
-     //calculate the std deviation
-     for(int i=0; i<numsolve; i++)
-     {
-       if(of_current[i]!=0)
-         std_dev=std_dev+pow(of_current[i]-mean,2);
-     }
-     std_dev=pow((std_dev/(numsolve-num_failed-num_infeas)),0.5);
+    //calculate the std deviation
+    for(int i=0; i<numsolve; i++)
+    {
+      if(of_current[i]!=0)
+        std_dev=std_dev+pow(of_current[i]-mean,2);
+    }
+    std_dev=pow((std_dev/(numsolve-num_failed-num_infeas)),0.5);
      
-     //calculate coeff of variation
-     var_coeff=std_dev/mean;
-  }
+    //calculate coeff of variation
+    var_coeff=std_dev/mean;
 
-
-
-
-  if(dynamicCutOff_)
-  {
-     if(var_coeff<0.1)
-     {
+    if(dynamicCutOff_)
+    {
+      if(var_coeff<0.1)
+      {
         setNewCutoffDecr(mean*first_perc_for_cutoff_decr_);
-     }
-     else
-     {
+      }
+      else
+      {
         setNewCutoffDecr(mean*second_perc_for_cutoff_decr_);
-     }
+      }
+    }
   }
-     
 
   problem_->Set_x_sol(getNumCols(),point());
   problem_->Set_dual_sol((int) point.size()-getNumCols(), point() + getNumCols());
@@ -1719,6 +1731,20 @@ OsiTMINLPInterface::getStrParam(OsiStrParam key, std::string & value) const
   return true;
 }
 
+void 
+OsiTMINLPInterface::set_linearizer(Ipopt::SmartPtr<TMINLP2OsiLP> linearizer)
+{
+  linearizer_ = linearizer->clone();
+  linearizer_->set_tols(tiny_, veryTiny_, rhsRelax_, infty_);
+  linearizer_->set_model(GetRawPtr(problem_));
+}
+
+Ipopt::SmartPtr<TMINLP2OsiLP> 
+OsiTMINLPInterface::linearizer(){
+   return linearizer_;
+}
+
+
 void
 OsiTMINLPInterface::randomStartingPoint()
 {
@@ -1739,10 +1765,7 @@ OsiTMINLPInterface::randomStartingPoint()
     }
   }
   for(int i = 0 ; i < numcols ; i++) {
-    int randomGenerationType = randomGenerationType_;
-    if(x_init[i] < colLower[i] || x_init[i] > colUpper[i])
-      randomGenerationType = uniform;
-    if(randomGenerationType_ == uniform){
+    if(randomGenerationType_ == uniform || x_init[i] < colLower[i] || x_init[i] > colUpper[i]) {
       double lower = std::min(-maxRandomRadius_,colUpper[i] - maxRandomRadius_);
       lower = std::max(colLower[i], lower);
       double upper = std::max(maxRandomRadius_,colLower[i] + maxRandomRadius_);
@@ -1750,14 +1773,15 @@ OsiTMINLPInterface::randomStartingPoint()
       lower = std::min(upper,lower);
       upper = std::max(upper, lower);
       double interval = upper - lower;
-      sol[i] = CoinDrand48()*(interval) + lower;}
-    else if (randomGenerationType_ == perturb){
+      sol[i] = CoinDrand48()*(interval) + lower;
+    }
+    else if (randomGenerationType_ == perturb) {
       const double lower = std::max(x_init[i] - max_perturbation_, colLower[i]);
       const double upper = std::min(x_init[i] + max_perturbation_, colUpper[i]);
       const double interval = upper - lower;
       sol[i]  = lower + CoinDrand48()*(interval);
     }
-    else if (randomGenerationType_ == perturb_suffix){
+    else if (randomGenerationType_ == perturb_suffix) {
       const double radius = perturb_radius[i];
       const double lower = std::max(x_init[i] - radius*max_perturbation_, colLower[i]);
       const double upper = std::min(x_init[i] + radius*max_perturbation_, colUpper[i]);
@@ -1860,6 +1884,7 @@ bool cleanNnz(double &value, double colLower, double colUpper,
     double & lb, double &ub, double tiny, double veryTiny,
     double infty)
 {
+  //return 1;
   if(fabs(value)>= tiny) return 1;
 
   if(fabs(value)<veryTiny) return 0;//Take the risk?
@@ -1870,30 +1895,26 @@ bool cleanNnz(double &value, double colLower, double colUpper,
   bool rowNotLoBounded =  rowLower <= - infty;
   bool rowNotUpBounded = rowUpper >= infty;
   bool pos =  value > 0;
-
-  if(colLoBounded && pos && rowNotUpBounded) {
-    lb += value * (colsol - colLower);
+  if(colUpBounded && pos && rowNotUpBounded) {
+    lb += value * (colsol - colUpper);
     return 0;
   }
   else
-    if(colLoBounded && !pos && rowNotLoBounded) {
-      ub += value * (colsol - colLower);
+    if(colUpBounded && !pos && rowNotLoBounded) {
+      ub += value * (colsol - colUpper);
       return 0;
     }
     else
-      if(colUpBounded && !pos && rowNotUpBounded) {
-        lb += value * (colsol - colUpper);
+      if(colLoBounded && !pos && rowNotUpBounded) {
+        lb += value * (colsol - colLower);
         return 0;
       }
       else
-        if(colUpBounded && pos && rowNotLoBounded) {
-          ub += value * (colsol - colUpper);
+        if(colLoBounded && pos && rowNotLoBounded) {
+          ub += value * (colsol - colLower);
           return 0;
         }
-  //can not remove coefficient increase it to smallest non zero
-  if(pos) value = tiny;
-  else
-    value = - tiny;
+  //can not remove coefficient 
   return 1;
 }
 
@@ -1904,6 +1925,10 @@ OsiTMINLPInterface::getOuterApproximation(OsiCuts &cs, const double * x,
                                           int getObj, const double * x2,
                                           double theta, bool global)
 {
+  if(IsValid(linearizer_) && x2 == NULL){
+    linearizer_->get_oas(cs, x, getObj, global);
+    return;
+  }
   int n,m, nnz_jac_g, nnz_h_lag;
   TNLP::IndexStyleEnum index_style;
   problem_to_optimize_->get_nlp_info( n, m, nnz_jac_g, nnz_h_lag, index_style);
@@ -1990,10 +2015,10 @@ OsiTMINLPInterface::getOuterApproximation(OsiCuts &cs, const double * x,
       double violation = 0.;
       violation = std::max(violation, rhs - ub[cutIdx]);
       violation = std::max(violation, lb[cutIdx] - rhs);
-      if(violation < theta && oaHandler_) {
+      if(violation < theta && oaHandler_->logLevel() > 0) {
           oaHandler_->message(CUT_NOT_VIOLATED_ENOUGH, oaMessages_)<<cut2rowIdx[cutIdx]<<violation<<CoinMessageEol;
         continue;}
-      if(oaHandler_)
+      if(oaHandler_->logLevel() > 0)
           oaHandler_->message(VIOLATED_OA_CUT_GENERATED, oaMessages_)<<cut2rowIdx[cutIdx]<<violation<<CoinMessageEol;
     }
   OsiRowCut newCut;
@@ -2015,9 +2040,8 @@ OsiTMINLPInterface::getOuterApproximation(OsiCuts &cs, const double * x,
     if(global) {
       newCut.setGloballyValidAsInteger(1);
     }
-    //newCut.setEffectiveness(99.99e99);
-    if(fabs(lb[cutIdx]) < tiny_) lb[cutIdx] = 0;
-    if(fabs(ub[cutIdx]) < tiny_) ub[cutIdx] = 0;
+    if(lb[cutIdx] > infty) lb[cutIdx] -= rhsRelax_*std::max(fabs(lb[cutIdx]), 1.);
+    if(ub[cutIdx] < infty) ub[cutIdx] += rhsRelax_*std::max(fabs(ub[cutIdx]), 1.);
     newCut.setLb(lb[cutIdx]);
     newCut.setUb(ub[cutIdx]);
     newCut.setRow(cuts[cutIdx]);
@@ -2257,7 +2281,7 @@ OsiTMINLPInterface::switchToFeasibilityProblem(size_t n,const double * x_bar,con
     throw SimpleError("No feasibility problem","getFeasibilityOuterApproximation");
   }
   feasibilityProblem_->set_use_feasibility_pump_objective(true);
-  feasibilityProblem_->set_dist2point_obj(n,(const Number *) x_bar,(const Index *) inds);
+  feasibilityProblem_->set_dist_to_point_obj(n,(const Number *) x_bar,(const Index *) inds);
   feasibilityProblem_->setLambda(a);
   feasibilityProblem_->setSigma(s);
   feasibilityProblem_->setNorm(L);
@@ -2274,7 +2298,7 @@ OsiTMINLPInterface::switchToFeasibilityProblem(size_t n,const double * x_bar,con
     throw SimpleError("No feasibility problem","getFeasibilityOuterApproximation");
   }
   feasibilityProblem_->set_use_feasibility_pump_objective(false);
-  feasibilityProblem_->set_dist2point_obj(n,(const Number *) x_bar,(const Index *) inds);
+  feasibilityProblem_->set_dist_to_point_obj(n,(const Number *) x_bar,(const Index *) inds);
   feasibilityProblem_->set_use_cutoff_constraint(false);
   feasibilityProblem_->set_use_local_branching_constraint(true);  
   feasibilityProblem_->set_rhs_local_branching_constraint(rhs_local_branching_constraint);  
@@ -2296,7 +2320,7 @@ OsiTMINLPInterface::solveFeasibilityProblem(size_t n,const double * x_bar,const 
     throw SimpleError("No feasibility problem","getFeasibilityOuterApproximation");
   }
   feasibilityProblem_->set_use_feasibility_pump_objective(true);
-  feasibilityProblem_->set_dist2point_obj(n,(const Number *) x_bar,(const Index *) inds);
+  feasibilityProblem_->set_dist_to_point_obj(n,(const Number *) x_bar,(const Index *) inds);
   feasibilityProblem_->setLambda(a);
   feasibilityProblem_->setSigma(s);
   feasibilityProblem_->setNorm(L);
@@ -2320,7 +2344,7 @@ OsiTMINLPInterface::solveFeasibilityProblem(size_t n,const double * x_bar,const 
     throw SimpleError("No feasibility problem","getFeasibilityOuterApproximation");
   }
   feasibilityProblem_->set_use_feasibility_pump_objective(true);
-  feasibilityProblem_->set_dist2point_obj(n,(const Number *) x_bar,(const Index *) inds);
+  feasibilityProblem_->set_dist_to_point_obj(n,(const Number *) x_bar,(const Index *) inds);
   feasibilityProblem_->setLambda(1.0);
   feasibilityProblem_->setSigma(0.0);
   feasibilityProblem_->setNorm(L);
@@ -2355,6 +2379,10 @@ OsiTMINLPInterface::extractLinearRelaxation(OsiSolverInterface &si,
                                             const double * x, bool getObj
                                             )
 {
+  if(IsValid(linearizer_)){
+    linearizer_->extract(&si, x, getObj);
+    return;
+  }
   int n;
   int m;
   int nnz_jac_g;
@@ -2457,6 +2485,8 @@ OsiTMINLPInterface::extractLinearRelaxation(OsiSolverInterface &si,
       //rowUp[jRow_[i]] += value;
     } 
   }
+
+
   CoinPackedMatrix mat(true, jRow_, jCol_, jValues_, nnz_jac_g);
   mat.setDimensions(m,n); // In case matrix was empty, this should be enough
   
@@ -2471,10 +2501,13 @@ OsiTMINLPInterface::extractLinearRelaxation(OsiSolverInterface &si,
     if(colUpper[i] >= infty_) colUpper[i] = infty;
   }
   
-  for(int i = 0 ; i < rowLow.size() ; i++){
-     if(fabs(rowLow[i]) < tiny_) rowLow[i] = 0.;
-     if(fabs(rowUp[i]) < tiny_) rowUp[i] = 0.;
+
+  //Relax rhs's by tiny_
+  for(size_t i = 0 ; i < rowLow.size() ; i++){
+     if(rowLow[i] > infty) rowLow[i] -= rhsRelax_*std::max(fabs(rowLow[i]), 1.);
+     if(rowUp[i] < infty) rowUp[i] += rhsRelax_*std::max(fabs(rowUp[i]), 1.);
   }
+
   si.loadProblem(mat, colLower(), colUpper(), obj(), rowLow(), rowUp());
   for(int i = 0 ; i < numcols ; i++) {
     if(isInteger(i))
@@ -2500,6 +2533,7 @@ OsiTMINLPInterface::extractLinearRelaxation(OsiSolverInterface &si,
     }
   }
 
+  //si.writeMpsNative("Toto.mps", NULL, NULL, 1);
 }
 
 void 
@@ -2510,50 +2544,50 @@ OsiTMINLPInterface::addObjectiveFunction(OsiSolverInterface &si,
   int numcols = getNumCols();
   assert(numcols == si.getNumCols() );
   vector<double> obj(numcols);
-      problem_to_optimize_->eval_grad_f(numcols, x, 1,obj());
-      //add variable alpha
-      //(alpha should be empty in the matrix with a coefficient of -1 and unbounded)
-      CoinPackedVector a;
-      si.addCol(a,-si.getInfinity(), si.getInfinity(), 1.);
+  problem_to_optimize_->eval_grad_f(numcols, x, 1,obj());
+  //add variable alpha
+  //(alpha should be empty in the matrix with a coefficient of -1 and unbounded)
+  CoinPackedVector a;
+  si.addCol(a,-si.getInfinity(), si.getInfinity(), 1.);
   
-      // Now get the objective cuts
-      // get the gradient, pack it and add the cut
-      double ub;
-      problem_to_optimize_->eval_f(numcols, x, 1, ub);
-      ub*=-1;
-      double lb = -1e300;
-      CoinPackedVector objCut;
-      CoinPackedVector * v = &objCut;
-      v->reserve(numcols+1);
-      for(int i = 0; i<numcols ; i++) {
-       if(si.getNumRows())
-       {
-        if(cleanNnz(obj[i],colLower[i], colUpper[i],
-            -getInfinity(), 0,
-            x[i],
-            lb,
-            ub, tiny_, veryTiny_, infty_)) {
-          v->insert(i,obj[i]);
-          lb += obj[i] * x[i];
-          ub += obj[i] * x[i];
-        }
-       }
-       else //Unconstrained problem can not put clean coefficient
-       {
-           if(cleanNnz(obj[i],colLower[i], colUpper[i],
-            -getInfinity(), 0,
-            x[i],
-            lb,
-            ub, 1e-03, 1e-08, infty_)) {
-          v->insert(i,obj[i]);
-          lb += obj[i] * x[i];
-          ub += obj[i] * x[i];
-           }
-       }
-      }
-    v->insert(numcols,-1);
-    si.addRow(objCut, lb, ub);
+  // Now get the objective cuts
+  // get the gradient, pack it and add the cut
+  double ub;
+  problem_to_optimize_->eval_f(numcols, x, 1, ub);
+  ub*=-1;
+  double lb = -1e300;
+  CoinPackedVector objCut;
+  CoinPackedVector * v = &objCut;
+  v->reserve(numcols+1);
+  for(int i = 0; i<numcols ; i++) {
+    if(si.getNumRows())
+    {
+     if(cleanNnz(obj[i],colLower[i], colUpper[i],
+         -getInfinity(), 0,
+         x[i],
+         lb,
+         ub, tiny_, veryTiny_, infty_)) {
+       v->insert(i,obj[i]);
+       lb += obj[i] * x[i];
+       ub += obj[i] * x[i];
+     }
     }
+    else //Unconstrained problem can not put clean coefficient
+    {
+       if(cleanNnz(obj[i],colLower[i], colUpper[i],
+        -getInfinity(), 0,
+        x[i],
+        lb,
+        ub, 1e-03, 1e-08, infty_)) {
+      v->insert(i,obj[i]);
+      lb += obj[i] * x[i];
+      ub += obj[i] * x[i];
+       }
+    }
+  }
+  v->insert(numcols,-1);
+  si.addRow(objCut, lb, ub);
+}
 
 /** Add a collection of linear cuts to problem formulation.*/
 void 
@@ -2574,6 +2608,7 @@ void
 OsiTMINLPInterface::solveAndCheckErrors(bool warmStarted, bool throwOnFailure,
     const char * whereFrom)
 {
+  if (BonminAbortAll == true) return;
   totalNlpSolveTime_-=CoinCpuTime();
   if(warmStarted)
     optimizationStatus_ = app_->ReOptimizeTNLP(GetRawPtr(problem_to_optimize_));
@@ -2746,6 +2781,7 @@ void OsiTMINLPInterface::initialSolve(const char * whereFrom)
   assert(IsValid(app_));
   assert(IsValid(problem_));
 
+  if (BonminAbortAll == true) return;
   // Discard warmstart_ if we had one
   delete warmstart_;
   warmstart_ = NULL;
@@ -2774,6 +2810,9 @@ void OsiTMINLPInterface::initialSolve(const char * whereFrom)
                                                       <<app_->CPUTime()
                                                       <<whereFrom<<CoinMessageEol;
   
+  if(BonminAbortAll){
+    return;
+  }
   int numRetry = firstSolve_ ? numRetryInitial_ : numRetryResolve_;
   if(isAbandoned() ||
     ( isProvenPrimalInfeasible() && getObjValue() < infeasibility_epsilon_)) {
@@ -2808,6 +2847,7 @@ OsiTMINLPInterface::resolve(const char * whereFrom)
 {
   assert(IsValid(app_));
   assert(IsValid(problem_));
+  if (BonminAbortAll == true) return;
   int has_warmstart = warmstart_ == NULL ? 0 : 1;
   if(warmstart_ == NULL) has_warmstart = 0;
   else if(!app_->warmStartIsValid(warmstart_)) has_warmstart = 1;
@@ -2954,6 +2994,7 @@ OsiTMINLPInterface::extractInterfaceParams()
     ("warm_start_bound_frac" ,pushValue_,app_->prefix());
     app_->options()->GetNumericValue("tiny_element",tiny_,app_->prefix());
     app_->options()->GetNumericValue("very_tiny_element",veryTiny_,app_->prefix());
+    app_->options()->GetNumericValue("oa_rhs_relax",rhsRelax_,app_->prefix());
     app_->options()->GetNumericValue("random_point_perturbation_interval",max_perturbation_,app_->prefix());
     app_->options()->GetEnumValue("random_point_type",randomGenerationType_,app_->prefix());
     int cut_strengthening_type;

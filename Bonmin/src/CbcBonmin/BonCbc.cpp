@@ -50,11 +50,12 @@ extern "C"
       exit(0);
     }
     if (currentBranchModel!=NULL)
-      currentBranchModel->setMaximumNodes(0); // stop at next node
+      currentBranchModel->sayEventHappened(); // stop at next node
     if (OAModel!=NULL)
-      OAModel->setMaximumNodes(0); // stop at next node
+      OAModel->sayEventHappened(); // stop at next node
     if (currentOA!=NULL)
       currentOA->parameter().maxLocalSearchTime_ = 0.; // stop OA
+     
     BonminAbortAll = true;
     BonminInteruptedOnce = true;
     return;
@@ -77,8 +78,7 @@ namespace Bonmin
       model_(),
       modelHandler_(NULL),
       objects_(0),
-      nObjects_(0),
-      usingCouenne_(false)
+      nObjects_(0)
   {}
 
   /** Destructor.*/
@@ -179,7 +179,6 @@ namespace Bonmin
 
     model_.setPrintFrequency(s.getIntParameter(BabSetupBase::BabLogInterval));
 
-    bool ChangedObject = false;
     //Pass over user set branching priorities to Cbc
     if (s.continuousSolver()->objects()==NULL) {
       //assert (s.branchingMethod() == NULL);
@@ -194,7 +193,6 @@ namespace Bonmin
       OsiObject ** simpleIntegerObjects = model_.objects();
       int numberObjects = model_.numberObjects();
       if (priorities != NULL || directions != NULL || hasPseudo) {
-        ChangedObject = true;
         for (int i = 0 ; i < numberObjects ; i++) {
           CbcObject * object = dynamic_cast<CbcObject *>
               (simpleIntegerObjects[i]);
@@ -283,7 +281,7 @@ namespace Bonmin
           assert(objects[i]);
           objects[i]->setModel(&model_);
         }
-	model_.addObjects(s.objects().size(), objects);
+	model_.addObjects((int)s.objects().size(), objects);
         delete [] objects;
       }
 
@@ -293,18 +291,8 @@ namespace Bonmin
     // Redundant definition of default branching (as Default == User)
     assert (s.branchingMethod() != NULL);
 
-    if (!usingCouenne_)
-      model_.addObjects (s.continuousSolver()->numberObjects(),
-			 s.continuousSolver()->objects());
-    else {
-      // add nonlinear and integer objects (need to add OsiSOS)
-      int nco = s.continuousSolver () -> numberObjects ();
-      OsiObject **objs = new OsiObject * [nco];
-      for (int i=0; i<nco; i++) 
-	objs [i] = s.continuousSolver () -> objects () [i];
-      model_.addObjects (nco, objs);
-      delete [] objs;
-    }
+    model_.addObjects (s.continuousSolver()->numberObjects(),
+		       s.continuousSolver()->objects());
 
     CbcBranchDefaultDecision branch;
     s.branchingMethod()->setSolver(model_.solver());
@@ -444,6 +432,14 @@ namespace Bonmin
       }
     }
 
+#ifdef SIGNAL
+    //CoinSighandler_t saveSignal=SIG_DFL;
+    // register signal handler  FIXME restore original signal handler when finished
+    /*saveSignal =*/ signal(SIGINT,signal_handler);
+#endif
+
+    currentBranchModel = &model_;
+
 
     try {
     //Get the time and start.
@@ -459,6 +455,7 @@ namespace Bonmin
       }
     }
 
+    if(!BonminInteruptedOnce){
     int ival;
     s.options()->GetEnumValue("enable_dynamic_nlp", ival, "bonmin.");
     if(s.nonlinearSolver() == s.continuousSolver() && ival)
@@ -479,7 +476,7 @@ namespace Bonmin
         for(int i = 0 ; i < cuts.sizeRowCuts() ; i++){
           mycuts[i] = cuts.rowCutPtr(i);
         }
-        model_.solver()->applyRowCuts(mycuts.size(), (const OsiRowCut **) &mycuts[0]);
+        model_.solver()->applyRowCuts((int)mycuts.size(), const_cast<const OsiRowCut **>(&mycuts[0]));
       }
 
        //Added by Claudia
@@ -490,10 +487,6 @@ namespace Bonmin
        model_.solver()->resolve();
 
     }
-
-    // for Couenne
-    if (usingCouenne_)
-      model_.passInSolverCharacteristics (bonBabInfoPtr);
 
     continuousRelaxation_ =model_.solver()->getObjValue();
     if (specOpt==16)//Set warm start point for Ipopt
@@ -522,20 +515,13 @@ namespace Bonmin
 #endif 
     }
 
-#ifdef SIGNAL
-    CoinSighandler_t saveSignal=SIG_DFL;
-    // register signal handler
-    saveSignal = signal(SIGINT,signal_handler);
-#endif
-
-    currentBranchModel = &model_;
-
     // to get node parent info in Cbc, pass parameter 3.
     //model_.branchAndBound(3);
     remaining_time -= CoinCpuTime();
     model_.setDblParam(CbcModel::CbcMaximumSeconds, remaining_time);
     if(remaining_time > 0.)
       model_.branchAndBound();
+    }
     }
     catch(TNLPSolver::UnsolvedError *E){
       s.nonlinearSolver()->model()->finalize_solution(TMINLP::MINLP_ERROR,
@@ -556,8 +542,10 @@ namespace Bonmin
       CbcNlpStrategy * nlpStrategy = dynamic_cast<CbcNlpStrategy *>(model_.strategy());
       if (nlpStrategy)
         hasFailed = nlpStrategy->hasFailed();
-      else
-        throw -1;
+      else {
+        throw CoinError("BonCbc", "Bab", "Inconsistent construction of model_ strategy is"
+                        " not the right type.");
+      }
     }
     else
       hasFailed = s.nonlinearSolver()->hasContinuedOnAFailure();
@@ -590,7 +578,7 @@ namespace Bonmin
        }
     }
 
-    if (hasFailed && !usingCouenne_) {
+    if (hasFailed) {
     	*model_.messageHandler()
       << "************************************************************" << CoinMessageEol
       << "WARNING : Optimization failed on an NLP during optimization"  << CoinMessageEol
@@ -602,73 +590,102 @@ namespace Bonmin
     }
     TMINLP::SolverReturn status = TMINLP::MINLP_ERROR;
 
+    if(BonminAbortAll) status = TMINLP::USER_INTERRUPT;
     if (model_.numberObjects()==0) {
       if (bestSolution_)
         delete [] bestSolution_;
       OsiSolverInterface * solver = 
              (s.nonlinearSolver() == s.continuousSolver())? 
              model_.solver() : s.nonlinearSolver();
-      bestSolution_ = new double[solver->getNumCols()];
-      CoinCopyN(solver->getColSolution(), solver->getNumCols(),
-          bestSolution_);
-      bestObj_ = bestBound_ = solver->getObjValue();
-    }
-
-    if (bonBabInfoPtr->bestSolution2().size() > 0) {
-      assert((int) bonBabInfoPtr->bestSolution2().size() == s.nonlinearSolver()->getNumCols());
-      if (bestSolution_)
-        delete [] bestSolution_;
-      bestSolution_ = new double[s.nonlinearSolver()->getNumCols()];
-      std::copy(bonBabInfoPtr->bestSolution2().begin(), bonBabInfoPtr->bestSolution2().end(),
-          bestSolution_);
-      bestObj_ = (bonBabInfoPtr->bestObj2());
-       (*s.nonlinearSolver()->messageHandler())<<"\nReal objective function: "
-                                            <<bestObj_<<CoinMessageEol;
-    }
-    else if (model_.bestSolution()) {
-      if (bestSolution_)
-        delete [] bestSolution_;
-      bestSolution_ = new double[s.nonlinearSolver()->getNumCols()];
-      CoinCopyN(model_.bestSolution(), s.nonlinearSolver()->getNumCols(), bestSolution_);
-    }
-    if(remaining_time <= 0.){
-      status = TMINLP::LIMIT_EXCEEDED;
-      if (bestSolution_) {
-        mipStatus_ = Feasible;
-      }
-    }
-    else if (model_.status() == 0) {
-      if(model_.isContinuousUnbounded()){
-        status = TMINLP::CONTINUOUS_UNBOUNDED;
-        mipStatus_ = UnboundedOrInfeasible;
-      }
-      else
-      if (bestSolution_) {
-        status = TMINLP::SUCCESS;
-        mipStatus_ = FeasibleOptimal;
+      if(! solver->isProvenOptimal()){
+         bestSolution_ = NULL;
+         if ( solver->isProvenPrimalInfeasible () ) {
+           status = TMINLP::INFEASIBLE;
+           mipStatus_ = ProvenInfeasible;
+           bestObj_ = DBL_MAX;
+           bestBound_ = DBL_MAX;
+         }
+         else if ( solver->isProvenDualInfeasible () ) {
+           status = TMINLP::CONTINUOUS_UNBOUNDED;
+           mipStatus_ = UnboundedOrInfeasible;
+           bestObj_ = - DBL_MAX;
+           bestBound_ = - DBL_MAX;
+         }
+         else {
+           mipStatus_ = NoSolutionKnown;
+           bestObj_ = DBL_MAX;
+           bestBound_ = - DBL_MAX;
+         }
       }
       else {
-        status = TMINLP::INFEASIBLE;
-        mipStatus_ = ProvenInfeasible;
+         bestSolution_ = new double[solver->getNumCols()];
+         CoinCopyN(solver->getColSolution(), solver->getNumCols(),
+            bestSolution_);
+         bestObj_ = bestBound_ = solver->getObjValue();
+          status = TMINLP::SUCCESS;
+          mipStatus_ = FeasibleOptimal;
       }
     }
-    else if (model_.status() == 1) {
-      status = TMINLP::LIMIT_EXCEEDED;
-      if (bestSolution_) {
-        mipStatus_ = Feasible;
-      }
-      else {
-        mipStatus_ = NoSolutionKnown;
-      }
+    else {
+      if (bonBabInfoPtr->bestSolution2().size() > 0) {
+         assert((int) bonBabInfoPtr->bestSolution2().size() == s.nonlinearSolver()->getNumCols());
+         if (bestSolution_)
+           delete [] bestSolution_;
+         bestSolution_ = new double[s.nonlinearSolver()->getNumCols()];
+         std::copy(bonBabInfoPtr->bestSolution2().begin(), bonBabInfoPtr->bestSolution2().end(),
+             bestSolution_);
+         bestObj_ = (bonBabInfoPtr->bestObj2());
+          (*s.nonlinearSolver()->messageHandler())<<"\nReal objective function: "
+                                               <<bestObj_<<CoinMessageEol;
+       }
+       else if (model_.bestSolution()) {
+         if (bestSolution_)
+           delete [] bestSolution_;
+         bestSolution_ = new double[s.nonlinearSolver()->getNumCols()];
+         CoinCopyN(model_.bestSolution(), s.nonlinearSolver()->getNumCols(), bestSolution_);
+       }
+       if(remaining_time <= 0.){
+         status = TMINLP::LIMIT_EXCEEDED;
+         if (bestSolution_) {
+           mipStatus_ = Feasible;
+         }
+         else {
+           mipStatus_ = NoSolutionKnown;
+         }
+       }
+       else if (model_.status() == 0) {
+         if(model_.isContinuousUnbounded()){
+           status = TMINLP::CONTINUOUS_UNBOUNDED;
+           mipStatus_ = UnboundedOrInfeasible;
+         }
+         else
+         if (bestSolution_) {
+           status = TMINLP::SUCCESS;
+           mipStatus_ = FeasibleOptimal;
+         }
+         else {
+           status = TMINLP::INFEASIBLE;
+           mipStatus_ = ProvenInfeasible;
+         }
+       }
+       else if (model_.status() == 1 || model_.status() == 5) {
+         status = model_.status() == 1 ? TMINLP::LIMIT_EXCEEDED : TMINLP::USER_INTERRUPT;
+         if (bestSolution_) {
+           mipStatus_ = Feasible;
+         }
+         else {
+           mipStatus_ = NoSolutionKnown;
+         }
     }
     else if (model_.status()==2) {
       status = TMINLP::MINLP_ERROR;
     }
-    s.nonlinearSolver()->model()->finalize_solution(status,
-        s.nonlinearSolver()->getNumCols(),
-        bestSolution_,
-        bestObj_);
   }
+  s.nonlinearSolver()->model()->finalize_solution(status,
+     s.nonlinearSolver()->getNumCols(),
+     bestSolution_,
+     bestObj_);
+}
 
 
   /** return the best known lower bound on the objective value*/

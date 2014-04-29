@@ -142,7 +142,7 @@ namespace Bonmin
         "B-OA","OA Decomposition algorithm,",
         "B-QG","Quesada and Grossmann branch-and-cut algorithm,",
         "B-Hyb","hybrid outer approximation based branch-and-cut,",
-        "B-Ecp","ecp cuts based branch-and-cut a la FilMINT.",
+        "B-Ecp","ECP cuts based branch-and-cut a la FilMINT.",
         "B-iFP","Iterated Feasibility Pump for MINLP.",
         "This will preset some of the options of bonmin depending on the algorithm choice."
                               );
@@ -189,12 +189,12 @@ namespace Bonmin
   void
   BonminSetup::registerMilpCutGenerators(Ipopt::SmartPtr<Bonmin::RegisteredOptions> roptions)
   {
-    roptions->SetRegisteringCategory("MILP cutting planes in hybrid", RegisteredOptions::BonminCategory);
+    roptions->SetRegisteringCategory("MILP cutting planes in hybrid algorithm", RegisteredOptions::BonminCategory);
 
     roptions->AddLowerBoundedIntegerOption("Gomory_cuts",
-        "Frequency k (in terms of nodes) for generating Gomory cuts in branch-and-cut.",
+        "Frequency (in terms of nodes) for generating Gomory cuts in branch-and-cut.",
         -100,-5,
-        "If $k > 0$, cuts are generated every k nodes, if $-99 < k < 0$ cuts are generated every $-k$ nodes but "
+        "If $k > 0$, cuts are generated every $k$ nodes, if $-99 < k < 0$ cuts are generated every $-k$ nodes but "
         "Cbc may decide to stop generating cuts, if not enough are generated at the root node, "
         "if $k=-99$ generate cuts only at the root node, if $k=0$ or $100$ do not generate cuts.");
     roptions->setOptionExtraInfo("Gomory_cuts",119);
@@ -202,15 +202,15 @@ namespace Bonmin
     roptions->AddBoundedIntegerOption("probing_cuts",
         "Frequency (in terms of nodes) for generating probing cuts in branch-and-cut",
         0,0,0,
-        "If k > 0, cuts are generated every k nodes, if -99 < k < 0 cuts are generated every -k nodes but "
+        "If $k > 0$, cuts are generated every $k$ nodes, if $-99 < k < 0$ cuts are generated every $-k$ nodes but "
         "Cbc may decide to stop generating cuts, if not enough are generated at the root node, "
-        "if k=-99 generate cuts only at the root node, if k=0 or 100 do not generate cuts.");
+        "if $k=-99$ generate cuts only at the root node, if $k=0$ or $100$ do not generate cuts.");
     roptions->setOptionExtraInfo("probing_cuts",0);
 #endif
     roptions->AddLowerBoundedIntegerOption("cover_cuts",
         "Frequency (in terms of nodes) for generating cover cuts in branch-and-cut",
         -100,0,
-        "If $k > 0$, cuts are generated every k nodes, if $-99 < k < 0$ cuts are generated every $-k$ nodes but "
+        "If $k > 0$, cuts are generated every $k$ nodes, if $-99 < k < 0$ cuts are generated every $-k$ nodes but "
         "Cbc may decide to stop generating cuts, if not enough are generated at the root node, "
         "if $k=-99$ generate cuts only at the root node, if $k=0$ or $100$ do not generate cuts.");
     roptions->setOptionExtraInfo("cover_cuts",119);
@@ -218,14 +218,14 @@ namespace Bonmin
     roptions->AddLowerBoundedIntegerOption("mir_cuts",
         "Frequency (in terms of nodes) for generating MIR cuts in branch-and-cut",
         -100,-5,
-        "If $k > 0$, cuts are generated every k nodes, if $-99 < k < 0$ cuts are generated every $-k$ nodes but "
+        "If $k > 0$, cuts are generated every $k$ nodes, if $-99 < k < 0$ cuts are generated every $-k$ nodes but "
         "Cbc may decide to stop generating cuts, if not enough are generated at the root node, "
         "if $k=-99$ generate cuts only at the root node, if $k=0$ or $100$ do not generate cuts.");
     roptions->setOptionExtraInfo("mir_cuts",119);
     roptions->AddLowerBoundedIntegerOption("2mir_cuts",
         "Frequency (in terms of nodes) for generating 2-MIR cuts in branch-and-cut",
         -100,0,
-        "If $k > 0$, cuts are generated every k nodes, if $-99 < k < 0$ cuts are generated every $-k$ nodes but "
+        "If $k > 0$, cuts are generated every $k$ nodes, if $-99 < k < 0$ cuts are generated every $-k$ nodes but "
         "Cbc may decide to stop generating cuts, if not enough are generated at the root node, "
         "if $k=-99$ generate cuts only at the root node, if $k=0$ or $100$ do not generate cuts.");
     roptions->setOptionExtraInfo("2mir_cuts",119);
@@ -233,21 +233,21 @@ namespace Bonmin
     roptions->AddLowerBoundedIntegerOption("flow_cover_cuts",
         "Frequency (in terms of nodes) for generating flow cover cuts in branch-and-cut",
         -100,-5,
-        "If $k > 0$, cuts are generated every k nodes, if $-99 < k < 0$ cuts are generated every $-k$ nodes but "
+        "If $k > 0$, cuts are generated every $k$ nodes, if $-99 < k < 0$ cuts are generated every $-k$ nodes but "
         "Cbc may decide to stop generating cuts, if not enough are generated at the root node, "
         "if $k=-99$ generate cuts only at the root node, if $k=0$ or $100$ do not generate cuts.");
     roptions->setOptionExtraInfo("flow_cover_cuts",119);
     roptions->AddLowerBoundedIntegerOption("lift_and_project_cuts",
         "Frequency (in terms of nodes) for generating lift-and-project cuts in branch-and-cut",
         -100,0,
-        "If $k > 0$, cuts are generated every k nodes, if $-99 < k < 0$ cuts are generated every $-k$ nodes but "
+        "If $k > 0$, cuts are generated every $k$ nodes, if $-99 < k < 0$ cuts are generated every $-k$ nodes but "
         "Cbc may decide to stop generating cuts, if not enough are generated at the root node, "
         "if $k=-99$ generate cuts only at the root node, if $k=0$ or $100$ do not generate cuts.");
     roptions->setOptionExtraInfo("lift_and_project_cuts", 119);
     roptions->AddLowerBoundedIntegerOption("reduce_and_split_cuts",
         "Frequency (in terms of nodes) for generating reduce-and-split cuts in branch-and-cut",
         -100,0,
-        "If $k > 0$, cuts are generated every k nodes, if $-99 < k < 0$ cuts are generated every $-k$ nodes but "
+        "If $k > 0$, cuts are generated every $k$ nodes, if $-99 < k < 0$ cuts are generated every $-k$ nodes but "
         "Cbc may decide to stop generating cuts, if not enough are generated at the root node, "
         "if $k=-99$ generate cuts only at the root node, if $k=0$ or $100$ do not generate cuts.");
     roptions->setOptionExtraInfo("reduce_and_split_cuts", 119);
@@ -256,7 +256,7 @@ namespace Bonmin
     roptions->AddLowerBoundedIntegerOption("clique_cuts",
         "Frequency (in terms of nodes) for generating clique cuts in branch-and-cut",
         -100,-5,
-        "If $k > 0$, cuts are generated every k nodes, if $-99 < k < 0$ cuts are generated every $-k$ nodes but "
+        "If $k > 0$, cuts are generated every $k$ nodes, if $-99 < k < 0$ cuts are generated every $-k$ nodes but "
         "Cbc may decide to stop generating cuts, if not enough are generated at the root node, "
         "if $k=-99$ generate cuts only at the root node, if $k=0$ or $100$ do not generate cuts.");
     roptions->setOptionExtraInfo("clique_cuts", 119);
@@ -628,8 +628,13 @@ namespace Bonmin
         continuousSolver_->passInMessageHandler(messageHandler_);
       continuousSolver_->messageHandler()->setLogLevel(lpLogLevel);
       nonlinearSolver_->forceSolverOutput(intParam_[RootLogLevel]); 
+
+      if(IsValid(linearizer_))//Use user provided linearizer
+        nonlinearSolver_->set_linearizer(linearizer_);
+
       nonlinearSolver_->extractLinearRelaxation(*continuousSolver_);
       nonlinearSolver_->setSolverOutputToDefault(); 
+
       // say bound dubious, does cuts at solution
       OsiBabSolver * extraStuff = new OsiBabSolver(3);
       continuousSolver_->setAuxiliaryInfo(extraStuff);
@@ -643,7 +648,7 @@ namespace Bonmin
       o_name = prefix_ + "pump_for_minlp";
       options_->SetStringValue(o_name.c_str(),"yes", true, true);
       o_name = prefix + "pump_for_minlp.time_limit";
-      options_->SetNumericValue(o_name.c_str(),30, true, true);
+      options_->SetNumericValue(o_name.c_str(),10, true, true);
       o_name = prefix + "pump_for_minlp.solution_limit";
       options_->SetIntegerValue(o_name.c_str(),3, true, true);
     }
@@ -691,8 +696,6 @@ namespace Bonmin
       options_->SetIntegerValue(o_name.c_str(), 0, true, true);
       o_name = prefix_ + "filmint_ecp_cuts";
       options_->SetIntegerValue(o_name.c_str(), 1, true, true);
-      o_name = prefix_ + "number_cut_passes";
-      options_->SetIntegerValue(o_name.c_str(), 1, true, true);
     }
 //#define GREAT_STUFF_FOR_ANDREAS
 #ifdef GREAT_STUFF_FOR_ANDREAS
@@ -706,7 +709,30 @@ namespace Bonmin
     int varSelection;
     options_->GetEnumValue("variable_selection",varSelection,prefix_.c_str());
     if (varSelection > RELIABILITY_BRANCHING) {
-      std::cout<<"Variable selection stragey not available with oa branch-and-cut."<<std::endl;
+      switch (varSelection){
+        case OSI_SIMPLE:
+          continuousSolver_->findIntegersAndSOS(false);
+          setPriorities();
+          addSos();
+          branchingMethod_ = new OsiChooseVariable(nonlinearSolver_);
+    
+          break;
+        case OSI_STRONG:
+          {
+          continuousSolver_->findIntegersAndSOS(false);
+          setPriorities();
+          addSos();
+          OsiChooseStrong * chooser = new OsiChooseStrong(nonlinearSolver_);
+          branchingMethod_ = chooser;
+          chooser->setNumberStrong(intParam_[NumberStrong]);
+          chooser->setTrustStrongForSolution(false);
+          chooser->setNumberBeforeTrusted(intParam_[MinReliability]);
+          }
+          break;
+        default:
+          std::cout<<"Variable selection stragey not available with oa branch-and-cut."<<std::endl;
+          break;
+     }
     }
     /* Populate cut generation and heuristic procedures.*/
     int ival;

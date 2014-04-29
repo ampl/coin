@@ -66,6 +66,7 @@ namespace Bonmin
       INFEASIBLE,
       CONTINUOUS_UNBOUNDED,
       LIMIT_EXCEEDED,
+      USER_INTERRUPT,
       MINLP_ERROR};
     /** Class to store sos constraints for model */
     struct SosInfo
@@ -395,6 +396,11 @@ namespace Bonmin
 
   /** Say if problem has general integer variables.*/
   bool hasGeneralInteger();
+
+  /** Access array describing constraint to which perspectives should be applied.*/
+  virtual const int * get_const_xtra_id() const{
+    return NULL;
+  }
   protected:
     /** Copy constructor */
     //@{
