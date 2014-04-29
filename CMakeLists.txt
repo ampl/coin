@@ -581,6 +581,8 @@ if (EXISTS ${COIN_SOURCE_DIR}/Ipopt)
     set(BIT64FCOMMENT C)
   endif ()
   configure_file(Ipopt/examples/hs071_f/hs071_f.f.in Ipopt/examples/hs071_f/hs071_f.f @ONLY)
+  set(srcdir ${CMAKE_CURRENT_SOURCE_DIR})
+  configure_file(Ipopt/test/run_unitTests.in Ipopt/test/run_unitTests @ONLY)
   
   add_ipopt_test(hs071_cpp hs071_main.cpp hs071_nlp.cpp hs071_nlp.hpp)
   add_ipopt_test(hs071_c hs071_c.c)
