@@ -25,12 +25,8 @@ include(CheckCXXCompilerFlag)
 if (COIN_DISABLE_WARNINGS)
   # Disable warnings.
   if (MSVC)
-    add_definitions(-D_SCL_SECURE_NO_WARNINGS)
-    foreach (flag_var
-             CMAKE_CXX_FLAGS CMAKE_CXX_FLAGS_DEBUG CMAKE_CXX_FLAGS_RELEASE
-             CMAKE_CXX_FLAGS_MINSIZEREL CMAKE_CXX_FLAGS_RELWITHDEBINFO)
-      string(REGEX REPLACE "/W[13]" "/w" ${flag_var} "${${flag_var}}")
-    endforeach()
+    add_definitions(-D_CRT_SECURE_NO_WARNINGS -D_SCL_SECURE_NO_WARNINGS
+                    /Wd4065 /Wd4101 /Wd4102 /Wd4800)
   else ()
     foreach (flag -Wall -Wextra -pedantic)
       string(REPLACE ${flag} "" CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS}")
