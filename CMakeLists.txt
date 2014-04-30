@@ -48,8 +48,24 @@ endif ()
 
 option(ENABLE_CBC_PARALLEL "Enables compilation of the SMP version of Cbc" ON)
 find_package(Threads)
-if (ENABLE_CBC_PARALLEL AND CMAKE_USE_PTHREADS_INIT)
+set(PTHREAD_W32_DIR ThirdParty/pthreads-w32)
+if (NOT ENABLE_CBC_PARALLEL)
+  # Do nothing.
+elseif (CMAKE_USE_PTHREADS_INIT)
   set(CBC_THREAD 1)
+  set(CBC_PTHREADS_LIB ${CMAKE_THREAD_LIBS_INIT})
+elseif (WIN32 AND EXISTS ${PTHREAD_W32_DIR})
+  set(sources )
+  foreach (src attr.c barrier.c cancel.c cleanup.c condvar.c create.c dll.c
+               autostatic.c errno.c exit.c fork.c global.c misc.c mutex.c
+               nonportable.c private.c rwlock.c sched.c semaphore.c signal.c
+               spin.c sync.c tsd.c)
+    set(sources ${sources} ${PTHREAD_W32_DIR}/${src})
+  endforeach ()
+  include_directories(${PTHREAD_W32_DIR})
+  add_library(pthreads ${sources})
+  set(CBC_THREAD 1)
+  set(CBC_PTHREADS_LIB pthreads)
 endif ()
 
 # Parses an automake input processing conditional parts such as:
@@ -449,7 +465,7 @@ target_link_libraries(Cgl-unitTest
 add_coin_library(Cbc
   OsiClp CglFlowCover CglGMI CglGomory CglKnapsackCover CglMixedIntegerRounding2
   CglPreProcess CglProbing CglRedSplit2 CglTwomir CglZeroHalf)
-target_link_libraries(Cbc ${CMAKE_THREAD_LIBS_INIT})
+target_link_libraries(Cbc ${CBC_PTHREADS_LIB})
 add_coin_library(Cbc/src/OsiCbc Osi Cbc)
 target_link_libraries(Cbc-osiUnitTest OsiCbc)
 target_link_libraries(Cbc-gamsTest CbcSolver)
@@ -607,4 +623,9 @@ if (BUILD_IPOPT)
   endif ()
 
   configure(Ipopt src/Common/config.h src/Common/config_ipopt.h)
+  
+  # Couenne depends on Ipopt so build it only when building Ipopt.
+  include_directories(Couenne/src Couenne/src/convex)
+#add_coin_library(Couenne/src/interfaces NAME CouenneInterfaces)
+  configure(Couenne src/config.h src/config_couenne.h)
 endif()
