@@ -26,7 +26,7 @@ if (COIN_DISABLE_WARNINGS)
   # Disable warnings.
   if (MSVC)
     add_definitions(-D_CRT_SECURE_NO_WARNINGS -D_SCL_SECURE_NO_WARNINGS
-                    /wd4065 /wd4101 /wd4102 /wd4800)
+                    /wd4065 /wd4101 /wd4102 /wd4244 /wd4297 /wd4355 /wd4800)
   else ()
     foreach (flag -Wall -Wextra -pedantic)
       string(REPLACE ${flag} "" CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS}")
