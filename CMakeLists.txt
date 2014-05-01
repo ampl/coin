@@ -48,7 +48,7 @@ endif ()
 
 option(ENABLE_CBC_PARALLEL "Enables compilation of the SMP version of Cbc" ON)
 find_package(Threads)
-set(PTHREADS_W32_DIR ThirdParty/pthreads-w32)
+set(PTHREADS_W32_DIR ${CMAKE_CURRENT_SOURCE_DIR}/ThirdParty/pthreads-w32)
 if (NOT ENABLE_CBC_PARALLEL)
   # Do nothing.
 elseif (CMAKE_USE_PTHREADS_INIT)
