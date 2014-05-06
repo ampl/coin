@@ -578,10 +578,10 @@ if (BUILD_IPOPT)
               ${COIN_BINARY_DIR}/ThirdParty/lapack/bin/libblas.dll
               ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/${CMAKE_CFG_INTDIR})
     add_custom_command(
-      OUTPUT ${EXECUTABLE_OUTPUT_PATH}/${CMAKE_CFG_INTDIR}/libipoptfort.dll
+      OUTPUT ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/${CMAKE_CFG_INTDIR}/libipoptfort.dll
       COMMAND ${CMAKE_COMMAND} -E copy_if_different
               ${COIN_BINARY_DIR}/Ipopt/bin/libipoptfort.dll
-              ${EXECUTABLE_OUTPUT_PATH}/${CMAKE_CFG_INTDIR})
+              ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/${CMAKE_CFG_INTDIR})
     set(IPOPT_DLLS
       ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/${CMAKE_CFG_INTDIR}/libblas.dll
       ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/${CMAKE_CFG_INTDIR}/libipoptfort.dll)
