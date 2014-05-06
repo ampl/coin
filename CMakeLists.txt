@@ -569,19 +569,22 @@ if (BUILD_IPOPT)
     CMAKE_COMMAND_LINE "${FORTRAN_CMAKE_FLAGS}"
     NO_EXTERNAL_INSTALL)
   set(COIN_HAS_MUMPS 1)
-  
+
   if (MSVC)
     add_dependencies(IPOPTFORT_build LAPACK_build)
-    add_custom_command(OUTPUT ${CMAKE_CFG_INTDIR}/libblas.dll
+    add_custom_command(
+      OUTPUT ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/${CMAKE_CFG_INTDIR}/libblas.dll
       COMMAND ${CMAKE_COMMAND} -E copy_if_different
-              ${PROJECT_BINARY_DIR}/ThirdParty/lapack/bin/libblas.dll
-              ${CMAKE_CFG_INTDIR})
-    add_custom_command(OUTPUT ${CMAKE_CFG_INTDIR}/libipoptfort.dll
+              ${COIN_BINARY_DIR}/ThirdParty/lapack/bin/libblas.dll
+              ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/${CMAKE_CFG_INTDIR})
+    add_custom_command(
+      OUTPUT ${EXECUTABLE_OUTPUT_PATH}/${CMAKE_CFG_INTDIR}/libipoptfort.dll
       COMMAND ${CMAKE_COMMAND} -E copy_if_different
-              ${PROJECT_BINARY_DIR}/Ipopt/bin/libipoptfort.dll
-              ${CMAKE_CFG_INTDIR})
+              ${COIN_BINARY_DIR}/Ipopt/bin/libipoptfort.dll
+              ${EXECUTABLE_OUTPUT_PATH}/${CMAKE_CFG_INTDIR})
     set(IPOPT_DLLS
-      ${CMAKE_CFG_INTDIR}/libblas.dll ${CMAKE_CFG_INTDIR}/libipoptfort.dll)
+      ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/${CMAKE_CFG_INTDIR}/libblas.dll
+      ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/${CMAKE_CFG_INTDIR}/libipoptfort.dll)
   endif ()
 
   add_ipopt_library(cgpenalty contrib/CGPenalty)
