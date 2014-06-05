@@ -432,6 +432,7 @@ if (EXISTS ${ASL_DIR}/CMakeLists.txt)
   set(COIN_HAS_ASL 1)
   set(ASL_LIBRARIES amplsolver)
   add_definitions(-DCOIN_HAS_ASL)
+  include_directories(${ASL_DIR}/solvers)
   add_subdirectory(${ASL_DIR})
 
 # TODO
