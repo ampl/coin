@@ -190,6 +190,7 @@ function(add_coin_library path)
   endforeach ()
   # Add the library.
   get_sources(${src_path} lib${name}_la_SOURCES sources)
+  message("Path: ${path} Sources: ${sources}")
   add_library(${name} ${sources})
   include_directories(${src_path})
   string(TOUPPER ${name} uppercase_name)
