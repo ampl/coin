@@ -130,7 +130,7 @@ function(read_am_file filename var)
 endfunction()
 
 # Extracts the source list from Makefile.am.
-function(get_sources path sources_var var)
+function(coin_get_sources path sources_var var)
   set(sources )
   read_am_file(${path}/Makefile.am LINES)
   foreach (line ${LINES})
@@ -189,8 +189,7 @@ function(add_coin_library path)
     endif ()
   endforeach ()
   # Add the library.
-  get_sources(${src_path} lib${name}_la_SOURCES sources)
-  message("Path: ${path} Sources: ${sources}")
+  coin_get_sources(${src_path} lib${name}_la_SOURCES sources)
   add_library(${name} ${sources})
   include_directories(${src_path})
   string(TOUPPER ${name} uppercase_name)
