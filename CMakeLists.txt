@@ -432,7 +432,7 @@ if (EXISTS ${ASL_DIR}/CMakeLists.txt)
   set(COIN_HAS_ASL 1)
   set(ASL_LIBRARIES amplsolver)
   add_definitions(-DCOIN_HAS_ASL)
-  add_subdirectory()
+  add_subdirectory(${ASL_DIR})
 
 # TODO
 #   set(get_cbc_version $<TARGET_FILE:cbc-executable> -v -AMPL >> versions)
