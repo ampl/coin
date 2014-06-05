@@ -1,1 +1,9 @@
+*.a
+/bin
 CMakeFiles
+config_*.h
+config.h
+CPackConfig.cmake
+CPackSourceConfig.cmake
+CTestTestfile.cmake
+/ThirdParty/lapack/bin
