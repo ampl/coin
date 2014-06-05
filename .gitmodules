@@ -1,0 +1,3 @@
+[submodule "ThirdParty/ampl"]
+	path = ThirdParty/ampl
+	url = git://github.com/ampl/ampl.git
