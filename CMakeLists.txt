@@ -3,15 +3,18 @@
 
 cmake_minimum_required(VERSION 2.8.7.20120206)
 
-project(COIN)
-
 set(ASL_DIR ThirdParty/ampl)
 if (EXISTS ${ASL_DIR}/CMakeLists.txt)
+  add_subdirectory(${ASL_DIR})
   set(COIN_HAS_ASL 1)
+endif ()
+
+project(COIN)
+
+if (COIN_HAS_ASL)
   set(ASL_LIBRARIES amplsolver)
   add_definitions(-DCOIN_HAS_ASL)
   include_directories(${ASL_DIR}/solvers)
-  add_subdirectory(${ASL_DIR})
 
 # TODO
 #   set(get_cbc_version $<TARGET_FILE:cbc-executable> -v -AMPL >> versions)
