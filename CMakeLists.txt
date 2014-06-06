@@ -11,38 +11,6 @@ endif ()
 
 project(COIN)
 
-if (COIN_HAS_ASL)
-  set(ASL_LIBRARIES amplsolver)
-  add_definitions(-DCOIN_HAS_ASL)
-  include_directories(${ASL_DIR}/solvers)
-
-# TODO
-#   set(get_cbc_version $<TARGET_FILE:cbc-executable> -v -AMPL >> versions)
-#   if (TARGET ipopt-executable)
-#     set(get_ipopt_version $<TARGET_FILE:ipopt-executable> -v >> versions)
-#   endif ()
-
-  # Workaround for f90cache which accept only modified name for GNU fortran
-  # compilers in the form gfortran-4.x.
-  string(REGEX MATCHALL "[^:]+" search_paths "$ENV{PATH}")
-  foreach (search_path ${search_paths})
-    file(GLOB paths ${search_path}/gfortran-4.*)
-    if (paths)
-      list(GET paths 0 CMAKE_Fortran_COMPILER)
-      message("Detected Fortran compiler: ${CMAKE_Fortran_COMPILER}")
-      break ()
-    endif ()
-  endforeach ()
-
-#   if (WINSDK_SETENV)
-#     # Create a script that sets up build environment in Fortran subprojects.
-#     file(WRITE setenv.bat "call \"${WINSDK_SETENV}\"")
-#     # Extra command line flags to pass to CMake in
-#     # cmake_add_fortran_subdirectory.
-#     set(FORTRAN_CMAKE_FLAGS "-DCMAKE_GNUtoMS_VCVARS=../../setenv.bat")
-#   endif ()
-endif ()
-
 # Output binaries to bin/ to avoid name clash between "Cbc" (directory)
 # and "cbc" (executable) on case-insensitive filesystems (on Mac OS X).
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY "bin/")
@@ -461,6 +429,38 @@ set(COIN_HAS_SAMPLE 1)
 set(COINUTILS_MEMPOOL_MAXPOOLED -1)
 set(GLPK_HAS_INTOPT 1)
 
+if (COIN_HAS_ASL)
+  set(ASL_LIBRARIES amplsolver)
+  add_definitions(-DCOIN_HAS_ASL)
+  include_directories(${ASL_DIR}/solvers)
+
+# TODO
+#   set(get_cbc_version $<TARGET_FILE:cbc-executable> -v -AMPL >> versions)
+#   if (TARGET ipopt-executable)
+#     set(get_ipopt_version $<TARGET_FILE:ipopt-executable> -v >> versions)
+#   endif ()
+
+  # Workaround for f90cache which accept only modified name for GNU fortran
+  # compilers in the form gfortran-4.x.
+  string(REGEX MATCHALL "[^:]+" search_paths "$ENV{PATH}")
+  foreach (search_path ${search_paths})
+    file(GLOB paths ${search_path}/gfortran-4.*)
+    if (paths)
+      list(GET paths 0 CMAKE_Fortran_COMPILER)
+      message("Detected Fortran compiler: ${CMAKE_Fortran_COMPILER}")
+      break ()
+    endif ()
+  endforeach ()
+
+#   if (WINSDK_SETENV)
+#     # Create a script that sets up build environment in Fortran subprojects.
+#     file(WRITE setenv.bat "call \"${WINSDK_SETENV}\"")
+#     # Extra command line flags to pass to CMake in
+#     # cmake_add_fortran_subdirectory.
+#     set(FORTRAN_CMAKE_FLAGS "-DCMAKE_GNUtoMS_VCVARS=../../setenv.bat")
+#   endif ()
+endif ()
+
 enable_testing()
 
 include_directories(BuildTools/headers)
@@ -546,6 +546,17 @@ function(add_ipopt_test name)
   set_target_properties(${name}
     PROPERTIES RUNTIME_OUTPUT_DIRECTORY ${COIN_BINARY_DIR}/bin)
 endfunction()
+
+# Add MinGW to the search paths.
+if (SIZEOF_INT_P EQUAL 8)
+  set(bits 64)
+else ()
+  set(bits 32)
+endif ()
+set(path C:/mingw${bits}/bin)
+if (EXISTS ${path})
+  set(ENV{PATH} $ENV{PATH};${path})
+endif ()
 
 if (EXISTS ${COIN_SOURCE_DIR}/Ipopt)
   if (MSVC)
