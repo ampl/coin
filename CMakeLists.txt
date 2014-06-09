@@ -452,13 +452,13 @@ if (COIN_HAS_ASL)
     endif ()
   endforeach ()
 
-#   if (WINSDK_SETENV)
-#     # Create a script that sets up build environment in Fortran subprojects.
-#     file(WRITE setenv.bat "call \"${WINSDK_SETENV}\"")
-#     # Extra command line flags to pass to CMake in
-#     # cmake_add_fortran_subdirectory.
-#     set(FORTRAN_CMAKE_FLAGS "-DCMAKE_GNUtoMS_VCVARS=../../setenv.bat")
-#   endif ()
+  if (WINSDK_SETENV)
+    # Create a script that sets up build environment in Fortran subprojects.
+    file(WRITE setenv.bat "call \"${WINSDK_SETENV}\"")
+    # Extra command line flags to pass to CMake in
+    # cmake_add_fortran_subdirectory.
+    set(FORTRAN_CMAKE_FLAGS "-DCMAKE_GNUtoMS_VCVARS=../setenv.bat")
+  endif ()
 endif ()
 
 enable_testing()
