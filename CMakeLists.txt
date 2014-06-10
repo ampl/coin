@@ -457,7 +457,7 @@ if (COIN_HAS_ASL)
     file(WRITE setenv.bat "call \"${WINSDK_SETENV}\"")
     # Extra command line flags to pass to CMake in
     # cmake_add_fortran_subdirectory.
-    set(FORTRAN_CMAKE_FLAGS "-DCMAKE_GNUtoMS_VCVARS=../setenv.bat")
+    set(FORTRAN_CMAKE_FLAGS "-DCMAKE_GNUtoMS_VCVARS=../../setenv.bat")
   endif ()
 endif ()
 
