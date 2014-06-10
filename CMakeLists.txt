@@ -452,9 +452,10 @@ if (COIN_HAS_ASL)
     endif ()
   endforeach ()
 
-  if (WINSDK_SETENV)
+  if (MSBUILD_SETUP)
     # Create a script that sets up build environment in Fortran subprojects.
-    file(WRITE setenv.bat "call \"${WINSDK_SETENV}\"")
+    message("Setting up build environment: ${MSBUILD_SETUP}")
+    file(WRITE setenv.bat "${MSBUILD_SETUP}")
     # Extra command line flags to pass to CMake in
     # cmake_add_fortran_subdirectory.
     set(FORTRAN_CMAKE_FLAGS "-DCMAKE_GNUtoMS_VCVARS=../../setenv.bat")
