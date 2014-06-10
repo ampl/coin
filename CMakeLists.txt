@@ -452,7 +452,8 @@ if (COIN_HAS_ASL)
     endif ()
   endforeach ()
 
-  if (MSBUILD_SETUP)
+  if (MSVC)
+    ampl_get_msbuild_setup(MSBUILD_SETUP)
     # Create a script that sets up build environment in Fortran subprojects.
     message("Setting up build environment: ${MSBUILD_SETUP}")
     file(WRITE setenv.bat "${MSBUILD_SETUP}")
