@@ -4,7 +4,7 @@
 cmake_minimum_required(VERSION 2.8.7.20120206)
 
 set(ASL_DIR ThirdParty/ampl)
-if (EXISTS ${ASL_DIR}/CMakeLists.txt)
+if (EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/${ASL_DIR}/CMakeLists.txt)
   add_subdirectory(${ASL_DIR})
   set(COIN_HAS_ASL 1)
 endif ()
