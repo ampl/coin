@@ -459,8 +459,7 @@ if (COIN_HAS_ASL)
     # which cause custom build to fail.
     file(WRITE run-setenv.bat "call \"${WINSDK_SETENV}\" %* 2> nul")
     set(path ${CMAKE_CURRENT_BINARY_DIR}/run-setenv.bat)
-    set(FORTRAN_CMAKE_FLAGS
-      "-DCMAKE_GNUtoMS_VCVARS:FILEPATH=${path} -DVCVARS32:FILEPATH=${path}")
+    set(FORTRAN_CMAKE_FLAGS -DCMAKE_GNUtoMS_VCVARS=${path} -DVCVARS32=${path})
   endif ()
 endif ()
 
@@ -619,7 +618,7 @@ if (BUILD_IPOPT)
     ARCHIVE_DIR ThirdParty/lapack/lib
     RUNTIME_DIR ThirdParty/lapack/bin
     LIBRARIES blas
-    CMAKE_COMMAND_LINE "${FORTRAN_CMAKE_FLAGS}"
+    CMAKE_COMMAND_LINE ${FORTRAN_CMAKE_FLAGS}
     NO_EXTERNAL_INSTALL)
   set(COIN_HAS_BLAS 1)
   cmake_add_fortran_subdirectory(Ipopt
@@ -627,7 +626,7 @@ if (BUILD_IPOPT)
     ARCHIVE_DIR Ipopt/lib
     RUNTIME_DIR Ipopt/bin
     LIBRARIES ipoptfort
-    CMAKE_COMMAND_LINE "${FORTRAN_CMAKE_FLAGS}"
+    CMAKE_COMMAND_LINE ${FORTRAN_CMAKE_FLAGS}
     NO_EXTERNAL_INSTALL)
   set(COIN_HAS_MUMPS 1)
 
