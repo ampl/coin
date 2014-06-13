@@ -11,8 +11,9 @@ endif ()
 
 project(COIN)
 
-# Output binaries to bin/ to avoid name clash between "Cbc" (directory)
-# and "cbc" (executable) on case-insensitive filesystems (on Mac OS X).
+# Output binaries to bin/ to avoid a name clash between the Cbc directory
+# and the cbc executable on case-insensitive filesystems such as HFS Plus
+# (on OS X).
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY "bin/")
 
 # CoinSignal.hpp doesn't compile on Mac with -std=c++11 flag
