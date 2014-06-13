@@ -695,3 +695,28 @@ if (BUILD_IPOPT)
 #add_coin_library(Couenne/src/interfaces NAME CouenneInterfaces)
   configure(Couenne src/config.h src/config_couenne.h)
 endif()
+
+if (EXISTS ${COIN_SOURCE_DIR}/Bonmin)
+  add_coin_library(Bonmin/src/Algorithms/Branching NAME bonbranching)
+  add_coin_library(Bonmin/src/Algorithms/QuadCuts NAME bonquadcuts)
+  add_coin_library(Bonmin/src/Algorithms/OaGenerators NAME bonoagenerators bonalgorithms)
+  add_coin_library(Bonmin/src/Algorithms
+    NAME bonalgorithms bonbranching bonoagenerators bonquadcuts)
+  add_coin_library(Bonmin/src/Interfaces/Ipopt NAME ipoptinterface ipopt)
+  add_coin_library(Bonmin/src/Interfaces NAME bonmininterfaces ipoptinterface CoinUtils)
+  add_coin_library(Bonmin/src/CbcBonmin/Heuristics NAME bonheuristics)
+  add_coin_library(Bonmin/src/CbcBonmin
+    NAME bonmin bonalgorithms bonmininterfaces bonheuristics CbcSolver)
+  if (COIN_HAS_ASL)
+    add_coin_library(Bonmin/src/Algorithms/Ampl NAME bonamplsetup)
+    add_coin_library(Bonmin/src/Interfaces/Ampl NAME bonamplinterface bonmininterfaces)
+    target_link_libraries(bonmin bonamplsetup bonamplinterface ${ASL_LIBRARIES})
+  endif ()
+
+  add_executable(bonmin-executable Bonmin/src/Apps/BonMin.cpp)
+  set_target_properties(bonmin-executable PROPERTIES
+    COMPILE_DEFINITIONS BONMIN_BUILD OUTPUT_NAME bonmin IMPORT_PREFIX imp)
+  target_link_libraries(bonmin-executable bonmin)
+
+  configure(Bonmin src/Interfaces/config.h src/Interfaces/config_bonmin.h)
+endif ()
