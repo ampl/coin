@@ -460,7 +460,7 @@ if (COIN_HAS_ASL)
     file(WRITE run-setenv.bat "call \"${WINSDK_SETENV}\" %* 2> nul")
     set(path ${CMAKE_CURRENT_BINARY_DIR}/run-setenv.bat)
     set(FORTRAN_CMAKE_FLAGS
-      "-DCMAKE_GNUtoMS_VCVARS=${path} -DVCVARS32:STRING=${path}")
+      "-DCMAKE_GNUtoMS_VCVARS:FILEPATH=${path} -DVCVARS32:FILEPATH=${path}")
   endif ()
 endif ()
 
