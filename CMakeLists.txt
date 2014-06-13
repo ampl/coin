@@ -453,9 +453,12 @@ if (COIN_HAS_ASL)
   endforeach ()
 
   if (WINSDK_SETENV)
-    # Create a script that sets up build environment in Fortran subprojects.
+    # Create a script that sets up a build environment in Fortran subprojects.
+    # It is necessary because setenv.cmd produces bogus errors
+    #   ERROR: The system was unable to find the specified registry key or value.
+    # which cause custom build to fail.
     file(WRITE run-setenv.bat "call \"${WINSDK_SETENV}\" %* 2> nul")
-    set(FORTRAN_CMAKE_FLAGS "-DCMAKE_GNUtoMS_VCVARS=${CMAKE_CURRENT_BUILD_DIR}/run-setenv.bat")
+    set(FORTRAN_CMAKE_FLAGS "-DCMAKE_GNUtoMS_VCVARS=${CMAKE_CURRENT_BINARY_DIR}/run-setenv.bat")
   endif ()
 endif ()
 
