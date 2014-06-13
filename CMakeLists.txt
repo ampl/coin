@@ -670,7 +670,7 @@ if (BUILD_IPOPT)
         COMMAND sh -c "bin/ipopt Ipopt/test/mytoy.nl | grep 'EXIT: Optimal Solution Found.'")
     endif ()
   endif ()
-  
+
   if (SIZEOF_INT_P EQUAL 8)
     set(BIT32FCOMMENT C)
   else ()
@@ -679,7 +679,7 @@ if (BUILD_IPOPT)
   configure_file(Ipopt/examples/hs071_f/hs071_f.f.in Ipopt/examples/hs071_f/hs071_f.f @ONLY)
   set(srcdir ${CMAKE_CURRENT_SOURCE_DIR})
   configure_file(Ipopt/test/run_unitTests.in Ipopt/test/run_unitTests @ONLY)
-  
+
   add_ipopt_test(hs071_cpp hs071_main.cpp hs071_nlp.cpp hs071_nlp.hpp)
   add_ipopt_test(hs071_c hs071_c.c)
   if (NOT WIN32)
@@ -689,7 +689,7 @@ if (BUILD_IPOPT)
   endif ()
 
   configure(Ipopt src/Common/config.h src/Common/config_ipopt.h)
-  
+
   # Couenne depends on Ipopt so build it only when building Ipopt.
   include_directories(Couenne/src Couenne/src/convex)
 #add_coin_library(Couenne/src/interfaces NAME CouenneInterfaces)
