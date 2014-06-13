@@ -458,7 +458,9 @@ if (COIN_HAS_ASL)
     #   ERROR: The system was unable to find the specified registry key or value.
     # which cause custom build to fail.
     file(WRITE run-setenv.bat "call \"${WINSDK_SETENV}\" %* 2> nul")
-    set(FORTRAN_CMAKE_FLAGS "-DCMAKE_GNUtoMS_VCVARS=${CMAKE_CURRENT_BINARY_DIR}/run-setenv.bat")
+    set(path ${CMAKE_CURRENT_BINARY_DIR}/run-setenv.bat)
+    set(FORTRAN_CMAKE_FLAGS
+      "-DCMAKE_GNUtoMS_VCVARS=${path} -DVCVARS32:STRING=${path}")
   endif ()
 endif ()
 
