@@ -711,12 +711,12 @@ if (EXISTS ${COIN_SOURCE_DIR}/Bonmin)
     add_coin_library(Bonmin/src/Algorithms/Ampl NAME bonamplsetup)
     add_coin_library(Bonmin/src/Interfaces/Ampl NAME bonamplinterface bonmininterfaces)
     target_link_libraries(bonmin bonamplsetup bonamplinterface ${ASL_LIBRARIES})
-  endif ()
 
-  add_executable(bonmin-executable Bonmin/src/Apps/BonMin.cpp)
-  set_target_properties(bonmin-executable PROPERTIES
-    COMPILE_DEFINITIONS BONMIN_BUILD OUTPUT_NAME bonmin IMPORT_PREFIX imp)
-  target_link_libraries(bonmin-executable bonmin)
+    add_executable(bonmin-executable Bonmin/src/Apps/BonMin.cpp)
+    set_target_properties(bonmin-executable PROPERTIES
+      COMPILE_DEFINITIONS BONMIN_BUILD OUTPUT_NAME bonmin IMPORT_PREFIX imp)
+    target_link_libraries(bonmin-executable bonmin)
+  endif ()
 
   configure(Bonmin src/Interfaces/config.h src/Interfaces/config_bonmin.h)
 endif ()
