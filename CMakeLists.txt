@@ -260,6 +260,7 @@ endfunction()
 function(add_cgl_library path)
   add_coin_library(${path} ${ARGN})
   get_filename_component(name ${path} NAME)
+  set(CGL_LIBS ${CGL_LIBS} ${name} PARENT_SCOPE)
   set_target_properties(${name} PROPERTIES COMPILE_DEFINITIONS CGL_BUILD)
 endfunction()
 
@@ -523,17 +524,9 @@ add_cgl_library(Cgl/src/CglResidualCapacity)
 add_cgl_library(Cgl/src/CglSimpleRounding)
 add_cgl_library(Cgl/src/CglTwomir)
 add_cgl_library(Cgl/src/CglZeroHalf)
-add_coin_library(Cgl
-  OsiClp CglClique CglFlowCover CglGomory CglKnapsackCover CglLandP
-  CglMixedIntegerRounding CglMixedIntegerRounding2 CglOddHole CglProbing
-  CglRedSplit CglRedSplit2 CglResidualCapacity CglSimpleRounding CglTwomir
-  CglZeroHalf Osi)
+add_coin_library(Cgl ${CGL_LIBS} OsiClp Osi)
 
-add_coin_library(Cbc
-  OsiClp Cgl CglDuplicateRow CglFlowCover CglGMI CglGomory CglKnapsackCover
-  CglMixedIntegerRounding2 CglPreProcess CglProbing CglRedSplit2 CglTwomir
-  CglZeroHalf)
-target_link_libraries(Cbc ${CBC_PTHREADS_LIB})
+add_coin_library(Cbc Cgl OsiClp ${CBC_PTHREADS_LIB})
 add_coin_library(Cbc/src/OsiCbc Osi Cbc)
 target_link_libraries(Cbc-osiUnitTest OsiCbc)
 target_link_libraries(Cbc-gamsTest CbcSolver)
