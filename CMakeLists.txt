@@ -610,11 +610,7 @@ if (BUILD_IPOPT)
   string(SUBSTRING ${CMAKE_SHARED_LIBRARY_SUFFIX} 1 -1 SHAREDLIBEXT)
 
   include_directories(
-    Ipopt/src/Algorithm Ipopt/src/Algorithm/LinearSolvers
-    Ipopt/src/LinAlg Ipopt/src/LinAlg/TMatrices
-    Ipopt/src/contrib/LinearSolverLoader Ipopt/src/Interfaces)
-
-  include_directories(
+    Ipopt/src/contrib/LinearSolverLoader
     ThirdParty/Mumps/MUMPS/include ThirdParty/Mumps/MUMPS/libseq)
 
   # FORTRAN_CMAKE_FLAGS is used to pass additional CMake arguments to
@@ -661,7 +657,7 @@ if (BUILD_IPOPT)
   add_ipopt_library(linalg LinAlg)
   add_ipopt_library(tmatrices LinAlg/TMatrices)
   add_ipopt_library(ipopt Interfaces
-    ipoptalg linsolvers ipoptfort common cgpenalty linalg tmatrices)
+    ipoptalg linsolvers ipoptfort common cgpenalty linalg tmatrices blas)
 
   if (COIN_HAS_ASL)
     add_ipopt_library(ipoptamplinterface Apps/AmplSolver ${ASL_LIBRARIES})
