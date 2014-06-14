@@ -680,11 +680,15 @@ if (BUILD_IPOPT)
   configure(Ipopt src/Common/config.h src/Common/config_ipopt.h)
 endif()
 
-function(add_coin_test name project src lib)
-  add_executable(${name} ${project}/test/${src})
+function(add_coin_test name dir lib)
+  set(src )
+  foreach (f ${ARGN})
+    set(src ${src} ${dir}/${f})
+  endforeach ()
+  add_executable(${name} ${src})
   target_link_libraries(${name} ${lib})
-  add_test(NAME ${name} COMMAND ../../bin/${name}
-    WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/${project}/test)
+  add_test(NAME ${name} COMMAND ${CMAKE_CURRENT_BINARY_DIR}/bin/${name}
+    WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/${dir})
 endfunction()
 
 if (BUILD_IPOPT AND EXISTS ${COIN_SOURCE_DIR}/Bonmin)
@@ -709,7 +713,10 @@ if (BUILD_IPOPT AND EXISTS ${COIN_SOURCE_DIR}/Bonmin)
     target_link_libraries(bonmin-executable bonmin)
   endif ()
 
-  add_coin_test(Bonmin-unitTest Bonmin InterfaceTest.cpp bonmin)
+  add_coin_test(Bonmin-unitTest Bonmin/test bonmin InterfaceTest.cpp)
+  add_coin_test(Bonmin-CppExample Bonmin/examples/CppExample
+    bonmin MyBonmin.cpp MyTMINLP.cpp MyTMINLP.hpp)
+
   configure(Bonmin src/Interfaces/config.h src/Interfaces/config_bonmin.h)
 endif ()
 
