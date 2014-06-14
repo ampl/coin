@@ -716,6 +716,7 @@ if (BUILD_IPOPT AND EXISTS ${COIN_SOURCE_DIR}/Bonmin)
   if (COIN_HAS_ASL)
     add_coin_library(Bonmin/src/Algorithms/Ampl NAME bonamplsetup)
     add_coin_library(Bonmin/src/Interfaces/Ampl NAME bonamplinterface)
+    add_dependencies(bonamplinterface arith_h)
     set(BONMIN_DEPS bonamplsetup bonamplinterface)
 
     add_executable(bonmin-executable Bonmin/src/Apps/BonMin.cpp)
