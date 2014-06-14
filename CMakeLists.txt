@@ -198,6 +198,7 @@ function(add_coin_library path)
   # Add the library.
   coin_get_sources(${src_path} lib${name}_la_SOURCES sources)
   add_library(${name} ${sources})
+  set(COIN_INSTALL_TARGETS ${COIN_INSTALL_TARGETS} ${name} CACHE INTERNAL "")
   include_directories(${src_path})
   string(TOUPPER ${name} uppercase_name)
   set_target_properties(${name}
@@ -725,3 +726,8 @@ if (BUILD_IPOPT AND EXISTS ${COIN_SOURCE_DIR}/Bonmin)
   #add_coin_library(Couenne/src/interfaces NAME CouenneInterfaces)
   configure(Couenne src/config.h src/config_couenne.h)
 endif ()
+
+install(TARGETS ${COIN_INSTALL_TARGETS}
+  LIBRARY DESTINATION lib
+  RUNTIME DESTINATION bin
+  ARCHIVE DESTINATION lib)
