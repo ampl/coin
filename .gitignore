@@ -1,4 +1,6 @@
 *.a
+*.err
+*.out
 /bin
 CMakeFiles
 cmake_install.cmake
