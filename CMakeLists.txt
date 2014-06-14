@@ -435,11 +435,17 @@ if (COIN_HAS_ASL)
   add_definitions(-DCOIN_HAS_ASL)
   include_directories(${ASL_DIR}/solvers)
 
-# TODO
-#   set(get_cbc_version $<TARGET_FILE:cbc-executable> -v -AMPL >> versions)
-#   if (TARGET ipopt-executable)
-#     set(get_ipopt_version $<TARGET_FILE:ipopt-executable> -v >> versions)
-#   endif ()
+  # Generate a file containing coin project versions.
+  set(COIN_VERSION_FILE coin-versions.txt)
+  set(get_cbc_version $<TARGET_FILE:cbc-executable> -v -AMPL >> ${COIN_VERSION_FILE})
+  set(COIN_VERSION_DEPS cbc-executable)
+  if (TARGET ipopt-executable)
+    set(get_ipopt_version $<TARGET_FILE:ipopt-executable> -v >> ${COIN_VERSION_FILE})
+    set(COIN_VERSION_DEPS ${COIN_VERSION_DEPS} ipopt-executable)
+  endif ()
+  add_custom_target(coin-versions cmake -E remove ${COIN_VERSION_FILE}
+    COMMAND ${get_cbc_version} COMMAND ${get_ipopt_version}
+    DEPENDS ${COIN_VERSION_DEPS})
 
   # Workaround for f90cache which accept only modified name for GNU fortran
   # compilers in the form gfortran-4.x.
