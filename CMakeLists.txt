@@ -678,27 +678,29 @@ if (BUILD_IPOPT)
   endif ()
 
   configure(Ipopt src/Common/config.h src/Common/config_ipopt.h)
-
-  # Couenne depends on Ipopt so build it only when building Ipopt.
-  include_directories(Couenne/src Couenne/src/convex)
-#add_coin_library(Couenne/src/interfaces NAME CouenneInterfaces)
-  configure(Couenne src/config.h src/config_couenne.h)
 endif()
 
-if (EXISTS ${COIN_SOURCE_DIR}/Bonmin)
-  add_coin_library(Bonmin/src/Algorithms/Branching NAME bonbranching)
+function(add_coin_test name project src lib)
+  add_executable(${name} ${project}/test/${src})
+  target_link_libraries(${name} ${lib})
+  add_test(NAME ${name} COMMAND ../../bin/${name}
+    WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/${project}/test)
+endfunction()
+
+if (BUILD_IPOPT AND EXISTS ${COIN_SOURCE_DIR}/Bonmin)
+  add_coin_library(Bonmin/src/Algorithms/Branching NAME bonbranching bonmininterfaces)
   add_coin_library(Bonmin/src/Algorithms/QuadCuts NAME bonquadcuts)
   add_coin_library(Bonmin/src/Algorithms/OaGenerators NAME bonoagenerators bonalgorithms)
   add_coin_library(Bonmin/src/Algorithms
-    NAME bonalgorithms bonbranching bonoagenerators bonquadcuts)
+    NAME bonalgorithms bonmin bonbranching bonoagenerators bonquadcuts)
   add_coin_library(Bonmin/src/Interfaces/Ipopt NAME ipoptinterface ipopt)
-  add_coin_library(Bonmin/src/Interfaces NAME bonmininterfaces ipoptinterface CoinUtils)
+  add_coin_library(Bonmin/src/Interfaces NAME bonmininterfaces bonmin ipoptinterface CoinUtils)
   add_coin_library(Bonmin/src/CbcBonmin/Heuristics NAME bonheuristics)
   add_coin_library(Bonmin/src/CbcBonmin
     NAME bonmin bonalgorithms bonmininterfaces bonheuristics CbcSolver)
   if (COIN_HAS_ASL)
-    add_coin_library(Bonmin/src/Algorithms/Ampl NAME bonamplsetup)
     add_coin_library(Bonmin/src/Interfaces/Ampl NAME bonamplinterface bonmininterfaces)
+    add_coin_library(Bonmin/src/Algorithms/Ampl NAME bonamplsetup bonamplinterface)
     target_link_libraries(bonmin bonamplsetup bonamplinterface ${ASL_LIBRARIES})
 
     add_executable(bonmin-executable Bonmin/src/Apps/BonMin.cpp)
@@ -707,5 +709,12 @@ if (EXISTS ${COIN_SOURCE_DIR}/Bonmin)
     target_link_libraries(bonmin-executable bonmin)
   endif ()
 
+  add_coin_test(Bonmin-unitTest Bonmin InterfaceTest.cpp bonmin)
   configure(Bonmin src/Interfaces/config.h src/Interfaces/config_bonmin.h)
+endif ()
+
+if (BUILD_IPOPT AND EXISTS ${COIN_SOURCE_DIR}/Bonmin)
+  include_directories(Couenne/src Couenne/src/convex)
+  #add_coin_library(Couenne/src/interfaces NAME CouenneInterfaces)
+  configure(Couenne src/config.h src/config_couenne.h)
 endif ()
