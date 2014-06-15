@@ -37,7 +37,8 @@ include_directories(
   ../BuildTools/headers src/Common
   ../ThirdParty/Mumps/MUMPS/include
   ../ThirdParty/Mumps/MUMPS/libseq
-  ../ThirdParty/Mumps/MUMPS/src)
+  ../ThirdParty/Mumps/MUMPS/src
+  src/Interfaces)
 
 add_definitions(-DIPOPT_BUILD -DHAVE_CONFIG_H)
 
