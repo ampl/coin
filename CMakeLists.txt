@@ -257,13 +257,6 @@ function(add_coin_library path)
   endif ()
 endfunction()
 
-function(add_cgl_library path)
-  add_coin_library(${path} ${ARGN})
-  get_filename_component(name ${path} NAME)
-  set(CGL_LIBS ${CGL_LIBS} ${name} PARENT_SCOPE)
-  set_target_properties(${name} PROPERTIES COMPILE_DEFINITIONS CGL_BUILD)
-endfunction()
-
 # Processes config.h using autoconf rules.
 function(configure package)
   # Get version numbers and parts of config.h from configure.ac.
@@ -506,24 +499,14 @@ add_coin_library(Osi/src/Osi CoinUtils)
 add_coin_library(Osi/src/OsiCommonTest
   NAME OsiCommonTests TEST_PATH Osi/test Osi OsiClp)
 
-add_cgl_library(Cgl/src/CglClique)
-add_cgl_library(Cgl/src/CglDuplicateRow)
-add_cgl_library(Cgl/src/CglFlowCover)
-add_cgl_library(Cgl/src/CglGMI)
-add_cgl_library(Cgl/src/CglGomory)
-add_cgl_library(Cgl/src/CglKnapsackCover)
-add_cgl_library(Cgl/src/CglLandP)
-add_cgl_library(Cgl/src/CglMixedIntegerRounding)
-add_cgl_library(Cgl/src/CglMixedIntegerRounding2)
-add_cgl_library(Cgl/src/CglOddHole)
-add_cgl_library(Cgl/src/CglPreProcess)
-add_cgl_library(Cgl/src/CglProbing)
-add_cgl_library(Cgl/src/CglRedSplit)
-add_cgl_library(Cgl/src/CglRedSplit2)
-add_cgl_library(Cgl/src/CglResidualCapacity)
-add_cgl_library(Cgl/src/CglSimpleRounding)
-add_cgl_library(Cgl/src/CglTwomir)
-add_cgl_library(Cgl/src/CglZeroHalf)
+foreach (name AllDifferent Clique DuplicateRow FlowCover GMI Gomory
+              KnapsackCover LandP LiftAndProject MixedIntegerRounding
+              MixedIntegerRounding2 OddHole PreProcess Probing RedSplit
+              RedSplit2 ResidualCapacity SimpleRounding Twomir ZeroHalf)
+  add_coin_library(Cgl/src/Cgl${name})
+  set(CGL_LIBS ${CGL_LIBS} Cgl${name})
+  set_target_properties(Cgl${name} PROPERTIES COMPILE_DEFINITIONS CGL_BUILD)
+endforeach ()
 add_coin_library(Cgl ${CGL_LIBS} OsiClp Osi)
 
 add_coin_library(Cbc Cgl OsiClp ${CBC_PTHREADS_LIB})
@@ -531,8 +514,7 @@ add_coin_library(Cbc/src/OsiCbc Osi Cbc)
 target_link_libraries(Cbc-osiUnitTest OsiCbc)
 target_link_libraries(Cbc-gamsTest CbcSolver)
 
-add_coin_library(Cbc NAME CbcSolver NOTESTS
-  Cbc Cgl CglLandP CglRedSplit CglResidualCapacity CglTwomir ${ASL_LIBRARIES})
+add_coin_library(Cbc NAME CbcSolver NOTESTS Cbc Cgl ${ASL_LIBRARIES})
 set_target_properties(CbcSolver PROPERTIES COMPILE_DEFINITIONS CBC_BUILD)
 
 add_executable(cbc-executable Cbc/src/CoinSolve.cpp)
