@@ -603,14 +603,6 @@ if (BUILD_IPOPT)
   # FORTRAN_CMAKE_FLAGS is used to pass additional CMake arguments to
   # Fortran subprojects.
   include(CMakeAddFortranSubdirectory)
-  cmake_add_fortran_subdirectory(ThirdParty/lapack
-    PROJECT LAPACK
-    ARCHIVE_DIR ThirdParty/lapack/lib
-    RUNTIME_DIR ThirdParty/lapack/bin
-    LIBRARIES blas
-    CMAKE_COMMAND_LINE ${FORTRAN_CMAKE_FLAGS}
-    NO_EXTERNAL_INSTALL)
-  set(COIN_HAS_BLAS 1)
   cmake_add_fortran_subdirectory(Ipopt
     PROJECT IPOPTFORT
     ARCHIVE_DIR Ipopt/lib
@@ -618,6 +610,7 @@ if (BUILD_IPOPT)
     LIBRARIES ipoptfort
     CMAKE_COMMAND_LINE ${FORTRAN_CMAKE_FLAGS}
     NO_EXTERNAL_INSTALL)
+  set(COIN_HAS_BLAS 1)
   set(COIN_HAS_MUMPS 1)
 
   if (MSVC)

@@ -14,6 +14,8 @@ set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${IPOPTFORT_BINARY_DIR}/bin)
 set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${IPOPTFORT_BINARY_DIR}/lib)
 set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${IPOPTFORT_BINARY_DIR}/lib)
 
+add_subdirectory(../ThirdParty/lapack lapack)
+
 # Set F77_FUNC & F77_FUNC_ in cache as they are used in the parent project.
 set(F77_FUNC "${FortranCInterface_GLOBAL_MACRO}" CACHE INTERNAL "")
 set(F77_FUNC_ "${FortranCInterface_GLOBAL__MACRO}" CACHE INTERNAL "")
@@ -97,11 +99,8 @@ endif ()
 find_package(Threads)
 target_link_libraries(ipoptfort ${CMAKE_THREAD_LIBS_INIT})
 
-if (CMAKE_GNUtoMS)
-  target_link_libraries(ipoptfort
-    ${CMAKE_CURRENT_BINARY_DIR}/../ThirdParty/lapack/lib/libblas.dll.a)
-else ()
-  target_link_libraries(ipoptfort blas)
+target_link_libraries(ipoptfort blas)
+if (NOT CMAKE_GNUtoMS)
   add_ipopt_test(hs071_f hs071_f.f)
 endif ()
 
