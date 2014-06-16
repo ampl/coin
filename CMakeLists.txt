@@ -628,7 +628,7 @@ if (BUILD_IPOPT)
       set(IPOPT_DLLS ${IPOPT_DLLS}
         ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/${CMAKE_CFG_INTDIR}/${name}
         PARENT_SCOPE)
-    end_function()
+    endfunction()
     set(IPOPT_DLLS )
     coin_add_copy_dll_command(
       libblas.dll ${COIN_BINARY_DIR}/ThirdParty/lapack/bin)
