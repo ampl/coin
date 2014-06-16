@@ -455,10 +455,12 @@ if (COIN_HAS_ASL)
 
   # Generate a file containing coin project versions.
   set(COIN_VERSION_FILE coin-versions.txt)
-  set(get_cbc_version $<TARGET_FILE:cbc-executable> -v -AMPL >> ${COIN_VERSION_FILE})
+  set(get_cbc_version
+      $<TARGET_FILE:cbc-executable> -v -AMPL >> ${COIN_VERSION_FILE})
   set(COIN_VERSION_DEPS cbc-executable)
   if (TARGET ipopt-executable)
-    set(get_ipopt_version $<TARGET_FILE:ipopt-executable> -v >> ${COIN_VERSION_FILE})
+    set(get_ipopt_version
+        $<TARGET_FILE:ipopt-executable> -v >> ${COIN_VERSION_FILE})
     set(COIN_VERSION_DEPS ${COIN_VERSION_DEPS} ipopt-executable)
   endif ()
   add_custom_target(coin-versions cmake -E remove ${COIN_VERSION_FILE}
@@ -557,6 +559,9 @@ endfunction()
 
 if (EXISTS ${COIN_SOURCE_DIR}/Ipopt)
   if (MSVC)
+    # Look up gfortran in the MinGW directory. This sets the GFORTRAN
+    # cache entry if gfortran is found and should be done before including
+    # CMakeAddFortranSubdirectory.
     if (SIZEOF_INT_P EQUAL 8)
       set(bits 64)
     else ()
@@ -566,9 +571,8 @@ if (EXISTS ${COIN_SOURCE_DIR}/Ipopt)
     find_program(GFORTRAN gfortran PATHS ${COIN_MINGW_PATH}/bin)
     if (GFORTRAN)
       set(BUILD_IPOPT TRUE)
-      set(MINGW_GFORTRAN ${GFORTRAN} CACHE PATH "Path to MinGW gfortran")
     endif ()
-    message("Gfortran: ${GFORTRAN}")
+    message("GFortran: ${GFORTRAN}")
   else ()
     enable_language(Fortran OPTIONAL)
     if (CMAKE_Fortran_COMPILER_WORKS)
