@@ -134,9 +134,13 @@ if(BLAS_COMPLEX16)
   set(ALLOBJ  ${BLASLIB} ${ZBLAS1} ${ZB1AUX} 
 	${ALLBLAS} ${ZBLAS2} ${ZBLAS3})
 endif()
-  
-  
-add_library(blas ${ALLOBJ})
+
+option(BLAS_OBJECT_LIB "Build BLAS as a CMake OBJECT library." OFF)
+if (BLAS_OBJECT_LIB)
+  set(BLAS_LIBRARY_TYPE OBJECT)
+endif ()
+
+add_library(blas ${BLAS_LIBRARY_TYPE} ${ALLOBJ})
 if(UNIX)
   target_link_libraries(blas m)
 endif()

@@ -627,8 +627,6 @@ if (BUILD_IPOPT)
     endfunction()
     set(IPOPT_DLLS )
     coin_add_copy_dll_command(
-      libblas.dll ${COIN_BINARY_DIR}/ThirdParty/lapack/bin)
-    coin_add_copy_dll_command(
       libipoptfort.dll ${COIN_BINARY_DIR}/Ipopt/bin)
     set(GFORTRAN_DLL libgfortran-3.dll)
     if (EXISTS ${COIN_MINGW_PATH}/bin/${GFORTRAN_DLL})
@@ -643,7 +641,7 @@ if (BUILD_IPOPT)
   add_ipopt_library(linalg LinAlg)
   add_ipopt_library(tmatrices LinAlg/TMatrices)
   add_ipopt_library(ipopt Interfaces
-    ipoptalg linsolvers ipoptfort common cgpenalty linalg tmatrices blas)
+    ipoptalg linsolvers ipoptfort common cgpenalty linalg tmatrices)
 
   if (COIN_HAS_ASL)
     add_ipopt_library(ipoptamplinterface Apps/AmplSolver ${ASL_LIBRARIES})
