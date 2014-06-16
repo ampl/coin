@@ -559,7 +559,7 @@ endfunction()
 
 if (EXISTS ${COIN_SOURCE_DIR}/Ipopt)
   if (MSVC)
-    # Look up gfortran in the MinGW directory. This sets the GFORTRAN
+    # Look up gfortran in the MinGW directory. This sets the MINGW_GFORTRAN
     # cache entry if gfortran is found and should be done before including
     # CMakeAddFortranSubdirectory.
     if (SIZEOF_INT_P EQUAL 8)
@@ -568,11 +568,10 @@ if (EXISTS ${COIN_SOURCE_DIR}/Ipopt)
       set(bits 32)
     endif ()
     set(COIN_MINGW_PATH C:/mingw${bits})
-    find_program(GFORTRAN gfortran PATHS ${COIN_MINGW_PATH}/bin)
-    if (GFORTRAN)
+    find_program(MINGW_GFORTRAN gfortran PATHS ${COIN_MINGW_PATH}/bin)
+    if (MINGW_GFORTRAN)
       set(BUILD_IPOPT TRUE)
     endif ()
-    message("GFortran: ${GFORTRAN}")
   else ()
     enable_language(Fortran OPTIONAL)
     if (CMAKE_Fortran_COMPILER_WORKS)
