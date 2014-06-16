@@ -480,7 +480,7 @@ if (COIN_HAS_ASL)
   if (WINSDK_SETENV)
     # Create a script that sets up a build environment in Fortran subprojects.
     # It is necessary because setenv.cmd produces bogus errors
-    #   ERROR: The system was unable to find the specified registry key or value.
+    # ERROR: The system was unable to find the specified registry key or value.
     # which cause custom build to fail.
     file(WRITE run-setenv.bat "call \"${WINSDK_SETENV}\" %* 2> nul")
     set(path ${CMAKE_CURRENT_BINARY_DIR}/run-setenv.bat)
@@ -562,7 +562,8 @@ if (EXISTS ${COIN_SOURCE_DIR}/Ipopt)
     else ()
       set(bits 32)
     endif ()
-    find_program(GFORTRAN gfortran PATHS C:/mingw${bits}/bin)
+    set(COIN_MINGW_PATH C:/mingw${bits})
+    find_program(GFORTRAN gfortran PATHS ${COIN_MINGW_PATH}/bin)
     if (GFORTRAN)
       set(BUILD_IPOPT TRUE)
       set(MINGW_GFORTRAN ${GFORTRAN} CACHE PATH "Path to MinGW gfortran")
@@ -617,19 +618,26 @@ if (BUILD_IPOPT)
 
   if (MSVC)
     add_dependencies(IPOPTFORT_build LAPACK_build)
-    add_custom_command(
-      OUTPUT ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/${CMAKE_CFG_INTDIR}/libblas.dll
-      COMMAND ${CMAKE_COMMAND} -E copy_if_different
-              ${COIN_BINARY_DIR}/ThirdParty/lapack/bin/libblas.dll
-              ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/${CMAKE_CFG_INTDIR})
-    add_custom_command(
-      OUTPUT ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/${CMAKE_CFG_INTDIR}/libipoptfort.dll
-      COMMAND ${CMAKE_COMMAND} -E copy_if_different
-              ${COIN_BINARY_DIR}/Ipopt/bin/libipoptfort.dll
-              ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/${CMAKE_CFG_INTDIR})
-    set(IPOPT_DLLS
-      ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/${CMAKE_CFG_INTDIR}/libblas.dll
-      ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/${CMAKE_CFG_INTDIR}/libipoptfort.dll)
+    # Adds a command to copy DLL.
+    function(coin_add_copy_dll_command name source_dir)
+      add_custom_command(
+        OUTPUT ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/${CMAKE_CFG_INTDIR}/${name}
+        COMMAND ${CMAKE_COMMAND} -E copy_if_different
+                ${source_dir}/${name}
+                ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/${CMAKE_CFG_INTDIR})
+      set(IPOPT_DLLS ${IPOPT_DLLS}
+        ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/${CMAKE_CFG_INTDIR}/${name}
+        PARENT_SCOPE)
+    end_function()
+    set(IPOPT_DLLS )
+    coin_add_copy_dll_command(
+      libblas.dll ${COIN_BINARY_DIR}/ThirdParty/lapack/bin)
+    coin_add_copy_dll_command(
+      libipoptfort.dll ${COIN_BINARY_DIR}/Ipopt/bin)
+    set(GFORTRAN_DLL libgfortran-3.dll)
+    if (EXISTS ${COIN_MINGW_PATH}/bin/${GFORTRAN_DLL})
+      coin_add_copy_dll_command(libgfortran-3.dll ${COIN_MINGW_PATH}/bin)
+    endif ()
   endif ()
 
   add_ipopt_library(ipoptalg Algorithm)
