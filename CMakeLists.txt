@@ -613,25 +613,14 @@ if (BUILD_IPOPT)
   set(COIN_HAS_MUMPS 1)
 
   if (MSVC)
-    add_dependencies(IPOPTFORT_build LAPACK_build)
-    # Adds a command to copy DLL.
-    function(coin_add_copy_dll_command name source_dir)
-      add_custom_command(
-        OUTPUT ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/${CMAKE_CFG_INTDIR}/${name}
-        COMMAND ${CMAKE_COMMAND} -E copy_if_different
-                ${source_dir}/${name}
-                ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/${CMAKE_CFG_INTDIR})
-      set(IPOPT_DLLS ${IPOPT_DLLS}
-        ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/${CMAKE_CFG_INTDIR}/${name}
-        PARENT_SCOPE)
-    endfunction()
-    set(IPOPT_DLLS )
-    coin_add_copy_dll_command(
-      libipoptfort.dll ${COIN_BINARY_DIR}/Ipopt/bin)
-    set(GFORTRAN_DLL libgfortran-3.dll)
-    if (EXISTS ${COIN_MINGW_PATH}/bin/${GFORTRAN_DLL})
-      coin_add_copy_dll_command(libgfortran-3.dll ${COIN_MINGW_PATH}/bin)
-    endif ()
+    set(ipoptfort_dll_dest
+        ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/${CMAKE_CFG_INTDIR}/libipoptfort.dll)
+    add_custom_command(
+      OUTPUT ${ipoptfort_dll_dest}
+      COMMAND ${CMAKE_COMMAND} -E copy_if_different
+              ${COIN_BINARY_DIR}/Ipopt/bin/libipoptfort.dll
+              ${ipoptfort_dll_dest})
+    set(IPOPT_DLLS ${ipoptfort_dll_dest})
   endif ()
 
   add_ipopt_library(ipoptalg Algorithm)
