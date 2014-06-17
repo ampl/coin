@@ -105,15 +105,15 @@ prepend_dir(mumps_src ../ThirdParty/Mumps/MUMPS
 
 add_library(ipoptfort ${mumps_src} ${LinearSolverLoader_src}
   src/Algorithm/LinearSolvers/IpMa28Partition.F)
+
+find_package(Threads)
+target_link_libraries(ipoptfort blas ${CMAKE_THREAD_LIBS_INIT})
+
 find_library(DL_LIBRARY dl)
 if (DL_LIBRARY)
   target_link_libraries(ipoptfort ${DL_LIBRARY})
 endif ()
 
-find_package(Threads)
-target_link_libraries(ipoptfort ${CMAKE_THREAD_LIBS_INIT})
-
-target_link_libraries(ipoptfort blas)
 if (NOT CMAKE_GNUtoMS)
   add_ipopt_test(hs071_f hs071_f.f)
 endif ()
