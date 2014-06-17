@@ -17,6 +17,14 @@ set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${IPOPTFORT_BINARY_DIR}/lib)
 # Link the gfortran runtime statically.
 set(CMAKE_SHARED_LINKER_FLAGS
     "${CMAKE_SHARED_LINKER_FLAGS} -static-libgfortran -static-libgcc")
+
+if (CMAKE_GNUtoMS)
+  # Pull in additional symbols used in IpBlas.
+  foreach (sym ddot_ dnrm2_ dasum_ dsymv_ dsyrk_)
+    set(CMAKE_SHARED_LINKER_FLAGS "${CMAKE_SHARED_LINKER_FLAGS} -u ${sym}")
+  endforeach ()
+endif ()
+
 set(BLAS_LIBRARY_TYPE STATIC CACHE STRING
     "Type of a BLAS library to build (STATIC, SHARED or OBJECT).")
 add_subdirectory(../ThirdParty/lapack lapack)
