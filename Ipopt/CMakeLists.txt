@@ -14,6 +14,9 @@ set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${IPOPTFORT_BINARY_DIR}/bin)
 set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${IPOPTFORT_BINARY_DIR}/lib)
 set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${IPOPTFORT_BINARY_DIR}/lib)
 
+# Link the gfortran runtime statically.
+set(CMAKE_SHARED_LINKER_FLAGS
+    "${CMAKE_SHARED_LINKER_FLAGS} -static-libgfortran -static-libgcc")
 set(BLAS_LIBRARY_TYPE STATIC CACHE STRING
     "Type of a BLAS library to build (STATIC, SHARED or OBJECT).")
 add_subdirectory(../ThirdParty/lapack lapack)
