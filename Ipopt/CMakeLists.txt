@@ -21,7 +21,8 @@ set(CMAKE_SHARED_LINKER_FLAGS
 if (CMAKE_GNUtoMS)
   # Pull in additional symbols used in IpBlas.
   foreach (sym ddot_ dnrm2_ dasum_ dsymv_ dsyrk_)
-    set(CMAKE_SHARED_LINKER_FLAGS "${CMAKE_SHARED_LINKER_FLAGS} -u ${sym}")
+    set(CMAKE_SHARED_LINKER_FLAGS
+        "${CMAKE_SHARED_LINKER_FLAGS} -u ${sym} -u _${sym}")
   endforeach ()
 endif ()
 
