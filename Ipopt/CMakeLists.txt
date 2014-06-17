@@ -14,6 +14,8 @@ set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${IPOPTFORT_BINARY_DIR}/bin)
 set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${IPOPTFORT_BINARY_DIR}/lib)
 set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${IPOPTFORT_BINARY_DIR}/lib)
 
+set(BLAS_LIBRARY_TYPE STATIC CACHE STRING
+    "Type of a BLAS library to build (STATIC, SHARED or OBJECT).")
 add_subdirectory(../ThirdParty/lapack lapack)
 
 # Set F77_FUNC & F77_FUNC_ in cache as they are used in the parent project.

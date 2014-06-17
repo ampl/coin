@@ -135,11 +135,9 @@ if(BLAS_COMPLEX16)
 	${ALLBLAS} ${ZBLAS2} ${ZBLAS3})
 endif()
 
-option(BLAS_OBJECT_LIB "Build BLAS as a CMake OBJECT library." OFF)
-if (BLAS_OBJECT_LIB)
-  set(BLAS_LIBRARY_TYPE OBJECT)
-endif ()
-
+set(BLAS_LIBRARY_TYPE CACHE STRING
+    "Type of a BLAS library to build (STATIC, SHARED or OBJECT).")
+message("BLAS_LIBRARY_TYPE: ${BLAS_LIBRARY_TYPE}")
 add_library(blas ${BLAS_LIBRARY_TYPE} ${ALLOBJ})
 if(UNIX)
   target_link_libraries(blas m)
