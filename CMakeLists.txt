@@ -711,9 +711,30 @@ if (BUILD_IPOPT AND EXISTS ${COIN_SOURCE_DIR}/Bonmin)
   configure(Bonmin src/Interfaces/config.h src/Interfaces/config_bonmin.h)
 endif ()
 
+function(add_couenne_library name path)
+  add_coin_library(Couenne/src/${path} NAME ${name})
+  set_target_properties(${name} PROPERTIES COMPILE_DEFINITIONS COUENNE_BUILD)
+endfunction()
+
 if (BUILD_IPOPT AND EXISTS ${COIN_SOURCE_DIR}/Bonmin)
-  include_directories(Couenne/src Couenne/src/convex)
-  #add_coin_library(Couenne/src/interfaces NAME CouenneInterfaces)
+  include_directories(
+    Couenne/src Couenne/src/main
+    Couenne/src/expression/operators
+    Couenne/src/expression/operators/bounds
+    Couenne/src/expression/partial
+    Couenne/src/problem/depGraph)
+  add_couenne_library(CouenneUtil util)
+  add_couenne_library(CouenneExpression expression)
+  add_couenne_library(CouenneStandardize standardize)
+  add_couenne_library(CouenneProblem problem)
+  add_couenne_library(CouenneBoundTightening bound_tightening)
+  add_couenne_library(CouenneTwoImplied bound_tightening/twoImpliedBT)
+  add_couenne_library(CouenneConvex convex)
+  add_couenne_library(CouenneBranch branch)
+  add_couenne_library(CouenneDisjunctive disjunctive)
+  add_couenne_library(CouenneInterfaces interfaces)
+  add_couenne_library(CouenneHeuristics heuristics)
+
   configure(Couenne src/config.h src/config_couenne.h)
 endif ()
 
