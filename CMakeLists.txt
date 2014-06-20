@@ -727,17 +727,17 @@ endif ()
 if (COIN_HAS_ASL)
   # Generate a file containing coin project versions.
   set(COIN_VERSIONS_FILE coin-versions.txt)
-  set(get_cbc_version
-      $<TARGET_FILE:cbc-executable> -v -AMPL >> ${COIN_VERSIONS_FILE})
-  set(COIN_VERSIONS_DEPS cbc-executable)
-  if (TARGET ipopt-executable)
-    set(get_ipopt_version
-        $<TARGET_FILE:ipopt-executable> -v >> ${COIN_VERSIONS_FILE})
-    set(COIN_VERSIONS_DEPS ${COIN_VERSIONS_DEPS} ipopt-executable)
-  endif ()
+  set(COIN_VERSIONS_DEPS )
+  foreach (solver cbc ipopt bonmin)
+    if (TARGET ${solver}-executable)
+      set(get_${solver}_version
+          $<TARGET_FILE:${solver}-executable> -v -AMPL >> ${COIN_VERSIONS_FILE})
+      set(COIN_VERSIONS_DEPS ${COIN_VERSIONS_DEPS} ${solver}-executable)
+    endif ()
+  endforeach ()
   add_custom_target(coin-versions cmake -E remove ${COIN_VERSIONS_FILE}
     COMMAND ${get_cbc_version} COMMAND ${get_ipopt_version}
-    DEPENDS ${COIN_VERSIONS_DEPS})
+    COMMAND ${get_bonmin_version} DEPENDS ${COIN_VERSIONS_DEPS})
 endif ()
 
 install(TARGETS ${COIN_INSTALL_TARGETS}
