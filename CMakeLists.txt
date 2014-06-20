@@ -720,6 +720,10 @@ if (BUILD_IPOPT AND EXISTS ${COIN_SOURCE_DIR}/Bonmin)
   add_couenne_library(CouenneDisjunctive disjunctive)
   add_couenne_library(CouenneInterfaces interfaces)
   add_couenne_library(CouenneHeuristics heuristics)
+  
+  if (COIN_HAS_ASL)
+    add_dependencies(CouenneProblem arith_h)
+  endif ()
 
   configure(Couenne src/config.h src/config_couenne.h)
 endif ()
