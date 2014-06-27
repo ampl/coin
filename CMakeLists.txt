@@ -702,7 +702,7 @@ function(add_couenne_library name path)
   set_target_properties(${name} PROPERTIES COMPILE_DEFINITIONS COUENNE_BUILD)
 endfunction()
 
-if (BUILD_IPOPT AND EXISTS ${COIN_SOURCE_DIR}/Bonmin)
+if (BUILD_IPOPT AND EXISTS ${COIN_SOURCE_DIR}/Couenne)
   include_directories(
     Couenne/src Couenne/src/main
     Couenne/src/expression/operators
@@ -720,7 +720,19 @@ if (BUILD_IPOPT AND EXISTS ${COIN_SOURCE_DIR}/Bonmin)
   add_couenne_library(CouenneDisjunctive disjunctive)
   add_couenne_library(CouenneInterfaces interfaces)
   add_couenne_library(CouenneHeuristics heuristics)
+
+  set(DEPENDENCY_LINKING 1)
+  set(COUENNEINTERFACE_FROM_ASL 1)
+  add_coin_library(Couenne/src NAME Couenne
+    CouenneInterfaces CouenneHeuristics CouenneProblem CouenneStandardize
+    CouenneExpression CouenneBranch CouenneConvex CouenneBoundTightening
+    CouenneTwoImplied CouenneUtil CouenneDisjunctive bonmin)
   
+  add_executable(couenne-executable Couenne/src/main/BonCouenne.cpp)
+  set_target_properties(couenne-executable PROPERTIES
+    COMPILE_DEFINITIONS COUENNE_BUILD OUTPUT_NAME couenne IMPORT_PREFIX imp)
+  target_link_libraries(couenne-executable Couenne)
+
   if (COIN_HAS_ASL)
     add_dependencies(CouenneProblem arith_h)
   endif ()
