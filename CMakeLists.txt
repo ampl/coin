@@ -744,7 +744,7 @@ if (COIN_HAS_ASL)
   # Generate a file containing coin project versions.
   set(COIN_VERSIONS_FILE coin-versions.txt)
   add_custom_target(coin-versions cmake -E remove ${COIN_VERSIONS_FILE})
-  foreach (solver cbc ipopt bonmin)
+  foreach (solver cbc ipopt bonmin couenne)
     if (TARGET ${solver}-executable)
       add_custom_command(TARGET coin-versions POST_BUILD
         COMMAND $<TARGET_FILE:${solver}-executable> -v -AMPL >> ${COIN_VERSIONS_FILE})
