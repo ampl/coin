@@ -721,21 +721,27 @@ if (BUILD_IPOPT AND EXISTS ${COIN_SOURCE_DIR}/Couenne)
   add_couenne_library(CouenneInterfaces interfaces)
   add_couenne_library(CouenneHeuristics heuristics)
 
+  if (COIN_HAS_ASL)
+    add_dependencies(CouenneProblem arith_h)
+    set(COUENNEINTERFACE_FROM_ASL 1)
+  endif ()
+
   set(DEPENDENCY_LINKING 1)
-  set(COUENNEINTERFACE_FROM_ASL 1)
   add_coin_library(Couenne/src NAME Couenne
     CouenneInterfaces CouenneHeuristics CouenneProblem CouenneStandardize
     CouenneExpression CouenneBranch CouenneConvex CouenneBoundTightening
     CouenneTwoImplied CouenneUtil CouenneDisjunctive bonmin)
-  
+
   add_executable(couenne-executable Couenne/src/main/BonCouenne.cpp)
   set_target_properties(couenne-executable PROPERTIES
     COMPILE_DEFINITIONS COUENNE_BUILD OUTPUT_NAME couenne IMPORT_PREFIX imp)
   target_link_libraries(couenne-executable Couenne)
 
-  if (COIN_HAS_ASL)
-    add_dependencies(CouenneProblem arith_h)
-  endif ()
+  set(srcdir ${CMAKE_CURRENT_SOURCE_DIR}/Couenne/test)
+  configure_file(Couenne/test/grandTest.sh.in Couenne/test/grandTest.sh @ONLY)
+  add_test(NAME Couenne-grandTest
+    COMMAND ${CMAKE_COMMAND} -P ${CMAKE_CURRENT_SOURCE_DIR}/Couenne/test.cmake
+    WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/Couenne)
 
   configure(Couenne src/config.h src/config_couenne.h)
 endif ()
