@@ -741,6 +741,7 @@ if (BUILD_IPOPT AND EXISTS ${COIN_SOURCE_DIR}/Couenne)
   configure_file(Couenne/test/grandTest.sh.in Couenne/test/grandTest.sh @ONLY)
   add_test(NAME Couenne-grandTest
     COMMAND ${CMAKE_COMMAND} -P ${CMAKE_CURRENT_SOURCE_DIR}/Couenne/test.cmake
+            $<TARGET_FILE:couenne-executable>
     WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/Couenne)
 
   configure(Couenne src/config.h src/config_couenne.h)
