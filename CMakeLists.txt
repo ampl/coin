@@ -464,6 +464,7 @@ if (COIN_HAS_ASL)
     endif ()
   endforeach ()
 
+  find_setenv(WINSDK_SETENV)
   if (WINSDK_SETENV)
     # Create a script that sets up a build environment in Fortran subprojects.
     # It is necessary because setenv.cmd produces bogus errors
