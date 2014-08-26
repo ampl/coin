@@ -754,17 +754,16 @@ endif ()
 # Change dynamic shared library install names to use @executable_path.
 if (APPLE)
   foreach (target ipopt bonmin couenne)
-    if (NOT TARGET ${target})
-      continue ()
+    if (TARGET ${target})
+      foreach (lib ${IPOPT_EXTERNAL_LIBS})
+        get_filename_component(libname ${lib} NAME)
+        set(path /opt/local/lib/libgcc/${libname})
+        add_custom_command(
+          TARGET ${target}-executable POST_BUILD
+          COMMAND install_name_tool -change ${path}
+            @executable_path/${lib} $<TARGET_FILE:${target}-executable>)
+      endforeach ()
     endif ()
-    foreach (lib ${IPOPT_EXTERNAL_LIBS})
-      get_filename_component(libname ${lib} NAME)
-      set(path /opt/local/lib/libgcc/${libname})
-      add_custom_command(
-        TARGET ${target}-executable POST_BUILD
-        COMMAND install_name_tool -change ${path}
-          @executable_path/${lib} $<TARGET_FILE:${target}-executable>)
-    endforeach ()
   endforeach ()
 endif ()
 
