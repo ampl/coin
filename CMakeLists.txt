@@ -684,7 +684,7 @@ if (BUILD_IPOPT AND EXISTS ${COIN_SOURCE_DIR}/Bonmin)
   if (COIN_HAS_ASL)
     add_coin_library(Bonmin/src/Algorithms/Ampl NAME bonamplsetup)
     add_coin_library(Bonmin/src/Interfaces/Ampl NAME bonamplinterface)
-    add_dependencies(bonamplinterface arith_h)
+    target_link_libraries(bonamplinterface ${ASL_LIBRARIES})
     set(BONMIN_DEPS bonamplsetup bonamplinterface)
 
     add_executable(bonmin-executable Bonmin/src/Apps/BonMin.cpp)
@@ -695,9 +695,6 @@ if (BUILD_IPOPT AND EXISTS ${COIN_SOURCE_DIR}/Bonmin)
   add_coin_library(Bonmin/src/CbcBonmin NAME bonmin
     bonalgorithms bonbranching bonquadcuts bonoagenerators
     bonmininterfaces ipoptinterface ipopt bonheuristics CbcSolver ${BONMIN_DEPS})
-  if (COIN_HAS_ASL)
-    target_link_libraries(bonmin ${ASL_LIBRARIES})
-  endif ()
 
   add_coin_test(Bonmin-unitTest Bonmin/test bonmin InterfaceTest.cpp)
   add_coin_test(Bonmin-CppExample Bonmin/examples/CppExample
@@ -731,7 +728,6 @@ if (BUILD_IPOPT AND EXISTS ${COIN_SOURCE_DIR}/Couenne)
   add_couenne_library(CouenneHeuristics heuristics)
 
   if (COIN_HAS_ASL)
-    add_dependencies(CouenneProblem arith_h)
     set(COUENNEINTERFACE_FROM_ASL 1)
   endif ()
 
