@@ -13,10 +13,10 @@ endif ()
 
 project(COIN)
 
-# Output binaries to bin/ to avoid a name clash between the Cbc directory
+# Output binaries to bin to avoid a name clash between the Cbc directory
 # and the cbc executable on case-insensitive filesystems such as HFS Plus
 # (on OS X).
-set(CMAKE_RUNTIME_OUTPUT_DIRECTORY "bin/")
+set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${PROJECT_BINARY_DIR}/bin)
 
 # CoinSignal.hpp doesn't compile on Mac with -std=c++11 flag
 string(REPLACE "-std=c++11" "" CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS}")
@@ -685,6 +685,8 @@ if (BUILD_IPOPT AND EXISTS ${COIN_SOURCE_DIR}/Bonmin)
     add_coin_library(Bonmin/src/Algorithms/Ampl NAME bonamplsetup)
     add_coin_library(Bonmin/src/Interfaces/Ampl NAME bonamplinterface)
     add_dependencies(bonamplinterface ${ASL_LIBRARIES})
+    get_target_property(ASL_INCLUDE_DIRS asl INTERFACE_INCLUDE_DIRECTORIES)
+    target_include_directories(bonamplinterface PUBLIC ${ASL_INCLUDE_DIRS})
     set(BONMIN_DEPS bonamplsetup bonamplinterface ${ASL_LIBRARIES})
 
     add_executable(bonmin-executable Bonmin/src/Apps/BonMin.cpp)
