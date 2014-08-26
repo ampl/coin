@@ -3,10 +3,12 @@
 
 cmake_minimum_required(VERSION 2.8.7.20120206)
 
-set(ASL_DIR ThirdParty/ampl)
+set(ASL_DIR ThirdParty/mp)
 if (EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/${ASL_DIR}/CMakeLists.txt)
   add_subdirectory(${ASL_DIR})
   set(COIN_HAS_ASL 1)
+  set(ASL_LIBRARIES asl)
+  add_definitions(-DCOIN_HAS_ASL)
 endif ()
 
 project(COIN)
@@ -449,10 +451,6 @@ set(COINUTILS_MEMPOOL_MAXPOOLED -1)
 set(GLPK_HAS_INTOPT 1)
 
 if (COIN_HAS_ASL)
-  set(ASL_LIBRARIES amplsolver)
-  add_definitions(-DCOIN_HAS_ASL)
-  include_directories(${ASL_DIR}/solvers)
-
   # Workaround for f90cache which accept only modified name for GNU fortran
   # compilers in the form gfortran-4.x.
   string(REGEX MATCHALL "[^:]+" search_paths "$ENV{PATH}")
