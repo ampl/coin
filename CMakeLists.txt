@@ -2,6 +2,7 @@
 # Author: Victor Zverovich
 
 cmake_minimum_required(VERSION 2.8.7.20120206)
+cmake_policy(VERSION ${CMAKE_MINIMUM_REQUIRED_VERSION})
 
 set(ASL_DIR ThirdParty/mp)
 if (EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/${ASL_DIR}/CMakeLists.txt)
@@ -764,7 +765,7 @@ if (APPLE)
         add_custom_command(
           TARGET ${target}-executable POST_BUILD
           COMMAND install_name_tool -change ${path}
-            @executable_path/${lib} $<TARGET_FILE:${target}-executable>)
+            @executable_path/${libname} $<TARGET_FILE:${target}-executable>)
       endforeach ()
     endif ()
   endforeach ()
