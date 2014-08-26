@@ -598,15 +598,26 @@ if (BUILD_IPOPT)
   set(COIN_HAS_BLAS 1)
   set(COIN_HAS_MUMPS 1)
 
-  if (MSVC)
-    set(ipoptfort_dll_dest
-        ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/${CMAKE_CFG_INTDIR}/libipoptfort.dll)
+  # Adds a command to copy external library ${lib} to the binary directory.
+  macro (add_copy_library_command lib)
+    get_filename_component(libname ${lib} NAME)
+    set(dest ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/${CMAKE_CFG_INTDIR}/${libname})
     add_custom_command(
-      OUTPUT ${ipoptfort_dll_dest}
-      COMMAND ${CMAKE_COMMAND} -E copy_if_different
-              ${COIN_BINARY_DIR}/Ipopt/bin/libipoptfort.dll
-              ${ipoptfort_dll_dest})
-    set(IPOPT_DLLS ${ipoptfort_dll_dest})
+      OUTPUT ${dest}
+      COMMAND ${CMAKE_COMMAND} -E copy_if_different ${lib} ${dest})
+    set(IPOPT_EXTERNAL_LIBS ${IPOPT_EXTERNAL_LIBS} ${dest})
+  endmacro ()
+
+  # Copy external libraries.
+  if (APPLE)
+    foreach (lib libgfortran.3.dylib libquadmath.0.dylib libstdc++.6.dylib)
+      set(path /opt/local/lib/libgcc/${lib})
+      if (EXISTS ${path})
+        add_copy_library_command(${path})
+      endif ()
+    endforeach ()
+  elseif (MSVC)
+    add_copy_library_command(${COIN_BINARY_DIR}/Ipopt/bin/libipoptfort.dll)
   endif ()
 
   add_ipopt_library(ipoptalg Algorithm)
@@ -622,7 +633,7 @@ if (BUILD_IPOPT)
     add_ipopt_library(ipoptamplinterface Apps/AmplSolver ${ASL_LIBRARIES})
     target_link_libraries(ipopt ipoptamplinterface)
     add_executable(ipopt-executable
-      Ipopt/src/Apps/AmplSolver/ampl_ipopt.cpp ${IPOPT_DLLS})
+      Ipopt/src/Apps/AmplSolver/ampl_ipopt.cpp ${IPOPT_EXTERNAL_LIBS})
     target_link_libraries(ipopt-executable ipopt)
     set_target_properties(ipopt-executable PROPERTIES
       COMPILE_DEFINITIONS IPOPT_BUILD OUTPUT_NAME ipopt IMPORT_PREFIX imp)
@@ -745,6 +756,23 @@ if (BUILD_IPOPT AND EXISTS ${COIN_SOURCE_DIR}/Couenne)
     WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/Couenne)
 
   configure(Couenne src/config.h src/config_couenne.h)
+endif ()
+
+# Change dynamic shared library install names to use @executable_path.
+if (APPLE)
+  foreach (target ipopt bonmin couenne)
+    if (NOT TARGET ${target})
+      continue ()
+    endif ()
+    foreach (lib ${IPOPT_EXTERNAL_LIBS})
+      get_filename_component(libname ${lib} NAME)
+      set(path /opt/local/lib/libgcc/${libname})
+      add_custom_command(
+        TARGET ${target}-executable POST_BUILD
+        COMMAND install_name_tool -change ${path}
+          @executable_path/${lib} $<TARGET_FILE:${target}-executable>)
+    endforeach ()
+  endforeach ()
 endif ()
 
 if (COIN_HAS_ASL)
