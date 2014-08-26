@@ -685,8 +685,8 @@ if (BUILD_IPOPT AND EXISTS ${COIN_SOURCE_DIR}/Bonmin)
     add_coin_library(Bonmin/src/Algorithms/Ampl NAME bonamplsetup)
     add_coin_library(Bonmin/src/Interfaces/Ampl NAME bonamplinterface)
     add_dependencies(bonamplinterface ${ASL_LIBRARIES})
-    get_target_property(ASL_INCLUDE_DIRS asl INTERFACE_INCLUDE_DIRECTORIES)
-    target_include_directories(bonamplinterface PUBLIC ${ASL_INCLUDE_DIRS})
+    target_include_directories(bonamplinterface PUBLIC
+      $<TARGET_PROPERTY:asl,INTERFACE_INCLUDE_DIRECTORIES>)
     set(BONMIN_DEPS bonamplsetup bonamplinterface ${ASL_LIBRARIES})
 
     add_executable(bonmin-executable Bonmin/src/Apps/BonMin.cpp)
