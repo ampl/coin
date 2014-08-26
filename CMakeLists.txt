@@ -9,6 +9,7 @@ if (EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/${ASL_DIR}/CMakeLists.txt)
   set(COIN_HAS_ASL 1)
   set(ASL_LIBRARIES asl)
   add_definitions(-DCOIN_HAS_ASL)
+  include_directories($<TARGET_PROPERTY:asl,INTERFACE_INCLUDE_DIRECTORIES>)
 endif ()
 
 project(COIN)
@@ -685,8 +686,6 @@ if (BUILD_IPOPT AND EXISTS ${COIN_SOURCE_DIR}/Bonmin)
     add_coin_library(Bonmin/src/Algorithms/Ampl NAME bonamplsetup)
     add_coin_library(Bonmin/src/Interfaces/Ampl NAME bonamplinterface)
     add_dependencies(bonamplinterface ${ASL_LIBRARIES})
-    target_include_directories(bonamplinterface PUBLIC
-      $<TARGET_PROPERTY:asl,INTERFACE_INCLUDE_DIRECTORIES>)
     set(BONMIN_DEPS bonamplsetup bonamplinterface ${ASL_LIBRARIES})
 
     add_executable(bonmin-executable Bonmin/src/Apps/BonMin.cpp)
