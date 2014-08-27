@@ -2,7 +2,7 @@
 // All Rights Reserved.
 // This code is published under the Eclipse Public License.
 //
-// $Id: IpAugRestoSystemSolver.cpp 2386 2013-09-12 10:50:10Z stefan $
+// $Id: IpAugRestoSystemSolver.cpp 2500 2014-08-16 15:31:35Z stefan $
 //
 // Authors:  Carl Laird, Andreas Waechter     IBM    2004-08-13
 
@@ -185,7 +185,7 @@ namespace Ipopt
     SmartPtr<const Vector> D_cR =
       Neg_Omega_c_plus_D_c(sigma_tilde_n_c_inv, sigma_tilde_p_c_inv,
                            D_c, rhs_c);
-    DBG_PRINT((1,"D_cR tag = (%p,%d)\n", D_cR->GetTag().first, D_cR->GetTag().second));
+    DBG_PRINT((1,"D_cR tag = %u\n", D_cR->GetTag()));
     Number delta_cR = delta_c;
     SmartPtr<const Matrix> J_dR = CJ_d->GetComp(0,0);
     SmartPtr<const Vector> D_dR =

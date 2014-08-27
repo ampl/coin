@@ -2,7 +2,7 @@
 // All Rights Reserved.
 // This code is published under the Eclipse Public License.
 //
-// $Id: IpPardisoSolverInterface.cpp 2452 2013-12-18 13:59:16Z stefan $
+// $Id: IpPardisoSolverInterface.cpp 2490 2014-05-26 16:40:51Z stefan $
 //
 // Authors:  Carl Laird, Andreas Waechter     IBM    2005-03-17
 //
@@ -62,7 +62,7 @@
 /* Prototypes for Pardiso's subroutines */
 extern "C"
 {
-#ifdef HAVE_PARDISO_OLDINTERFACE
+#if defined(HAVE_PARDISO_OLDINTERFACE) || defined(HAVE_PARDISO_MKL)
   void PARDISOINIT_FUNC(void* PT, const ipfint* MTYPE, ipfint* IPARM);
 #else
   // The following is a fix to allow linking with Pardiso library under Windows
@@ -400,7 +400,7 @@ namespace Ipopt
     // Call Pardiso's initialization routine
     IPARM_[0] = 0;  // Tell it to fill IPARM with default values(?)
 
-#ifndef HAVE_PARDISO_OLDINTERFACE
+#if ! defined(HAVE_PARDISO_OLDINTERFACE) && ! defined(HAVE_PARDISO_MKL)
     ipfint ERROR = 0;
     ipfint SOLVER = 0; // initialize only direct solver
 

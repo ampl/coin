@@ -2,7 +2,7 @@
 // All Rights Reserved.
 // This code is published under the Eclipse Public License.
 //
-// $Id: IpTaggedObject.hpp 2476 2014-04-08 09:41:07Z stefan $
+// $Id: IpTaggedObject.hpp 2493 2014-05-31 19:08:59Z stefan $
 //
 // Authors:  Carl Laird, Andreas Waechter     IBM    2004-08-13
 
@@ -15,11 +15,19 @@
 #include "IpObserver.hpp"
 #include <limits>
 
-/* keyword to declare a thread-local variable according to http://en.wikipedia.org/wiki/Thread-local_storage */
-#ifdef _MSC_VER
+/* keyword to declare a thread-local variable according to http://en.wikipedia.org/wiki/Thread-local_storage
+ * GCC < 4.5 on MacOS X does not support TLS
+ */
+#ifndef IPOPT_THREAD_LOCAL
+
+#if defined(_MSC_VER)
 #define IPOPT_THREAD_LOCAL __declspec(thread)
+#elif defined(__APPLE__) && defined(__GNUC__) && (__GNUC__ * 100 + __GNUC_MINOR__ < 405)
+#define IPOPT_THREAD_LOCAL
 #else
 #define IPOPT_THREAD_LOCAL __thread
+#endif
+
 #endif
 
 namespace Ipopt

@@ -2,7 +2,7 @@
 // All Rights Reserved.
 // This code is published under the Eclipse Public License.
 //
-// $Id: IpEquilibrationScaling.cpp 2367 2013-09-01 14:32:19Z stefan $
+// $Id: IpEquilibrationScaling.cpp 2484 2014-04-28 21:55:32Z stefan $
 //
 // Authors:  Andreas Waechter            IBM    2007-05-21
 

@@ -2,7 +2,7 @@
 // All Rights Reserved.
 // This code is published under the Eclipse Public License.
 //
-// $Id: IpTSymLinearSolver.cpp 2476 2014-04-08 09:41:07Z stefan $
+// $Id: IpTSymLinearSolver.cpp 2500 2014-08-16 15:31:35Z stefan $
 //
 // Authors:  Carl Laird, Andreas Waechter     IBM    2004-03-17
 
@@ -175,7 +175,7 @@ namespace Ipopt
     DBG_ASSERT(nonzeros_triplet_== TripletHelper::GetNumberEntries(sym_A));
 
     // Check if the matrix has been changed
-    DBG_PRINT((1, "atag_ = (%p,%d)   sym_A->GetTag() = (%p,%d)\n", atag_.first, atag_.second, sym_A.GetTag().first, sym_A.GetTag().second));
+    DBG_PRINT((1, "atag_ = %u   sym_A->GetTag() = %u\n", atag_, sym_A.GetTag()));
     bool new_matrix = sym_A.HasChanged(atag_);
     atag_ = sym_A.GetTag();
 

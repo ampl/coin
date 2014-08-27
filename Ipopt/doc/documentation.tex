@@ -11,7 +11,7 @@
 %%     Stefan Vigerske                        GAMS
 %%
 %%
-%% $Id: documentation.tex 2474 2014-04-08 09:22:14Z stefan $
+%% $Id: documentation.tex 2500 2014-08-16 15:31:35Z stefan $
 %%
 \documentclass[10pt]{article}
 \setlength{\textwidth}{6.3in}       % Text width
@@ -42,7 +42,7 @@
 \title{Introduction to \Ipopt:\\
 A tutorial for downloading, installing, and using \Ipopt}
 
-\author{Revision number of this document: $Revision: 2474 $}
+\author{Revision number of this document: $Revision: 2500 $}
 
 %\date{\today}
 \maketitle
@@ -1283,6 +1283,9 @@ It has been tested on \Matlab versions 7.2 through 7.7. It might very well
 work on earlier versions of \Matlab, but there is also a good chance that it 
 will not. It is unlikely that the software will run with versions prior to 
 \Matlab 6.5.
+
+\textbf{NOTE}: The \Matlab interface \textbf{does not support \Matlab 8.3} (aka, R2014a), as
+it has not been adapted to \Matlab changes in the buildsystem for MEX files.
 
 First, note that some binaries of \Ipopt\ {\tt mex} files are available for download at
 \url{http://www.coin-or.org/download/binary/Ipopt}.

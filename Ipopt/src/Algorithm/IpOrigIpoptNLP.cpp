@@ -2,7 +2,7 @@
 // All Rights Reserved.
 // This code is published under the Eclipse Public License.
 //
-// $Id: IpOrigIpoptNLP.cpp 2386 2013-09-12 10:50:10Z stefan $
+// $Id: IpOrigIpoptNLP.cpp 2500 2014-08-16 15:31:35Z stefan $
 //
 // Authors:  Carl Laird, Andreas Waechter     IBM    2004-08-13
 
@@ -485,7 +485,7 @@ namespace Ipopt
   {
     DBG_START_METH("OrigIpoptNLP::f", dbg_verbosity);
     Number ret = 0.0;
-    DBG_PRINT((2, "x.Tag = (%p,%d)\n", x.GetTag().first, x.GetTag().second));
+    DBG_PRINT((2, "x.Tag = %u\n", x.GetTag()));
     if (!f_cache_.GetCachedResult1Dep(ret, &x)) {
       f_evals_++;
       SmartPtr<const Vector> unscaled_x = get_unscaled_x(x);

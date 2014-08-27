@@ -2,7 +2,7 @@
 // All Rights Reserved.
 // This code is published under the Eclipse Public License.
 //
-// $Id: IpTripletToCSRConverter.hpp 2087 2012-02-16 11:12:26Z stefan $
+// $Id: IpTripletToCSRConverter.hpp 2490 2014-05-26 16:40:51Z stefan $
 //
 // Authors:  Carl Laird, Andreas Waechter     IBM    2005-03-13
 
@@ -16,7 +16,7 @@ namespace Ipopt
 
   /** Class for converting symmetric matrices given in triplet format
    *  to matrices in compressed sparse row (CSR) format of the upper
-   *  triangual part (or, equivalently, compressed sparse column (CSC)
+   *  triangular part (or, equivalently, compressed sparse column (CSC)
    *  format for the lower triangular part).  In the description for
    *  this class, we assume that we discuss the CSR format.
    */
@@ -26,35 +26,6 @@ namespace Ipopt
     class TripletEntry
     {
     public:
-      /** @name Constructor/Destructor */
-      //@{
-      /** Constructor. */
-      TripletEntry()
-      {}
-
-      /** Destructor */
-      ~TripletEntry()
-      {}
-
-      /** Copy constructor, required for std::list */
-      TripletEntry(const TripletEntry& rhs)
-      {
-        i_row_ = rhs.i_row_;
-        j_col_ = rhs.j_col_;
-        i_pos_triplet_ = rhs.i_pos_triplet_;
-      }
-
-      /** Equals Operator, required for std::list */
-      TripletEntry& operator=(const TripletEntry& rhs)
-      {
-        if (this!=&rhs) {
-          i_row_ = rhs.i_row_;
-          j_col_ = rhs.j_col_;
-          i_pos_triplet_ = rhs.i_pos_triplet_;
-        }
-        return *this;
-      }
-      //@}
 
       /** Set the values of an entry */
       void Set(Index i_row, Index j_col, Index i_pos_triplet)
@@ -97,22 +68,6 @@ namespace Ipopt
       }
 
     private:
-      /**@name Default Compiler Generated Methods
-       * (Hidden to avoid implicit creation/calling).
-       * These methods are not implemented and 
-       * we do not want the compiler to implement
-       * them for us, so we declare them private
-       * and do not define them. This ensures that
-       * they will not be implicitly created/called. */
-      //@{
-      /** Default Constructor */
-      //TripletEntry();
-
-      /** Copy Constructor */
-      /*
-      TripletEntry(const TripletEntry&);
-      */
-      //@}
 
       /** @name Entry content. */
       //@{

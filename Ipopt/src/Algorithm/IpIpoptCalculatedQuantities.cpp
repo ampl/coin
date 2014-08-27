@@ -2,7 +2,7 @@
 // All Rights Reserved.
 // This code is published under the Eclipse Public License.
 //
-// $Id: IpIpoptCalculatedQuantities.cpp 2386 2013-09-12 10:50:10Z stefan $
+// $Id: IpIpoptCalculatedQuantities.cpp 2500 2014-08-16 15:31:35Z stefan $
 //
 // Authors:  Carl Laird, Andreas Waechter     IBM    2004-08-13
 
@@ -546,7 +546,7 @@ namespace Ipopt
     Number result;
     SmartPtr<const Vector> x = ip_data_->curr()->x();
     DBG_PRINT_VECTOR(2,"curr_x",*x);
-    DBG_PRINT((1, "curr_x tag = (%p,%d)\n", x->GetTag().first, x->GetTag().second));
+    DBG_PRINT((1, "curr_x tag = %u\n", x->GetTag()));
 
     bool objective_depends_on_mu = ip_nlp_->objective_depends_on_mu();
     std::vector<const TaggedObject*> tdeps(1);
@@ -589,7 +589,7 @@ namespace Ipopt
     Number result;
     SmartPtr<const Vector> x = ip_data_->trial()->x();
     DBG_PRINT_VECTOR(2,"trial_x",*x);
-    DBG_PRINT((1, "trial_x tag = (%p,%d)\n", x->GetTag().first, x->GetTag().second));
+    DBG_PRINT((1, "trial_x tag = %u\n", x->GetTag()));
 
     bool objective_depends_on_mu = ip_nlp_->objective_depends_on_mu();
     std::vector<const TaggedObject*> tdeps(1);
