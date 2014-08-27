@@ -589,7 +589,7 @@ if (EXISTS ${COIN_SOURCE_DIR}/Ipopt)
       # Discover and link with gfortran runtime library statically since
       # -static-libgfortran is not always available.
       force_static_libs(Fortran gfortran quadmath)
-      if (APPLE)
+      if (UNIX)
         set(CMAKE_Fortran_IMPLICIT_LINK_LIBRARIES
           ${CMAKE_Fortran_IMPLICIT_LINK_LIBRARIES} gcc)
       endif ()
@@ -783,7 +783,6 @@ if (APPLE)
   set(libname libstdc++.6.dylib)
   foreach (target ipopt bonmin couenne)
     if (TARGET ${target})
-      get_filename_component(libname ${lib} NAME)
       add_custom_command(
         TARGET ${target}-executable POST_BUILD
         COMMAND install_name_tool -change /opt/local/lib/libgcc/${libname}
