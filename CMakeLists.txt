@@ -38,10 +38,6 @@ function (force_static_libs lang)
   message("CMAKE_${lang}_IMPLICIT_LINK_LIBRARIES: ${result}")
 endfunction ()
 
-if (CMAKE_COMPILER_IS_GNUCXX)
-  set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -static-libstdc++")
-endif ()
-
 # Output binaries to bin to avoid a name clash between the Cbc directory
 # and the cbc executable on case-insensitive filesystems such as HFS Plus
 # (on OS X).
@@ -787,12 +783,11 @@ if (APPLE)
   set(libname libstdc++.6.dylib)
   foreach (target ipopt bonmin couenne)
     if (TARGET ${target})
-        get_filename_component(libname ${lib} NAME)
-        add_custom_command(
-          TARGET ${target}-executable POST_BUILD
-          COMMAND install_name_tool -change /opt/local/lib/libgcc/${libname}
-            /usr/lib/${libname} $<TARGET_FILE:${target}-executable>)
-      endforeach ()
+      get_filename_component(libname ${lib} NAME)
+      add_custom_command(
+        TARGET ${target}-executable POST_BUILD
+        COMMAND install_name_tool -change /opt/local/lib/libgcc/${libname}
+          /usr/lib/${libname} $<TARGET_FILE:${target}-executable>)
     endif ()
   endforeach ()
 endif ()
