@@ -781,12 +781,13 @@ endif ()
 # Fix paths to libstdc++ on OS X.
 if (APPLE)
   set(libname libstdc++.6.dylib)
-  foreach (target ipopt bonmin couenne)
+  foreach (solver ipopt bonmin couenne)
+    set(target ${solver}-executable)
     if (TARGET ${target})
       add_custom_command(
-        TARGET ${target}-executable POST_BUILD
+        TARGET ${target} POST_BUILD
         COMMAND install_name_tool -change /opt/local/lib/libgcc/${libname}
-          /usr/lib/${libname} $<TARGET_FILE:${target}-executable>)
+          /usr/lib/${libname} $<TARGET_FILE:${target}>)
     endif ()
   endforeach ()
 endif ()
