@@ -40,8 +40,6 @@ endfunction ()
 
 if (CMAKE_COMPILER_IS_GNUCXX)
   set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -static-libstdc++")
-elseif (CMAKE_CXX_COMPILER_ID STREQUAL "Clang")
-  force_static_libs(CXX stdc++)
 endif ()
 
 # Output binaries to bin to avoid a name clash between the Cbc directory
@@ -595,8 +593,10 @@ if (EXISTS ${COIN_SOURCE_DIR}/Ipopt)
       # Discover and link with gfortran runtime library statically since
       # -static-libgfortran is not always available.
       force_static_libs(Fortran gfortran quadmath)
-      set(${CMAKE_Fortran_IMPLICIT_LINK_LIBRARIES}
-        ${CMAKE_Fortran_IMPLICIT_LINK_LIBRARIES} gcc)
+      if (APPLE)
+        set(CMAKE_Fortran_IMPLICIT_LINK_LIBRARIES
+          ${CMAKE_Fortran_IMPLICIT_LINK_LIBRARIES} gcc)
+      endif ()
     endif ()
   endif ()
 endif ()
@@ -780,6 +780,21 @@ if (BUILD_IPOPT AND EXISTS ${COIN_SOURCE_DIR}/Couenne)
     WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/Couenne)
 
   configure(Couenne src/config.h src/config_couenne.h)
+endif ()
+
+# Fix paths to libstdc++ on OS X.
+if (APPLE)
+  set(libname libstdc++.6.dylib)
+  foreach (target ipopt bonmin couenne)
+    if (TARGET ${target})
+        get_filename_component(libname ${lib} NAME)
+        add_custom_command(
+          TARGET ${target}-executable POST_BUILD
+          COMMAND install_name_tool -change /opt/local/lib/libgcc/${libname}
+            /usr/lib/${libname} $<TARGET_FILE:${target}-executable>)
+      endforeach ()
+    endif ()
+  endforeach ()
 endif ()
 
 if (COIN_HAS_ASL)
