@@ -567,6 +567,16 @@ if (EXISTS ${COIN_SOURCE_DIR}/Ipopt)
     enable_language(Fortran OPTIONAL)
     if (CMAKE_Fortran_COMPILER)
       set(BUILD_IPOPT TRUE)
+      # Discover and link with gfortran runtime library statically since
+      # -static-libgfortran is not always available.
+      find_library(GFORTRAN_LIB libgfortran.a
+        ${CMAKE_Fortran_IMPLICIT_LINK_DIRECTORIES})
+      find_library(QUADMATH_LIB libquadmath.a
+        ${CMAKE_Fortran_IMPLICIT_LINK_DIRECTORIES})
+      if (GFORTRAN_LIB AND QUADMATH_LIB)
+        set(CMAKE_Fortran_IMPLICIT_LINK_LIBRARIES ${GFORTRAN_LIB} ${QUADMATH_LIB} m gcc)
+        message("CMAKE_Fortran_IMPLICIT_LINK_LIBRARIES: ${CMAKE_Fortran_IMPLICIT_LINK_LIBRARIES}")
+      endif ()
     endif ()
   endif ()
 endif ()
