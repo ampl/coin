@@ -15,8 +15,33 @@ endif ()
 
 project(COIN)
 
-if (CMAKE_COMPILER_IS_GNUCXX OR CMAKE_CXX_COMPILER_ID STREQUAL "Clang")
+# Replaces libraries in CMAKE_${lang}_IMPLICIT_LINK_LIBRARIES whose
+# names appear in ARGN with their static counterparts.
+# Usage:
+#   force_static_libs(CXX stdc++)
+function (force_static_libs lang)
+  set(result )
+  foreach (lib ${CMAKE_${lang}_IMPLICIT_LINK_LIBRARIES})
+    list(FIND ARGN ${lib} found)
+    if (NOT found EQUAL -1)
+      find_library(${lib}_LIB
+        ${CMAKE_STATIC_LIBRARY_PREFIX}${lib}${CMAKE_STATIC_LIBRARY_SUFFIX}
+        ${CMAKE_${lang}_IMPLICIT_LINK_DIRECTORIES})
+      message("!! ${lib} ${found} ${${lib}_LIB}")
+      if (${lib}_LIB)
+        set(lib ${${lib}_LIB})
+      endif ()
+    endif ()
+    set(result ${result} ${lib})
+  endforeach ()
+  set(CMAKE_${lang}_IMPLICIT_LINK_LIBRARIES ${result} PARENT_SCOPE)
+  message("CMAKE_${lang}_IMPLICIT_LINK_LIBRARIES: ${result}")
+endfunction ()
+
+if (CMAKE_COMPILER_IS_GNUCXX)
   set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -static-libstdc++")
+elseif (CMAKE_CXX_COMPILER_ID STREQUAL "Clang")
+  force_static_libs(CXX stdc++)
 endif ()
 
 # Output binaries to bin to avoid a name clash between the Cbc directory
@@ -569,14 +594,9 @@ if (EXISTS ${COIN_SOURCE_DIR}/Ipopt)
       set(BUILD_IPOPT TRUE)
       # Discover and link with gfortran runtime library statically since
       # -static-libgfortran is not always available.
-      find_library(GFORTRAN_LIB libgfortran.a
-        ${CMAKE_Fortran_IMPLICIT_LINK_DIRECTORIES})
-      find_library(QUADMATH_LIB libquadmath.a
-        ${CMAKE_Fortran_IMPLICIT_LINK_DIRECTORIES})
-      if (GFORTRAN_LIB AND QUADMATH_LIB)
-        set(CMAKE_Fortran_IMPLICIT_LINK_LIBRARIES ${GFORTRAN_LIB} ${QUADMATH_LIB} m gcc)
-        message("CMAKE_Fortran_IMPLICIT_LINK_LIBRARIES: ${CMAKE_Fortran_IMPLICIT_LINK_LIBRARIES}")
-      endif ()
+      force_static_libs(Fortran gfortran quadmath)
+      set(${CMAKE_Fortran_IMPLICIT_LINK_LIBRARIES}
+        ${CMAKE_Fortran_IMPLICIT_LINK_LIBRARIES} gcc)
     endif ()
   endif ()
 endif ()
