@@ -15,8 +15,8 @@ set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${IPOPTFORT_BINARY_DIR}/lib)
 set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${IPOPTFORT_BINARY_DIR}/lib)
 
 # Link the gfortran runtime statically.
-#set(CMAKE_SHARED_LINKER_FLAGS
-#    "${CMAKE_SHARED_LINKER_FLAGS} -static-libgfortran -static-libgcc")
+set(CMAKE_SHARED_LINKER_FLAGS
+    "${CMAKE_SHARED_LINKER_FLAGS} -static-libgfortran -static-libgcc")
 
 if (CMAKE_GNUtoMS)
   # Pull in additional symbols used in IpBlas.
