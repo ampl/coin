@@ -15,6 +15,10 @@ endif ()
 
 project(COIN)
 
+if (CMAKE_COMPILER_IS_GNUCXX OR CMAKE_CXX_COMPILER_ID STREQUAL "Clang")
+  set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -static-libstdc++")
+endif ()
+
 # Output binaries to bin to avoid a name clash between the Cbc directory
 # and the cbc executable on case-insensitive filesystems such as HFS Plus
 # (on OS X).
@@ -561,7 +565,7 @@ if (EXISTS ${COIN_SOURCE_DIR}/Ipopt)
     endif ()
   else ()
     enable_language(Fortran OPTIONAL)
-    if (CMAKE_Fortran_COMPILER_WORKS)
+    if (CMAKE_Fortran_COMPILER)
       set(BUILD_IPOPT TRUE)
     endif ()
   endif ()
@@ -610,14 +614,7 @@ if (BUILD_IPOPT)
   endmacro ()
 
   # Copy external libraries.
-  if (APPLE)
-    foreach (lib libgfortran.3.dylib libquadmath.0.dylib libstdc++.6.dylib)
-      set(path /opt/local/lib/libgcc/${lib})
-      if (EXISTS ${path})
-        add_copy_library_command(${path})
-      endif ()
-    endforeach ()
-  elseif (MSVC)
+  if (MSVC)
     add_copy_library_command(${COIN_BINARY_DIR}/Ipopt/bin/libipoptfort.dll)
   endif ()
 
@@ -753,22 +750,6 @@ if (BUILD_IPOPT AND EXISTS ${COIN_SOURCE_DIR}/Couenne)
     WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/Couenne)
 
   configure(Couenne src/config.h src/config_couenne.h)
-endif ()
-
-# Change dynamic shared library install names to use @executable_path.
-if (APPLE)
-  foreach (target ipopt bonmin couenne)
-    if (TARGET ${target})
-      foreach (lib ${IPOPT_EXTERNAL_LIBS})
-        get_filename_component(libname ${lib} NAME)
-        set(path /opt/local/lib/libgcc/${libname})
-        add_custom_command(
-          TARGET ${target}-executable POST_BUILD
-          COMMAND install_name_tool -change ${path}
-            @executable_path/${libname} $<TARGET_FILE:${target}-executable>)
-      endforeach ()
-    endif ()
-  endforeach ()
 endif ()
 
 if (COIN_HAS_ASL)

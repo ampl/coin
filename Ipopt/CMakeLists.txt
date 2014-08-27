@@ -15,8 +15,8 @@ set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${IPOPTFORT_BINARY_DIR}/lib)
 set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${IPOPTFORT_BINARY_DIR}/lib)
 
 # Link the gfortran runtime statically.
-set(CMAKE_SHARED_LINKER_FLAGS
-    "${CMAKE_SHARED_LINKER_FLAGS} -static-libgfortran -static-libgcc")
+#set(CMAKE_SHARED_LINKER_FLAGS
+#    "${CMAKE_SHARED_LINKER_FLAGS} -static-libgfortran -static-libgcc")
 
 if (CMAKE_GNUtoMS)
   # Pull in additional symbols used in IpBlas.
@@ -108,6 +108,13 @@ add_library(ipoptfort ${mumps_src} ${LinearSolverLoader_src}
 
 find_package(Threads)
 target_link_libraries(ipoptfort blas ${CMAKE_THREAD_LIBS_INIT})
+
+# Discover and link with gfortran runtime library statically since
+# -static-libgfortran doesn't work for some reason.
+find_library(GFORTRAN_LIB libgfortran.a ${CMAKE_C_IMPLICIT_LINK_DIRECTORIES})
+if (GFORTRAN_LIB)
+  target_link_libraries(ipoptfort ${GFORTRAN_LIB})
+endif ()
 
 find_library(DL_LIBRARY dl)
 if (DL_LIBRARY)
