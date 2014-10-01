@@ -1227,7 +1227,9 @@ CglGomory::generateCuts(
 	  }
 	  // Take off tiny elements
 	  // for first pass reject
-#define TINY_ELEMENT 1.0e-12
+#ifndef CGL_GOMORY_TINY_ELEMENT
+#define CGL_GOMORY_TINY_ELEMENT 1.0e-12
+#endif
 	  {
 	    int i,number2=number;
 	    number=0;
@@ -1235,7 +1237,7 @@ CglGomory::generateCuts(
 	    double smallest=1.0e30;
 	    for (i=0;i<number2;i++) {
 	      double value=fabs(packed[i]);
-	      if (value<TINY_ELEMENT) {
+	      if (value<CGL_GOMORY_TINY_ELEMENT) {
 		int iColumn = cutIndex[i];
 		if (colUpper[iColumn]-colLower[iColumn]<LARGE_BOUND) {
 		  // weaken cut
@@ -1262,7 +1264,7 @@ CglGomory::generateCuts(
 		}
 	      }
 	    }
-	    if (largest>1.0e10*smallest) {
+	    if (largest>1.0e10*smallest||(number>20&&smallest<number*1.0e-6)) {
 	      number=limit+1; //reject
 	      numberNonInteger=1;
 	    } else if (largest>1.0e9*smallest) {

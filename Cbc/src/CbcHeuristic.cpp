@@ -1,4 +1,4 @@
-/* $Id: CbcHeuristic.cpp 1888 2013-04-06 20:52:59Z stefan $ */
+/* $Id: CbcHeuristic.cpp 2055 2014-08-09 16:05:41Z forrest $ */
 // Copyright (C) 2002, International Business Machines
 // Corporation and others.  All Rights Reserved.
 // This code is licensed under the terms of the Eclipse Public License (EPL).
@@ -276,8 +276,8 @@ CbcHeuristic::shouldHeurRun(int whereFrom)
         return false;
     // No longer used for original purpose - so use for ever run at all JJF
 #ifndef JJF_ONE
-    // Don't run if hot start
-    if (model_ && model_->hotstartSolution())
+    // Don't run if hot start or no rows!
+    if (model_ && (model_->hotstartSolution()||!model_->getNumRows()))
         return false;
     else
         return true;

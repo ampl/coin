@@ -1,4 +1,4 @@
-/* $Id: ClpParameters.hpp 1665 2011-01-04 17:55:54Z lou $ */
+/* $Id: ClpParameters.hpp 2045 2014-08-13 15:05:38Z tkr $ */
 // Copyright (C) 2000, 2002, International Business Machines
 // Corporation and others.  All Rights Reserved.
 // This code is licensed under the terms of the Eclipse Public License (EPL).
@@ -58,8 +58,10 @@ enum ClpDblParam {
      /** Objective function constant. This the value of the constant term in
          the objective function. */
      ClpObjOffset,
-     /// Maximum time in seconds - after this action is as max iterations
+     /// Maximum time in seconds - after, this action is as max iterations
      ClpMaxSeconds,
+     /// Maximum wallclock running time in seconds - after, this action is as max iterations
+     ClpMaxWallSeconds,
      /// Tolerance to use in presolve
      ClpPresolveTolerance,
      /** Just a marker, so that we can allocate a static sized array to store

@@ -2,7 +2,7 @@
 # All Rights Reserved.
 # This file is distributed under the Eclipse Public License.
 
-## $Id: Makefile.am 1999 2013-12-26 23:12:36Z tkr $
+## $Id: Makefile.am 2059 2014-08-23 16:31:35Z tkr $
 
 # Author:  Andreas Waechter           IBM    2006-04-13
 
@@ -18,7 +18,6 @@ lib_LTLIBRARIES = libCbc.la libCbcSolver.la
 
 # List all source files for this library, including headers
 libCbc_la_SOURCES = \
-	Cbc_C_Interface.cpp Cbc_C_Interface.h \
 	CbcConfig.h \
 	CbcBranchActual.hpp \
 	CbcBranchAllDifferent.cpp CbcBranchAllDifferent.hpp \
@@ -92,6 +91,7 @@ libCbc_la_SOURCES = \
 	CbcTreeLocal.cpp CbcTreeLocal.hpp
 
 libCbcSolver_la_SOURCES = \
+	Cbc_C_Interface.cpp Cbc_C_Interface.h \
 	CbcCbcParam.cpp \
 	Cbc_ampl.cpp Cbc_ampl.h \
 	CbcLinked.cpp CbcLinked.hpp CbcLinkedUtils.cpp \

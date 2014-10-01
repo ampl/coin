@@ -1,4 +1,4 @@
-/* $Id: CbcModel.cpp 1973 2013-10-19 15:59:44Z stefan $ */
+/* $Id: CbcModel.cpp 2056 2014-08-11 17:44:45Z forrest $ */
 // Copyright (C) 2002, International Business Machines
 // Corporation and others.  All Rights Reserved.
 // This code is licensed under the terms of the Eclipse Public License (EPL).
@@ -1231,6 +1231,7 @@ void CbcModel::AddIntegers()
     int numberRows = continuousSolver_->getNumRows();
     int * del = new int [CoinMax(numberColumns, numberRows)];
     int * original = new int [numberColumns];
+    int numberOriginalIntegers=numberIntegers_;
     char * possibleRow = new char [numberRows];
     {
         const CoinPackedMatrix * rowCopy = continuousSolver_->getMatrixByRow();
@@ -1261,15 +1262,18 @@ void CbcModel::AddIntegers()
             for (CoinBigIndex j = rowStart[i];
                     j < rowStart[i] + rowLength[i]; j++) {
                 int iColumn = column[j];
+		double value = fabs(element[j]);
                 if (continuousSolver_->isInteger(iColumn)) {
-                    if (fabs(element[j]) != 1.0)
+                    if (value != 1.0)
                         possible = false;
                 } else {
                     nLeft++;
+		    if (value>100.0)
+		      allSame=-1.0; // not safe
 		    if (!allSame) {
-		      allSame = fabs(element[j]);
+		      allSame = value;
 		    } else if (allSame>0.0) {
-		      if (allSame!=fabs(element[j]))
+		      if (allSame!=value)
 			allSame = -1.0;
 		    }
                 }
@@ -1287,6 +1291,29 @@ void CbcModel::AddIntegers()
         original[i] = i;
         if (continuousSolver_->isInteger(i))
             del[nDel++] = i;
+    }
+    {
+      // we must not exclude current best solution (rounding errors)
+      // also not if large values
+      const int * row = continuousSolver_->getMatrixByCol()->getIndices();
+      const CoinBigIndex * columnStart = continuousSolver_->getMatrixByCol()->getVectorStarts();
+      const int * columnLength = continuousSolver_->getMatrixByCol()->getVectorLengths();
+      const double * solution = continuousSolver_->getColSolution();
+      for (int iColumn = 0; iColumn < numberColumns; iColumn++) {
+        if (!continuousSolver_->isInteger(iColumn)) {
+	  double value = bestSolution_ ? bestSolution_[iColumn] : 0.0;
+	  double value2 = solution[iColumn];
+	  if (fabs(value-floor(value+0.5))>1.0e-8 ||
+	      fabs(value2)>1.0e3) {
+	    CoinBigIndex start = columnStart[iColumn];
+	    CoinBigIndex end = start + columnLength[iColumn];
+	    for (CoinBigIndex j = start; j < end; j++) {
+	      int iRow = row[j];
+	      possibleRow[iRow]=0;
+	    }
+	  }
+	}
+      }
     }
     int nExtra = 0;
     OsiSolverInterface * copy1 = continuousSolver_->clone();
@@ -1554,6 +1581,9 @@ void CbcModel::AddIntegers()
     delete [] possibleRow;
     // double check increment
     analyzeObjective();
+    // If any changes - tell code
+    if(numberOriginalIntegers<numberIntegers_) 
+      synchronizeModel();
 }
 /**
   \todo
@@ -2002,6 +2032,18 @@ void CbcModel::branchAndBound(int doStatistics)
     }
 #endif
     bool feasible;
+    {
+      // check
+      int numberOdd = 0;
+      for (int i = 0; i < numberObjects_; i++) {
+	CbcSimpleInteger * obj =
+	  dynamic_cast <CbcSimpleInteger *>(object_[i]) ;
+	if (!obj)
+	  numberOdd++;
+      }
+      if (numberOdd)
+	moreSpecialOptions_ |= 1073741824;
+    }
     numberSolves_ = 0 ;
     // If NLP then we assume already solved outside branchAndbound
     if (!solverCharacteristics_->solverType() || solverCharacteristics_->solverType() == 4) {
@@ -2035,8 +2077,50 @@ void CbcModel::branchAndBound(int doStatistics)
 	if (flipObjective)
 	  flipModel();
         return ;
-    } else if (!numberObjects_ && (!strategy_ || strategy_->preProcessState() <= 0)) {
+    } else if (!numberObjects_) { 
         // nothing to do
+        // Undo preprocessing performed during BaB.
+        if (strategy_ && strategy_->preProcessState() > 0) {
+	  // undo preprocessing
+	  CglPreProcess * process = strategy_->process();
+	  assert (process);
+	  int n = originalSolver->getNumCols();
+	  if (bestSolution_) {
+	    delete [] bestSolution_;
+	    bestSolution_ = new double [n];
+	    process->postProcess(*solver_);
+	  }
+	  strategy_->deletePreProcess();
+	  // Solution now back in originalSolver
+	  delete solver_;
+	  solver_ = originalSolver;
+	  if (bestSolution_) {
+	    bestObjective_ = solver_->getObjValue() * solver_->getObjSense();
+	    memcpy(bestSolution_, solver_->getColSolution(), n*sizeof(double));
+	  }
+	  // put back original objects if there were any
+	  if (originalObject) {
+	    int iColumn;
+	    assert (ownObjects_);
+	    for (iColumn = 0; iColumn < numberObjects_; iColumn++)
+	      delete object_[iColumn];
+	    delete [] object_;
+	    numberObjects_ = numberOriginalObjects;
+	    object_ = originalObject;
+	    delete [] integerVariable_;
+	    numberIntegers_ = 0;
+	    for (iColumn = 0; iColumn < n; iColumn++) {
+	      if (solver_->isInteger(iColumn))
+		numberIntegers_++;
+	    }
+	    integerVariable_ = new int[numberIntegers_];
+	    numberIntegers_ = 0;
+	    for (iColumn = 0; iColumn < n; iColumn++) {
+	    if (solver_->isInteger(iColumn))
+	      integerVariable_[numberIntegers_++] = iColumn;
+	    }
+	  }
+	}
         if (flipObjective)
 	  flipModel();
         solverCharacteristics_ = NULL;
@@ -4333,6 +4417,20 @@ void CbcModel::branchAndBound(int doStatistics)
 
             //MODIF PIERRE
             bestPossibleObjective_ = tree_->getBestPossibleObjective();
+#ifdef CBC_THREAD
+	    if (parallelMode() > 0 && master_) {
+	      // need to adjust for ones not on tree
+	      int numberThreads = master_->numberThreads();
+	      for (int i=0;i<numberThreads;i++) {
+		CbcThread * child = master_->child(i);
+		if (child->node()) {
+		  // adjust
+		  double value = child->node()->objectiveValue();
+		  bestPossibleObjective_ = CoinMin(bestPossibleObjective_, value);
+		}
+	      }
+	    }
+#endif
             unlockThread();
 #ifdef CLP_INVESTIGATE
             if (getCutoff() < 1.0e20) {
@@ -4987,6 +5085,8 @@ CbcModel::initialSolve()
     secondaryStatus_ = -1;
     originalContinuousObjective_ = solver_->getObjValue() * solver_->getObjSense();
     bestPossibleObjective_ = originalContinuousObjective_;
+    if (solver_->isProvenDualInfeasible())
+      originalContinuousObjective_ = -COIN_DBL_MAX;
     delete [] continuousSolution_;
     continuousSolution_ = CoinCopyOfArray(solver_->getColSolution(),
                                           solver_->getNumCols());
@@ -6529,7 +6629,8 @@ CbcModel::isProvenOptimal() const
 bool
 CbcModel::isProvenInfeasible() const
 {
-    if (!status_ && bestObjective_ >= 1.0e30)
+  if (!status_ && (bestObjective_ >= 1.0e30  
+		   && (secondaryStatus_==0||secondaryStatus_==1)))
         return true;
     else
         return false;
@@ -9755,7 +9856,8 @@ CbcModel::resolve(CbcNodeInfo * parent, int whereFrom,
             feasible = false;
     }
     // Can't happen if strong branching as would have been found before
-    if (!numberStrong_ && numberObjects_ > numberIntegers_) {
+    if ((!numberStrong_||(moreSpecialOptions_&1073741824)!=0)
+	&& numberObjects_ > numberIntegers_) {
         int iColumn;
         int numberColumns = solver_->getNumCols();
         const double * columnLower = solver_->getColLower();
@@ -9791,7 +9893,8 @@ CbcModel::resolve(CbcNodeInfo * parent, int whereFrom,
             solver_->writeMpsNative("before-tighten.mps", NULL, NULL, 2);
         }
         if (clpSolver && (!currentNode_ || (currentNode_->depth()&2) != 0) &&
-                !solverCharacteristics_->solutionAddsCuts())
+                !solverCharacteristics_->solutionAddsCuts() &&
+	    (moreSpecialOptions_&1073741824)==0)
             nTightened = clpSolver->tightenBounds();
         if (nTightened) {
             //printf("%d bounds tightened\n",nTightened);
@@ -10790,6 +10893,8 @@ CbcModel::deleteObjects(bool getIntegers)
 */
 void CbcModel::synchronizeModel()
 {
+    if (!numberObjects_)
+      return;
     int i;
     for (i = 0; i < numberHeuristics_; i++)
         heuristic_[i]->setModel(this);
@@ -13060,7 +13165,7 @@ bool
 CbcModel::isInitialSolveProvenOptimal() const
 {
     if (status_ != -1) {
-        return originalContinuousObjective_ < 1.0e50;
+        return fabs(originalContinuousObjective_) < 1.0e50;
     } else {
         return solver_->isProvenOptimal();
     }
@@ -16820,8 +16925,8 @@ CbcModel::maximumSecondsReached() const
     double maxSeconds = getMaximumSeconds();
     bool hitMaxTime = (totalTime >= maxSeconds);
     if (parentModel_ && !hitMaxTime) {
-        // In a sub tree so need to add both times
-        totalTime += parentModel_->getCurrentSeconds();
+        // In a sub tree 
+        assert (parentModel_);
         maxSeconds = parentModel_->getMaximumSeconds();
         hitMaxTime = (totalTime >= maxSeconds);
     }

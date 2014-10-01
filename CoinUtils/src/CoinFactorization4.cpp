@@ -1,4 +1,4 @@
-/* $Id: CoinFactorization4.cpp 1553 2012-10-30 17:13:11Z forrest $ */
+/* $Id: CoinFactorization4.cpp 1726 2014-08-05 16:15:35Z tkr $ */
 // Copyright (C) 2002, International Business Machines
 // Corporation and others.  All Rights Reserved.
 // This code is licensed under the terms of the Eclipse Public License (EPL).
@@ -188,7 +188,13 @@ int CoinFactorization::checkPivot(double saveFromU,
 				 double oldPivot) const
 {
   int status;
-  if ( fabs ( saveFromU ) > 1.0e-8 ) {
+#define ALLOW_SMALL_PIVOTS
+#ifdef ALLOW_SMALL_PIVOTS
+#define SMALL_PIVOT 1.0e-9
+#else
+#define SMALL_PIVOT 1.0e-8
+#endif
+  if ( fabs ( saveFromU ) > SMALL_PIVOT ) {
     double checkTolerance;
     
     if ( numberRowsExtra_ < numberRows_ + 2 ) {
@@ -213,16 +219,22 @@ int CoinFactorization::checkPivot(double saveFromU,
         status = 1;
       } else {
         status = 2;
-      }       
+      }        
     }       
   } else {
     //error
-    status = 2;
+    if ( fabs ( 1.0 - fabs ( saveFromU / oldPivot ) ) < 1.0e-10 ) {
+      status = 0;
+    } else {
+      status = 2;
 #if COIN_DEBUG
-    std::cout <<"inaccurate pivot "<< saveFromU / oldPivot 
-	      << " " << saveFromU << std::endl;
+      std::cout <<"inaccurate pivot "<< saveFromU / oldPivot 
+		<< " " << saveFromU << std::endl;
 #endif
+    }
   } 
+  //if (status==2)
+  //printf("status %d\n",status);
   return status;
 }
 //  replaceColumn.  Replaces one Column to basis

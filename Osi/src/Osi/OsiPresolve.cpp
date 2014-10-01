@@ -847,6 +847,16 @@ const CoinPresolveAction *OsiPresolve::presolve(CoinPresolveMatrix *prob)
 	  if (prob->status_) break ;
 	}
 
+	if (zerocost) {
+	  possibleBreak ;
+	  paction_ = do_tighten_action::presolve(prob,paction_) ;
+#	  if PRESOLVE_DEBUG > 0
+	  check_and_tell(prob,paction_,pactiond) ;
+	  if (monitor) monitor->checkAndTell(prob) ;
+#	  endif
+	  if (prob->status_) break ;
+	}
+
 	if (dual && whichPass == 1) {
 	  possibleBreak;
 	  // this can also make E rows so do one bit here
@@ -871,16 +881,6 @@ const CoinPresolveAction *OsiPresolve::presolve(CoinPresolveMatrix *prob)
 	if (tripleton) {
 	  possibleBreak ;
 	  paction_ = tripleton_action::presolve(prob,paction_) ;
-#	  if PRESOLVE_DEBUG > 0
-	  check_and_tell(prob,paction_,pactiond) ;
-	  if (monitor) monitor->checkAndTell(prob) ;
-#	  endif
-	  if (prob->status_) break ;
-	}
-
-	if (zerocost) {
-	  possibleBreak ;
-	  paction_ = do_tighten_action::presolve(prob,paction_) ;
 #	  if PRESOLVE_DEBUG > 0
 	  check_and_tell(prob,paction_,pactiond) ;
 	  if (monitor) monitor->checkAndTell(prob) ;

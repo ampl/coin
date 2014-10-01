@@ -1,4 +1,4 @@
-/* $Id: CbcModel.hpp 1973 2013-10-19 15:59:44Z stefan $ */
+/* $Id: CbcModel.hpp 2055 2014-08-09 16:05:41Z forrest $ */
 // Copyright (C) 2002, International Business Machines
 // Corporation and others.  All Rights Reserved.
 // This code is licensed under the terms of the Eclipse Public License (EPL).
@@ -1828,6 +1828,7 @@ public:
 	27 bit (134217728) - append binding global cuts to file
 	28 bit (268435456) - idiot branching
         29 bit (536870912) - don't make fake objective
+	30 bit (1073741824) - Funny SOS or similar - be careful
     */
     inline void setMoreSpecialOptions(int value) {
         moreSpecialOptions_ = value;
@@ -2040,6 +2041,9 @@ public:
                 return -2;
         }
     }
+    /// Thread stuff for master
+    inline CbcBaseModel * master() const
+    { return master_;}
     /// From here to end of section - code in CbcThread.cpp until class changed
     /// Returns true if locked
     bool isLocked() const;

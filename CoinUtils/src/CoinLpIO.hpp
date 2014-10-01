@@ -1,4 +1,4 @@
-/* $Id: CoinLpIO.hpp 1652 2013-10-18 10:35:37Z stefan $ */
+/* $Id: CoinLpIO.hpp 1727 2014-08-05 16:30:20Z tkr $ */
 // Last edit: 11/5/08
 //
 // Name:     CoinLpIO.hpp; Support for Lp files
@@ -19,6 +19,8 @@
 
 #include "CoinPackedMatrix.hpp"
 #include "CoinMessage.hpp"
+
+const int MAX_OBJECTIVES = 2;
 
 typedef int COINColumnIndex;
 
@@ -206,7 +208,13 @@ public:
   const double * getRowRange() const;
 
   /// Get pointer to array[getNumCols()] of objective function coefficients
+  const int getNumObjectives() const;
+  
+  /// Get pointer to array[getNumCols()] of objective function coefficients
   const double * getObjCoefficients() const;
+  
+  /// Get pointer to array[getNumCols()] of objective function coefficients for objective j
+  const double * getObjCoefficients(int j) const;
   
   /// Get pointer to row-wise copy of the coefficient matrix
   const CoinPackedMatrix * getMatrixByRow() const;
@@ -216,6 +224,9 @@ public:
 
   /// Get objective function name
   const char * getObjName() const;
+  
+  /// Get objective function name for objective j
+  const char * getObjName(int j) const;
   
   /// Get pointer to array[*card_prev] of previous row names.
   /// The value of *card_prev might be different than getNumRows()+1 if 
@@ -261,9 +272,16 @@ public:
   ///Returns the (constant) objective offset
   double objectiveOffset() const;
   
+  ///Returns the (constant) objective offset for objective j
+  double objectiveOffset(int j) const;
+  
   /// Set objective offset
   inline void setObjectiveOffset(double value)
-  { objectiveOffset_ = value;}
+  { objectiveOffset_[0] = value;}
+  
+  /// Set objective offset
+   inline void setObjectiveOffset(double value, int j)
+  { objectiveOffset_[j] = value;}
   
   /// Return true if a column is an integer (binary or general 
   /// integer) variable
@@ -313,12 +331,21 @@ public:
       The sense of optimization of the objective function is assumed to be 
       a minimization. 
       Numbers larger than DBL_MAX (or larger than 1e+400) 
-      might crash the code.
+      might crash the code. There are two version. The second one is for
+      setting multiple objectives.
   */
   void setLpDataWithoutRowAndColNames(
 			      const CoinPackedMatrix& m,
 			      const double* collb, const double* colub,
-			      const double* obj_coeff, 
+			      const double* obj_coeff,
+			      const char* integrality,
+			      const double* rowlb, const double* rowub);
+
+  void setLpDataWithoutRowAndColNames(
+			      const CoinPackedMatrix& m,
+			      const double* collb, const double* colub,
+			      const double* obj_coeff[MAX_OBJECTIVES],
+			      int num_objectives,
 			      const char* integrality,
 			      const double* rowlb, const double* rowub);
 
@@ -539,10 +566,13 @@ protected:
   mutable char * rowsense_;
   
   /// Pointer to dense vector of objective coefficients
-  double * objective_;
+  double * objective_[MAX_OBJECTIVES];
+
+  /// Number of objectives
+  int num_objectives_;
   
   /// Constant offset for objective value
-  double objectiveOffset_;
+  double objectiveOffset_[MAX_OBJECTIVES];
   
   /// Pointer to dense vector specifying if a variable is continuous
   /// (0) or integer (1).
@@ -564,7 +594,7 @@ protected:
   int decimals_;
 
   /// Objective function name
-  char *objName_;
+  char *objName_[MAX_OBJECTIVES];
 
   /** Row names (including objective function name) 
       and column names when stopHash() for the corresponding 
@@ -690,7 +720,7 @@ protected:
   /// Read a monomial of the objective function.
   /// Return 1 if "subject to" or one of its variants has been read.
   int read_monom_obj(FILE *fp, double *coeff, char **name, int *cnt, 
-		     char **obj_name);
+		     char **obj_name, int *num_objectives, int *obj_starts);
 
   /// Read a monomial of a constraint.
   /// Return a positive number if the sense of the inequality has been 

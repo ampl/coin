@@ -1,4 +1,4 @@
-/* $Id: CoinIndexedVector.cpp 1585 2013-04-06 20:42:02Z stefan $ */
+/* $Id: CoinIndexedVector.cpp 1727 2014-08-05 16:30:20Z tkr $ */
 // Copyright (C) 2000, International Business Machines
 // Corporation and others.  All Rights Reserved.
 // This code is licensed under the terms of the Eclipse Public License (EPL).
@@ -1984,8 +1984,8 @@ CoinArrayWithLength::setPersistence(int flag,int currentLength)
       if (currentLength&&array_) {
 	size_=currentLength;
       } else {
-	size_=0;
 	conditionalDelete();
+	size_=0;
 	array_=NULL;
       }
     }

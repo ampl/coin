@@ -1,4 +1,4 @@
-// $Id: CglFlowCover.hpp 1123 2013-04-06 20:47:24Z stefan $
+// $Id: CglFlowCover.hpp 1194 2014-02-14 10:53:22Z forrest $
 //-----------------------------------------------------------------------------
 // name:     Cgl Lifted Simple Generalized Flow Cover Cut Generator
 // author:   Yan Xu                email: yan.xu@sas.com
@@ -182,9 +182,9 @@ public:
     /**@name Functions to query and set the number of cuts have been
        generated. */
     //@{
-    static int getNumFlowCuts() { return numFlowCuts_; }
-    static void setNumFlowCuts(int fc) { numFlowCuts_ = fc; }
-    static void incNumFlowCuts(int fc = 1) { numFlowCuts_ += fc; } 
+    inline int getNumFlowCuts() { return numFlowCuts_; }
+    inline void setNumFlowCuts(int fc) { numFlowCuts_ = fc; }
+    inline void incNumFlowCuts(int fc = 1) { numFlowCuts_ += fc; } 
     //@}
 
     //-------------------------------------------------------------------------
@@ -331,8 +331,10 @@ private:
     //------------------------------------------------------------------------
     // Private member data
     
-    /** The maximum number of flow cuts to be generated. Default is 1000. */
+    /** The maximum number of flow cuts to be generated. Default is 2000. */
     int maxNumCuts_;
+    /** The number flow cuts found.*/
+    int numFlowCuts_;
     /** Tolerance used for numerical purpose. */
     double EPSILON_;
     /** The variable upper bound of a flow is not indentified yet.*/
@@ -347,8 +349,6 @@ private:
     int numRows_;
     /** The number columns of the problem.*/
     int numCols_;
-    /** The number flow cuts found.*/
-    static int numFlowCuts_;
     /** Indicate whether initial flow preprecessing has been done. */
     bool doneInitPre_;
     /** The array of CglFlowVUBs. */

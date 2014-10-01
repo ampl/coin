@@ -1,4 +1,4 @@
-/* $Id: CoinStructuredModel.cpp 1585 2013-04-06 20:42:02Z stefan $ */
+/* $Id: CoinStructuredModel.cpp 1726 2014-08-05 16:15:35Z tkr $ */
 // Copyright (C) 2008, International Business Machines
 // Corporation and others.  All Rights Reserved.
 // This code is licensed under the terms of the Eclipse Public License (EPL).
@@ -9,6 +9,7 @@
 #include "CoinStructuredModel.hpp"
 #include "CoinSort.hpp"
 #include "CoinMpsIO.hpp"
+#include "CoinMessage.hpp"
 #include "CoinFloatEqual.hpp"
 
 //#############################################################################
@@ -749,11 +750,15 @@ CoinStructuredModel::decompose(const CoinPackedMatrix & matrix,
 			       const double * rowLower, const double * rowUpper,
 			       const double * columnLower, const double * columnUpper,
 			       const double * objective, int type,int maxBlocks,
-			       double objectiveOffset)
+			       int * starts,double objectiveOffset)
 {
   setObjectiveOffset(objectiveOffset);
   int numberBlocks=0;
-  if (type==1) {
+  char generalPrint[200];
+  bool wantDecomposition=type>2;
+  type %= 10;
+  if (type==1) {    // Try master at top and bottom
+    bool goodDW=true;
     // get row copy
     CoinPackedMatrix rowCopy = matrix;
     rowCopy.reverseOrdering();
@@ -774,9 +779,14 @@ CoinStructuredModel::decompose(const CoinPackedMatrix & matrix,
       int length = rowLength[iRow];
       rowBlock[length]++;
     }
-    for (iRow=0;iRow<numberRows+1;iRow++) {
-      if (rowBlock[iRow])
-	printf("%d rows have %d elements\n",rowBlock[iRow],iRow);
+    if (!starts) {
+      for (iRow=0;iRow<numberRows+1;iRow++) {
+	if (rowBlock[iRow]) {
+	  sprintf(generalPrint,"%d rows have %d elements",rowBlock[iRow],iRow);
+	  handler_->message(COIN_GENERAL_INFO2,messages_)<<
+	    generalPrint << CoinMessageEol;
+	}
+      }
     }
     bool newWay=true;
     // to say if column looked at
@@ -786,7 +796,7 @@ CoinStructuredModel::decompose(const CoinPackedMatrix & matrix,
     int * whichRow = new int [numberRows];
     int * whichColumn = new int [numberColumns];
     int * stack = new int [numberRows];
-    if (newWay) {
+    if (newWay && !starts) {
       //double best2[3]={COIN_DBL_MAX,COIN_DBL_MAX,COIN_DBL_MAX};
       double best2[3]={0.0,0.0,0.0};
       int row2[3]={-1,-1,-1};
@@ -990,8 +1000,11 @@ CoinStructuredModel::decompose(const CoinPackedMatrix & matrix,
 	  rowBlock[stack[i]]=-1;
       }
       if (nMaster*2>numberRows) {
-	printf("%d rows out of %d would be in master - no good\n",
+	goodDW=false;
+	sprintf(generalPrint,"%d rows out of %d would be in master - no good",
 	       nMaster,numberRows);
+	handler_->message(COIN_GENERAL_WARNING,messages_)<<
+	  generalPrint << CoinMessageEol;
 	delete [] rowBlock;
 	delete [] columnBlock;
 	delete [] whichRow;
@@ -1006,8 +1019,34 @@ CoinStructuredModel::decompose(const CoinPackedMatrix & matrix,
     } else {
       for (iRow=0;iRow<numberRows;iRow++)
 	rowBlock[iRow]=-2;
+      if (starts) {
+	for (iRow=starts[0];iRow<starts[1];iRow++)
+	  rowBlock[iRow]=-1;
+	for (int iBlock=0;iBlock<maxBlocks;iBlock++) {
+	  for (iRow=starts[iBlock+2];iRow<starts[iBlock+3];iRow++)
+	  rowBlock[iRow]=iBlock;
+	}
+	numberBlocks=maxBlocks;
+	CoinFillN(columnBlock,numberColumns,-1);
+	for (iColumn=0;iColumn<numberColumns;iColumn++) {
+	  int kstart = columnStart[iColumn];
+	  int kend = columnStart[iColumn]+columnLength[iColumn];
+	  int j;
+	  int jBlock=-1;
+	  for (j=kstart;j<kend;j++) {
+	    int iRow= row[j];
+	    if (rowBlock[iRow]!=-1) {
+	      if (jBlock==-1) {
+		jBlock=rowBlock[iRow];
+		columnBlock[iColumn]=jBlock;
+	      } else {
+		assert (rowBlock[iRow]==jBlock);
+	      }
+	    }
+	  }
+	}
       // these are master rows
-      if (numberRows==105127) {
+      } else if (numberRows==105127) {
 	// ken-18
 	for (iRow=104976;iRow<numberRows;iRow++)
 	  rowBlock[iRow]=-1;
@@ -1044,8 +1083,10 @@ CoinStructuredModel::decompose(const CoinPackedMatrix & matrix,
 	  rowBlock[iRow]=-1;
       }
     }
-    numberBlocks=0;
-    CoinFillN(columnBlock,numberColumns,-2);
+    if (!starts) {
+      numberBlocks=0;
+      CoinFillN(columnBlock,numberColumns,-2);
+    }
     for (iColumn=0;iColumn<numberColumns;iColumn++) {
       int kstart = columnStart[iColumn];
       int kend = columnStart[iColumn]+columnLength[iColumn];
@@ -1108,11 +1149,13 @@ CoinStructuredModel::decompose(const CoinPackedMatrix & matrix,
 	numberMasterColumns++;
     }
     if (numberBlocks<=maxBlocks)
-      printf("%d blocks found - %d rows, %d columns in master\n",
+      sprintf(generalPrint,"%d blocks found - %d rows, %d columns in master",
 	     numberBlocks,numberMasterRows,numberMasterColumns);
     else
-      printf("%d blocks found (reduced to %d) - %d rows, %d columns in master\n",
+      sprintf(generalPrint,"%d blocks found (reduced to %d) - %d rows, %d columns in master",
 	     numberBlocks,maxBlocks,numberMasterRows,numberMasterColumns);
+    handler_->message(COIN_GENERAL_INFO,messages_)<<
+      generalPrint << CoinMessageEol;
     if (numberBlocks) {
       if (numberBlocks>maxBlocks) {
 	int iBlock;
@@ -1171,14 +1214,18 @@ CoinStructuredModel::decompose(const CoinPackedMatrix & matrix,
     }
     int maximumSize=0;
     for (int i=0;i<numberBlocks;i++) {
-      printf("Block %d has %d rows and %d columns\n",i,
+      sprintf(generalPrint,"Block %d has %d rows and %d columns",i,
 	     rowCount[i],columnCount[i]);
+      handler_->message(COIN_GENERAL_INFO2,messages_)<<
+	generalPrint << CoinMessageEol;
       int k=2*rowCount[i]+columnCount[i];
       maximumSize = CoinMax(maximumSize,k);
     }
-    if (maximumSize*10>4*(2*numberRows+numberColumns)) {
+    if (maximumSize*10>4*(2*numberRows+numberColumns)&&!wantDecomposition) {
       // No good
-      printf("Doesn't look good\n");
+      sprintf(generalPrint,"Doesn't look good");
+      handler_->message(COIN_GENERAL_WARNING,messages_)<<
+	generalPrint << CoinMessageEol;
       delete [] rowBlock;
       delete [] columnBlock;
       delete [] whichRow;
@@ -1292,6 +1339,8 @@ CoinStructuredModel::decompose(const CoinPackedMatrix & matrix,
     delete [] rowLo ; 
     delete [] rowUp ; 
   } else if (type==2) {
+    // Try master at beginning and end
+    bool goodBenders=true;
     // get row copy
     CoinPackedMatrix rowCopy = matrix;
     rowCopy.reverseOrdering();
@@ -1312,11 +1361,20 @@ CoinStructuredModel::decompose(const CoinPackedMatrix & matrix,
       int length = columnLength[iColumn];
       columnBlock[length]++;
     }
-    for (iColumn=0;iColumn<numberColumns+1;iColumn++) {
-      if (columnBlock[iColumn])
-	printf("%d columns have %d elements\n",columnBlock[iColumn],iColumn);
+    if (!starts) {
+      for (iColumn=0;iColumn<numberColumns+1;iColumn++) {
+	if (columnBlock[iColumn]) {
+	  sprintf(generalPrint,"%d columns have %d elements",columnBlock[iColumn],iColumn);
+	  handler_->message(COIN_GENERAL_INFO2,messages_)<<
+	    generalPrint << CoinMessageEol;
+	}
+      }
     }
-    bool newWay=false;
+    bool newWay=true;
+    if (maxBlocks>1000000) {
+      newWay=false;
+      maxBlocks -= 1000000;
+    }
     // to say if row looked at
     int numberRows = matrix.getNumRows();
     int * rowBlock = new int[numberRows];
@@ -1498,8 +1556,11 @@ CoinStructuredModel::decompose(const CoinPackedMatrix & matrix,
 	  columnBlock[stack[i]]=-1;
       }
       if (nMaster*2>numberColumns) {
-	printf("%d columns out of %d would be in master - no good\n",
+	goodBenders=false;
+	sprintf(generalPrint,"%d columns out of %d would be in master - no good",
 	       nMaster,numberColumns);
+	handler_->message(COIN_GENERAL_WARNING,messages_)<<
+	  generalPrint << CoinMessageEol;
 	delete [] rowBlock;
 	delete [] columnBlock;
 	delete [] whichRow;
@@ -1514,15 +1575,55 @@ CoinStructuredModel::decompose(const CoinPackedMatrix & matrix,
     } else {
       for (iColumn=0;iColumn<numberColumns;iColumn++)
 	columnBlock[iColumn]=-2;
+      if (starts) {
+	for (iColumn=starts[0];iColumn<starts[1];iColumn++)
+	  columnBlock[iColumn]=-1;
+	for (int iBlock=0;iBlock<maxBlocks;iBlock++) {
+	  for (iColumn=starts[iBlock+2];iColumn<starts[iBlock+3];iColumn++)
+	  columnBlock[iColumn]=iBlock;
+	}
+	numberBlocks=maxBlocks;
+	CoinFillN(rowBlock,numberRows,-1);
+	for (iRow=0;iRow<numberRows;iRow++) {
+	  int kstart = rowStart[iRow];
+	  int kend = rowStart[iRow]+rowLength[iRow];
+	  int j;
+	  int jBlock=-1;
+	  for (j=kstart;j<kend;j++) {
+	    int iColumn= column[j];
+	    if (columnBlock[iColumn]!=-1) {
+	      if (jBlock==-1) {
+		jBlock=columnBlock[iColumn];
+		rowBlock[iRow]=jBlock;
+	      } else {
+		assert (columnBlock[iColumn]==jBlock);
+	      }
+	    }
+	  }
+	}
       // these are master columns
-      if (numberColumns==2426) {
+      } else if (numberColumns==2426) {
 	// ken-7 dual
 	for (iColumn=2401;iColumn<numberColumns;iColumn++)
 	  columnBlock[iColumn]=-1;
+      } else if (numberColumns==10193) {
+	// stormG2-8
+	for (iColumn=0;iColumn<121;iColumn++)
+	  columnBlock[iColumn]=-1;
+      } else if (numberColumns==157496) {
+	// stormG2-125
+	for (iColumn=0;iColumn<121;iColumn++)
+	  columnBlock[iColumn]=-1;
+      } else if (numberColumns==1259121) {
+	// stormG2_1000
+	for (iColumn=0;iColumn<121;iColumn++)
+	  columnBlock[iColumn]=-1;
       }
     }
-    numberBlocks=0;
-    CoinFillN(rowBlock,numberRows,-2);
+    if (!starts) {
+      numberBlocks=0;
+      CoinFillN(rowBlock,numberRows,-2);
+    }
     for (iRow=0;iRow<numberRows;iRow++) {
       int kstart = rowStart[iRow];
       int kend = rowStart[iRow]+rowLength[iRow];
@@ -1585,11 +1686,13 @@ CoinStructuredModel::decompose(const CoinPackedMatrix & matrix,
 	numberMasterRows++;
     }
     if (numberBlocks<=maxBlocks)
-      printf("%d blocks found - %d columns, %d rows in master\n",
+      sprintf(generalPrint,"%d blocks found - %d columns, %d rows in master",
 	     numberBlocks,numberMasterColumns,numberMasterRows);
     else
-      printf("%d blocks found (reduced to %d) - %d columns, %d rows in master\n",
+      sprintf(generalPrint,"%d blocks found (reduced to %d) - %d columns, %d rows in master",
 	     numberBlocks,maxBlocks,numberMasterColumns,numberMasterRows);
+    handler_->message(COIN_GENERAL_INFO,messages_)<<
+      generalPrint << CoinMessageEol;
     if (numberBlocks) {
       if (numberBlocks>maxBlocks) {
 	int iBlock;
@@ -1648,14 +1751,19 @@ CoinStructuredModel::decompose(const CoinPackedMatrix & matrix,
     }
     int maximumSize=0;
     for (int i=0;i<numberBlocks;i++) {
-      printf("Block %d has %d columns and %d rows\n",i,
+      sprintf(generalPrint,"Block %d has %d columns and %d rows",i,
 	     columnCount[i],rowCount[i]);
+      handler_->message(COIN_GENERAL_INFO2,messages_)<<
+	generalPrint << CoinMessageEol;
       int k=2*columnCount[i]+rowCount[i];
       maximumSize = CoinMax(maximumSize,k);
     }
-    if (maximumSize*10>4*(2*numberColumns+numberRows)) {
+    if ((maximumSize*10>4*(2*numberColumns+numberRows)||
+	 numberMasterRows*10>numberRows)&&!wantDecomposition) {
       // No good
-      printf("Doesn't look good\n");
+      sprintf(generalPrint,"Doesn't look good");
+      handler_->message(COIN_GENERAL_WARNING,messages_)<<
+	generalPrint << CoinMessageEol;
       delete [] rowBlock;
       delete [] columnBlock;
       delete [] whichRow;
@@ -1665,10 +1773,12 @@ CoinStructuredModel::decompose(const CoinPackedMatrix & matrix,
       delete [] columnUp ; 
       delete [] rowLo ; 
       delete [] rowUp ; 
+#if 0
       CoinModel model(numberRows,numberColumns,&matrix, rowLower, rowUpper,
 		      columnLower,columnUpper,objective);
       model.setObjectiveOffset(objectiveOffset);
       addBlock("row_master","column_master",model);
+#endif
       return 0;
     }
     // Name for master so at beginning
@@ -1781,7 +1891,7 @@ CoinStructuredModel::decompose(const CoinPackedMatrix & matrix,
 */
 int 
 CoinStructuredModel::decompose(const CoinModel & coinModel, int type,
-			       int maxBlocks)
+			       int maxBlocks, const char ** starts)
 {
   const CoinPackedMatrix * matrix = coinModel.packedMatrix();
   assert (matrix!=NULL);
@@ -1791,11 +1901,132 @@ CoinStructuredModel::decompose(const CoinModel & coinModel, int type,
   const double * columnUpper = coinModel.columnUpperArray();
   const double * rowLower = coinModel.rowLowerArray();
   const double * rowUpper = coinModel.rowUpperArray();
-  return decompose(*matrix,
+  int * blockStarts=NULL;
+  char generalPrint[200];
+  bool wantDecomposition=maxBlocks>1; // flag to say we really want it decomposed
+  int numberTotal = coinModel.numberColumns()+coinModel.numberRows();
+  if (maxBlocks<2||2*maxBlocks>numberTotal) {
+    // allow at least 400 per problem
+    maxBlocks = (numberTotal+399)/400;
+    // but gate at 8 and 1000
+    maxBlocks=CoinMax(8,CoinMin(maxBlocks,1000));
+    sprintf(generalPrint,"Trying for %d blocks",maxBlocks);
+    handler_->message(COIN_GENERAL_INFO,messages_)<<
+      generalPrint << CoinMessageEol;
+  }
+  if (starts) {
+    assert (type<3);
+    // maxBlocks is number of blocks
+    // first two are master - then starts
+    // master at beginning or end
+    blockStarts = new int[maxBlocks+3];
+    if (type==2) {
+      // column names
+      int numberColumns = coinModel.numberColumns();
+      // Do master block
+      int iColumn;
+      for (iColumn=0;iColumn<numberColumns;iColumn++) {
+	if (!strcmp(starts[0],coinModel.getColumnName(iColumn)))
+	  break;
+      }
+      if (iColumn==numberColumns) {
+	sprintf(generalPrint,"Unable to find start of master block %s",starts[0]);
+	handler_->message(COIN_GENERAL_WARNING,messages_)<<
+	  generalPrint << CoinMessageEol;
+	delete [] blockStarts;
+	return 0;
+      }
+      if (iColumn==0) {
+	blockStarts[0]=0;
+	blockStarts[1]=-1;
+      } else {
+	blockStarts[0]=iColumn;
+	blockStarts[1]=numberColumns;
+      }
+      int nBlocks=2;
+      for (int iBlock=1;iBlock<maxBlocks+1;iBlock++) {
+	for (iColumn=0;iColumn<numberColumns;iColumn++) {
+	  if (!strcmp(starts[iBlock],coinModel.getColumnName(iColumn)))
+	    break;
+	}
+	if (iColumn==numberColumns) {
+	  sprintf(generalPrint,"Unable to find start of block %d %s",iBlock,starts[iBlock]);
+	  handler_->message(COIN_GENERAL_WARNING,messages_)<<
+	    generalPrint << CoinMessageEol;
+	  delete [] blockStarts;
+	  return 0;
+	}
+	if (nBlocks==2&&blockStarts[1]==-1)
+	  blockStarts[1]=iColumn-1;
+	blockStarts[nBlocks++]=iColumn;
+      }
+      if (blockStarts[1]==numberColumns)
+	blockStarts[nBlocks++]=blockStarts[0];
+      else
+	blockStarts[nBlocks++]=numberColumns;
+    } else {
+      // row names
+      int numberRows = coinModel.numberRows();
+      // Do master block
+      int iRow;
+      for (iRow=0;iRow<numberRows;iRow++) {
+	if (!strcmp(starts[0],coinModel.getRowName(iRow)))
+	  break;
+      }
+      if (iRow==numberRows) {
+	sprintf(generalPrint,"Unable to find start of master block %s",starts[0]);
+	handler_->message(COIN_GENERAL_WARNING,messages_)<<
+      generalPrint << CoinMessageEol;
+	delete [] blockStarts;
+	return 0;
+      }
+      if (iRow==0) {
+	blockStarts[0]=0;
+	blockStarts[1]=-1;
+      } else {
+	blockStarts[0]=iRow;
+	blockStarts[1]=numberRows;
+      }
+      int nBlocks=2;
+      for (int iBlock=1;iBlock<maxBlocks+1;iBlock++) {
+	for (iRow=0;iRow<numberRows;iRow++) {
+	  if (!strcmp(starts[iBlock],coinModel.getRowName(iRow)))
+	    break;
+	}
+	if (iRow==numberRows) {
+	  sprintf(generalPrint,"Unable to find start of block %d %s",iBlock,starts[iBlock]);
+	  handler_->message(COIN_GENERAL_WARNING,messages_)<<
+	    generalPrint << CoinMessageEol;
+	  delete [] blockStarts;
+	  return 0;
+	}
+	if (nBlocks==2&&blockStarts[1]==-1)
+	  blockStarts[1]=iRow-1;
+	blockStarts[nBlocks++]=iRow;
+      }
+      if (blockStarts[1]==numberRows)
+	blockStarts[nBlocks++]=blockStarts[0];
+      else
+	blockStarts[nBlocks++]=numberRows;
+    }
+  }
+  if(wantDecomposition)
+    type +=10;
+  int nBlocks = decompose(*matrix,
 		   rowLower,  rowUpper,
 		   columnLower,  columnUpper,
-		   objective, type,maxBlocks,
+		   objective, type,maxBlocks,blockStarts,
 		   coinModel.objectiveOffset());
+  delete [] blockStarts;
+  return nBlocks;
+}
+// Read SMPS model
+int 
+CoinStructuredModel::readSmps(const char *filename,
+			      bool keepNames, bool ignoreErrors)
+{
+  abort();
+  return 0;
 }
 // Return block corresponding to row and column
 const CoinBaseModel *  

@@ -1,4 +1,4 @@
-/* $Id: CoinFactorization1.cpp 1581 2013-04-06 12:48:50Z stefan $ */
+/* $Id: CoinFactorization1.cpp 1736 2014-08-24 21:27:47Z tkr $ */
 // Copyright (C) 2002, International Business Machines
 // Corporation and others.  All Rights Reserved.
 // This code is licensed under the terms of the Eclipse Public License (EPL).
@@ -291,6 +291,8 @@ int CoinFactorization::factorize (
   const int * columnLength = matrix.getVectorLengths(); 
   const double * element = matrix.getElements();
   int numberRows=matrix.getNumRows();
+  if (!numberRows)
+    return 0;
   int numberColumns=matrix.getNumCols();
   int numberBasic = 0;
   CoinBigIndex numberElements=0;

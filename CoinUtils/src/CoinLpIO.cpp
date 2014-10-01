@@ -1,4 +1,4 @@
-/* $Id: CoinLpIO.cpp 1652 2013-10-18 10:35:37Z stefan $ */
+/* $Id: CoinLpIO.cpp 1728 2014-08-05 16:33:45Z tkr $ */
 // Last edit: 11/5/08
 //
 // Name:     CoinLpIO.cpp; Support for Lp files
@@ -38,25 +38,28 @@ CoinLpIO::CoinLpIO() :
   numberRows_(0),
   numberColumns_(0),
   numberElements_(0),
-  rowsense_(NULL),
-  rhs_(NULL),
-  rowrange_(NULL),
-  matrixByRow_(NULL),
   matrixByColumn_(NULL),
+  matrixByRow_(NULL),
   rowlower_(NULL),
   rowupper_(NULL),
   collower_(NULL),
   colupper_(NULL),
-  objective_(NULL),
-  objectiveOffset_(0),
+  rhs_(NULL),
+  rowrange_(NULL),
+  rowsense_(NULL),
+  num_objectives_(0),
   integerType_(NULL),
   fileName_(NULL),
   infinity_(COIN_DBL_MAX),
-  numberAcross_(10),
   epsilon_(1e-5),
-  decimals_(5),
-  objName_(NULL)
+  numberAcross_(10),
+  decimals_(5)
 {
+  for (int j = 0; j < MAX_OBJECTIVES; j++){
+     objective_[j] = NULL;
+     objName_[j] = NULL;
+     objectiveOffset_[j] = 0;
+  }
   card_previous_names_[0] = 0;
   card_previous_names_[1] = 0;
   previous_names_[0] = NULL;
@@ -84,24 +87,27 @@ CoinLpIO::CoinLpIO(const CoinLpIO& rhs)
     numberRows_(0),
     numberColumns_(0),
     numberElements_(0),
-    rowsense_(NULL),
-    rhs_(NULL),
-    rowrange_(NULL),
-    matrixByRow_(NULL),
     matrixByColumn_(NULL),
+    matrixByRow_(NULL),
     rowlower_(NULL),
     rowupper_(NULL),
     collower_(NULL),
     colupper_(NULL),
-    objective_(NULL),
-    objectiveOffset_(0.0),
+    rhs_(NULL),
+    rowrange_(NULL),
+    rowsense_(NULL),
     integerType_(NULL),
     fileName_(CoinStrdup("")),
     infinity_(COIN_DBL_MAX),
-    numberAcross_(10),
     epsilon_(1e-5),
-    objName_(NULL)
+    numberAcross_(10),
+    decimals_(5)
 {
+    for (int j = 0; j < MAX_OBJECTIVES; j++){
+       objective_[j] = NULL;
+       objName_[j] = NULL;
+       objectiveOffset_[j] = 0;
+    }
     card_previous_names_[0] = 0;
     card_previous_names_[1] = 0;
     previous_names_[0] = NULL;
@@ -143,6 +149,7 @@ void CoinLpIO::gutsOfCopy(const CoinLpIO& rhs)
     numberRows_ = rhs.numberRows_;
     numberColumns_ = rhs.numberColumns_;
     decimals_ = rhs.decimals_;
+    num_objectives_ = rhs.num_objectives_;
  
     if (rhs.rowlower_) {
        rowlower_ = reinterpret_cast<double*> (malloc(numberRows_ * sizeof(double)));
@@ -160,10 +167,12 @@ void CoinLpIO::gutsOfCopy(const CoinLpIO& rhs)
     if (rhs.collower_) {
        collower_ = reinterpret_cast<double*> (malloc(numberColumns_ * sizeof(double)));
        colupper_ = reinterpret_cast<double*> (malloc(numberColumns_ * sizeof(double)));
-       objective_ = reinterpret_cast<double*> (malloc(numberColumns_ * sizeof(double)));
        memcpy(collower_, rhs.collower_, numberColumns_ * sizeof(double));
        memcpy(colupper_, rhs.colupper_, numberColumns_ * sizeof(double));
-       memcpy(objective_, rhs.objective_, numberColumns_ * sizeof(double));
+       for (int j = 0; j < num_objectives_; j++){
+	  objective_[j] = reinterpret_cast<double*> (malloc(numberColumns_ * sizeof(double)));
+          memcpy(objective_[j], rhs.objective_[j], numberColumns_ * sizeof(double));
+       }
     }
  
     if (rhs.integerType_) {
@@ -181,7 +190,9 @@ void CoinLpIO::gutsOfCopy(const CoinLpIO& rhs)
     maxHash_[1] = rhs.maxHash_[1];
     infinity_ = rhs.infinity_;
     numberAcross_ = rhs.numberAcross_;
-    objectiveOffset_ = rhs.objectiveOffset_;
+    for (int j = 0; j < num_objectives_; j++){
+       objectiveOffset_[j] = rhs.objectiveOffset_[j];
+    }
     int section;
  
     for (section = 0; section < 2; section++) {
@@ -288,8 +299,10 @@ CoinLpIO::freeAll() {
   rowrange_ = NULL;
   free(rowsense_);
   rowsense_ = NULL;
-  free(objective_);
-  objective_ = NULL;
+  for (int j = 0; j < num_objectives_; j++){
+     free(objective_[j]);
+     objective_[j] = NULL;
+  }
   free(integerType_);
   integerType_ = NULL;
   free(problemName_);
@@ -441,9 +454,21 @@ const double * CoinLpIO::getRowRange() const
 }
 
 /*************************************************************************/
+const int CoinLpIO::getNumObjectives() const
+{
+  return num_objectives_;
+}
+ 
+/*************************************************************************/
 const double * CoinLpIO::getObjCoefficients() const
 {
-  return objective_;
+  return objective_[0];
+}
+ 
+/*************************************************************************/
+const double * CoinLpIO::getObjCoefficients(int j) const
+{
+  return objective_[j];
 }
  
 /*************************************************************************/
@@ -465,7 +490,13 @@ const CoinPackedMatrix * CoinLpIO::getMatrixByCol() const
 /*************************************************************************/
 const char * CoinLpIO::getObjName() const
 {
-  return objName_;
+  return objName_[0];
+}
+ 
+/*************************************************************************/
+const char * CoinLpIO::getObjName(int j) const
+{
+  return objName_[j];
 }
  
 /*************************************************************************/
@@ -662,7 +693,13 @@ void CoinLpIO::setDecimals(const int value)
 /************************************************************************/
 double CoinLpIO::objectiveOffset() const
 {
-  return objectiveOffset_;
+  return objectiveOffset_[0];
+}
+
+/************************************************************************/
+double CoinLpIO::objectiveOffset(int j) const
+{
+  return objectiveOffset_[j];
 }
 
 /************************************************************************/
@@ -690,6 +727,20 @@ CoinLpIO::setLpDataWithoutRowAndColNames(
 			      const char *is_integer,
 			      const double *rowlb, const double *rowub) {
 
+   setLpDataWithoutRowAndColNames(m, collb, colub, &obj_coeff, 1, is_integer, 
+				  rowlb, rowub);
+}
+
+/************************************************************************/
+void
+CoinLpIO::setLpDataWithoutRowAndColNames(
+			      const CoinPackedMatrix& m,
+			      const double *collb, const double *colub,
+			      const double *obj_coeff[MAX_OBJECTIVES],
+			      int num_objectives,
+			      const char *is_integer,
+			      const double *rowlb, const double *rowub) {
+
   freeAll();
   problemName_ = CoinStrdup("");
 
@@ -707,12 +758,15 @@ CoinLpIO::setLpDataWithoutRowAndColNames(
   rowupper_ = reinterpret_cast<double *> (malloc (numberRows_ * sizeof(double)));
   collower_ = reinterpret_cast<double *> (malloc (numberColumns_ * sizeof(double)));
   colupper_ = reinterpret_cast<double *> (malloc (numberColumns_ * sizeof(double)));
-  objective_ = reinterpret_cast<double *> (malloc (numberColumns_ * sizeof(double)));
   std::copy(rowlb, rowlb + numberRows_, rowlower_);
   std::copy(rowub, rowub + numberRows_, rowupper_);
   std::copy(collb, collb + numberColumns_, collower_);
   std::copy(colub, colub + numberColumns_, colupper_);
-  std::copy(obj_coeff, obj_coeff + numberColumns_, objective_);
+  num_objectives_ = num_objectives;
+  for (int j = 0; j < num_objectives; j++){
+     objective_[j] = reinterpret_cast<double *> (malloc (numberColumns_ * sizeof(double)));
+     std::copy(obj_coeff[j], obj_coeff[j] + numberColumns_, objective_[j]);
+  }
 
   if (is_integer) {
     integerType_ = reinterpret_cast<char *> (malloc (numberColumns_ * sizeof(char)));
@@ -746,7 +800,7 @@ void CoinLpIO::setDefaultRowNames() {
 
   stopHash(0);
   startHash(defaultRowNames, nrow+1, 0);
-  objName_ = CoinStrdup("obj");
+  objName_[0] = CoinStrdup("obj");
 
   for(i=0; i<nrow+1; i++) {
     free(defaultRowNames[i]);
@@ -793,13 +847,13 @@ void CoinLpIO::setLpDataRowAndColNames(char const * const * const rownames,
     else {
       stopHash(0);
       startHash(rownames, nrow+1, 0);
-      objName_ = CoinStrdup(rownames[nrow]);
+      objName_[0] = CoinStrdup(rownames[nrow]);
       checkRowNames();
     }
   }
   else {
-    if(objName_ == NULL) {
-      objName_ = CoinStrdup("obj");      
+    if(objName_[0] == NULL) {
+      objName_[0] = CoinStrdup("obj");      
     }
   }
 
@@ -917,7 +971,6 @@ CoinLpIO::writeLp(FILE *fp, const bool useRowNames)
    const double *colup = getColUpper();
    const double *rowlow = getRowLower();
    const double *rowup = getRowUpper();
-   const double *obj = getObjCoefficients();
    const char *integerType = integerColumns();
    char const * const * rowNames = getRowNames();
    char const * const * colNames = getColNames();
@@ -955,37 +1008,39 @@ CoinLpIO::writeLp(FILE *fp, const bool useRowNames)
    fprintf(fp, "\\Problem name: %s\n\n", getProblemName());
    fprintf(fp, "Minimize\n");
 
-   if(useRowNames) {
-     fprintf(fp, "%s:", objName_);
-   }
+   for (int k = 0; k < num_objectives_; k++){
+      if(useRowNames) {
+	 fprintf(fp, "%s:", objName_[k]);
+      }
 
-   cnt_print = 0;
-   for(j=0; j<ncol; j++) {
-     if((cnt_print > 0) && (objective_[j] > lp_eps)) {
-       fprintf(fp, " +");
-     }
-     if(fabs(obj[j]) > lp_eps) {
-       out_coeff(fp, obj[j], 0);
-       fprintf(fp, " %s", colNames[j]);
-       cnt_print++;
-       if(cnt_print % numberAcross == 0) {
-	 fprintf(fp, "\n");
-       }
-     }
-   }
+      cnt_print = 0;
+      for(j=0; j<ncol; j++) {
+	 if((cnt_print > 0) && (objective_[k][j] > lp_eps)) {
+	    fprintf(fp, " +");
+	 }
+	 if(fabs(objective_[k][j]) > lp_eps) {
+	    out_coeff(fp, objective_[k][j], 0);
+	    fprintf(fp, " %s", colNames[j]);
+	    cnt_print++;
+	    if(cnt_print % numberAcross == 0) {
+	       fprintf(fp, "\n");
+	    }
+	 }
+      }
  
-   if((cnt_print > 0) && (objectiveOffset_ > lp_eps)) {
-     fprintf(fp, " +");
-   }
-   if(fabs(objectiveOffset_) > lp_eps) {
-     out_coeff(fp, objectiveOffset_, 1);
-     cnt_print++;
+      if((cnt_print > 0) && (objectiveOffset_[k] > lp_eps)) {
+	 fprintf(fp, " +");
+      }
+      if(fabs(objectiveOffset_[k]) > lp_eps) {
+	 out_coeff(fp, objectiveOffset_[k], 1);
+	 cnt_print++;
+      }
+      if((cnt_print == 0) || (cnt_print % numberAcross != 0)) {
+	 fprintf(fp, "\n");
+      }
+   
    }
 
-   if((cnt_print == 0) || (cnt_print % numberAcross != 0)) {
-     fprintf(fp, "\n");
-   }
-   
    fprintf(fp, "Subject To\n");
    
    int cnt_out_rows = 0;
@@ -1397,7 +1452,7 @@ CoinLpIO::are_invalid_names(char const * const * const vnames,
 /*************************************************************************/
 int 
 CoinLpIO::read_monom_obj(FILE *fp, double *coeff, char **name, int *cnt, 
-						 char **obj_name) {
+			 char **obj_name, int *num_objectives, int *obj_starts) {
 
   double mult;
   char buff[1024] = "aa", loc_name[1024], *start;
@@ -1418,7 +1473,14 @@ CoinLpIO::read_monom_obj(FILE *fp, double *coeff, char **name, int *cnt,
     printf("CoinLpIO: read_monom_obj(): obj_name: %s\n", buff);
 #endif
 
-    *obj_name = CoinStrdup(buff);
+    if (*num_objectives == MAX_OBJECTIVES){
+       char str[8192];
+       sprintf(str,"### ERROR: Too many objective functions.\n");
+       sprintf(str,"### ERROR: Change MAX_OBJECTIVES to larger number.\n");
+       throw CoinError(str, "read_monom_obj", "CoinLpIO", __FILE__, __LINE__);
+    }
+    obj_name[*num_objectives] = CoinStrdup(buff);
+    obj_starts[(*num_objectives)++] = *cnt;
     return(0);
   }
 
@@ -1458,7 +1520,7 @@ CoinLpIO::read_monom_obj(FILE *fp, double *coeff, char **name, int *cnt,
   }
   
   if(first_is_number(start)) {
-    coeff[*cnt] = atof(start);       
+     coeff[*cnt] = atof(start);       
     sprintf(loc_name, "aa");
     scan_next(loc_name, fp);
   }
@@ -1596,6 +1658,13 @@ CoinLpIO::realloc_col(double **collow, double **colup, char **is_int,
   *collow = reinterpret_cast<double *> (realloc ((*collow), (*maxcol+1) * sizeof(double)));
   *colup = reinterpret_cast<double *> (realloc ((*colup), (*maxcol+1) * sizeof(double)));
   *is_int = reinterpret_cast<char *> (realloc ((*is_int), (*maxcol+1) * sizeof(char)));
+  // clean values
+  double lp_inf = getInfinity();
+  for (int i=(*maxcol)-100; i<*maxcol; i++) {
+    (*collow)[i] = 0;
+    (*colup)[i] = lp_inf;
+    (*is_int)[i] = 0;
+  }
 
 } /* realloc_col */
 
@@ -1727,11 +1796,11 @@ CoinLpIO::readLp(FILE* fp)
   char buff[1024];
 
   int objsense, cnt_coeff = 0, cnt_row = 0, cnt_obj = 0;
-  char *objName = NULL;
-
+  int num_objectives = 0;
+  char *objName[MAX_OBJECTIVES];
+  int obj_starts[MAX_OBJECTIVES+1];
   char **colNames = reinterpret_cast<char **> (malloc ((maxcoeff+1) * sizeof(char *)));
   double *coeff = reinterpret_cast<double *> (malloc ((maxcoeff+1) * sizeof(double)));
-
   char **rowNames = reinterpret_cast<char **> (malloc ((maxrow+1) * sizeof(char *)));
   int *start = reinterpret_cast<int *> (malloc ((maxrow+1) * sizeof(int)));
   double *rhs = reinterpret_cast<double *> (malloc ((maxrow+1) * sizeof(double)));
@@ -1744,13 +1813,14 @@ CoinLpIO::readLp(FILE* fp)
 
   int read_st = 0;
   while(!read_st) {
-    read_st = read_monom_obj(fp, coeff, colNames, &cnt_obj, &objName);
+     read_st = read_monom_obj(fp, coeff, colNames, &cnt_obj, objName, &num_objectives, obj_starts);
 
     if(cnt_obj == maxcoeff) {
       realloc_coeff(&coeff, &colNames, &maxcoeff);
     }
   }
   
+  obj_starts[num_objectives] = cnt_obj;
   start[0] = cnt_obj;
   cnt_coeff = cnt_obj;
 
@@ -2080,24 +2150,30 @@ CoinLpIO::readLp(FILE* fp)
   numberColumns_ = numberHash_[1];
   numberElements_ = cnt_coeff - start[0];
 
-  double *obj = reinterpret_cast<double *> (malloc (numberColumns_ * sizeof(double)));
-  memset(obj, 0, numberColumns_ * sizeof(double));
+  double *obj[MAX_OBJECTIVES];
 
-  for(i=0; i<cnt_obj; i++) {
-    icol = findHash(colNames[i], 1);
-    if(icol < 0) {
-      char str[8192];
-      sprintf(str,"### ERROR: Hash table: %s (obj) not found\n", colNames[i]);
-      throw CoinError(str, "readLp", "CoinLpIO", __FILE__, __LINE__);
-    }
-    obj[icol] = objsense * coeff[i];
+  for (int j = 0; j < num_objectives; j++){
+     obj[j] = reinterpret_cast<double *> (malloc (numberColumns_ * sizeof(double)));
+     memset(obj[j], 0, numberColumns_ * sizeof(double));
+
+     for(i=obj_starts[j]; i<obj_starts[j+1]; i++) {
+       icol = findHash(colNames[i], 1);
+       if(icol < 0) {
+         char str[8192];
+         sprintf(str,"### ERROR: Hash table: %s (obj) not found\n", colNames[i]);
+         throw CoinError(str, "readLp", "CoinLpIO", __FILE__, __LINE__);
+       }
+       obj[j][icol] = objsense * coeff[i];
+     }
   }
 
   if (objsense == -1) {
     handler_->message(COIN_GENERAL_INFO,messages_)<<
       " CoinLpIO::readLp(): Maximization problem reformulated as minimization"
 						  <<CoinMessageEol;
-    objectiveOffset_ = -objectiveOffset_;
+    for (int j = 0; j < num_objectives_; j++){
+       objectiveOffset_[j] = -objectiveOffset_[j];
+    }
   }
 
 
@@ -2115,16 +2191,18 @@ CoinLpIO::readLp(FILE* fp)
 #endif
 
   setLpDataWithoutRowAndColNames(*matrix, collow, colup,
-				 obj, has_int ? is_int : 0, rowlow, rowup);
+				 const_cast<const double **>(obj), 
+				 num_objectives, has_int ? is_int : 0, rowlow, rowup);
 
 
-  if(objName == NULL) {
-    rowNames[cnt_row] = CoinStrdup("obj");
+  for (int j = 0; j < num_objectives; j++){
+     if(objName[j] == NULL) {
+	rowNames[cnt_row+j] = CoinStrdup("obj");
+     }
+     else {
+	rowNames[cnt_row+j] = CoinStrdup(objName[j]);
+     }
   }
-  else {
-    rowNames[cnt_row] = CoinStrdup(objName);
-  }
-
   // Hash tables for column names are already set up
   setLpDataRowAndColNames(rowNames, NULL);
 
@@ -2145,7 +2223,9 @@ CoinLpIO::readLp(FILE* fp)
   }
   free(rowNames);
 
-  free(objName);
+  for (int j = 0; j < num_objectives; j++){
+     free(objName[j]);
+  }
 
 #ifdef LPIO_DEBUG
   writeLp("readlp.xxx");
@@ -2161,10 +2241,12 @@ CoinLpIO::readLp(FILE* fp)
   free(rowlow);
   free(rowup);
   free(is_int);
-  free(obj);
+  for (int j = 0; j < num_objectives; j++){
+    free(obj[j]);
+  }
   delete matrix;
 
-} /* readLp */
+ } /* readLp */
 
 /*************************************************************************/
 void
@@ -2202,9 +2284,11 @@ CoinLpIO::print() const {
   }
   printf("\n");
   
-  printf("objective_:\n");
-  for(i=0; i<numberColumns_; i++) {
-    printf("%.5f ", objective_[i]);
+  for (int j = 0; j < num_objectives_; j++){
+     printf("objective_[%i]:\n", j);
+     for(i=0; i<numberColumns_; i++) {
+	printf("%.5f ", objective_[j][i]);
+     }
   }
   printf("\n");
   
@@ -2400,8 +2484,10 @@ CoinLpIO::stopHash(int section)
   numberHash_[section] = 0;
 
   if(section == 0) {
-    free(objName_);
-    objName_ = NULL;
+     for (int j = 0; j < num_objectives_; j++){
+	free(objName_[j]);
+	objName_[j] = NULL;
+     }
   }
 } /* stopHash */
 

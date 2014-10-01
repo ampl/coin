@@ -1,4 +1,4 @@
-/* $Id: CoinStructuredModel.hpp 1372 2011-01-03 23:31:00Z lou $ */
+/* $Id: CoinStructuredModel.hpp 1726 2014-08-05 16:15:35Z tkr $ */
 // Copyright (C) 2008, International Business Machines
 // Corporation and others.  All Rights Reserved.
 // This code is licensed under the terms of the Eclipse Public License (EPL).
@@ -91,6 +91,11 @@ public:
   */
   int writeMps(const char *filename, int compression = 0,
                int formatType = 0, int numberAcross = 2, bool keepStrings=false) ;
+  /// Read SMPS model
+  int readSmps(const char *filename,
+                 bool keepNames = false,
+                 bool ignoreErrors = false);
+
   /** Decompose a CoinModel
       1 - try D-W
       2 - try Benders
@@ -98,7 +103,7 @@ public:
       Returns number of blocks or zero if no structure
   */
   int decompose(const CoinModel &model,int type,
-		int maxBlocks=50);
+		int maxBlocks=50, const char ** starts=NULL);
   /** Decompose a model specified as arrays + CoinPackedMatrix
       1 - try D-W
       2 - try Benders
@@ -109,6 +114,7 @@ public:
 		const double * rowLower, const double * rowUpper,
 		const double * columnLower, const double * columnUpper,
 		const double * objective, int type,int maxBlocks=50,
+		int * starts=NULL,
 		double objectiveOffset=0.0);
   
    //@}

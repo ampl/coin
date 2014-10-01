@@ -1,4 +1,4 @@
-/* $Id: CoinMessage.cpp 1540 2012-06-28 10:31:24Z forrest $ */
+/* $Id: CoinMessage.cpp 1726 2014-08-05 16:15:35Z tkr $ */
 // Copyright (C) 2002, International Business Machines
 // Corporation and others.  All Rights Reserved.
 // This code is licensed under the terms of the Eclipse Public License (EPL).
@@ -61,6 +61,7 @@ static Coin_message us_english[]=
     "dual[%d] = %g inconsistent with status %s (%s)." },
 # endif
   {COIN_GENERAL_INFO,9,1,"%s"},
+  {COIN_GENERAL_INFO2,10,2,"%s"},
   {COIN_GENERAL_WARNING,3007,1,"%s"},
   {COIN_DUMMY_END,999999,0,""}
 };

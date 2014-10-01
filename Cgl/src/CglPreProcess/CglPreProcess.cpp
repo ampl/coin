@@ -26,6 +26,11 @@
 #include "CglProbing.hpp"
 #include "CglDuplicateRow.hpp"
 #include "CglClique.hpp"
+//#define COIN_DEVELOP 1 
+#ifdef COIN_DEVELOP
+static int whichMps=0;
+char nameMps[50];
+#endif
 
 OsiSolverInterface *
 CglPreProcess::preProcess(OsiSolverInterface & model, 
@@ -3365,6 +3370,13 @@ CglPreProcess::postProcess(OsiSolverInterface & modelIn
     modelIn.resolve();
   }
   if (modelIn.isProvenOptimal()) {
+#if COIN_DEVELOP>1
+    whichMps++;
+    sprintf(nameMps,"start_%d",whichMps);
+    modelIn.writeMps(nameMps);
+    printf("Mps file %s saved in %s at line %d\n",
+	   nameMps,__FILE__,__LINE__);
+#endif
     OsiSolverInterface * modelM = &modelIn;
     // If some cuts add back rows
     if (cuts_.sizeRowCuts()) {
@@ -3457,7 +3469,8 @@ CglPreProcess::postProcess(OsiSolverInterface & modelIn
 	model->setColSolution(solution);
 	delete [] solution;
       }
-      if (0) {
+#ifdef COIN_DEVELOP
+      {
 	int numberColumns = model->getNumCols();
 	int numberRows = model->getNumRows();
 	const double * lower = model->getColLower();
@@ -3495,16 +3508,27 @@ CglPreProcess::postProcess(OsiSolverInterface & modelIn
 	  }
 	}
 	// check was feasible - if not adjust (cleaning may move)
+	bool feasible=true;
 	for (i=0;i<numberRows;i++) {
 	  if(rowActivity[i]<rowLower[i]) {
-	    assert (rowActivity[i]>rowLower[i]-1000.0*primalTolerance);
+	    if (rowActivity[i]<rowLower[i]-1000.0*primalTolerance) {
+	      feasible=false;
+	      printf("Bad row %d %g <= %g <= %g\n",
+		     i,rowLower[i],rowActivity[i],rowUpper[i]);
+	    }
 	    rowActivity[i]=rowLower[i];
 	  } else if(rowActivity[i]>rowUpper[i]) {
-	    assert (rowActivity[i]<rowUpper[i]+1000.0*primalTolerance);
+	    if (rowActivity[i]>rowUpper[i]+1000.0*primalTolerance) {
+	      feasible=false;
+	      printf("Bad row %d %g <= %g <= %g\n",
+		     i,rowLower[i],rowActivity[i],rowUpper[i]);
+	    }
 	    rowActivity[i]=rowUpper[i];
 	  }
 	}
+	assert (feasible);
       }
+#endif
       {
 	int numberFixed=0;
 	int numberColumns = model->getNumCols();
@@ -3524,11 +3548,29 @@ CglPreProcess::postProcess(OsiSolverInterface & modelIn
       numberIterationsPost_ += model->getIterationCount();
       if (!model->isProvenOptimal()) {
 #ifdef COIN_DEVELOP
-	  model->writeMps("bad2");
+	  whichMps++;
+	  sprintf(nameMps,"bad2_%d",whichMps);
+	  model->writeMps(nameMps);
+	  printf("Mps file %s saved in %s at line %d\n",
+		 nameMps,__FILE__,__LINE__);
 	  printf("bad unwind in postprocess\n");
+	  OsiSolverInterface * temp = model->clone();
+	  temp->setDblParam(OsiDualObjectiveLimit,1.0e30);
+	  temp->setHintParam(OsiDoReducePrint,false,OsiHintTry);
+	  temp->initialSolve();
+	  if (temp->isProvenOptimal()) {
+	    printf("Was infeasible on objective limit\n");
+	  }
+	  delete temp;
 #endif
       } else {
-	//model->writeMps("good2");
+#if COIN_DEVELOP>1
+	whichMps++;
+	sprintf(nameMps,"good2_%d",whichMps);
+	  model->writeMps(nameMps);
+	  printf("Mps file %s saved in %s at line %d\n",
+		 nameMps,__FILE__,__LINE__);
+#endif
       }
       const int * originalColumns = presolve_[iPass]->originalColumns();
       const double * columnLower = modelM->getColLower(); 
@@ -3796,8 +3838,6 @@ CglPreProcess::postProcess(OsiSolverInterface & modelIn
   delete clonedCopy;
   originalModel_->setHintParam(OsiDoPresolveInInitial,true,OsiHintTry);
   originalModel_->setHintParam(OsiDoDualInInitial,false,OsiHintTry);
-  //printf("dumping ss.mps.gz in postprocess\n");
-  //originalModel_->writeMps("ss");
   {
     int numberFixed=0;
     int numberColumns = originalModel_->getNumCols();
@@ -3827,7 +3867,11 @@ CglPreProcess::postProcess(OsiSolverInterface & modelIn
 				  fabs(objectiveValue))+1.0e-4;
   if (!originalModel_->isProvenOptimal()) {
 #ifdef COIN_DEVELOP
-    originalModel_->writeMps("bad3");
+    whichMps++;
+    sprintf(nameMps,"bad3_%d",whichMps);
+    originalModel_->writeMps(nameMps);
+    printf("Mps file %s saved in %s at line %d\n",
+		 nameMps,__FILE__,__LINE__);
     printf("bad end unwind in postprocess\n");
 #endif
     handler_->message(CGL_POST_INFEASIBLE,messages_)
@@ -3970,6 +4014,14 @@ CglPreProcess::modified(OsiSolverInterface * model,
         if (dupRow) {
           numberFromCglDuplicate = dupRow->numberOriginalRows();
           duplicate = dupRow->duplicate();
+	  if (cs.sizeRowCuts()) {
+	    // add to twoCuts (may be more, but ....)
+	    int numberRowCuts = cs.sizeRowCuts() ;
+	    for (int k = 0;k<numberRowCuts;k++) {
+	      OsiRowCut * thisCut = cs.rowCutPtr(k) ;
+	      twoCuts.insert(*thisCut);
+	    }
+	  }
         }
 	if (cliqueGen&&cs.sizeRowCuts()) {
 	  int n = cs.sizeRowCuts();

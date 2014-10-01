@@ -10,7 +10,7 @@
 //-----------------------------------------------------------------------------
 // Copyright (C) 2002, Tobias Pfender, International Business Machines
 // Corporation and others.  All Rights Reserved.
-// Last edit: $Id: OsiSpxSolverInterface.hpp 1762 2011-06-25 17:56:55Z stefan $
+// Last edit: $Id: OsiSpxSolverInterface.hpp 1968 2014-06-12 16:03:54Z stefan $
 
 #ifndef OsiSpxSolverInterface_H
 #define OsiSpxSolverInterface_H
@@ -19,12 +19,16 @@
 #include "OsiSolverInterface.hpp"
 #include "CoinWarmStartBasis.hpp"
 
-/* forward declarations so the header can be compiled without having to include soplex.h */
+#ifndef _SOPLEX_H_
+/* forward declarations so the header can be compiled without having to include soplex.h
+ * however, these declaration work only for SoPlex < 2.0, so we do them only if soplex.h hasn't been included already
+ */
 namespace soplex {
   class DIdxSet;
   class DVector;
   class SoPlex;
 }
+#endif
 
 /** SoPlex Solver Interface
     Instantiation of OsiSpxSolverInterface for SoPlex
@@ -625,7 +629,7 @@ protected:
   /**@name Protected member data */
   //@{
   /// SoPlex solver object
-  soplex::SoPlex* soplex_;
+  soplex::SoPlex *soplex_;
   //@}
 
   
@@ -682,7 +686,7 @@ private:
   /**@name Private member data */
   //@{
   /// indices of integer variables
-  soplex::DIdxSet*   spxintvars_;
+  soplex::DIdxSet   *spxintvars_;
 
   /// Hotstart information
   void* hotStartCStat_;

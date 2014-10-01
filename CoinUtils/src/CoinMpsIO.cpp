@@ -1,4 +1,4 @@
-/* $Id: CoinMpsIO.cpp 1646 2013-10-16 15:06:38Z tkr $ */
+/* $Id: CoinMpsIO.cpp 1696 2014-05-03 08:32:40Z forrest $ */
 // Copyright (C) 2000, International Business Machines
 // Corporation and others.  All Rights Reserved.
 // This code is licensed under the terms of the Eclipse Public License (EPL).
@@ -270,7 +270,7 @@ const static int allowedLength[] = {
 const static char *mpsTypes[] = {
   "N", "E", "L", "G",
   "  ", "S1", "S2", "S3", "  ", "  ", "  ",
-  "  ", "UP", "FX", "LO", "FR", "MI", "PL", "BV", "UI", "LI", "SC",
+  "  ", "UP", "FX", "LO", "FR", "MI", "PL", "BV", "UI", "LI", "XX", "SC",
   "X1", "X2", "BS", "XL", "XU", "LL", "UL", "  "
 };
 

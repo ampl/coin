@@ -1,4 +1,4 @@
-/* $Id: ClpPredictorCorrector.cpp 1959 2013-06-14 15:43:10Z stefan $ */
+/* $Id: ClpPredictorCorrector.cpp 2035 2014-06-16 12:12:32Z forrest $ */
 // Copyright (C) 2003, International Business Machines
 // Corporation and others.  All Rights Reserved.
 // This code is licensed under the terms of the Eclipse Public License (EPL).
@@ -412,12 +412,34 @@ int ClpPredictorCorrector::solve ( )
 	  // See if we should be thinking about exit if diverging
 	  double relativeMultiplier = 1.0 + fabs(primalObjective_) + fabs(dualObjective_);
 	  // Quadratic coding is rubbish so be more forgiving?
-	  if (quadraticObj)
+	  double gapO2 = gapO;
+	  if (quadraticObj) {
 	    relativeMultiplier *= 5.0;
-	  if (gapO < 1.0e-5 + 1.0e-9 * relativeMultiplier
+	    CoinWorkDouble largestObjective;
+	    if (CoinAbs(primalObjective_) > CoinAbs(dualObjective_)) {
+	      largestObjective = CoinAbs(primalObjective_);
+	    } else {
+	      largestObjective = CoinAbs(dualObjective_);
+	    }
+	    if (largestObjective < 1.0) {
+	      largestObjective = 1.0;
+	    }
+	    gapO2 = CoinAbs(primalObjective_ - dualObjective_) / largestObjective;
+	  }
+	  if (gapO2 < 1.0e-5 + 1.0e-9 * relativeMultiplier
 	      || complementarityGap_ < 0.1 + 1.0e-9 * relativeMultiplier)
 	      sloppyOptimal2 = true;
-          if ((gapO < 1.0e-6 || (gapO < 1.0e-4 && complementarityGap_ < 0.1)) && !sloppyOptimal) {
+          if ((gapO2 < 1.0e-6 || (gapO2 < 1.0e-4 && complementarityGap_ < 0.1)) && !sloppyOptimal) {
+	       // save solution if none saved
+	       if (saveIteration<0) {
+		 saveIteration = numberIterations_;
+		 if (!savePi) {
+		   savePi = new CoinWorkDouble[numberRows_];
+		   savePrimal = new CoinWorkDouble [numberTotal];
+		 }
+		 CoinMemcpyN(dualArray, numberRows_, savePi);
+		 CoinMemcpyN(solution_, numberTotal, savePrimal);
+	       }
                sloppyOptimal = true;
                sloppyOptimal2 = true;
                handler_->message(CLP_BARRIER_CLOSE_TO_OPTIMAL, messages_)

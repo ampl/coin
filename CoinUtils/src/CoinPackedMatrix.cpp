@@ -1,4 +1,4 @@
-/* $Id: CoinPackedMatrix.cpp 1581 2013-04-06 12:48:50Z stefan $ */
+/* $Id: CoinPackedMatrix.cpp 1726 2014-08-05 16:15:35Z tkr $ */
 // Copyright (C) 2000, International Business Machines
 // Corporation and others.  All Rights Reserved.
 // This code is licensed under the terms of the Eclipse Public License (EPL).
@@ -1191,8 +1191,8 @@ CoinPackedMatrix::countOrthoLength(int * orthoLength) const
     // no gaps 
     const CoinBigIndex last = start_[majorDim_];
     for (CoinBigIndex j = 0; j < last; ++j) {
-      assert( index_[j] < minorDim_ && index_[j]>=0);
-      ++orthoLength[index_[j]];
+	assert( index_[j] < minorDim_ && index_[j]>=0);
+	++orthoLength[index_[j]];
     }
   }
 }
@@ -1632,7 +1632,7 @@ CoinPackedMatrix::deleteMajorVectors(const int numDel,
       return;
    }
 
-   if (!extraGap_&&!extraMajor_) {
+   if (!extraGap_&&!extraMajor_&&false) {
      // See if this is faster
      char * keep = new char[majorDim_];
      memset(keep,1,majorDim_);

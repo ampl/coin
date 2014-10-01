@@ -1,4 +1,4 @@
-/* $Id: CoinMessage.hpp 1411 2011-03-30 11:40:33Z forrest $ */
+/* $Id: CoinMessage.hpp 1726 2014-08-05 16:15:35Z tkr $ */
 // Copyright (C) 2002, International Business Machines
 // Corporation and others.  All Rights Reserved.
 // This code is licensed under the terms of the Eclipse Public License (EPL).
@@ -63,6 +63,7 @@ enum COIN_Message
   COIN_PRESOLDBG_DUALSTAT,
 # endif
   COIN_GENERAL_INFO,
+  COIN_GENERAL_INFO2,
   COIN_GENERAL_WARNING,
   COIN_DUMMY_END
 };

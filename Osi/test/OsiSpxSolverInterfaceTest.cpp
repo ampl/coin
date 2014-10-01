@@ -8,7 +8,7 @@
 // Copyright (C) 2002, Tobias Pfender, International Business Machines
 // Corporation and others.  All Rights Reserved.
 //
-// Last edit: $Id: OsiSpxSolverInterfaceTest.cpp 1781 2011-07-22 19:04:03Z stefan $
+// Last edit: $Id: OsiSpxSolverInterfaceTest.cpp 1968 2014-06-12 16:03:54Z stefan $
 
 #include "CoinPragma.hpp"
 #include "OsiConfig.h"
@@ -17,7 +17,6 @@
 // when not building with soplex.
 #ifdef COIN_HAS_SOPLEX
 
-#include "OsiSpxSolverInterface.hpp"
 #include "OsiUnitTests.hpp"
 #include "OsiRowCut.hpp"
 #include "OsiCuts.hpp"
@@ -25,9 +24,15 @@
 #include "CoinPackedMatrix.hpp"
 
 //#include <iostream>
+#ifndef SOPLEX_LEGACY
+#define SOPLEX_LEGACY
+#endif
 
 // to check for value of infinity
 #include "soplex.h"
+
+// it's important to include this header after soplex.h
+#include "OsiSpxSolverInterface.hpp"
 
 void OsiSpxSolverInterfaceUnitTest( const std::string & mpsDir, const std::string & netlibDir )
 {

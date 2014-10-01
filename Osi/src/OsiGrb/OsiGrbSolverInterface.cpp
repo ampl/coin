@@ -9,7 +9,7 @@
 // Copyright (C) 2009 Humboldt University Berlin and others.
 // All Rights Reserved.
 
-// $Id: OsiGrbSolverInterface.cpp 1940 2013-11-12 14:57:00Z stefan $
+// $Id: OsiGrbSolverInterface.cpp 1958 2014-01-17 13:58:18Z stefan $
 
 #include <iostream>
 #include <cassert>
@@ -2434,13 +2434,7 @@ OsiGrbSolverInterface::deleteCols(const int num, const int * columnIndices)
   }
 #endif
 
-  if (coltype_)
-  {
-  	delete[] coltype_;
-  	coltype_ = NULL;
-  }
-
-  if( !getColNames().empty() )
+  if( !getColNames().empty() || coltype_ != NULL )
   {
     if( ind == NULL )
       ind = new int[num];
@@ -2448,8 +2442,23 @@ OsiGrbSolverInterface::deleteCols(const int num, const int * columnIndices)
     memcpy(ind, columnIndices, num * sizeof(int));
     qsort((void*)ind, num, sizeof(int), intcompare);
     
-    for( int i = num-1; i >= 0; --i )
-      deleteColNames(ind[i], 1);
+    if( !getColNames().empty() )
+       for( int i = num-1; i >= 0; --i )
+          deleteColNames(ind[i], 1);
+
+    if( coltype_ != NULL )
+    {
+      int offset = 0;
+      for( int i = 0; i <= getNumCols(); ++i )
+      {
+        // variable i+offset was deleted
+        if( offset < num && ind[offset] == i+offset )
+          ++offset;
+
+        // move column type from position i+offset to i
+        coltype_[i] = coltype_[i+offset];
+      }
+    }
   }
     
   delete[] ind;

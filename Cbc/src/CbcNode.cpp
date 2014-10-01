@@ -1,4 +1,4 @@
-/* $Id: CbcNode.cpp 1888 2013-04-06 20:52:59Z stefan $ */
+/* $Id: CbcNode.cpp 2055 2014-08-09 16:05:41Z forrest $ */
 // Copyright (C) 2002, International Business Machines
 // Corporation and others.  All Rights Reserved.
 // This code is licensed under the terms of the Eclipse Public License (EPL).
@@ -2819,6 +2819,7 @@ int CbcNode::chooseDynamicBranch (CbcModel *model, CbcNode *lastNode,
                 int iColumn = dynamicObject ? dynamicObject->columnNumber() : numberColumns + iObject;
                 int preferredWay;
                 double infeasibility = object->infeasibility(&usefulInfo, preferredWay);
+		double predictedChange=0.0;
                 // may have become feasible
                 if (!infeasibility) {
 		  if(strongType!=2||solver->getColLower()[iColumn]==solver->getColUpper()[iColumn])
@@ -2909,7 +2910,7 @@ int CbcNode::chooseDynamicBranch (CbcModel *model, CbcNode *lastNode,
                       alternative.)
                     */
                     choice.possibleBranch->way(-1) ;
-                    choice.possibleBranch->branch() ;
+                    predictedChange = choice.possibleBranch->branch() ;
                     solver->solveFromHotStart() ;
                     bool needHotStartUpdate = false;
                     numberStrongDone++;
@@ -2958,6 +2959,9 @@ int CbcNode::chooseDynamicBranch (CbcModel *model, CbcNode *lastNode,
 #endif
 #endif
 		    }
+		    // say infeasible if branch says so
+		    if (predictedChange==COIN_DBL_MAX)
+		      iStatus=1;
                     if (iStatus != 2 && solver->getIterationCount() >
                             realMaxHotIterations)
                         numberUnfinished++;
@@ -3095,7 +3099,7 @@ int CbcNode::chooseDynamicBranch (CbcModel *model, CbcNode *lastNode,
 #endif
 
                     // repeat the whole exercise, forcing the variable up
-                    choice.possibleBranch->branch();
+                    predictedChange=choice.possibleBranch->branch();
                     solver->solveFromHotStart() ;
                     numberStrongDone++;
                     numberStrongIterations += solver->getIterationCount();
@@ -3143,6 +3147,9 @@ int CbcNode::chooseDynamicBranch (CbcModel *model, CbcNode *lastNode,
 #endif
 #endif
 		    }
+		    // say infeasible if branch says so
+		    if (predictedChange==COIN_DBL_MAX)
+		      iStatus=1;
                     if (iStatus != 2 && solver->getIterationCount() >
                             realMaxHotIterations)
                         numberUnfinished++;

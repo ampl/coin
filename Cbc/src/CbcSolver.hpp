@@ -1,4 +1,4 @@
-/* $Id: CbcSolver.hpp 1902 2013-04-10 16:58:16Z stefan $ */
+/* $Id: CbcSolver.hpp 2004 2014-01-14 14:50:43Z forrest $ */
 // Copyright (C) 2007, International Business Machines
 // Corporation and others.  All Rights Reserved.
 // This code is licensed under the terms of the Eclipse Public License (EPL).
@@ -9,7 +9,7 @@
     cbc solver.
 
     This class is currently an orphan. With the removal of all code flagged
-    with the NEWS_STYLE_SOLVER, this class is never instantiated (and cannot
+    with the NEW_STYLE_SOLVER, this class is never instantiated (and cannot
     be instantiated). It is available to be coopted as a top-level object
     wrapping the current CbcMain0 and CbcMain1, should that appear to be a
     desireable path forward.  -- lh, 091211 --
@@ -236,22 +236,52 @@ private:
 };
 //#############################################################################
 
-/// Structure to hold useful arrays
-typedef struct {
-    // Priorities
-    int * priorities_;
-    // SOS priorities
-    int * sosPriority_;
-    // Direction to branch first
-    int * branchDirection_;
-    // Input solution
-    double * primalSolution_;
-    // Down pseudo costs
-    double * pseudoDown_;
-    // Up pseudo costs
-    double * pseudoUp_;
-} CbcSolverUsefulData;
+/**
+   The CbcSolver class was taken out at a 9/12/09 meeting
+   This is a feeble replacement.
+   At present everything is public
+*/
+class CbcSolverUsefulData {
 
+public:
+    ///@name Constructors and destructors etc
+    //@{
+    /// Default Constructor
+    CbcSolverUsefulData();
+
+    /** Copy constructor .
+     */
+    CbcSolverUsefulData(const CbcSolverUsefulData & rhs);
+
+    /// Assignment operator
+    CbcSolverUsefulData & operator=(const CbcSolverUsefulData& rhs);
+
+    /// Destructor
+    ~CbcSolverUsefulData ();
+    //@}
+
+    ///@name Member data
+    //@{
+    // For time
+    double totalTime_;
+    // Parameters
+    CbcOrClpParam parameters_[CBCMAXPARAMETERS];
+    // Printing
+    bool noPrinting_;
+    // Whether to use signal handler
+    bool useSignalHandler_;
+    // Number of Parameters
+    int numberParameters_;
+    // Default pump tuning
+    int initialPumpTune_;
+    //@}
+};
+/// And this uses it
+// When we want to load up CbcModel with options first
+void CbcMain0 (CbcModel & babSolver,CbcSolverUsefulData & solverData);
+int CbcMain1 (int argc, const char *argv[], CbcModel & babSolver, int (CbcModel * currentSolver, int whereFrom),CbcSolverUsefulData & solverData);
+
+//#############################################################################
 
 /*! \brief A class to allow the use of unknown user functionality
 

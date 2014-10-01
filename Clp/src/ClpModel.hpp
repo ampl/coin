@@ -1,4 +1,4 @@
-/* $Id: ClpModel.hpp 1941 2013-04-10 16:52:27Z stefan $ */
+/* $Id: ClpModel.hpp 2047 2014-08-20 07:06:32Z forrest $ */
 // Copyright (C) 2002, International Business Machines
 // Corporation and others.  All Rights Reserved.
 // This code is licensed under the terms of the Eclipse Public License (EPL).
@@ -386,6 +386,7 @@ public:
           return dblParam_[ClpMaxSeconds];
      }
      void setMaximumSeconds(double value);
+     void setMaximumWallSeconds(double value);
      /// Returns true if hit maximum iterations (or time)
      bool hitMaximumIterations() const;
      /** Status of problem:
@@ -419,6 +420,7 @@ public:
          7 - postSolve says not optimal
          8 - failed due to bad element check
          9 - status was 3 and stopped on time
+	 10 - status was 3 and can't use objective as lb
          100 up - translation of enum from ClpEventHandler
      */
      inline int secondaryStatus() const            {

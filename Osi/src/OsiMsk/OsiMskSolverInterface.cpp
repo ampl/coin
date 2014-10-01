@@ -2764,7 +2764,7 @@ std::vector<double*> OsiMskSolverInterface::getPrimalRays(int maxNumRays) const
 
   OsiMskSolverInterface solver(*this);
 
-  int numrows = getNumRows(), r;
+  int numcols = getNumCols(), r;
   MSKsolstae status;
   MSKsoltypee solution;
 
@@ -2788,7 +2788,7 @@ std::vector<double*> OsiMskSolverInterface::getPrimalRays(int maxNumRays) const
       return std::vector<double*>();     
   }
 
-  double *farkasray = new double[numrows];
+  double *farkasray = new double[numcols];
 
   r = MSK_getsolution(getMutableLpPtr(),
                       solution,

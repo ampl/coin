@@ -34,7 +34,7 @@ CoinLpIOUnitTest(const std::string& lpDir)
       assert( m.integerType_ == NULL);
       assert( m.fileName_ == NULL );
       assert( !strcmp( m.problemName_ , ""));
-      assert( m.objName_ == NULL);
+      assert( m.objName_[0] == NULL);
    }
    {
       CoinRelFltEq eq;
@@ -42,7 +42,7 @@ CoinLpIOUnitTest(const std::string& lpDir)
       std::string fn = lpDir + "exmip1.lp";
       m.readLp(fn.c_str());
       assert( !strcmp( m.problemName_ , ""));
-      assert( !strcmp( m.objName_ , "OBJ"));
+      assert( !strcmp( m.objName_[0] , "OBJ"));
       // Test language and re-use
       m.newLanguage(CoinMessages::it);
       m.messageHandler()->setPrefix(false);

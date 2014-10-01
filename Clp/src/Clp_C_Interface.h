@@ -1,4 +1,4 @@
-/* $Id: Clp_C_Interface.h 1902 2013-01-03 17:07:26Z stefan $ */
+/* $Id: Clp_C_Interface.h 2020 2014-01-31 15:25:40Z stefan $ */
 /*
   Copyright (C) 2002, 2003 International Business Machines Corporation
   and others.  All Rights Reserved.
@@ -27,6 +27,24 @@ typedef void Clp_Solve;
 #ifdef __cplusplus
 extern "C" {
 #endif
+
+     /**@name Version info
+      * 
+      * A Clp library has a version number of the form <major>.<minor>.<release>,
+      * where each of major, minor, and release are nonnegative integers.
+      * For a checkout of the Clp stable branch, release is 9999.
+      * For a checkout of the Clp development branch, major, minor, and release are 9999.
+      */
+     /*@{*/
+     /** Clp library version number as string. */
+     COINLIBAPI const char* COINLINKAGE Clp_Version(void);
+     /** Major number of Clp library version. */
+     COINLIBAPI int COINLINKAGE Clp_VersionMajor(void);
+     /** Minor number of Clp library version. */
+     COINLIBAPI int COINLINKAGE Clp_VersionMinor(void);
+     /** Release number of Clp library version. */
+     COINLIBAPI int COINLINKAGE Clp_VersionRelease(void);
+     /*@}*/
 
      /**@name Constructors and destructor
         These do not have an exact analogue in C++.
@@ -212,10 +230,22 @@ extern "C" {
      COINLIBAPI double COINLINKAGE Clp_objectiveValue(Clp_Simplex * model);
      /** Integer information */
      COINLIBAPI char * COINLINKAGE Clp_integerInformation(Clp_Simplex * model);
-     /** Infeasibility/unbounded ray (NULL returned if none/wrong)
-         Up to user to use free() on these arrays.  */
+     /** Gives Infeasibility ray.
+      * 
+      * Use Clp_freeRay to free the returned array.
+      * 
+      * @return infeasibility ray, or NULL returned if none/wrong.
+      */
      COINLIBAPI double * COINLINKAGE Clp_infeasibilityRay(Clp_Simplex * model);
+     /** Gives ray in which the problem is unbounded.
+      * 
+      * Use Clp_freeRay to free the returned array.
+      * 
+      * @return unbounded ray, or NULL returned if none/wrong.
+      */
      COINLIBAPI double * COINLINKAGE Clp_unboundedRay(Clp_Simplex * model);
+     /** Frees a infeasibility or unbounded ray. */
+     COINLIBAPI void COINLINKAGE Clp_freeRay(Clp_Simplex * model, double * ray);
      /** See if status array exists (partly for OsiClp) */
      COINLIBAPI int COINLINKAGE Clp_statusExists(Clp_Simplex * model);
      /** Return address of status array (char[numberRows+numberColumns]) */

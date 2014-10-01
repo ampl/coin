@@ -1,4 +1,4 @@
-/* $Id: CoinModel.cpp 1509 2011-12-05 13:50:48Z forrest $ */
+/* $Id: CoinModel.cpp 1726 2014-08-05 16:15:35Z tkr $ */
 // Copyright (C) 2005, International Business Machines
 // Corporation and others.  All Rights Reserved.
 // This code is licensed under the terms of the Eclipse Public License (EPL).
@@ -6,6 +6,7 @@
 #include "CoinUtilsConfig.h"
 #include "CoinHelperFunctions.hpp"
 #include "CoinModel.hpp"
+#include "CoinMessage.hpp"
 #include "CoinSort.hpp"
 #include "CoinMpsIO.hpp"
 #include "CoinFloatEqual.hpp"
@@ -22,8 +23,10 @@ CoinBaseModel::CoinBaseModel ()
      numberColumns_(0),
      optimizationDirection_(1.0),
      objectiveOffset_(0.0),
+     handler_(NULL),
      logLevel_(0)
 {
+  messages_ = CoinMessage();
   problemName_ = "";
   rowBlockName_ = "row_master";
   columnBlockName_ = "column_master";
@@ -37,6 +40,7 @@ CoinBaseModel::CoinBaseModel (const CoinBaseModel & rhs)
     numberColumns_(rhs.numberColumns_),
     optimizationDirection_(rhs.optimizationDirection_),
     objectiveOffset_(rhs.objectiveOffset_),
+    handler_(rhs.handler_),
     logLevel_(rhs.logLevel_)
 {
   problemName_ = rhs.problemName_;
@@ -65,6 +69,7 @@ CoinBaseModel::operator=(const CoinBaseModel& rhs)
     numberColumns_ = rhs.numberColumns_;
     optimizationDirection_ = rhs.optimizationDirection_;
     objectiveOffset_ = rhs.objectiveOffset_;
+    handler_ = rhs.handler_;
     logLevel_ = rhs.logLevel_;
   }
   return *this;
@@ -72,7 +77,7 @@ CoinBaseModel::operator=(const CoinBaseModel& rhs)
 void 
 CoinBaseModel::setLogLevel(int value)
 {
-  if (value>=0&&value<3)
+  if (value>=0&&value<3) 
     logLevel_=value;
 }
 void
@@ -82,6 +87,16 @@ CoinBaseModel::setProblemName (const char *name)
     problemName_ = name ;
   else
     problemName_ = "";
+}
+// Pass in message handler
+void 
+CoinBaseModel::setMessageHandler(CoinMessageHandler * handler)
+{
+  handler_=handler;
+  if (handler) 
+    logLevel_=-1;
+  else 
+    logLevel_=CoinMax(0,logLevel_);
 }
 //#############################################################################
 // Constructors / Destructor / Assignment

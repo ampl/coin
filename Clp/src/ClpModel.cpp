@@ -1,4 +1,4 @@
-/* $Id: ClpModel.cpp 1957 2013-05-15 08:58:19Z forrest $ */
+/* $Id: ClpModel.cpp 2045 2014-08-13 15:05:38Z tkr $ */
 // copyright (C) 2002, International Business Machines
 // Corporation and others.  All Rights Reserved.
 // This code is licensed under the terms of the Eclipse Public License (EPL).
@@ -130,6 +130,7 @@ ClpModel::ClpModel (bool emptyMessages) :
      dblParam_[ClpPrimalTolerance] = 1e-7;
      dblParam_[ClpObjOffset] = 0.0;
      dblParam_[ClpMaxSeconds] = -1.0;
+     dblParam_[ClpMaxWallSeconds] = -1.0;
      dblParam_[ClpPresolveTolerance] = 1.0e-8;
 
 #ifndef CLP_NO_STD
@@ -767,6 +768,7 @@ ClpModel::gutsOfCopy(const ClpModel & rhs, int trueCopy)
      dblParam_[ClpPrimalTolerance] = rhs.dblParam_[ClpPrimalTolerance];
      dblParam_[ClpObjOffset] = rhs.dblParam_[ClpObjOffset];
      dblParam_[ClpMaxSeconds] = rhs.dblParam_[ClpMaxSeconds];
+     dblParam_[ClpMaxWallSeconds] = rhs.dblParam_[ClpMaxWallSeconds];
      dblParam_[ClpPresolveTolerance] = rhs.dblParam_[ClpPresolveTolerance];
 #ifndef CLP_NO_STD
 
@@ -1109,6 +1111,13 @@ ClpModel::setDblParam(ClpDblParam key, double value)
                value = -1.0;
           break;
 
+     case ClpMaxWallSeconds:
+          if(value >= 0)
+               value += CoinWallclockTime();
+          else
+               value = -1.0;
+          break;
+
      case ClpPresolveTolerance:
           if (value <= 0.0 || value > 1.0e10)
                return false;
@@ -1351,21 +1360,26 @@ ClpModel::resize (int newNumberRows, int newNumberColumns)
      }
 #ifndef CLP_NO_STD
      if (lengthNames_) {
-          // redo row and column names
-          if (numberRows_ < newNumberRows) {
+          // redo row and column names (make sure clean)
+          int numberRowNames = 
+	    CoinMin(static_cast<int>(rowNames_.size()),numberRows_);
+          if (numberRowNames < newNumberRows) {
                rowNames_.resize(newNumberRows);
                lengthNames_ = CoinMax(lengthNames_, 8);
                char name[9];
-               for (int iRow = numberRows_; iRow < newNumberRows; iRow++) {
+               for (int iRow = numberRowNames; iRow < newNumberRows; iRow++) {
                     sprintf(name, "R%7.7d", iRow);
                     rowNames_[iRow] = name;
                }
           }
-          if (numberColumns_ < newNumberColumns) {
+          int numberColumnNames = 
+	    CoinMin(static_cast<int>(columnNames_.size()),numberColumns_);
+          if (numberColumnNames < newNumberColumns) {
                columnNames_.resize(newNumberColumns);
                lengthNames_ = CoinMax(lengthNames_, 8);
                char name[9];
-               for (int iColumn = numberColumns_; iColumn < newNumberColumns; iColumn++) {
+               for (int iColumn = numberColumnNames; 
+		    iColumn < newNumberColumns; iColumn++) {
                     sprintf(name, "C%7.7d", iColumn);
                     columnNames_[iColumn] = name;
                }
@@ -2585,6 +2599,16 @@ ClpModel::addColumns( CoinModel & modelObject, bool tryPlusMinusOne, bool checkD
 #ifndef SLIM_CLP
                if (!tryPlusMinusOne) {
 #endif
+		    /* addColumns just above extended matrix - to keep
+		       things clean - take off again.  I know it is a bit
+		       clumsy but won't break anything */
+		    {
+		      int * which = new int [numberColumns2];
+		      for (int i=0;i<numberColumns2;i++)
+			which[i]=i+numberColumns;
+		      matrix_->deleteCols(numberColumns2,which);
+		      delete [] which;
+		    }
                     CoinPackedMatrix matrix;
                     modelObject.createPackedMatrix(matrix, associated);
                     assert (!matrix.getExtraGap());
@@ -2791,6 +2815,14 @@ ClpModel::setMaximumSeconds(double value)
      else
           dblParam_[ClpMaxSeconds] = -1.0;
 }
+void
+ClpModel::setMaximumWallSeconds(double value)
+{
+     if(value >= 0)
+          dblParam_[ClpMaxWallSeconds] = value + CoinWallclockTime();
+     else
+          dblParam_[ClpMaxWallSeconds] = -1.0;
+}
 // Returns true if hit maximum iterations (or time)
 bool
 ClpModel::hitMaximumIterations() const
@@ -2800,6 +2832,9 @@ ClpModel::hitMaximumIterations() const
      if (dblParam_[ClpMaxSeconds] >= 0.0 && !hitMax) {
           hitMax = (CoinCpuTime() >= dblParam_[ClpMaxSeconds]);
      }
+     if (dblParam_[ClpMaxWallSeconds] >= 0.0 && !hitMax) {
+          hitMax = (CoinWallclockTime() >= dblParam_[ClpMaxWallSeconds]);
+     }
      return hitMax;
 }
 // On stopped - sets secondary status
@@ -2808,7 +2843,8 @@ ClpModel::onStopped()
 {
      if (problemStatus_ == 3) {
           secondaryStatus_ = 0;
-          if (CoinCpuTime() >= dblParam_[ClpMaxSeconds] && dblParam_[ClpMaxSeconds] >= 0.0)
+          if ((CoinCpuTime() >= dblParam_[ClpMaxSeconds] && dblParam_[ClpMaxSeconds] >= 0.0) ||
+	      (CoinWallclockTime() >= dblParam_[ClpMaxWallSeconds] && dblParam_[ClpMaxWallSeconds] >= 0.0))
                secondaryStatus_ = 9;
      }
 }
@@ -3304,6 +3340,7 @@ ClpModel::ClpModel ( const ClpModel * rhs,
      dblParam_[ClpPrimalTolerance] = rhs->dblParam_[ClpPrimalTolerance];
      dblParam_[ClpObjOffset] = rhs->dblParam_[ClpObjOffset];
      dblParam_[ClpMaxSeconds] = rhs->dblParam_[ClpMaxSeconds];
+     dblParam_[ClpMaxWallSeconds] = rhs->dblParam_[ClpMaxWallSeconds];
      dblParam_[ClpPresolveTolerance] = rhs->dblParam_[ClpPresolveTolerance];
 #ifndef CLP_NO_STD
      strParam_[ClpProbName] = rhs->strParam_[ClpProbName];
@@ -4491,8 +4528,8 @@ ClpDataSave::operator=(const ClpDataSave& rhs)
           dualBound_ = rhs.dualBound_;
           infeasibilityCost_ = rhs.infeasibilityCost_;
           pivotTolerance_ = rhs.pivotTolerance_;
-          zeroFactorizationTolerance_ = zeroFactorizationTolerance_;
-          zeroSimplexTolerance_ = zeroSimplexTolerance_;
+          zeroFactorizationTolerance_ = rhs.zeroFactorizationTolerance_;
+          zeroSimplexTolerance_ = rhs.zeroSimplexTolerance_;
           acceptablePivot_ = rhs.acceptablePivot_;
           objectiveScale_ = rhs.objectiveScale_;
           sparseThreshold_ = rhs.sparseThreshold_;

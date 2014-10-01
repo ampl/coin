@@ -1,4 +1,4 @@
-/* $Id: CbcThread.hpp 1902 2013-04-10 16:58:16Z stefan $ */
+/* $Id: CbcThread.hpp 2023 2014-03-25 12:59:22Z forrest $ */
 // Copyright (C) 2009, International Business Machines
 // Corporation and others.  All Rights Reserved.
 // This code is licensed under the terms of the Eclipse Public License (EPL).
@@ -388,6 +388,14 @@ public:
     inline CbcModel * model(int i) const {
         return threadModel_[i];
     }
+  
+    /// Returns pointer to a child thread
+    inline CbcThread * child(int thread) const
+    { return children_+thread;}
+
+    /// Returns number of children
+    inline int numberThreads() const
+    { return numberThreads_;}
 
     /// Sets Dantzig state in children
     void setDantzigState();

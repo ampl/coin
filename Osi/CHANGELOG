@@ -1,3 +1,12 @@
+12/06/2014 OsiSpx
+  - added compatibility with SoPlex 2.0 (using SoPlex legacy interface)
+
+10/02/2014 OsiMsk
+  - fixed bug in OsiMsk::getPrimalRays() when number of rows < number of columns
+
+17/01/2014 OsiGrb
+  - fixed bug in OsiGrb::deleteCols() where the columns types got lost
+
 11/18/2013 OsiMsk
   - changed MIP optimizer to Mosek's own conic MIP optimizer, if Mosek version >= 7
 

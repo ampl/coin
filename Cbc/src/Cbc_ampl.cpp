@@ -1,4 +1,4 @@
-/* $Id: Cbc_ampl.cpp 1926 2013-05-24 10:19:49Z stefan $ */
+/* $Id: Cbc_ampl.cpp 2034 2014-05-13 07:25:03Z forrest $ */
 /****************************************************************
 Copyright (C) 1997-2000 Lucent Technologies
 Modifications for Coin -  Copyright (C) 2006, International Business Machines Corporation and others.
@@ -412,7 +412,11 @@ readAmpl(ampl_info * info, int argc, char **argv, void ** coinModel)
     want_xpi0 = 1;
     /* for basis info */
     info->columnStatus = (int *) malloc(n_var * sizeof(int));
+    for (int i=0;i<n_var;i++)
+      info->columnStatus[i]=3;
     info->rowStatus = (int *) malloc(n_con * sizeof(int));
+    for (int i=0;i<n_con;i++)
+      info->rowStatus[i]=1;
     csd = suf_iput("sstatus", ASL_Sufkind_var, info->columnStatus);
     rsd = suf_iput("sstatus", ASL_Sufkind_con, info->rowStatus);
     if (!(nlvc + nlvo) && nonLinearType < 10) {
@@ -693,7 +697,10 @@ void freeArgs(ampl_info * info)
 }
 int ampl_obj_prec()
 {
-    return obj_prec();
+    int precision = obj_prec();
+    if (precision<=0)
+        precision=15;
+    return precision;
 }
 void writeAmpl(ampl_info * info)
 {
@@ -1315,6 +1322,8 @@ CoinModel::gdb( int nonLinear, const char * fileName, const void * info)
     free(rowLower);
     free(rowUpper);
     free(objective);
+    // space for building a row
+    char * temp = new char [30*numberColumns_];
     // do names
     int iRow;
     for (iRow = 0; iRow < numberRows_; iRow++) {
@@ -1372,7 +1381,6 @@ CoinModel::gdb( int nonLinear, const char * fileName, const void * info)
                                 constant = getElement(iRow, j);
                                 linear = true;
                             }
-                            char temp[1000];
                             char temp2[30];
                             if (value == 1.0)
                                 sprintf(temp2, "c%7.7d", kColumn);
@@ -1391,7 +1399,7 @@ CoinModel::gdb( int nonLinear, const char * fileName, const void * info)
                                 else
                                     sprintf(temp, "%s%s", expr, temp2);
                             }
-                            assert (strlen(temp) < 1000);
+                            assert (static_cast<int>(strlen(temp)) < 30*numberColumns_);
                             setElement(iRow, j, temp);
                             if (amplInfo->logLevel > 1)
                                 printf("el for row %d column c%7.7d is %s\n", iRow, j, temp);
@@ -1417,7 +1425,6 @@ CoinModel::gdb( int nonLinear, const char * fileName, const void * info)
                                 constant = getColumnObjective(j);
                                 linear = true;
                             }
-                            char temp[1000];
                             char temp2[30];
                             if (value == 1.0)
                                 sprintf(temp2, "c%7.7d", kColumn);
@@ -1436,7 +1443,7 @@ CoinModel::gdb( int nonLinear, const char * fileName, const void * info)
                                 else
                                     sprintf(temp, "%s%s", expr, temp2);
                             }
-                            assert (strlen(temp) < 1000);
+                            assert (static_cast<int>(strlen(temp)) < 30*numberColumns_);
                             setObjective(j, temp);
                             if (amplInfo->logLevel > 1)
                                 printf("el for objective column c%7.7d is %s\n", j, temp);
@@ -1450,6 +1457,7 @@ CoinModel::gdb( int nonLinear, const char * fileName, const void * info)
             exit(77);
         }
     }
+    delete [] temp;
     free(colqp);
     free(z);
     // see if any sos

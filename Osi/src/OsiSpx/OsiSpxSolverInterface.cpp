@@ -9,7 +9,7 @@
 //-----------------------------------------------------------------------------
 // Copyright (C) 2002, Tobias Pfender, International Business Machines
 // Corporation and others.  All Rights Reserved.
-// Last edit: $Id: OsiSpxSolverInterface.cpp 1899 2013-04-06 20:43:00Z stefan $
+// Last edit: $Id: OsiSpxSolverInterface.cpp 1968 2014-06-12 16:03:54Z stefan $
 
 #include "CoinPragma.hpp"
 
@@ -21,13 +21,19 @@
 
 #include "CoinError.hpp"
 
-#include "OsiSpxSolverInterface.hpp"
 #include "OsiRowCut.hpp"
 #include "OsiColCut.hpp"
 #include "CoinPackedMatrix.hpp"
 #include "CoinWarmStartBasis.hpp"
 
+#ifndef SOPLEX_LEGACY
+#define SOPLEX_LEGACY
+#endif
+
 #include "soplex.h"
+
+// it's important to include this header after soplex.h
+#include "OsiSpxSolverInterface.hpp"
 
 //#############################################################################
 // A couple of helper functions

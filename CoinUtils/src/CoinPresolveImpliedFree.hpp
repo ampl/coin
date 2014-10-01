@@ -1,4 +1,4 @@
-/* $Id: CoinPresolveImpliedFree.hpp 1562 2012-11-24 00:36:15Z lou $ */
+/* $Id: CoinPresolveImpliedFree.hpp 1695 2014-04-29 02:11:10Z tkr $ */
 // Copyright (C) 2002, International Business Machines
 // Corporation and others.  All Rights Reserved.
 // This code is licensed under the terms of the Eclipse Public License (EPL).

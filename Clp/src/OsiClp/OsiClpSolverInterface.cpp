@@ -1620,8 +1620,9 @@ bool OsiClpSolverInterface::isDualObjectiveLimitReached() const
 
 bool OsiClpSolverInterface::isIterationLimitReached() const
 {
-  const int stat = modelPtr_->status();
-  return (stat == 3);
+  const int status = modelPtr_->status();
+  const int secondaryStatus = modelPtr_->secondaryStatus();
+  return (status == 3 && secondaryStatus != 9);
 }
 
 //#############################################################################
@@ -6713,6 +6714,7 @@ OsiClpSolverInterface::crunch()
     small->moreSpecialOptions_ = modelPtr_->moreSpecialOptions_;
     small->dual(0,7);
 #endif
+    modelPtr_->secondaryStatus_=0;
     totalIterations += small->numberIterations();
     int problemStatus = small->problemStatus();
     if (problemStatus>=0&&problemStatus<=2) {
@@ -6792,13 +6794,20 @@ OsiClpSolverInterface::crunch()
       whichRow[nCopy]=nBound;
       assert (arrayI[0]==nBound);
       arrayI[0]=nBound; // same
-      spareArrays_ = spareArrays_;
+      spareArrays_ = spareArrays;
       spareArrays=NULL;
 #endif
     } else if (problemStatus!=3) {
       modelPtr_->setProblemStatus(1);
     } else {
       if (problemStatus==3) {
+	if (!inCbcOrOther) {
+	  // Calling code not Cbc - may want information from larger model
+	  static_cast<ClpSimplexOther *> (modelPtr_)->afterCrunch(*small,whichRow,whichColumn,nBound);
+	  // but may not be able to trust objective as lower bound
+	  if (small->algorithm_==1/*||small->sumDualInfeasibilities_>1.0e-5*/)
+	    modelPtr_->secondaryStatus_=10;
+	}
 	// may be problems
 	if (inCbcOrOther&&disasterHandler_->inTrouble()) {
 	  if (disasterHandler_->typeOfDisaster()) {
