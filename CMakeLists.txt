@@ -27,7 +27,6 @@ function (force_static_libs lang)
       find_library(${lib}_LIB
         ${CMAKE_STATIC_LIBRARY_PREFIX}${lib}${CMAKE_STATIC_LIBRARY_SUFFIX}
         ${CMAKE_${lang}_IMPLICIT_LINK_DIRECTORIES})
-      message("!! ${lib} ${found} ${${lib}_LIB}")
       if (${lib}_LIB)
         set(lib ${${lib}_LIB})
       endif ()
@@ -532,6 +531,7 @@ add_coin_library(Cbc Cgl OsiClp ${CBC_PTHREADS_LIB})
 add_coin_library(Cbc/src/OsiCbc Osi Cbc)
 target_link_libraries(Cbc-osiUnitTest OsiCbc)
 target_link_libraries(Cbc-gamsTest CbcSolver)
+target_link_libraries(Cbc-CInterfaceTest CbcSolver)
 
 add_coin_library(Cbc NAME CbcSolver NOTESTS Cbc Cgl ${ASL_LIBRARIES})
 set_target_properties(CbcSolver PROPERTIES COMPILE_DEFINITIONS CBC_BUILD)
