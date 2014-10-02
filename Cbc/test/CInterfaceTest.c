@@ -8,8 +8,12 @@
 #include <assert.h>
 #include <math.h>
 #include <stdio.h>
+#include <stdlib.h>
 #include <string.h>
 
+#ifndef INFINITY
+# define INFINITY (HUGE_VAL * 2)
+#endif
 
 static int callback_called = 0;
 
