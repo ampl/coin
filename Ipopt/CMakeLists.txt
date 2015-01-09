@@ -115,5 +115,5 @@ if (DL_LIBRARY)
 endif ()
 
 if (NOT CMAKE_GNUtoMS)
-  add_ipopt_test(hs071_f hs071_f.f)
+  add_ipopt_test(hs071_f SOURCE_DIR ${COIN_BINARY_DIR} hs071_f.f)
 endif ()
