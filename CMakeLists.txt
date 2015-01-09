@@ -728,6 +728,7 @@ if (BUILD_IPOPT AND EXISTS ${COIN_SOURCE_DIR}/Bonmin)
   add_coin_library(Bonmin/src/CbcBonmin NAME bonmin
     bonalgorithms bonbranching bonquadcuts bonoagenerators
     bonmininterfaces ipoptinterface ipopt bonheuristics CbcSolver ${BONMIN_DEPS})
+  target_include_directories(bonmin PUBLIC Bonmin/src/Interfaces/Ampl)
 
   add_coin_test(Bonmin-unitTest Bonmin/test bonmin InterfaceTest.cpp)
   add_coin_test(Bonmin-CppExample Bonmin/examples/CppExample
