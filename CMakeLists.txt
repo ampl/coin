@@ -605,7 +605,9 @@ if (EXISTS ${COIN_SOURCE_DIR}/Ipopt)
       set(BUILD_IPOPT TRUE)
       # Discover and link with gfortran runtime library statically since
       # -static-libgfortran is not always available.
-      force_static_libs(Fortran gfortran quadmath)
+      if (NOT BUILD_SHARED_LIBS)
+        force_static_libs(Fortran gfortran quadmath)
+      endif ()
       if (UNIX)
         set(CMAKE_Fortran_IMPLICIT_LINK_LIBRARIES
           ${CMAKE_Fortran_IMPLICIT_LINK_LIBRARIES} gcc)
