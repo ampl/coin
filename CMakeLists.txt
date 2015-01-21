@@ -773,6 +773,7 @@ if (BUILD_IPOPT AND EXISTS ${COIN_SOURCE_DIR}/Couenne)
 
   if (COIN_HAS_ASL)
     set(COUENNEINTERFACE_FROM_ASL 1)
+    add_dependencies(CouenneProblem asl)
   endif ()
 
   set(DEPENDENCY_LINKING 1)
@@ -780,7 +781,6 @@ if (BUILD_IPOPT AND EXISTS ${COIN_SOURCE_DIR}/Couenne)
     CouenneInterfaces CouenneHeuristics CouenneProblem CouenneStandardize
     CouenneExpression CouenneBranch CouenneConvex CouenneBoundTightening
     CouenneTwoImplied CouenneUtil CouenneDisjunctive bonmin)
-  add_dependencies(CouenneProblem asl)
 
   add_executable(couenne-executable Couenne/src/main/BonCouenne.cpp)
   set_target_properties(couenne-executable PROPERTIES
