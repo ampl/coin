@@ -1,4 +1,4 @@
-/* $Id: CouenneFixPoint.hpp 946 2013-04-15 22:20:38Z stefan $
+/* $Id: CouenneFixPoint.hpp 1004 2013-10-13 16:04:19Z pbelotti $
  *
  * Name:    CouenneFixPoint.hpp
  * Author:  Pietro Belotti
@@ -18,6 +18,8 @@
 #include "CglCutGenerator.hpp"
 #include "OsiRowCut.hpp"
 #include "OsiSolverInterface.hpp"
+
+#include "CouenneBTPerfIndicator.hpp"
 
 namespace Couenne {
 
@@ -69,9 +71,6 @@ namespace Couenne {
     /// CPU time
     mutable double CPUtime_;
 
-    /// Number of actual runs
-    mutable int nRuns_;
-
     /// Number of bounds tightened
     mutable int nTightened_;
 
@@ -85,6 +84,9 @@ namespace Couenne {
 		    const int,
 		    bool,
 		    int, int) const;
+
+    /// Performance indicator
+    CouenneBTPerfIndicator perfIndicator_;
   };
 }
 

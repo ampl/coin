@@ -1,4 +1,4 @@
-/* $Id: BonCouenneInterface.hpp 624 2011-06-09 15:21:30Z stefan $ */
+/* $Id: BonCouenneInterface.hpp 857 2012-06-11 17:52:32Z pbelotti $ */
 // (C) Copyright International Business Machines Corporation (IBM) 2006-09
 // All Rights Reserved.
 // This code is published under the Eclipse Public License (EPL).
@@ -63,7 +63,7 @@ namespace Couenne {
      * The put everything in an OsiSolverInterface.
      */
     virtual void extractLinearRelaxation
-    (OsiSolverInterface &si,  CouenneCutGenerator & couenneCg, bool getObj = 1, bool solveNlp = 1);
+    (OsiSolverInterface &si, CouenneCutGenerator & couenneCg, bool getObj = 1, bool solveNlp = 1);
 
   
     /** To set some application specific defaults. */

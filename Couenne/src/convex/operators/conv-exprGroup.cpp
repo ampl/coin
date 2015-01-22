@@ -1,4 +1,4 @@
-/* $Id: conv-exprGroup.cpp 847 2012-05-10 21:47:30Z pbelotti $
+/* $Id: conv-exprGroup.cpp 848 2012-05-10 21:47:38Z pbelotti $
  *
  * Name:    conv-exprGroup.cpp
  * Author:  Pietro Belotti
@@ -186,8 +186,6 @@ void exprGroup::getBounds (CouNumber &lb, CouNumber &ub) {
       if (inf_lb)
 	break;
     }
-
-    //if (inf_lb && inf_ub) break; // no need to keep computing...
   }
 }
 
@@ -232,7 +230,7 @@ void exprGroup::generateCuts (expression *w,
     // first, make room for aux variable
     coeff [0] = -1.; 
     index [0] = w -> Index ();
-    lb = ub = 0;
+    lb = ub = 0.;
   }
 
   if (uselessAux)
@@ -248,7 +246,7 @@ void exprGroup::generateCuts (expression *w,
 
   for (; el != lcoeff_.end (); ++el) 
 
-    if (fabs (el -> second) > 1.0e-21) { 
+    if (fabs (el -> second) > 1.e-21) { 
       // why 1.0e-21? Look at CoinPackedMatrix.cpp:2237
 
       coeff [nterms]   = el -> second; 

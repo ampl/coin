@@ -1,4 +1,4 @@
-/* $Id: CouenneRestoreUnused.cpp 490 2011-01-14 16:07:12Z pbelotti $
+/* $Id: CouenneRestoreUnused.cpp 899 2012-08-15 12:48:27Z pbelotti $
  *
  * Name:    CouenneRestoreUnused.cpp
  * Authors: Pietro Belotti, Lehigh University
@@ -56,7 +56,9 @@ void CouenneProblem::restoreUnusedOriginals (CouNumber *x) const {
   if (nUnusedOriginals_ <= 0) return;
 
   if (x)
-    domain_.push (nVars(), x, NULL, NULL, false); // no need for another copy
+    domain_.push (nVars(), x, 
+		  domain_. current () -> lb (), 
+		  domain_. current () -> ub (), false); // no need for another copy
 
   for (int i=0; i<nUnusedOriginals_; i++) {
 
@@ -67,10 +69,10 @@ void CouenneProblem::restoreUnusedOriginals (CouNumber *x) const {
 
       CouNumber value = (*img) ();
 
-      X  (indVar) = value;
+      X (indVar) = value;
 
       if (x)
-	x  [indVar] = value;
+	x [indVar] = value;
     }
   }
 

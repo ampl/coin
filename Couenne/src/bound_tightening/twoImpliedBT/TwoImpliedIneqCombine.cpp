@@ -1,4 +1,4 @@
-/* $Id: TwoImpliedIneqCombine.cpp 490 2011-01-14 16:07:12Z pbelotti $
+/* $Id: TwoImpliedIneqCombine.cpp 939 2013-01-12 19:53:30Z pbelotti $
  *
  * Name:    TwoImpliedCombine.cpp
  * Author:  Pietro Belotti
@@ -23,7 +23,7 @@ namespace Couenne {
 
 enum signum {NEG, POS, DN, UP};
 
-  //#define DEBUG
+//#define DEBUG
 
 // type for alphas ////////////////////////////////////////////////
 
@@ -119,8 +119,8 @@ int combine (CouenneProblem *p,
     pairs [i]. position = i;
   }
 
-  // This is not very wise: qsort behaves horribly on already sorted
-  // arrays (if the pivot element is the last one).
+  // This is not very wise: qsort behaves horribly (that is, O(n^2))
+  // on already sorted arrays (if the pivot element is the last one).
 
   qsort (pairs, n1, sizeof (indPosPair), compPair);
 

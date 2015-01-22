@@ -1,4 +1,4 @@
-/* $Id: CouenneExprMul.hpp 615 2011-06-08 20:36:24Z pbelotti $
+/* $Id: CouenneExprMul.hpp 811 2012-02-01 19:21:41Z pbelotti $
  *
  * Name:    exprMul.hpp
  * Author:  Pietro Belotti
@@ -16,6 +16,8 @@
 #include "CouenneExprOp.hpp"
 
 namespace Couenne {
+
+class CouenneCutGenerator;
 
 /// class for multiplications, \f$ \prod_{i=1}^n f_i(x) \f$
 

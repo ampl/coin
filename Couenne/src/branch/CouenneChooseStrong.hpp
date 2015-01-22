@@ -1,4 +1,4 @@
-/* $Id: CouenneChooseStrong.hpp 726 2011-06-30 19:42:37Z fmargot $
+/* $Id: CouenneChooseStrong.hpp 792 2012-01-24 17:24:15Z pbelotti $
  *
  * Name:    CouenneChooseStrong.hpp
  * Authors: Andreas Waechter, IBM Corp.
@@ -20,7 +20,7 @@ class CouenneProblem;
 
 template <class T> class CouenneSolverInterface;
 
-class CouenneChooseStrong : public Bonmin::BonChooseVariable  {
+class CouenneChooseStrong : public Bonmin::BonChooseVariable {
 
 public:
 

@@ -1,4 +1,4 @@
-/* $Id: CouenneTNLP.cpp 846 2012-05-07 14:10:50Z pbelotti $
+/* $Id: CouenneTNLP.cpp 901 2012-08-23 14:07:44Z pbelotti $
  *
  * Name:    CouenneTNLP.cpp
  * Authors: Pietro Belotti
@@ -52,6 +52,9 @@ CouenneTNLP::~CouenneTNLP () {
        i != gradient_. end (); ++i)
     delete (*i). second;
 }
+
+/// defined in Feasibility pump
+int PSDize (int n, double *A, double *B, bool doSqrRoot);
 
 
 /// Constructor 
@@ -174,7 +177,7 @@ bool CouenneTNLP::get_nlp_info (Index& n,
 
 
 /// set initial solution
-void CouenneTNLP::setInitSol (double *sol) {
+void CouenneTNLP::setInitSol (const double *sol) {
 
   if (sol) {
     if (!sol0_)
@@ -221,13 +224,18 @@ bool CouenneTNLP::get_bounds_info (Index n, Number* x_l, Number* x_u,
 
     exprVar *e = problem_ -> Var (i);
 
-    CouNumber
-      lb = e -> lb (),
-      ub = e -> ub ();
+    if (e -> Multiplicity () <= 0) 
+      *x_l++ = *x_u++ = 0.;
+    else {
 
-    // prevent ipopt from exiting on inconsistent bounds
-    if (lb <= ub) {*x_l++ = lb; *x_u++ = ub;} 
-    else          {*x_l++ = ub; *x_u++ = lb;}
+      CouNumber
+	lb = e -> lb (),
+	ub = e -> ub ();
+
+      // prevent ipopt from exiting on inconsistent bounds
+      if (lb <= ub) {*x_l++ = lb; *x_u++ = ub;} 
+      else          {*x_l++ = ub; *x_u++ = lb;}
+    }
 
     if ((e -> Type () != AUX) ||
 	(e -> Multiplicity () <= 0))
@@ -277,7 +285,7 @@ bool CouenneTNLP::get_constraints_linearity (Index m, Ipopt::TNLP::LinearityType
       (b -> Linearity () > LINEAR) ? 
       Ipopt::TNLP::NON_LINEAR : 
       Ipopt::TNLP::LINEAR;
- }
+  }
 
   // auxiliaries
 
@@ -590,13 +598,14 @@ void CouenneTNLP::setObjective (expression *newObj) {
 
   for (std::set <int>::iterator i = objDep.begin (); i != objDep. end (); ++i) {
 
-    expression *gradcomp = Simplified (newObj -> differentiate (*i));
-    //*gsimp    = gradcomp -> simplify ();
+    expression
+      *gradcomp = newObj -> differentiate (*i),
+      *gsimp    = gradcomp -> simplify ();
 
-    // if (gsimp) {
-    //   delete gradcomp;
-    //   gradcomp = gsimp;
-    // }
+    if (gsimp) {
+      delete gradcomp;
+      gradcomp = gsimp;
+    }
 
     gradcomp -> realign (problem_);
     gradient_ . push_back (std::pair <int, expression *> (*i, gradcomp));
@@ -622,13 +631,15 @@ void CouenneTNLP::finalize_solution (SolverReturn status,
   // if a save-flag was set, save this solution's lagrangian hessian
   // for later use by the FP
 
-  if (saveOptHessian_) {
+  if (!saveOptHessian_)
+    return;
 
+  {
     if (!optHessian_)
       optHessian_ = new CouenneSparseMatrix;
 
-    problem_ -> domain () -> push (n, x, NULL, NULL);
-
+    problem_ -> domain () -> push (n, x, problem_ -> domain () -> current () -> lb (),
+   				         problem_ -> domain () -> current () -> ub ());
     int nnz = HLa_ -> nnz ();
 
     // resize them to full size (and realloc them to optHessianNum_ later)
@@ -655,11 +666,11 @@ void CouenneTNLP::finalize_solution (SolverReturn status,
 	int indLam = HLa_ -> lamI () [i][j];
 
 	hessMember += (indLam == 0) ? 
-	  (*(elist [j])) () :                  // this is the objective
+	  (*(elist [j])) () :                    // this is the objective
 	  (*(elist [j])) () * lambda [indLam-1]; // this is a constraint
       }
 
-      if (hessMember != 0.) {
+      if (fabs (hessMember) > COUENNE_EPS) {
 
 	// printf ("saving: %d, %d --> %g\n", 
 	// 	HLa_ -> iRow () [i],
@@ -671,11 +682,49 @@ void CouenneTNLP::finalize_solution (SolverReturn status,
       }
     }
 
+    double *H = new double [n*n];
+    CoinZeroN (H, n*n);
+
+    double *H_PSD = new double [n*n];
+
+    for (int i=0; i < optHessianNum; ++i)
+      H [*optHessianRow++ * n + *optHessianCol++] = *optHessianVal++;
+
+    optHessianRow -= optHessianNum;
+    optHessianCol -= optHessianNum;
+    optHessianVal -= optHessianNum;
+
+    // transform matrix into a PSD one by eliminating the contribution
+    // of negative eigenvalues, return number of nonzeros
+    optHessianNum = PSDize (n, H, H_PSD, false); 
+
     optHessianVal = (double *) realloc (optHessianVal, optHessianNum * sizeof (double));
     optHessianRow = (int    *) realloc (optHessianRow, optHessianNum * sizeof (int));
     optHessianCol = (int    *) realloc (optHessianCol, optHessianNum * sizeof (int));
 
+    nnz = 0;
+    double val;
+
+    for (int i=0; i<n; ++i)
+      for (int j=0; j<n; ++j)
+	if (fabs (val = *H_PSD++) > COUENNE_EPS) {
+	  *optHessianRow++ = i;
+	  *optHessianCol++ = j;
+	  *optHessianVal++ = val;
+	  ++nnz;
+	}
+
+    H_PSD -= n*n;
+    optHessianNum = nnz;
+
+    optHessianRow -= nnz;
+    optHessianCol -= nnz;
+    optHessianVal -= nnz;
+
     problem_ -> domain () -> pop ();
+
+    delete [] H;
+    delete [] H_PSD;
   }
 }
 

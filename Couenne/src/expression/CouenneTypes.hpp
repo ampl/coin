@@ -1,4 +1,4 @@
-/* $Id: CouenneTypes.hpp 571 2011-05-09 13:26:44Z pbelotti $
+/* $Id: CouenneTypes.hpp 940 2013-01-13 19:49:02Z pbelotti $
  *
  * Name:    CouenneTypes.hpp
  * Author:  Pietro Belotti
@@ -43,7 +43,7 @@ enum expr_type {/*COU_EXPRAUX,  COU_EXPRCLONE, COU_EXPRCOPY, */
 		/*COU_EXPRIVAR, */ 
 		COU_EXPROP,     /***** n-ary operators *******************/
 		COU_EXPRSUB,  COU_EXPRSUM, COU_EXPRGROUP, COU_EXPRQUAD,
-		COU_EXPRMIN,  COU_EXPRMUL, COU_EXPRTRILINEAR, COU_EXPRPOW, COU_EXPRMAX, COU_EXPRDIV, 
+		COU_EXPRMIN,  COU_EXPRMUL, COU_EXPRTRILINEAR, COU_EXPRPOW, COU_EXPRSIGNPOW, COU_EXPRMAX, COU_EXPRDIV, 
 		/*COU_EXPRBDIV,  COU_EXPRBMUL,*/ 
 		COU_EXPRUNARY,  /***** unary operators *******************/
 		COU_EXPRCOS,  COU_EXPRABS,

@@ -1,4 +1,4 @@
-/* $Id: conv-exprTrilinear-gencuts.cpp 597 2011-06-02 10:09:33Z pbelotti $
+/* $Id: conv-exprTrilinear-gencuts.cpp 1055 2014-01-31 18:27:50Z fmargot $
  *
  * Name:       conv-exprTrilinear-gencuts.cpp.cpp
  * Source:     GNU C++
@@ -58,7 +58,7 @@ void TriLinCuts (double *vlb, double *vub, int *varIndices,
   for(int i=0; i<6; i++) {
     ind[i] = new int[6];
   }
-     
+
   int *ibnd; 
   ibnd = new int[3];
   ibnd[0] = varIndices[0]; ibnd[1] = varIndices[1]; ibnd[2] = varIndices[2];
@@ -651,8 +651,8 @@ std::cout << "v1 = " << v1 << " v2 =" << v2 << "  v3 =" << v3 << std::endl;
 
     // compute the permutations of the 3 variables 
     ibnd[0] = v1; ibnd[1] = v2; ibnd[2] = v3; 
-   ind[0][0] = ibnd[0]; ind[0][1] = ibnd[1]; ind[0][2] = ibnd[2];
-   ind[1][0] = ibnd[1]; ind[1][1] = ibnd[0]; ind[1][2] = ibnd[2];
+    ind[0][0] = ibnd[0]; ind[0][1] = ibnd[1]; ind[0][2] = ibnd[2];
+    ind[1][0] = ibnd[1]; ind[1][1] = ibnd[0]; ind[1][2] = ibnd[2];
     int i, flagg=0, idx=0;
     i = 0;
     while(i < 2 && flagg == 0) {
@@ -792,27 +792,28 @@ std::cout << "v1 = " << v1 << " v2 =" << v2 << "  v3 =" << v3 << std::endl;
       std::cout << " -- epsilonT --" << std::endl; 
 #endif
     } else {
-    // compute the 6 permutations of the 3 variables 
-    ibnd[0] = v1; ibnd[1] = v2; ibnd[2] = v3; 
-    permutation3(ind,ibnd);
-    int i, flagg=0, idx=0;
-    i = 0;
-    while(i < 6 && flagg == 0) {
-      if(vub[ind[i][0]]*vlb[ind[i][1]]*vlb[ind[i][2]] + vlb[ind[i][0]]*vub[ind[i][1]]*vub[ind[i][2]]
-	 <= vlb[ind[i][0]]*vub[ind[i][1]]*vlb[ind[i][2]] + vub[ind[i][0]]*vlb[ind[i][1]]*vub[ind[i][2]] &&
-	 vub[ind[i][0]]*vlb[ind[i][1]]*vlb[ind[i][2]] + vlb[ind[i][0]]*vub[ind[i][1]]*vub[ind[i][2]]
-	 <= vub[ind[i][0]]*vub[ind[i][1]]*vlb[ind[i][2]] + vlb[ind[i][0]]*vlb[ind[i][1]]*vub[ind[i][2]]) 
-	{
-	  idx = i;   // store the index of the permutation satisfying the condition
-	  flagg = 1;  // condition is satisfied
-	}
-      i++; 
+      // compute the 6 permutations of the 3 variables 
+      ibnd[0] = v1; ibnd[1] = v2; ibnd[2] = v3; 
+      permutation3(ind,ibnd);
+      int i, flagg=0, idx=0;
+      i = 0;
+      while(i < 6 && flagg == 0) {
+	if(vub[ind[i][0]]*vlb[ind[i][1]]*vlb[ind[i][2]] + vlb[ind[i][0]]*vub[ind[i][1]]*vub[ind[i][2]]
+	   <= vlb[ind[i][0]]*vub[ind[i][1]]*vlb[ind[i][2]] + vub[ind[i][0]]*vlb[ind[i][1]]*vub[ind[i][2]] &&
+	   vub[ind[i][0]]*vlb[ind[i][1]]*vlb[ind[i][2]] + vlb[ind[i][0]]*vub[ind[i][1]]*vub[ind[i][2]]
+	   <= vub[ind[i][0]]*vub[ind[i][1]]*vlb[ind[i][2]] + vlb[ind[i][0]]*vlb[ind[i][1]]*vub[ind[i][2]]) 
+	  {
+	    idx = i;   // store the index of the permutation satisfying the condition
+	    flagg = 1;  // condition is satisfied
+	  }
+	i++; 
+      }
+      if (flagg==0) {
+	std::cout << "ERROR!!!" << std::endl; exit(0);
+      }
+    
+      v1 = ind[idx][0]; v2 = ind[idx][1]; v3 = ind[idx][2];
     }
-    if (flagg==0) {
-      std::cout << "ERROR!!!" << std::endl; exit(0);
-    }
-    }
-    v1 = ind[idx][0]; v2 = ind[idx][1]; v3 = ind[idx][2];
 
     double xL1 = cf*vlb[v1]; double xU1 = cf*vub[v1];
     double xL2 = vlb[v2]; double xU2 = vub[v2];
@@ -1149,7 +1150,9 @@ void exprTrilinear::generateCuts (expression *w,
 
   expression **args = w -> Image () -> ArgList ();
 
-  int *varInd = new int [4];
+  int varInd [4];
+
+  enum auxSign sign = cg -> Problem () -> Var (w -> Index ()) -> sign ();
 
   for (int i=0; i<3; i++)
     varInd [i] = args [i] -> Index (); 
@@ -1159,6 +1162,106 @@ void exprTrilinear::generateCuts (expression *w,
   std::vector <std::vector <int> >    cutIndices;
   std::vector <std::vector <double> > cutCoeff;
   std::vector <double>                cutLb, cutUb;
+
+  // These cuts rely on three non-fixed variables: if l_i=u_i for i in
+  // 1,2,3, there is a NaN due to division by (u_i - l_i)
+
+  int n_var_fixed = 0, isFixed [3] = {0,0,0};
+  double fixed_prod = 1.;
+
+  for (int i=0; i<3; ++i) {
+
+    double lb, ub;
+
+    ArgList () [i] -> getBounds (lb, ub);
+
+    if (fabs (ub - lb) < COUENNE_EPS) {
+      isFixed [i] = 1;
+      ++ n_var_fixed;
+      fixed_prod *= (.5*(lb+ub));
+    }
+  }
+
+  if (n_var_fixed) {
+
+    if ((fixed_prod < COUENNE_EPS) || (n_var_fixed == 3)) {
+
+      if (!(cg->createCut (cs, 
+			   (sign == expression::AUX_LEQ) ? - COIN_DBL_MAX : fixed_prod, 
+			   (sign == expression::AUX_GEQ) ?   COIN_DBL_MAX : fixed_prod, 
+			   w -> Index (), 1))) {
+
+	cg -> Problem () -> Jnlst () -> Printf (Ipopt::J_ERROR, J_CONVEXIFYING, "exprTriLin: variable should be fixed but cut can't be added: ");
+	if (cg -> Problem () -> Jnlst () -> ProduceOutput (Ipopt::J_ERROR, J_CONVEXIFYING)) w -> print ();
+	cg -> Problem () -> Jnlst () -> Printf (Ipopt::J_ERROR, J_CONVEXIFYING, "\n");
+      }
+
+    } else {
+
+      // We have either one or two fixed variables
+
+      switch (n_var_fixed) {
+
+      case 1: // this is w = f1 * v2 * v3, where one variable is
+	      // fixed. Revert to exprMul
+
+	{
+	  int 
+	    xi = (!isFixed [0]) ? 0 : (!isFixed [1]) ? 1 : 2,
+	    yi = (!isFixed [2]) ? 2 : (!isFixed [1]) ? 1 : 0;
+
+	  assert (xi != 2);
+	  assert (yi != 0);
+
+	  xi = varInd [xi];
+	  yi = varInd [yi];
+
+	  double
+	    *lb = cg -> Problem () -> Lb (),
+	    *ub = cg -> Problem () -> Ub (),
+	    xl = lb [xi],
+	    xu = ub [xi],
+	    yl = lb [yi],
+	    yu = ub [yi],
+	    wl = lb [varInd [3]],
+	    wu = ub [varInd [3]];
+
+	  unifiedProdCuts (cg, cs, 
+			   xi,         (*(arglist_ [0])) (), xl, xu, 
+			   yi,         (*(arglist_ [1])) (), yl, yu,
+			   varInd [3], (*w) (),              wl, wu,
+			   chg, sign);
+	}
+
+	break;
+
+      case 2: 
+
+	{ // easy... cut is w = (f1 * f2) * v3, where f* are fixed and v* is remaining
+
+	  int varInd = (!isFixed [0]) ? 0 : (!isFixed [1]) ? 1 : 2;
+
+	  double 
+	    lb = ((sign == expression::AUX_LEQ) ? - COIN_DBL_MAX : 0), 
+	    ub = ((sign == expression::AUX_GEQ) ?   COIN_DBL_MAX : 0);
+
+	  if (!(cg->createCut (cs, lb, ub, w -> Index (), 1, ArgList () [varInd] -> Index (), -fixed_prod))) {
+	    cg -> Problem () -> Jnlst () -> Printf (Ipopt::J_ERROR, J_CONVEXIFYING, "exprTriLin: variable should be fixed but cut can't be added: "); 
+	    if (cg -> Problem () -> Jnlst () -> ProduceOutput (Ipopt::J_ERROR, J_CONVEXIFYING)) w -> print ();
+	    cg -> Problem () -> Jnlst () -> Printf (Ipopt::J_ERROR, J_CONVEXIFYING, "\n");
+	  }
+	}
+
+	break;
+
+      default: 
+	cg -> Problem () -> Jnlst () -> Printf (Ipopt::J_ERROR, J_CONVEXIFYING, "exprTriLin: Error, there should be one or two fixed variables");
+	break;
+      }
+    }
+
+    return;
+  }
 
   TriLinCuts (cg -> Problem () -> Lb (),
 	      cg -> Problem () -> Ub (),
@@ -1175,70 +1278,86 @@ void exprTrilinear::generateCuts (expression *w,
 
   for (int i = (int) cutIndices.size (); i--;) {
 
-    int 
-       size = (int) cutIndices [i].size (),
-      *ind  = new int [size];
+    // Fix right hand sides: all cuts have coefficients of w equal to
+    // one, but they might be inequality-type auxiliaries.
 
-    double *coe = new double [size];
+    exprAux *waux = dynamic_cast <exprAux *> (w);
 
-    std::copy (cutIndices [i].begin (), cutIndices [i].end (), ind);
-    std::copy (cutCoeff   [i].begin (), cutCoeff   [i].end (), coe);
+    if (waux) {
+      if      (waux -> sign () == expression::AUX_LEQ) cutLb [i] = - COUENNE_INFINITY;
+      else if (waux -> sign () == expression::AUX_GEQ) cutUb [i] =   COUENNE_INFINITY;
+    }
 
-    OsiRowCut cut (cutLb [i], cutUb [i], 4, 4, ind, coe);
-    //cut.print ();
+    if ((cutLb [i] > - COUENNE_INFINITY/10) ||
+	(cutUb [i] <   COUENNE_INFINITY/10)) {
 
-    delete [] ind;
-    delete [] coe;
+      int 
+	size = (int) cutIndices [i].size (),
+	*ind  = new int [size];
+      
+      double *coe = new double [size];
 
-    if (cg -> Problem () -> bestSol ()) {
-
-      // check validity of cuts by verifying they don't cut the
-      // optimum in the node
-
-      double *sol = cg -> Problem () -> bestSol ();
-      const double
-	*lb = cg -> Problem () -> Lb (), 
-	*ub = cg -> Problem () -> Ub ();
-
-      int nVars = cg -> Problem () -> nVars ();
-
-      bool optIn = true;
-
-      for (int i=0; i< nVars; i++)
-	if ((sol [i] < lb [i] - COUENNE_EPS) ||
-	    (sol [i] > ub [i] + COUENNE_EPS)) {
-	  optIn = false;
-	  break;
+      int cardCut = 0;
+      for(int fmi=0; fmi<4; fmi++) {
+	if(fabs(cutCoeff[i][fmi]) > 1e-8) {
+	  ind[cardCut] = cutIndices[i][fmi];
+	  coe[cardCut] = cutCoeff[i][fmi];
+	  cardCut++;
 	}
+      }
 
-      if (optIn) {
+      OsiRowCut cut (cutLb [i], cutUb [i], 4, cardCut, ind, coe);
+      //cut.print ();
 
-	for (unsigned int i=0; i<cutIndices.size (); i++) {
+      if (cg -> Problem () -> bestSol ()) {
 
-	  double chs = 0.;
+	// check validity of cuts by verifying they don't cut the
+	// optimum in the node
 
-	  for (unsigned int j=0; j<cutIndices[i].size(); j++)
-	    chs += cutCoeff [i] [j] * sol [cutIndices [i] [j]];
+	double *sol = cg -> Problem () -> bestSol ();
+	const double
+	  *lb = cg -> Problem () -> Lb (), 
+	  *ub = cg -> Problem () -> Ub ();
 
-	  if ((chs < cutLb [i] - COUENNE_EPS) ||
-	      (chs > cutUb [i] + COUENNE_EPS)) {
+	int nVars = cg -> Problem () -> nVars ();
 
-	    printf ("cut %d violates optimum:\n", i);
+	bool optIn = true;
 
-	    if (cutLb [i] > -COUENNE_INFINITY) printf ("%g <= ", cutLb [i]);
-	    for (unsigned int j=0; j<cutIndices[i].size(); j++) printf ("%+g x%d ", cutCoeff [i] [j],       cutIndices [i] [j]);  printf ("\n = ");
-	    for (unsigned int j=0; j<cutIndices[i].size(); j++) printf ("%+g *%g ", cutCoeff [i] [j],  sol [cutIndices [i] [j]]); printf ("\n = ");
-	    for (unsigned int j=0; j<cutIndices[i].size(); j++) printf ("%+g ",     cutCoeff [i] [j] * sol [cutIndices [i] [j]]); printf (" = %g", chs);
-	    if (cutUb [i] <  COUENNE_INFINITY) printf (" <= %g", cutUb [i]);
-	    printf ("\n");
+	for (int i=0; i< nVars; i++)
+	  if ((sol [i] < lb [i] - COUENNE_EPS) ||
+	      (sol [i] > ub [i] + COUENNE_EPS)) {
+	    optIn = false;
+	    break;
+	  }
 
+	if (optIn) {
+
+	  for (unsigned int i=0; i<cutIndices.size (); i++) {
+
+	    double chs = 0.;
+
+	    for (unsigned int j=0; j<cutIndices[i].size(); j++)
+	      chs += cutCoeff [i] [j] * sol [cutIndices [i] [j]];
+
+	    if ((chs < cutLb [i] - COUENNE_EPS) ||
+		(chs > cutUb [i] + COUENNE_EPS)) {
+
+	      printf ("cut %d violates optimum:\n", i);
+
+	      if (cutLb [i] > -COUENNE_INFINITY) printf ("%g <= ", cutLb [i]);
+	      for (unsigned int j=0; j<cutIndices[i].size(); j++) printf ("%+g x%d ", cutCoeff [i] [j],       cutIndices [i] [j]);  printf ("\n = ");
+	      for (unsigned int j=0; j<cutIndices[i].size(); j++) printf ("%+g *%g ", cutCoeff [i] [j],  sol [cutIndices [i] [j]]); printf ("\n = ");
+	      for (unsigned int j=0; j<cutIndices[i].size(); j++) printf ("%+g ",     cutCoeff [i] [j] * sol [cutIndices [i] [j]]); printf (" = %g", chs);
+	      if (cutUb [i] <  COUENNE_INFINITY) printf (" <= %g", cutUb [i]);
+	      printf ("\n");
+
+	    }
 	  }
 	}
       }
+
+      cs.insert (cut);
     }
-
-    cs.insert (cut);
   }
-
-  delete [] varInd;
+  //delete [] varInd;
 }

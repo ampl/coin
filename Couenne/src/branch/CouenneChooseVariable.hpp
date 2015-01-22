@@ -1,4 +1,4 @@
-/* $Id: CouenneChooseVariable.hpp 490 2011-01-14 16:07:12Z pbelotti $
+/* $Id: CouenneChooseVariable.hpp 792 2012-01-24 17:24:15Z pbelotti $
  *
  * Name:    CouenneChooseVariable.hpp
  * Authors: Pierre Bonami, IBM Corp.
@@ -58,7 +58,7 @@ public:
 				 int numberObjects,
 				 const OsiObject ** objects);
 
-  /// choose object to branch based on earlier setup
+  // choose object to branch based on earlier setup
   //   virtual int chooseVariable (OsiSolverInterface * solver, 
   // 			      OsiBranchingInformation *info, 
   // 			      bool fixVariables);

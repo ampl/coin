@@ -1,4 +1,4 @@
-/* $Id: CouenneInfeasCut.cpp 490 2011-01-14 16:07:12Z pbelotti $
+/* $Id: CouenneInfeasCut.cpp 822 2012-02-10 04:45:33Z pbelotti $
  *
  * Name:    CouenneInfeasCut.cpp
  * Author:  Pietro Belotti
@@ -25,9 +25,13 @@ void WipeMakeInfeas (OsiCuts &cs) {
 
   if (infeascut) {
     int i=0;
-    double upper = -1., lower = +1.;
+    double 
+      upper = -1., 
+      lower =  1.;
+
     infeascut -> setLbs (1, &i, &lower);
     infeascut -> setUbs (1, &i, &upper);
+
     cs.insert (infeascut);
     delete infeascut;
   }

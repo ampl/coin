@@ -1,11 +1,11 @@
-/* $Id: CouenneProblem.hpp 824 2012-02-10 04:57:16Z pbelotti $
+/* $Id: CouenneProblem.hpp 1083 2014-11-20 17:29:43Z pbelotti $
  *
  * Name:    CouenneProblem.hpp
  * Author:  Pietro Belotti, Lehigh University
  *          Andreas Waechter, IBM
  * Purpose: define the class CouenneProblem
  *
- * (C) Carnegie-Mellon University, 2006-10.
+ * (C) Carnegie-Mellon University, 2006-11.
  * This file is licensed under the Eclipse Public License (EPL)
  */
 
@@ -17,6 +17,7 @@
 
 #include <vector>
 #include <map>
+#include <string.h>
 
 #include "CouenneConfig.h"
 
@@ -75,15 +76,15 @@ class Nauty;
   struct myclass0 {
     inline bool operator() (register const Node &a, register const Node &b) {
 
-      return ((              a.get_code  () <  b.get_code  ())                     ||
-	      ((             a.get_code  () == b.get_code  ()                      &&
-		((           a.get_coeff () <  b.get_coeff ()  - COUENNE_EPS_SYMM) ||
-		 ((fabs     (a.get_coeff () -  b.get_coeff ()) < COUENNE_EPS_SYMM) &&
-		  ((         a.get_lb    () <  b.get_lb    ()  - COUENNE_EPS_SYMM) ||
-		   ((fabs   (a.get_lb    () -  b.get_lb    ()) < COUENNE_EPS_SYMM) &&
-		    ((       a.get_ub    () <  b.get_ub    ()  - COUENNE_EPS_SYMM) ||
-		     ((fabs (a.get_ub    () -  b.get_ub    ()) < COUENNE_EPS_SYMM) &&
-		      ((     a.get_index () <  b.get_index ())))))))))));
+      return ((               a.get_code  () <  b.get_code  ())                     ||
+	      ((              a.get_code  () == b.get_code  ()                      &&
+		((            a.get_coeff () <  b.get_coeff ()  - COUENNE_EPS_SYMM) ||
+		 ((     fabs (a.get_coeff () -  b.get_coeff ()) < COUENNE_EPS_SYMM) &&
+		  ((          a.get_lb    () <  b.get_lb    ()  - COUENNE_EPS_SYMM) ||
+		   ((   fabs (a.get_lb    () -  b.get_lb    ()) < COUENNE_EPS_SYMM) &&
+		    ((        a.get_ub    () <  b.get_ub    ()  - COUENNE_EPS_SYMM) ||
+		     (( fabs (a.get_ub    () -  b.get_ub    ()) < COUENNE_EPS_SYMM) &&
+		      ((      a.get_index () <  b.get_index ())))))))))));
 
     //   bool is_less = 0;
     //   if(a.get_code() < b.get_code() )
@@ -124,6 +125,11 @@ class Nauty;
     }
   };
 
+struct less_than_str {
+  inline bool operator() (register const  char *a, register const char *b) const
+  {return strcmp (a, b) < 0;}
+};
+
 
 namespace Couenne {
 
@@ -140,9 +146,9 @@ namespace Couenne {
   class CouenneConstraint;
   class CouenneObjective;
   class GlobalCutOff;
-  //  class JnlstPtr;
-  //  class ConstJnlstPtr;
+  class CouenneBTPerfIndicator;
   class CouenneRecordBestSol;
+  class CouenneSdpCuts;
 
   typedef Ipopt::SmartPtr<Ipopt::Journalist> JnlstPtr;
   typedef Ipopt::SmartPtr<const Ipopt::Journalist> ConstJnlstPtr;
@@ -210,9 +216,6 @@ class CouenneProblem {
 
   /// Best known objective function
   CouNumber bestObj_;
-
-  /// Indices of variables appearing in products (used for SDP cuts)
-  int *quadIndex_;
 
   /// Variables that have commuted to auxiliary
   bool *commuted_;
@@ -331,6 +334,22 @@ class CouenneProblem {
   /// constant value of the objective if no variable is declared in it
   double constObjVal_;
 
+  /// Performance indicator for FBBT -- to be moved away from
+  /// CouenneProblem when we do it with FBBT
+  CouenneBTPerfIndicator *perfIndicator_;
+
+  /// Return particular constraint class. Classes:
+  /// 
+  /// 1) "convex": convex constraints;
+  /// 2) "PSDcon": constraints of the form X \succeq 0
+  /// 3) "normal": regular constraints
+  std::map <const char *, std::vector <CouenneConstraint *> *, less_than_str> ConstraintClass_;
+
+  /// Temporary pointer to SDP cut generator. A little dirty as it is
+  /// generated DURING standardization, but necessary to avoid
+  /// meddling with different spaces
+  CouenneSdpCuts *sdpCutGen_;
+  
  public:
 
   CouenneProblem  (ASL * = NULL,
@@ -476,10 +495,10 @@ class CouenneProblem {
 #endif
 
   // bound tightening parameters
-  bool doFBBT () const {return doFBBT_;} ///< shall we do Feasibility Based Bound Tightening?
-  bool doRCBT () const {return doRCBT_;} ///< shall we do reduced cost      Bound Tightening?
-  bool doOBBT () const {return doOBBT_;} ///< shall we do Optimality  Based Bound Tightening?
-  bool doABT  () const {return doABT_;}  ///< shall we do Aggressive        Bound Tightening?
+  bool doFBBT () const {return (doFBBT_ && (max_fbbt_iter_ != 0));} ///< shall we do Feasibility Based Bound Tightening?
+  bool doRCBT () const {return doRCBT_;}                            ///< shall we do reduced cost      Bound Tightening?
+  bool doOBBT () const {return doOBBT_;}                            ///< shall we do Optimality  Based Bound Tightening?
+  bool doABT  () const {return doABT_;}                             ///< shall we do Aggressive        Bound Tightening?
 
   int  logObbtLev () const {return logObbtLev_;} ///< How often shall we do OBBT?
   int  logAbtLev  () const {return logAbtLev_;}  ///< How often shall we do ABT?
@@ -503,6 +522,12 @@ class CouenneProblem {
   /// @param fname Name of the .gams file to be written.
   void writeGAMS (const std::string &fname);
 
+  /// Write nonlinear problem to a .lp file. Note: only works with
+  /// MIQCQPs (and MISOCPs in the future)
+  ///
+  ///@param fname Name of the .lp file to be written
+  void writeLP (const std::string &fname);
+
   /// Initialize auxiliary variables and their bounds from original
   /// variables
   //void initAuxs (const CouNumber *, const CouNumber *, const CouNumber *);
@@ -512,7 +537,8 @@ class CouenneProblem {
   void getAuxs (CouNumber *) const;
 
   /// tighten bounds using propagation, implied bounds and reduced costs
-  bool boundTightening (t_chg_bounds *, 
+  bool boundTightening (t_chg_bounds *,
+			const CglTreeInfo info, 
 			Bonmin::BabInfo * = NULL) const;
 
   /// core of the bound tightening procedure
@@ -707,6 +733,9 @@ class CouenneProblem {
   /// returns constant objective value if it contains no variables
   inline double constObjVal () const {return constObjVal_;}
 
+  /// Returns pointer to sdp cut generator
+  CouenneSdpCuts *getSdpCutGen () {return sdpCutGen_;}
+
 protected:
 
   /// single fake tightening. Return
@@ -809,12 +838,12 @@ public:
 		   const bool stopAtFirstViol,
 		   const double precision, double &maxViol) const;
 
-  /// returns true iff value of all auxilliaries are within bounds
+  /// returns true iff value of all auxiliaries are within bounds
   bool checkAux(const CouNumber *sol,
 		const bool stopAtFirstViol,
 		const double precision, double &maxViol) const;
 
-  /// returns true iff value of all auxilliaries are within bounds
+  /// returns true iff value of all auxiliaries are within bounds
   bool checkCons(const CouNumber *sol,
 		 const bool stopAtFirstViol,
 		 const double precision, double &maxViol) const;
@@ -843,11 +872,28 @@ public:
 
   /// if careAboutObj is set to true, then stopAtFirstViol must be set to 
   /// false too.
-  bool checkNLP2(const double *solution,
-		 const double obj, const bool careAboutObj,
-		 const bool stopAtFirstViol,
-		 const bool checkAll,
-		 const double precision) const;
+  bool checkNLP2 (const double *solution,
+		  const double obj, 
+		  const bool careAboutObj,
+		  const bool stopAtFirstViol,
+		  const bool checkAll,
+		  const double precision) const;
+
+  /// And finally a method to get both
+  bool checkNLP0 (const double *solution,
+		 double &obj,
+		 bool recompute_obj         = false,
+		 const bool careAboutObj    = false,
+		 const bool stopAtFirstViol = true,
+		 const bool checkAll        = false,
+	         const double precision     = -1) const; // if -1 then use feas_tolerance_
+
+  /// return particular constraint class. Classes:
+  /// 
+  /// 1) "convex": convex constraints;
+  /// 2) "PSDcon": constraints of the form X \succeq 0
+  /// 3) "normal": regular constraints
+  std::vector <CouenneConstraint *> *ConstraintClass (const char *str) {return ConstraintClass_ [str];}
 };
 
 }

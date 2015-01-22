@@ -1,4 +1,4 @@
-/* $Id: Nauty.cpp 950 2013-04-25 15:32:59Z stefan $ 
+/* $Id: Nauty.cpp 928 2012-11-30 15:37:18Z stefan $ 
  *
  * Name:    Nauty.cpp
  * Authors: Jim Ostrowski
@@ -159,14 +159,12 @@ Nauty::computeAuto()
   for (int j = 0; j < n_; j++)
     printf("ptn %d = %d      lab = %d \n", j, ptn_[j], lab_[j]);
   */
-  
 
   // Should be number of columns
   assert(ix == n_);
   // Now the constraints if needed
 
-
-    // Compute Partition
+  // Compute Partition
     
   nauty(G_, lab_, ptn_, active_, orbits_, options_, 
         stats_, workspace_, worksize_, m_, n_, canonG_);
@@ -177,8 +175,7 @@ Nauty::computeAuto()
   nautyCalls_++;
   nautyTime_ += endCPU - startCPU;
   // Need to make sure all generators are written
-  if (afp_) fflush(afp_);
-   
+  if (afp_) fflush(afp_);   
 }
 
 void
@@ -300,7 +297,7 @@ Nauty::isMixedFreeZeroOrbit(const std::vector<int> &orbit) const
   return (containsFree && containsZero);
 }
 */
-/*
+
 void 
 Nauty::setWriteAutoms(const std::string &fname)
 {
@@ -317,4 +314,4 @@ Nauty::unsetWriteAutoms()
   fclose(afp_);
   options_->writeautoms = FALSE;
 }
-*/
+

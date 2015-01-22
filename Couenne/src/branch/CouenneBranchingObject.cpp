@@ -1,4 +1,4 @@
-/* $Id: CouenneBranchingObject.cpp 874 2012-07-30 17:00:58Z stefan $
+/* $Id: CouenneBranchingObject.cpp 875 2012-07-31 13:02:43Z pbelotti $
  *
  * Name:    CouenneBranchingObject.cpp
  * Authors: Pierre Bonami, IBM Corp.

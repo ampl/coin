@@ -1,4 +1,4 @@
-/* $Id: CouenneFPpool.hpp 691 2011-06-18 14:11:50Z stefan $
+/* $Id: CouenneFPpool.hpp 1061 2014-02-01 19:22:28Z pbelotti $
  *
  * Name:    CouenneFPpool.hpp
  * Authors: Pietro Belotti
@@ -17,6 +17,7 @@
 
 #include "CouenneTypes.hpp"
 #include "CoinFinite.hpp"
+#include "CouenneProblem.hpp"
 
 namespace Couenne {
 
@@ -25,7 +26,7 @@ namespace Couenne {
 
   /// what term to compare: the sum of infeasibilities, the sum of
   /// numbers of infeasible terms, or the objective function
-  static enum what_to_compare {SUM_NINF = 0, SUM_INF, OBJVAL} comparedTerm_;
+  static enum what_to_compare {SUM_NINF = 0, SUM_INF, OBJVAL, ALL_VARS, INTEGER_VARS} comparedTerm_;
 
   /// Class containing a solution with infeasibility evaluation
   class CouenneFPsolution {
@@ -33,7 +34,7 @@ namespace Couenne {
   protected:
 
     CouNumber *x_;        ///< solution
-    int        n_;        ///< number of variables (for independence from CouenneProblem
+    int        n_;        ///< number of variables (for independence from CouenneProblem)
     int        nNLinf_;   ///< number of NL      infeasibilities
     int        nIinf_;    ///< number of integer infeasibilities
     CouNumber  objVal_;   ///< objective function value
@@ -44,21 +45,15 @@ namespace Couenne {
     /// result, all the above members are meaningless for copied
     /// solutions
 
-    bool       copied_;   
+    bool copied_;   
+
+    CouenneProblem *problem_; ///< holds pointer to problem to check
+			      ///< integrality in comparison of integer
+			      ///< variables
 
   public:
 
     CouenneFPsolution (CouenneProblem *p, CouNumber *x, bool copied = false); ///< CouenneProblem-aware constructor
-
-    /// independent constructor --- must provide other data as no
-    /// CouenneProblem to compute them
-    CouenneFPsolution (CouNumber *x,
-		       int n,
-		       int nNLinf         = 1,
-		       int nIinf          = 1,
-		       CouNumber objVal   = COIN_DBL_MAX,
-		       CouNumber maxNLinf = COIN_DBL_MAX,
-		       CouNumber maxIinf  = COIN_DBL_MAX);
 
     CouenneFPsolution (const CouenneFPsolution &src); ///< copy constructor
 
@@ -88,7 +83,7 @@ namespace Couenne {
 
   public:
     bool operator () (const CouenneFPsolution &one, 
-		      const CouenneFPsolution &two) const;
+  		      const CouenneFPsolution &two) const;
   };
 
 
@@ -98,13 +93,16 @@ namespace Couenne {
   protected:
 
     /// Pool
-    std::set <CouenneFPsolution> set_;
+    std::set <CouenneFPsolution, compareSol> set_;
+
+    /// Problem pointer
+    CouenneProblem *problem_;
 
   public:
 
     /// simple constructor (empty pool)
-    CouenneFPpool (enum what_to_compare c)
-    {comparedTerm_ = c;}
+    CouenneFPpool (CouenneProblem *p, enum what_to_compare c):
+      problem_ (p) {comparedTerm_ = c;}
 
     /// copy constructor
     CouenneFPpool (const CouenneFPpool &src);
@@ -113,12 +111,16 @@ namespace Couenne {
     CouenneFPpool &operator= (const CouenneFPpool &src);
 
     /// return the main object in this class
-    std::set <CouenneFPsolution> &Set ()
+    std::set <CouenneFPsolution, compareSol> &Set ()
     {return set_;}
+
+    /// return the problem pointer
+    CouenneProblem *Problem ()
+    {return problem_;}
 
     /// finds, in pool, solution x closest to sol; removes it from the
     /// pool and overwrites it to sol
-    void findClosestAndReplace (double *sol, double *nSol, int nvars) ;
+    void findClosestAndReplace (double *&sol, const double *nSol, int nvars) ;
   };
 }
 

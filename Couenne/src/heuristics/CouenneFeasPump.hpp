@@ -1,4 +1,4 @@
-/* $Id: CouenneFeasPump.hpp 713 2011-06-26 07:40:33Z pbelotti $
+/* $Id: CouenneFeasPump.hpp 1071 2014-03-13 01:35:13Z pbelotti $
  *
  * Name:    CouenneFeasPump.hpp
  * Authors: Pietro Belotti
@@ -16,15 +16,24 @@
 
 #include "CouenneTypes.hpp"
 #include "CbcHeuristic.hpp"
-
-#include "CouenneConfig.h"
-
 #include "CouenneFPpool.hpp"
-
 #include "IpOptionsList.hpp"
+
+#ifdef COIN_HAS_SCIP
+#include "scip/scip.h"
+#endif
 
 struct Scip;
 class OsiSolverInterface;
+
+//
+// A fading coefficient decreases from a to a^k at every iteration if
+// a > 0. If a is negative, then it increases from 1-|a| = 1+a to
+// 1-|a|^k and eventually converges to 1
+//
+
+inline double fadingCoeff (double a)
+{return (a<0) ? a+1 : a;}
 
 namespace Ipopt {
   class IpoptApplication;
@@ -94,10 +103,10 @@ namespace Couenne {
     /// find integer (possibly NLP-infeasible) point isol closest
     /// (according to the l-1 norm of the hessian) to the current
     /// NLP-feasible (but fractional) solution nsol
-    CouNumber solveMILP (CouNumber *nSol, CouNumber *&iSol, int niter, int* nsuciter); 
+    virtual CouNumber solveMILP (const CouNumber *nSol, CouNumber *&iSol, int niter, int* nsuciter); 
 
     /// obtain solution to NLP
-    CouNumber solveNLP  (CouNumber *nSol, CouNumber *&iSol);
+    virtual CouNumber solveNLP  (const CouNumber *nSol, CouNumber *&iSol);
 
     /// set new expression as the NLP objective function using
     /// argument as point to minimize distance from. Return new
@@ -105,14 +114,15 @@ namespace Couenne {
     expression *updateNLPObj (const double *);
 
     /// admits a (possibly fractional) solution and fixes the integer
-    /// components in the nonlinear problem for later re-solve
-    void fixIntVariables (double *sol);
+    /// components in the nonlinear problem for later re-solve.
+    /// Returns false if restriction infeasible, true otherwise
+    bool fixIntVariables (const double *sol);
 
     /// initialize options to be read later
     static void registerOptions (Ipopt::SmartPtr <Bonmin::RegisteredOptions>);
 
     /// find feasible solution (called by solveMILP ())
-    double findSolution (double *&sol, int niter, int* nsuciter);
+    double findSolution (const double *nSol, double *&sol, int niter, int* nsuciter);
 
     /// initialize all solvers at the first call, where the initial
     /// MILP is built
@@ -132,22 +142,36 @@ namespace Couenne {
     /// Return Weights in computing distance, in both MILP and NLP (must sum
     /// up to 1 for MILP and for NLP):
 
-    double multDistNLP  () const {return multDistNLP_;}  ///< weight of distance  in NLP
-    double multHessNLP  () const {return multHessNLP_;}  ///< weight of Hessian   in NLP
-    double multObjFNLP  () const {return multObjFNLP_;}  ///< weight of objective in NLP
+    double multDistNLP  () const {return fadingCoeff (multDistNLP_);}  ///< weight of distance  in NLP
+    double multHessNLP  () const {return fadingCoeff (multHessNLP_);}  ///< weight of Hessian   in NLP
+    double multObjFNLP  () const {return fadingCoeff (multObjFNLP_);}  ///< weight of objective in NLP
 
-    double multDistMILP () const {return multDistMILP_;} ///< weight of distance  in MILP
-    double multHessMILP () const {return multHessMILP_;} ///< weight of Hessian   in MILP
-    double multObjFMILP () const {return multObjFMILP_;} ///< weight of objective in MILP
+    double multDistMILP () const {return fadingCoeff (multDistMILP_);} ///< weight of distance  in MILP
+    double multHessMILP () const {return fadingCoeff (multHessMILP_);} ///< weight of Hessian   in MILP
+    double multObjFMILP () const {return fadingCoeff (multObjFMILP_);} ///< weight of objective in MILP
 
     /// return NLP
     CouenneTNLP *nlp () const
     {return nlp_;}
 
+    /// return number of calls (can be changed)
+    int &nCalls ()
+    {return nCalls_;}
+
+    /// MILP phase of the FP
+    int milpPhase (double *nSol, double *iSol);
+
+    /// NLP phase of the FP
+    int nlpPhase (double *iSol, double *nSol);
+
+#ifdef COIN_HAS_SCIP
+    SCIP_RETCODE ScipSolve (const double *nSol, double* &sol, int niter, int* nsuciter, CouNumber &obj);
+#endif
+
   private:
 
     //
-    // Essential tools for the FP: a problem pointer and one for the
+    // ESSENTIAL TOOLS for the FP: a problem pointer and one for the
     // linearization cut generator
     //
 
@@ -171,8 +195,8 @@ namespace Couenne {
     /// Ipopt Application pointer for solving NLPs
     Ipopt::IpoptApplication *app_;
 
-    /// MILP relaxation of the MINLP (used to find integer
-    /// non-NLP-feasible solution)
+    /// MILP relaxation of the MINLP (used to find integer,
+    /// non-NLP-feasible solutions)
     OsiSolverInterface *milp_;
 
     /// LP relaxation of the MINLP used when fixing integer variables
@@ -185,6 +209,9 @@ namespace Couenne {
 
     /// Solutions to avoid
     std::set <CouenneFPsolution, compareSol> tabuPool_;
+
+    /// matching between reformulation's variables and L-1 norm variables
+    int *match_;
 
     //
     // PARAMETERS
@@ -204,7 +231,7 @@ namespace Couenne {
     double multHessMILP_; ///< weight of Hessian   in MILP
     double multObjFMILP_; ///< weight of objective in MILP
 
-    /// compute distance from integer variables only, not all variables;
+    /// Compute distance from integer variables only, not all variables
     enum fpCompDistIntType compDistInt_;
 
     /// Separate convexification cuts during or after MILP
@@ -213,10 +240,10 @@ namespace Couenne {
     /// Number of separation rounds for MILP convexification cuts
     int nSepRounds_;
 
-    /// maximum iterations per call
+    /// Maximum iterations per call
     int maxIter_;
 
-    /// use SCIP instead of Cbc for solving MILPs
+    /// Use SCIP instead of Cbc for solving MILPs
     bool useSCIP_;
 
     /// Which SCIP MILP method to use
@@ -224,6 +251,12 @@ namespace Couenne {
 
     /// Tabu management policy: none, use from pool, random perturbation of current solution
     enum fpTabuMgtPolicy tabuMgt_;
+
+    /// How often should it be called
+    int nCalls_;
+
+    /// decrease factor for MILP/NLP multipliers of distance/Hessian/objective
+    double fadeMult_;
   };
 }
 

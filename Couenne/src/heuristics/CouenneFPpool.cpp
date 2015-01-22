@@ -1,4 +1,4 @@
-/* $Id: CouenneFPpool.cpp 698 2011-06-20 13:36:43Z pbelotti $
+/* $Id: CouenneFPpool.cpp 1061 2014-02-01 19:22:28Z pbelotti $
  *
  * Name:    CouenneFPpool.cpp
  * Authors: Pietro Belotti
@@ -17,7 +17,7 @@
 #include "CouenneExprVar.hpp"
 #include "CouenneExprAux.hpp"
 
-const double COMP_TOLERANCE = COUENNE_EPS;
+static const double COMP_TOLERANCE = COUENNE_EPS; // not global
 
 using namespace Couenne;
 
@@ -31,7 +31,8 @@ CouenneFPsolution::CouenneFPsolution (CouenneProblem *p, CouNumber *x, bool copi
   objVal_   (0.),
   maxNLinf_ (0.),
   maxIinf_  (0.),
-  copied_   (copied) {
+  copied_   (copied),
+  problem_  (p) {
 
   /// NOTE: the copied flag means we won't use this solution for
   /// anything but testing it against a tabu list, so we don't need to
@@ -48,11 +49,11 @@ CouenneFPsolution::CouenneFPsolution (CouenneProblem *p, CouNumber *x, bool copi
        i != p -> Variables (). end ();
        ++i) {
 
-    CouNumber 
-      vval = (**i) ();
-
     if ((*i) -> Multiplicity () <= 0)
       continue;
+
+    CouNumber 
+      vval = (**i) ();
 
     if ((*i) -> isInteger ()) {
 
@@ -71,7 +72,7 @@ CouenneFPsolution::CouenneFPsolution (CouenneProblem *p, CouNumber *x, bool copi
     if (((*i) -> Type () == AUX) &&
 	((*i) -> Image () -> Linearity () > LINEAR)) {
 
-      double 
+      double
 	diff = 0.,
 	fval = (*((*i) -> Image ())) ();
 
@@ -90,25 +91,6 @@ CouenneFPsolution::CouenneFPsolution (CouenneProblem *p, CouNumber *x, bool copi
 }
 
 
-/// independent constructor --- must provide other data as no
-/// CouenneProblem to compute them
-CouenneFPsolution::CouenneFPsolution (CouNumber *x, 
-				      int n, 
-				      int nNLinf,
-				      int nIinf,
-				      CouNumber objVal,
-				      CouNumber maxNLinf,
-				      CouNumber maxIinf):
-
-  x_          (CoinCopyOfArray (x, n)),
-  n_          (n),
-  nNLinf_     (nNLinf),
-  nIinf_      (nIinf),
-  objVal_     (objVal),
-  maxNLinf_   (maxNLinf),
-  maxIinf_    (maxIinf),
-  copied_     (false) {}
-
 /// copy constructor
 CouenneFPsolution::CouenneFPsolution (const CouenneFPsolution &src):
   x_          (src.x_ ? CoinCopyOfArray (src.x_, src.n_) : NULL),
@@ -118,7 +100,8 @@ CouenneFPsolution::CouenneFPsolution (const CouenneFPsolution &src):
   objVal_     (src.objVal_),
   maxNLinf_   (src.maxNLinf_),
   maxIinf_    (src.maxIinf_),
-  copied_     (false) {}
+  copied_     (false),
+  problem_    (src.problem_) {}
 
 
 /// assignment
@@ -132,6 +115,7 @@ CouenneFPsolution &CouenneFPsolution::operator= (const CouenneFPsolution &src) {
   maxNLinf_  = src.maxNLinf_;
   maxIinf_   = src.maxIinf_;
   copied_    = false;
+  problem_   = src.problem_;
 
   return *this;
 }
@@ -148,9 +132,62 @@ bool CouenneFPsolution::compare (const CouenneFPsolution &other, enum what_to_co
 
   switch (comparedTerm) {
 
-  case SUM_NINF: return (nNLinf_   + nIinf_   < other.nNLinf_   + other.nIinf_);
-  case SUM_INF:  return (maxNLinf_ + maxIinf_ < other.maxNLinf_ + other.maxIinf_);
-  case OBJVAL:   return (objVal_              < other.objVal_);
+  case SUM_INF:      if (maxNLinf_ + maxIinf_ < other.maxNLinf_ + other.maxIinf_)                                             return true;
+  case OBJVAL:       if (objVal_              < other.objVal_ - COUENNE_EPS * CoinMax (1., CoinMax (objVal_, other.objVal_))) return true;
+  case SUM_NINF:     if (nNLinf_   + nIinf_   < other.nNLinf_   + other.nIinf_)                                               return true;
+    // so that if objective is close these two solutions will be deemed equal
+
+  case INTEGER_VARS: {
+
+    // lexicographical comparison: unless the two solutions have the
+    // same integer subvector, comparison will tell them apart
+
+    for (std::vector <exprVar *>::iterator i = problem_ -> Variables (). begin (); 
+	 i != problem_ -> Variables (). end ();
+	 ++i)
+
+      if (((*i) -> Multiplicity () > 0) && 
+	  (*i) -> isInteger ()) {
+
+	int indVar = (*i) -> Index ();
+
+	// LEXICOGRAPHICAL ORDERING: return true upon finding the
+	// first element with lower element
+
+#if 0
+	if (0) {
+	  printf (" (%d,%g,%g,%g)", indVar, x_ [indVar], other.x_ [indVar], x_ [indVar] - other.x_ [indVar]);
+
+	  if (x_ [indVar] < other.x_ [indVar] - COUENNE_EPS)
+	    printf ("\n-----\n");
+	}
+#endif
+	if (x_ [indVar] < other.x_ [indVar] - COUENNE_EPS)
+	  return true;
+      }
+
+    //printf ("\n####\n");
+    return false;
+  }
+
+  case ALL_VARS: {
+    // lexicographical comparison: unless the two solutions have the
+    // same subvector, comparison will tell them apart
+
+    for (std::vector <exprVar *>::iterator i = problem_ -> Variables (). begin (); 
+	 i != problem_ -> Variables (). end ();
+	 ++i) 
+
+      if ((*i) -> Multiplicity () > 0) {
+
+	int indVar = (*i) -> Index ();
+
+	if (x_ [indVar] < other.x_ [indVar] + COUENNE_EPS)
+	  return true;
+      }
+
+    return false;
+  }
   }
 
   printf ("CouenneFPsolution::compare: bad compared term\n");
@@ -160,13 +197,15 @@ bool CouenneFPsolution::compare (const CouenneFPsolution &other, enum what_to_co
 
 /// copy constructor
 CouenneFPpool::CouenneFPpool (const CouenneFPpool &src):
-  set_ (src.set_) {}
+  set_     (src.set_),
+  problem_ (src.problem_) {}
 
 
 /// assignment
 CouenneFPpool &CouenneFPpool::operator= (const CouenneFPpool &src) {
 
-  set_ = src.set_;
+  set_     = src.set_;
+  problem_ = src.problem_;
 
   return *this;
 }
@@ -175,29 +214,31 @@ CouenneFPpool &CouenneFPpool::operator= (const CouenneFPpool &src) {
 bool compareSol::operator() (const CouenneFPsolution &one, 
 			     const CouenneFPsolution &two) const {
 
-  register const double
-    *x1 = one.x (),
-    *x2 = two.x ();
+  return one. compare (two, comparedTerm_);
 
-  register int n = one.n ();
+  // register const double
+  //   *x1 = one.x (),
+  //   *x2 = two.x ();
 
-  while (n--)
-    if ((*x1++ - *x2++) <= COMP_TOLERANCE)
-      return true;
+  // register int n = one.n ();
 
-  return false;
+  // while (n--)
+  //   if ((*x1++ - *x2++) <= COMP_TOLERANCE)
+  //     return true;
+
+  // return false;
 }
 
-/// finds, in pool, solution x closest to sol; removes it from the
+/// finds, in pool, solution x closest to nSol; removes it from the
 /// pool and overwrites it to sol
-void CouenneFPpool::findClosestAndReplace (double *sol, double *nSol, int nvars)  {
+void CouenneFPpool::findClosestAndReplace (double *&sol, const double *nSol, int nvars)  {
 
    double bestdist = COIN_DBL_MAX;
-   std::set <CouenneFPsolution>::iterator bestsol = set_. end ();
+   std::set <CouenneFPsolution, compareSol>::iterator bestsol = set_. end ();
 
    if( nSol )
    {
-      for (std::set <CouenneFPsolution>::iterator i = set_. begin (); 
+     for (std::set <CouenneFPsolution, compareSol>::iterator i = set_. begin (); 
            i != set_. end (); ++i)
       {
 	//compute distance of pool solution and NLP solution
@@ -212,9 +253,14 @@ void CouenneFPpool::findClosestAndReplace (double *sol, double *nSol, int nvars)
 
 	register bool move_on = false;
 
-	for (int j = nvars; j--;) {
+	for (int j = nvars, k=0; j--; ++k) {
 
 	  delta = *x++ - *s++;
+
+	  /// forget about this variable if eliminated by
+	  /// reformulation
+	  if (problem_ -> Var (k) -> Multiplicity () <= 0)
+	    continue;
 
 	  dist += delta * delta;
 
@@ -228,20 +274,21 @@ void CouenneFPpool::findClosestAndReplace (double *sol, double *nSol, int nvars)
 	if (move_on) 
 	  continue;
 
-         //update best solution
-         if( dist < bestdist )
+	//update best solution
+	if( dist < bestdist )
          {
             bestdist = dist;
             bestsol = i;
          }
-      }   
+      }
    }
    else 
       bestsol = set_. begin ();
 
    if( bestsol != set_. end () )
    {
-      sol = CoinCopyOfArray ((*bestsol).x(), nvars); 
-      set_. erase(bestsol);
+     delete [] sol;
+     sol = CoinCopyOfArray ((*bestsol).x(), nvars); 
+     set_. erase(bestsol);
    }   
 }

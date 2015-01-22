@@ -31,8 +31,10 @@ AM_CPPFLAGS = \
 	-I`$(CYGPATH_W) $(srcdir)/../expression` \
 	-I`$(CYGPATH_W) $(srcdir)/../expression/operators` \
 	-I`$(CYGPATH_W) $(srcdir)/../branch` \
+	-I`$(CYGPATH_W) $(srcdir)/../bound_tightening` \
 	-I`$(CYGPATH_W) $(srcdir)/../problem` \
 	-I`$(CYGPATH_W) $(srcdir)/../problem/depGraph` \
+	-I`$(CYGPATH_W) $(srcdir)/../cut/sdpcuts` \
 	$(COUENNELIB_CFLAGS)
 
 # This line is necessary to allow VPATH compilation

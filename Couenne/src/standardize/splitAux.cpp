@@ -1,4 +1,4 @@
-/* $Id: splitAux.cpp 881 2012-08-02 09:27:19Z pbelotti $
+/* $Id: splitAux.cpp 882 2012-08-02 09:32:53Z pbelotti $
  *
  * Name:    splitAux.cpp
  * Author:  Pietro Belotti

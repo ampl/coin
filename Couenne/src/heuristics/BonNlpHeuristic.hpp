@@ -1,4 +1,4 @@
-/* $Id: BonNlpHeuristic.hpp 1014 2013-11-12 15:22:56Z stefan $ */
+/* $Id: BonNlpHeuristic.hpp 988 2013-08-04 20:59:18Z pbelotti $ */
 // (C) Copyright International Business Machines Corporation 2007
 // All Rights Reserved.
 // This code is published under the Eclipse Public License (EPL).

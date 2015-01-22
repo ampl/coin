@@ -1,4 +1,4 @@
-/* $Id: sumStandardize.cpp 846 2012-05-07 14:10:50Z pbelotti $
+/* $Id: sumStandardize.cpp 490 2011-01-14 16:07:12Z pbelotti $
  *
  * Name:    sumStandardize.cpp
  * Author:  Pietro Belotti
@@ -85,7 +85,8 @@ exprAux *exprSum::standardize (CouenneProblem *p, bool addAux) {
     for (std::map <int, CouNumber>::iterator i = lmap.Map().begin (); i != lmap.Map().end (); ++i)
       printf ("<%d,%g>", i -> first, i -> second);
     printf ("] -- quad [");
-    for (std::map <std::pair <int, int>, CouNumber>::iterator i = qmap.Map ().begin (); i != qmap.Map ().end (); ++i)
+    for (std::map <std::pair <int, int>, CouNumber>::iterator i = qmap.Map ().begin (); 
+	 i != qmap.Map ().end (); ++i)
       printf ("<%d,%d,%g>", i -> first.first, i -> first.second, i -> second);
     printf ("] (%g)\n", c0);
   }
@@ -135,8 +136,8 @@ exprAux *exprSub::standardize (CouenneProblem *p, bool addAux) {
   // standardize all nonlinear arguments and put them into linear or
   // quadratic form
 
-  p -> decomposeTerm (arglist_ [0],  1., c0, lmap, qmap);
-  p -> decomposeTerm (arglist_ [1], -1., c0, lmap, qmap);
+  p -> decomposeTerm (arglist_ [0],  1, c0, lmap, qmap);
+  p -> decomposeTerm (arglist_ [1], -1, c0, lmap, qmap);
 
   return p -> linStandardize (addAux, c0, lmap, qmap);
 }

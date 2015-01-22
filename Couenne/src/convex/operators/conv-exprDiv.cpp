@@ -1,4 +1,4 @@
-/* $Id: conv-exprDiv.cpp 732 2011-07-03 20:06:50Z pbelotti $
+/* $Id: conv-exprDiv.cpp 811 2012-02-01 19:21:41Z pbelotti $
  *
  * Name:    conv-exprDiv.cpp
  * Author:  Pietro Belotti
@@ -120,5 +120,5 @@ void exprDiv::generateCuts (expression *w, //const OsiSolverInterface &si,
 		   chg, 
 		   ineqFullOrthantF ? expression::AUX_GEQ :
 		   ineqFullOrthantB ? expression::AUX_LEQ : 
- 	 	                      expression::AUX_EQ);
+		                      expression::AUX_EQ);
 }

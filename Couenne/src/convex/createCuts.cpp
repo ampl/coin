@@ -1,4 +1,4 @@
-/* $Id: createCuts.cpp 748 2011-07-28 16:13:32Z pbelotti $
+/* $Id: createCuts.cpp 1094 2015-01-10 16:59:20Z pbelotti $
  *
  * Name:    createCuts.cpp
  * Author:  Pietro Belotti
@@ -41,6 +41,12 @@ int CouenneCutGenerator::createCut (OsiCuts &cs,
   // term is not considered
 
   int nterms = 0;
+
+  // first check: duplicate index.
+
+  if ((i1 != -1) && (i1 == i3)) {i3 = -1; c1 += c3; c3 = 0;}
+  if ((i2 != -1) && (i2 == i3)) {i3 = -1; c2 += c3; c3 = 0;}
+  if ((i1 != -1) && (i1 == i2)) {i2 = -1; c1 += c2; c2 = 0;}
 
   // CAUTION: this can make the problem infeasible...
   if (fabs (c3) <= 1.e-21) {                                    i3 = -1;} // shift coeff/index to

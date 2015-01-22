@@ -1,4 +1,4 @@
-/* $Id: CouenneDomain.hpp 926 2012-11-28 11:46:22Z stefan $
+/* $Id: CouenneDomain.hpp 927 2012-11-28 15:25:47Z stefan $
  *
  * Name:    domain.hpp
  * Author:  Pietro Belotti

@@ -1,4 +1,4 @@
-/* $Id: CouenneVarObject.cpp 708 2011-06-23 14:04:59Z pbelotti $
+/* $Id: CouenneVarObject.cpp 792 2012-01-24 17:24:15Z pbelotti $
  *
  * Name:    CouenneVarObject.cpp
  * Authors: Pietro Belotti, Carnegie Mellon University
@@ -114,7 +114,7 @@ OsiBranchingObject *CouenneVarObject::createBranch (OsiSolverInterface *si,
     }
 
     obj = new CouenneBranchingObject (si, this, jnlst_, cutGen_, problem_, reference_, 
-							  TWO_LEFT, brpt, doFBBT_, doConvCuts_);
+				      TWO_LEFT, brpt, doFBBT_, doConvCuts_);
   } else {
 
     // now deal with the more complicated branching selections

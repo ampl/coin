@@ -1,4 +1,4 @@
-/* $Id: readnl.cpp 846 2012-05-07 14:10:50Z pbelotti $
+/* $Id: readnl.cpp 1087 2014-11-24 12:05:21Z pbelotti $
  *
  * Name:    readnl.cpp
  * Author:  Pietro Belotti
@@ -148,13 +148,13 @@ int CouenneProblem::readnl (const ASL *asl) {
 
     expression 
       *body,
-      *nl = Simplified (nl2e (OBJ_DE [i] . e, asl));
-    //   *nls = nl -> simplify ();
+      *nl = nl2e (OBJ_DE [i] . e, asl),
+      *nls = nl -> simplify ();
 
-    // if (nls) {
-    //   delete nl;
-    //   nl = nls;
-    // }
+    if (nls) {
+      delete nl;
+      nl = nls;
+    }
 
     if (nterms) { // have linear terms
 
@@ -205,12 +205,12 @@ int CouenneProblem::readnl (const ASL *asl) {
 
     ///////////////////////////////////////////////////
 
-    expression *subst = Simplified (body); //  -> simplify ();
+    expression *subst = body -> simplify ();
 
-    // if (subst) {
-    //   delete body; // VALGRIND
-    //   body = subst;
-    // }
+    if (subst) {
+      delete body; // VALGRIND
+      body = subst;
+    }
 
     // ThirdParty/ASL/solvers/asl.h, line 336: 0 is minimization, 1 is maximization
     addObjective (body, (OBJ_sense [i] == 0) ? "min" : "max");
@@ -332,14 +332,14 @@ int CouenneProblem::readnl (const ASL *asl) {
       **nll = new expression * [1],
        *nls;
 
-    *nll = Simplified (nl2e (CON_DE [i] . e, asl));
+    *nll = nl2e (CON_DE [i] . e, asl);
 
-    // nls = (*nll) -> simplify ();
+    nls = (*nll) -> simplify ();
 
-    // if (nls) {
-    //   delete *nll;
-    //   *nll = nls;
-    // }
+    if (nls) {
+      delete *nll;
+      *nll = nls;
+    }
 
     if (indexL [i] && (*(indexL [i]) >= 0)) {
 
@@ -368,24 +368,29 @@ int CouenneProblem::readnl (const ASL *asl) {
       delete [] nll;
     }
 
-    expression *subst = Simplified (body);
-
-    //  -> simplify ();
-    // if (subst) {
-    //   delete body; // VALGRIND
-    //   body = subst;
-    // }
-
-    // add them (and set lower-upper bound)
-    switch (sign) {
-
-    case COUENNE_EQ:  addEQConstraint  (body, new exprConst (ub)); break;
-    case COUENNE_LE:  addLEConstraint  (body, new exprConst (ub)); break;
-    case COUENNE_GE:  addGEConstraint  (body, new exprConst (lb)); break;
-    case COUENNE_RNG: addRNGConstraint (body, new exprConst (lb), 
-					      new exprConst (ub)); break;
-    default: printf ("Could not recognize constraint\n"); return -1;
+    expression *subst = body -> simplify ();
+    if (subst) {
+      delete body; // VALGRIND
+      body = subst;
     }
+
+    if ((lb < negInfinity) &&
+        (ub > Infinity)) {
+
+      printf ("Free constraint %d ignored\n", i);
+
+    } else
+
+      // add them (and set lower-upper bound)
+      switch (sign) {
+
+      case COUENNE_EQ:  addEQConstraint  (body, new exprConst (ub)); break;
+      case COUENNE_LE:  addLEConstraint  (body, new exprConst (ub)); break;
+      case COUENNE_GE:  addGEConstraint  (body, new exprConst (lb)); break;
+      case COUENNE_RNG: addRNGConstraint (body, new exprConst (lb), 
+					      new exprConst (ub)); break;
+      default: printf ("Could not recognize constraint\n"); return -1;
+      }
 
     delete [] indexL [i];
     delete [] coeff  [i];
@@ -483,14 +488,13 @@ void createCommonExpr (CouenneProblem *p, const ASL *asl, int i, int which) {
   struct cexp1 *common1 = ((const ASL_fg *) asl) -> I.cexps1_ + i;
 
   expression
-    *nle = Simplified (p -> nl2e (which ? common1 -> e : common -> e, asl));
+    *nle = p -> nl2e (which ? common1 -> e : common -> e, asl),
+    *nls = nle -> simplify ();
 
-  //   *nls = nle -> simplify ();
-
-  // if (nls) {
-  //   delete nle;
-  //   nle = nls;
-  // }
+  if (nls) {
+    delete nle;
+    nle = nls;
+  }
 
 #ifdef DEBUG
   printf ("cexp1 %d [%d]: ", i, p -> Variables () . size ()); nle -> print ();  printf (" ||| ");

@@ -1,8 +1,8 @@
-/* $Id: CouenneExprMin.hpp 846 2012-05-07 14:10:50Z pbelotti $
+/* $Id: CouenneExprMin.hpp 792 2012-01-24 17:24:15Z pbelotti $
  *
  * Name:    exprMin.hpp
  * Author:  Pietro Belotti
- * Purpose: definition of $\f{\textrm{argmin}_{i\in I} y_i}$
+ * Purpose: definition of $\f(x_{\argmin_{i\in I} y_i})$ 
  *
  * (C) Carnegie-Mellon University, 2006-09.
  * This file is licensed under the Eclipse Public License (EPL)
@@ -14,6 +14,13 @@
 #include "CouenneExprOp.hpp"
 #include "CouenneExprCopy.hpp"
 #include "CouenneExprStore.hpp"
+
+// TODO: CouenneObject might take expression of the form
+// min(x1,x2,...,xn) and branch it by creating two subsets N1 and N2
+// of N={1,2,...,n} and then impose the constraints
+//
+// (xi <= xj for i in N1, j in N2) OR 
+// (xi >= xj for i in N1, j in N2)
 
 namespace Couenne {
 

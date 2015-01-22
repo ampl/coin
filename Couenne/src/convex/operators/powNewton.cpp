@@ -1,4 +1,4 @@
-/* $Id: powNewton.cpp 490 2011-01-14 16:07:12Z pbelotti $
+/* $Id: powNewton.cpp 875 2012-07-31 13:02:43Z pbelotti $
  *
  * Name:    powNewton.cpp
  * Author:  Pietro Belotti
@@ -10,7 +10,7 @@
 
 #include <math.h>
 
-#include "CouenneTypes.hpp"
+#include "CouenneFunTriplets.hpp"
 
 #define MAX_ITER 10
 #define COU_POW_TOLERANCE 1e-12
@@ -18,7 +18,7 @@
 //#define DEBUG_POWNEW
 
 #ifndef DEBUG_POWNEW
-#include "CouenneFunTriplets.hpp"
+#include "CouenneTypes.hpp"
 #else
 #include <stdlib.h>
 #include <stdio.h>

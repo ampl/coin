@@ -1,4 +1,4 @@
-/* $Id: exprSub.cpp 846 2012-05-07 14:10:50Z pbelotti $
+/* $Id: exprSub.cpp 560 2011-04-17 10:01:15Z stefan $
  *
  * Name:    exprSub.cpp
  * Author:  Pietro Belotti
@@ -26,8 +26,8 @@ expression *exprSub::simplify () {
   // check for (f(x) - f(x))
   if (arglist_ [0] -> compare (*(arglist_ [1])) == 0) {
 
-    // delete arglist_ [0]; arglist_ [0] = NULL;
-    // delete arglist_ [1]; arglist_ [1] = NULL;
+    delete arglist_ [0]; arglist_ [0] = NULL;
+    delete arglist_ [1]; arglist_ [1] = NULL;
 
     return new exprConst (0.);
   }
@@ -41,16 +41,16 @@ expression *exprSub::simplify () {
 
       CouNumber c1 = arglist_ [1] -> Value ();
 
-      // delete arglist_ [0]; arglist_ [0] = NULL;
-      // delete arglist_ [1]; arglist_ [1] = NULL;
+      delete arglist_ [0]; arglist_ [0] = NULL;
+      delete arglist_ [1]; arglist_ [1] = NULL;
 
       return new exprConst (c0 - c1);
     }
-    else if (fabs (c0) == 0.) { // expr = opp (f2)
+    else if (fabs (c0) < COUENNE_EPS_SIMPL) { // expr = opp (f2)
 
       expression *ret = new exprOpp (arglist_ [1]);
-      //      delete arglist_ [0];
-      arglist_ [1] = NULL;
+      delete arglist_ [0];
+      arglist_ [0] = arglist_ [1] = NULL;
       return ret;
     }
   }
@@ -61,8 +61,8 @@ expression *exprSub::simplify () {
       // expr = f1 - 0 --> return f1
 
       expression *ret = arglist_ [0];
-      //delete arglist_ [1];
-      arglist_ [0] = NULL;
+      delete arglist_ [1];
+      arglist_ [0] = arglist_ [1] = NULL;
       return ret;
     }
 

@@ -20,6 +20,9 @@ libCouenneBoundTightening_la_SOURCES = \
 	FixPointConstructors.cpp \
 	FixPointGenCuts.cpp \
 	CouenneInfeasCut.cpp \
+	obbt_supplement.cpp \
+	BTPerfIndicator.cpp \
+	BTPerfIndicatorConstr.cpp \
 	operators/impliedBounds-mul.cpp \
 	operators/impliedBounds-sum.cpp \
 	operators/impliedBounds-exprSum.cpp \
@@ -43,6 +46,8 @@ AM_CPPFLAGS = \
 	-I`$(CYGPATH_W) $(srcdir)/../heuristics` \
 	-I`$(CYGPATH_W) $(srcdir)/../main` \
 	-I`$(CYGPATH_W) $(srcdir)/../expression` \
+	-I`$(CYGPATH_W) $(srcdir)/../expression/partial` \
+	-I`$(CYGPATH_W) $(srcdir)/../interfaces` \
 	-I`$(CYGPATH_W) $(srcdir)/../branch` \
 	-I`$(CYGPATH_W) $(srcdir)/../expression/operators` \
 	$(COUENNELIB_CFLAGS) 

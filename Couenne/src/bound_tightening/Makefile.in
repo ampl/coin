@@ -58,12 +58,13 @@ libCouenneBoundTightening_la_LIBADD =
 am_libCouenneBoundTightening_la_OBJECTS = boundTightening.lo \
 	aggressiveBT.lo fake_tightening.lo obbt.lo obbt_iter.lo \
 	tightenBounds.lo impliedBounds.lo FixPointConstructors.lo \
-	FixPointGenCuts.lo CouenneInfeasCut.lo impliedBounds-mul.lo \
-	impliedBounds-sum.lo impliedBounds-exprSum.lo \
-	impliedBounds-exprDiv.lo impliedBounds-exprMul.lo \
-	impliedBounds-exprTrilinear.lo impliedBounds-exprQuad.lo \
-	impliedBounds-exprPow.lo BonCouenneInfo.lo \
-	CouenneAggrProbing.lo
+	FixPointGenCuts.lo CouenneInfeasCut.lo obbt_supplement.lo \
+	BTPerfIndicator.lo BTPerfIndicatorConstr.lo \
+	impliedBounds-mul.lo impliedBounds-sum.lo \
+	impliedBounds-exprSum.lo impliedBounds-exprDiv.lo \
+	impliedBounds-exprMul.lo impliedBounds-exprTrilinear.lo \
+	impliedBounds-exprQuad.lo impliedBounds-exprPow.lo \
+	BonCouenneInfo.lo CouenneAggrProbing.lo
 libCouenneBoundTightening_la_OBJECTS =  \
 	$(am_libCouenneBoundTightening_la_OBJECTS)
 depcomp = $(SHELL) $(top_srcdir)/depcomp
@@ -85,6 +86,7 @@ ABSBUILDDIR = @ABSBUILDDIR@
 ACLOCAL = @ACLOCAL@
 ADD_CFLAGS = @ADD_CFLAGS@
 ADD_CXXFLAGS = @ADD_CXXFLAGS@
+ADD_FFLAGS = @ADD_FFLAGS@
 ALWAYS_FALSE_FALSE = @ALWAYS_FALSE_FALSE@
 ALWAYS_FALSE_TRUE = @ALWAYS_FALSE_TRUE@
 AMDEP_FALSE = @AMDEP_FALSE@
@@ -167,6 +169,7 @@ CXXFLAGS = @CXXFLAGS@
 CYGPATH_W = @CYGPATH_W@
 DBG_CFLAGS = @DBG_CFLAGS@
 DBG_CXXFLAGS = @DBG_CXXFLAGS@
+DBG_FFLAGS = @DBG_FFLAGS@
 DEFS = @DEFS@
 DEPDIR = @DEPDIR@
 DEPENDENCY_LINKING_FALSE = @DEPENDENCY_LINKING_FALSE@
@@ -179,6 +182,7 @@ EGREP = @EGREP@
 EXEEXT = @EXEEXT@
 F77 = @F77@
 FFLAGS = @FFLAGS@
+FLIBS = @FLIBS@
 GRB_CFLAGS = @GRB_CFLAGS@
 GRB_CFLAGS_INSTALLED = @GRB_CFLAGS_INSTALLED@
 GRB_DATA = @GRB_DATA@
@@ -207,6 +211,7 @@ MAINTAINER_MODE_TRUE = @MAINTAINER_MODE_TRUE@
 MAKEINFO = @MAKEINFO@
 MPICC = @MPICC@
 MPICXX = @MPICXX@
+MPIF77 = @MPIF77@
 MSK_CFLAGS = @MSK_CFLAGS@
 MSK_CFLAGS_INSTALLED = @MSK_CFLAGS_INSTALLED@
 MSK_DATA = @MSK_DATA@
@@ -219,6 +224,7 @@ NTYLIB = @NTYLIB@
 OBJEXT = @OBJEXT@
 OPT_CFLAGS = @OPT_CFLAGS@
 OPT_CXXFLAGS = @OPT_CXXFLAGS@
+OPT_FFLAGS = @OPT_FFLAGS@
 PACKAGE = @PACKAGE@
 PACKAGE_BUGREPORT = @PACKAGE_BUGREPORT@
 PACKAGE_NAME = @PACKAGE_NAME@
@@ -325,6 +331,9 @@ libCouenneBoundTightening_la_SOURCES = \
 	FixPointConstructors.cpp \
 	FixPointGenCuts.cpp \
 	CouenneInfeasCut.cpp \
+	obbt_supplement.cpp \
+	BTPerfIndicator.cpp \
+	BTPerfIndicatorConstr.cpp \
 	operators/impliedBounds-mul.cpp \
 	operators/impliedBounds-sum.cpp \
 	operators/impliedBounds-exprSum.cpp \
@@ -349,6 +358,8 @@ AM_CPPFLAGS = \
 	-I`$(CYGPATH_W) $(srcdir)/../heuristics` \
 	-I`$(CYGPATH_W) $(srcdir)/../main` \
 	-I`$(CYGPATH_W) $(srcdir)/../expression` \
+	-I`$(CYGPATH_W) $(srcdir)/../expression/partial` \
+	-I`$(CYGPATH_W) $(srcdir)/../interfaces` \
 	-I`$(CYGPATH_W) $(srcdir)/../branch` \
 	-I`$(CYGPATH_W) $(srcdir)/../expression/operators` \
 	$(COUENNELIB_CFLAGS) 
@@ -407,6 +418,8 @@ mostlyclean-compile:
 distclean-compile:
 	-rm -f *.tab.c
 
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/BTPerfIndicator.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/BTPerfIndicatorConstr.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/BonCouenneInfo.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/CouenneAggrProbing.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/CouenneInfeasCut.Plo@am__quote@
@@ -426,6 +439,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/impliedBounds.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/obbt.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/obbt_iter.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/obbt_supplement.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/tightenBounds.Plo@am__quote@
 
 .cpp.o:

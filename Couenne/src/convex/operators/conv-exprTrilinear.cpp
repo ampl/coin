@@ -1,4 +1,4 @@
-/* $Id: conv-exprTrilinear.cpp 490 2011-01-14 16:07:12Z pbelotti $
+/* $Id: conv-exprTrilinear.cpp 1069 2014-02-05 01:45:36Z pbelotti $
  *
  * Name:    conv-exprTrilinear.cpp
  * Author:  Pietro Belotti
@@ -34,14 +34,16 @@ void exprTrilinear::getBounds (expression *&lb, expression *&ub) {
 
 	int indexTerm = i0*8 + i1*4 + i2*2;
 
-	arglistMax [indexTerm] = new exprTrilinear (new exprClone (i0 ? ubA [0] : lbA [0]),
-						    new exprClone (i1 ? ubA [1] : lbA [1]),
-						    new exprClone (i2 ? ubA [2] : lbA [2]));
+	expression *product = new exprTrilinear (new exprClone (i0 ? ubA [0] : lbA [0]),
+						 new exprClone (i1 ? ubA [1] : lbA [1]),
+						 new exprClone (i2 ? ubA [2] : lbA [2]));
 
-	arglistMin [indexTerm] = new exprClone (arglistMax [indexTerm]);
+	arglistMax [indexTerm] = new exprCopy (product); // saves value to be retrieved later for computation
+
+	arglistMin [indexTerm] = new exprCopy (new exprClone (product));
 
 	arglistMax [indexTerm + 1] = new exprStore (arglistMax [indexTerm]); // evaluated at the end, safe to just copy
-	arglistMin [indexTerm + 1] = new exprStore (arglistMax [indexTerm]); // evaluated at the end, safe to just copy	
+	arglistMin [indexTerm + 1] = new exprStore (arglistMin [indexTerm]); // evaluated at the end, safe to just copy	
       }
 
   lb = new exprMin (arglistMin, 16);
@@ -54,8 +56,8 @@ void exprTrilinear::getBounds (expression *&lb, expression *&ub) {
 void exprTrilinear::getBounds (CouNumber &lb, CouNumber &ub) {
 
   CouNumber 
-    *lbA = new CouNumber [3],
-    *ubA = new CouNumber [3];
+    lbA [3],
+    ubA [3];
 
   for (int i=0; i<3; i++)
     arglist_ [i] -> getBounds (lbA [i], ubA [i]);
@@ -67,7 +69,7 @@ void exprTrilinear::getBounds (CouNumber &lb, CouNumber &ub) {
     for   (int i1 = 0; i1 < 2; i1++)
       for (int i2 = 0; i2 < 2; i2++) {
 
-	double curbound = 
+	register double curbound = 
 	  (i0 ? ubA [0] : lbA [0]) * 
 	  (i1 ? ubA [1] : lbA [1]) *
 	  (i2 ? ubA [2] : lbA [2]);
@@ -76,6 +78,16 @@ void exprTrilinear::getBounds (CouNumber &lb, CouNumber &ub) {
 	if (curbound > ub) ub = curbound;
       }
 
-  delete [] lbA;
-  delete [] ubA;
+  bool isInt = true;
+
+  for (int i=0; i<3; i++)
+    if (!(arglist_ [i] -> isInteger ())) {
+      isInt = false;
+      break;
+    }
+
+  if (isInt) {
+    lb = ceil  (lb - COUENNE_EPS);
+    ub = floor (ub + COUENNE_EPS);
+  }
 }

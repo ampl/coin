@@ -2,7 +2,7 @@
 # All Rights Reserved.
 # This file is distributed under the Eclipse Public License.
 
-## $Id: Makefile.am 1035 2013-12-16 00:47:04Z tkr $
+## $Id: Makefile.am 1023 2013-11-21 19:58:13Z stefan $
 
 # Author:  Andreas Waechter           IBM    2006-04-13
 
@@ -23,6 +23,8 @@ SUBDIRS = src/util \
 	  src/disjunctive \
 	  src/interfaces \
 	  src/heuristics \
+	  src/cut/sdpcuts \
+	  src/cut/crossconv \
 	  src
 
 if COIN_HAS_ASL
@@ -54,7 +56,7 @@ EXTRA_DIST = test/grandTest.sh.in
 ########################################################################
 
 test: all
-	cd test; $(MAKE) test
+	cd test && $(MAKE) test
 
 unitTest: test
 

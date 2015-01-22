@@ -1,4 +1,4 @@
-/* $Id: CouennePrecisions.hpp 948 2013-04-25 13:15:04Z stefan $
+/* $Id: CouennePrecisions.hpp 947 2013-04-25 13:12:07Z stefan $
  *
  * Name:    CouennePrecisions.hpp
  * Author:  Pietro Belotti
@@ -40,6 +40,9 @@ namespace Couenne {
 
 // rounds to nearest integer
 #define COUENNE_round(x) ((int) (floor ((x) + 0.5)))
+
+// sign of a value
+#define COUENNE_sign(x) ((x) > 0.0 ? 1.0 : -1.0)
 
 #define MAX_BOUND 1.e45
 

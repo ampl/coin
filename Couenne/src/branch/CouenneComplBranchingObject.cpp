@@ -1,4 +1,4 @@
-/* $Id: CouenneComplBranchingObject.cpp 808 2012-01-31 02:50:35Z pbelotti $
+/* $Id: CouenneComplBranchingObject.cpp 807 2012-01-31 02:37:44Z pbelotti $
  *
  * Name:    CouenneComplBranchingObject.cpp
  * Authors: Pietro Belotti, Carnegie Mellon University

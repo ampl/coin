@@ -1,4 +1,4 @@
-/* $Id: CouenneTNLP.hpp 854 2012-06-08 15:30:44Z stefan $
+/* $Id: CouenneTNLP.hpp 893 2012-08-09 14:48:19Z pbelotti $
  *
  * Name:    CouenneTNLP.hpp
  * Authors: Pietro Belotti, Lehigh University
@@ -47,7 +47,7 @@ namespace Couenne {
     virtual ~CouenneTNLP ();
 
     /// set initial solution
-    void setInitSol (double *sol);
+    void setInitSol (const double *sol);
 
     /// returns best solution (if it exists)
     CouNumber *getSolution ()

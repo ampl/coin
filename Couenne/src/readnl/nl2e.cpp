@@ -1,4 +1,4 @@
-/* $Id: nl2e.cpp 603 2011-06-03 10:48:19Z pbelotti $
+/* $Id: nl2e.cpp 864 2012-06-20 15:28:57Z pbelotti $
  *
  * Name:    nl2e.cpp
  * Author:  Pietro Belotti
@@ -52,20 +52,20 @@ expression *CouenneProblem::nl2e (expr *e, const ASL *asl) {
   case OPMINUS: return new exprSub (nl2e (e -> L.e, asl), nl2e (e -> R.e, asl));
   case OPMULT:  return new exprMul (nl2e (e -> L.e, asl), nl2e (e -> R.e, asl));
   case OPDIV:   return new exprDiv (nl2e (e -> L.e, asl), nl2e (e -> R.e, asl));
-    //case OPREM:   notimpl ("remainder");
+  case OPREM:   notimpl ("remainder");
   case OPPOW:   return new exprPow (nl2e (e -> L.e, asl), nl2e (e -> R.e, asl));
-    //case OPLESS:  notimpl ("less");
-    //case MINLIST: notimpl ("min");
-    //case MAXLIST: notimpl ("max");
-    //case FLOOR:   notimpl ("floor");
-    //case CEIL:    notimpl ("ceil");
+  case OPLESS:  notimpl ("less");
+  case MINLIST: notimpl ("min");
+  case MAXLIST: notimpl ("max");
+  case FLOOR:   notimpl ("floor");
+  case CEIL:    notimpl ("ceil");
   case ABS:     return new exprAbs (nl2e (e -> L.e, asl));
   case OPUMINUS:return new exprOpp (nl2e (e -> L.e, asl));
     //          return new exprOpp (nl2e (e -> L.e -> L.e, asl));
-    //case OPIFnl:  { notimpl ("ifnl");
+  case OPIFnl:  { notimpl ("ifnl");
 
     // see ASL/solvers/rops.c, IfNL
-    //}
+  }
 
   case OP_tanh: return new exprDiv 
       (new exprSub (new exprExp (nl2e (e -> L.e, asl)),
@@ -92,13 +92,13 @@ expression *CouenneProblem::nl2e (expr *e, const ASL *asl) {
 						    new exprExp (new exprOpp (nl2e (e->L.e, asl)))));
 
   case OP_cos:   return new exprCos (nl2e (e -> L.e, asl));
-    //case OP_atanh: notimpl ("atanh");
-    //case OP_atan2: notimpl ("atan2");
-    //case OP_atan:  notimpl ("atan");
-    //case OP_asinh: notimpl ("asinh");
-    //case OP_asin:  notimpl ("asin");
-    //case OP_acosh: notimpl ("acosh");
-    //case OP_acos:  notimpl ("acos");
+  case OP_atanh: notimpl ("atanh");
+  case OP_atan2: notimpl ("atan2");
+  case OP_atan:  notimpl ("atan");
+  case OP_asinh: notimpl ("asinh");
+  case OP_asin:  notimpl ("asin");
+  case OP_acosh: notimpl ("acosh");
+  case OP_acos:  notimpl ("acos");
 
   case OPSUMLIST: {
     int i=0;
@@ -107,22 +107,19 @@ expression *CouenneProblem::nl2e (expr *e, const ASL *asl) {
       al [i++] = nl2e (*ep, asl);
     return new exprSum (al, i);
   }
-    //case OPintDIV: notimpl ("intdiv");
-    //case OPprecision: notimpl ("precision");
-    //case OPround:  notimpl ("round");
-    //case OPtrunc:  notimpl ("trunc");
+  case OPintDIV: notimpl ("intdiv");
+  case OPprecision: notimpl ("precision");
+  case OPround:  notimpl ("round");
+  case OPtrunc:  notimpl ("trunc");
 
-  case OP1POW: return new exprPow (nl2e (e -> L.e, asl), 
-				   new exprConst (((expr_n *)e->R.e)->v));
-  case OP2POW: return new exprPow (nl2e (e -> L.e, asl), 
-				   new exprConst (2.));
-  case OPCPOW: return new exprPow (new exprConst (((expr_n *)e->L.e)->v),
-				   nl2e (e -> R.e, asl));
-    //case OPFUNCALL: notimpl ("function call");
+  case OP1POW: return new exprPow (nl2e (e -> L.e, asl), 		   new exprConst (((expr_n *)e->R.e)->v));
+  case OP2POW: return new exprPow (nl2e (e -> L.e, asl), 		   new exprConst (2.));
+  case OPCPOW: return new exprPow (new exprConst (((expr_n *)e->L.e)->v),  nl2e (e -> R.e, asl));
+  case OPFUNCALL: notimpl ("function call");
   case OPNUM:     return new exprConst (((expr_n *)e)->v);
-    //case OPPLTERM:  notimpl ("plterm");
-    //case OPIFSYM:   notimpl ("ifsym");
-    //case OPHOL:     notimpl ("hol");
+  case OPPLTERM:  notimpl ("plterm");
+  case OPIFSYM:   notimpl ("ifsym");
+  case OPHOL:     notimpl ("hol");
   case OPVARVAL:  {
 
     int j = ((expr_v *) e) -> a;
@@ -143,7 +140,7 @@ expression *CouenneProblem::nl2e (expr *e, const ASL *asl) {
   }
 
   default: 
-    printf ("ERROR: unknown operator (address %p), aborting.\n", Intcast (e -> op));
+    printf ("Couenne error: unknown operator (address %p), aborting.\n", Intcast (e -> op));
     exit (-1);
     //return new exprConst (0);
   }

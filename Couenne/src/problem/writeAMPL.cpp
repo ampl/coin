@@ -1,8 +1,8 @@
-/* $Id: writeAMPL.cpp 490 2011-01-14 16:07:12Z pbelotti $
+/* $Id: writeAMPL.cpp 1009 2013-10-17 22:49:30Z pbelotti $
  *
- * Name:    extended.cpp
+ * Name:    writeAMPL.cpp
  * Author:  Pietro Belotti
- * Purpose: save problem in AMPL format
+ * Purpose: save a problem in AMPL format
  *
  * (C) Carnegie-Mellon University, 2006. 
  * This file is licensed under the Eclipse Public License (EPL)

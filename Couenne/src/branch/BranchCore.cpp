@@ -1,4 +1,4 @@
-/* $Id: BranchCore.cpp 923 2012-11-27 18:55:39Z stefan $
+/* $Id: BranchCore.cpp 925 2012-11-27 19:11:04Z stefan $
  *
  * Name:    BranchCore.cpp
  * Authors: Jim Ostrowski
@@ -15,7 +15,12 @@
 using namespace Ipopt;
 using namespace Couenne;
 
+// FIXME: horrible global variables. Brrr.
 int CouenneBranchingObject::nOrbBr = 0;
+int CouenneBranchingObject::maxDepthOrbBranch = -1;
+int CouenneBranchingObject::nSGcomputations = 0;
+
+#define OB_WEIGHT 0.6
 
 /** \brief Execute the core of the branch --- need to separate code
     because of include conflicts with other packages' config_*.h
@@ -23,12 +28,12 @@ int CouenneBranchingObject::nOrbBr = 0;
 
 void CouenneBranchingObject::branchCore (OsiSolverInterface *solver, int indVar, int way, bool integer, double brpt,
 					 t_chg_bounds *&chg_bds) {
-
   /// only perform orbital branching if
   ///
   /// 1) Nauty has been made available through configure
   /// 2) The orbital_branching option has been set to yes
-
+  // printf("branchCore \n");
+  
   if ((doFBBT_ && problem_ -> doFBBT ()) ||
       (doConvCuts_ && simulate_ && cutGen_))
     chg_bds = new t_chg_bounds [problem_ -> nVars ()];
@@ -37,7 +42,7 @@ void CouenneBranchingObject::branchCore (OsiSolverInterface *solver, int indVar,
 
   if (problem_ -> orbitalBranching ()) {
 
-    std::vector< int > *branch_orbit = problem_ -> Find_Orbit (indVar);
+    //problem_ -> Print_Orbits ();
 
     // if(branch_orbit -> size() >= 2){
     //   printf("branching on orbit of size %i \n", branch_orbit -> size());
@@ -47,6 +52,16 @@ void CouenneBranchingObject::branchCore (OsiSolverInterface *solver, int indVar,
     if (!way) {
 
       // DOWN BRANCH: xi <= brpt
+
+      std::vector< int > *branch_orbit = problem_ -> Find_Orbit (indVar);
+
+      double
+	lb = solver -> getColLower () [indVar],
+	ub = solver -> getColUpper () [indVar],
+	ob_brpt = lb + (ub-lb) / (branch_orbit -> size () + 1),
+	OB_weight = OB_WEIGHT;
+
+      brpt = OB_weight * ob_brpt + (1-OB_weight) * brpt;
 
       if (jnlst_ -> ProduceOutput (J_ERROR, J_BRANCHING)) {
 
@@ -71,29 +86,71 @@ void CouenneBranchingObject::branchCore (OsiSolverInterface *solver, int indVar,
 		{printf ("This node does not include optimal solution\n"); break;}
 	}
       }
-
+      
       // BRANCHING RULE -------------------------------------------------------------------------
 
+      // change branching point to reflect unbalancedness of BB subtrees.
+
       solver -> setColUpper (indVar, integer ? floor (brpt) : brpt); // down branch, x [indVar] <= brpt
+
+      if (!simulate_ && (problem_ -> orbitalBranching ())){
+
+	//printf ("LEFT BRANCH: x10 in [%g,%g]\n", solver -> getColLower() [10], solver -> getColUpper() [10]);
+
+	problem_ -> ChangeBounds (solver -> getColLower (),  
+				  solver -> getColUpper (),  
+				  problem_ -> nVars ());
+
+	problem_ -> Compute_Symmetry ();
+	//problem_ -> Print_Orbits ();
+      }
+
       if (chg_bds) chg_bds [indVar].setUpper (t_chg_bounds::CHANGED);
-
-    } else {
-
+      /*
+      for (int jj = 0; jj < 	problem_ -> nVars (); jj++) 
+	printf ("Branch: x%d [%g,%g]\n", 
+		jj, 
+		solver -> getColLower () [jj], 
+		solver -> getColUpper () [jj]);
+      */
+    }
+    else {
+      
       // UP BRANCH: xi >= brpt for all i in symmetry group
+
+      if (!simulate_ && (problem_ -> orbitalBranching ())){
+
+	problem_ -> ChangeBounds (solver -> getColLower (),  
+				  solver -> getColUpper (),  
+				  problem_ -> nVars ());
+
+	problem_ -> Compute_Symmetry ();
+	//problem_ -> Print_Orbits ();
+      }
+
+      std::vector< int > *branch_orbit = problem_ -> Find_Orbit (indVar);
 
       jnlst_ -> Printf (J_ERROR, J_BRANCHING, "Branch Symm (%d vars):", branch_orbit -> size ());
 
-      if (branch_orbit -> size () > 1)
+      if (!simulate_ && (branch_orbit -> size () > 1))
 	nOrbBr ++;
 
       bool 
 	brExclude   = false, 
 	nodeExclude = false;
 
+      double
+	lb = solver -> getColLower () [indVar],
+	ub = solver -> getColUpper () [indVar],
+	ob_brpt = lb + (ub-lb) / ((double) branch_orbit -> size () + 1),
+	OB_weight = OB_WEIGHT;
+
+      // change branching point to reflect unbalancedness of BB subtrees.
+      
+      brpt = OB_weight * ob_brpt + (1-OB_weight) * brpt;
+
       for (std::vector<int>::iterator it = branch_orbit -> begin (); it != branch_orbit -> end (); ++it)  {
-
 	assert (*it < problem_ -> nVars ());
-
 	//if (*it >= problem_ -> nVars ()) 
 	//continue;
 
@@ -125,7 +182,7 @@ void CouenneBranchingObject::branchCore (OsiSolverInterface *solver, int indVar,
 
 	// BRANCHING RULE -------------------------------------------------------------------------
 	if ((integer ? ceil  (brpt) : brpt) > solver -> getColLower () [*it]) {
-
+	  	    
 	  solver -> setColLower (*it, integer ? ceil  (brpt) : brpt); // up branch, x [indVar] >= brpt
 	  if (chg_bds) chg_bds [*it].setLower (t_chg_bounds::CHANGED);
 	}
@@ -136,7 +193,15 @@ void CouenneBranchingObject::branchCore (OsiSolverInterface *solver, int indVar,
 	if (nodeExclude) printf (" (This node does not contain optimal solution)");
 	printf ("\n");
       }
+
+      delete branch_orbit;
     }
+    /*
+          for (int jj = 0; jj < 	problem_ -> nVars (); jj++) 
+	printf ("Branch: x%d [%g,%g]\n", 
+		jj, 
+		solver -> getColLower () [jj], 
+		solver -> getColUpper () [jj]);*/
 
     return;
   }

@@ -1,4 +1,4 @@
-// $Id: BonCouenneSetup.cpp 1017 2013-11-13 00:16:07Z pbelotti $
+// $Id: BonCouenneSetup.cpp 1084 2014-11-20 17:32:21Z pbelotti $
 //
 // (C) Copyright International Business Machines Corporation 2007
 // All Rights Reserved.
@@ -6,6 +6,7 @@
 //
 // Authors :
 // Pierre Bonami, International Business Machines Corporation
+// Pietro Belotti, Clemson University
 //
 // Date : 04/18/2007
 
@@ -48,17 +49,17 @@
 #include "BonInitHeuristic.hpp"
 #include "BonNlpHeuristic.hpp"
 
-// #include "BonFixAndSolveHeuristic.hpp"
-// #include "BonDummyPump.hpp"
-// #include "BonPumpForMinlp.hpp"
-// #include "BonHeuristicRINS.hpp"
-// #include "BonHeuristicLocalBranching.hpp"
-// #include "BonHeuristicFPump.hpp"
-// #include "BonHeuristicDiveFractional.hpp"
-// #include "BonHeuristicDiveVectorLength.hpp"
-// #include "BonHeuristicDiveMIPFractional.hpp"
-// #include "BonHeuristicDiveMIPVectorLength.hpp"
-// #include "BonMilpRounding.hpp"
+#include "BonFixAndSolveHeuristic.hpp"
+#include "BonDummyPump.hpp"
+#include "BonPumpForMinlp.hpp"
+#include "BonHeuristicRINS.hpp"
+#include "BonHeuristicLocalBranching.hpp"
+#include "BonHeuristicFPump.hpp"
+#include "BonHeuristicDiveFractional.hpp"
+#include "BonHeuristicDiveVectorLength.hpp"
+#include "BonHeuristicDiveMIPFractional.hpp"
+#include "BonHeuristicDiveMIPVectorLength.hpp"
+#include "BonMilpRounding.hpp"
 
 #include "BonGuessHeuristic.hpp"
 #include "CbcCompareActual.hpp"
@@ -73,7 +74,8 @@
 #include "CouenneFixPoint.hpp"
 #include "CouenneCutGenerator.hpp"
 #include "CouenneDisjCuts.hpp"
-//#include "CouenneCrossConv.hpp"
+#include "CouenneCrossConv.hpp"
+#include "CouenneSdpCuts.hpp"
 #include "CouenneTwoImplied.hpp"
 
 #include "BonCouenneInfo.hpp"
@@ -90,7 +92,7 @@
 
 using namespace Ipopt;
 using namespace Couenne;
-  
+
 CouenneSetup::~CouenneSetup(){
   if (couenneProb_ && couenneProb_is_own_)
     delete couenneProb_;
@@ -105,6 +107,9 @@ bool CouenneSetup::InitializeCouenne (char ** argv,
 				      Ipopt::SmartPtr<Bonmin::TMINLP> tminlp,
 				      CouenneInterface *ci,
 				      Bonmin::Bab *bb) {
+  int freq;
+
+  bool retval = true;
 
   std::string s;
 
@@ -116,14 +121,14 @@ bool CouenneSetup::InitializeCouenne (char ** argv,
 
   /* Get the basic options. */
   readOptionsFile();
- 
+
   // Suppress iteration output from nonlinear solver
   options () -> SetStringValue ("sb", "yes", false, true);
 
   // in check mode, avoid pop-up error message (there are quite a few messages)
-  options_ -> GetStringValue ("test_mode", s, "couenne.");
-  if (s == "yes")
-    WindowsErrorPopupBlocker();
+  //options_ -> GetStringValue ("test_mode", s, "couenne.");
+  //if (s == "yes")
+  //WindowsErrorPopupBlocker();
 
   /** Change default value for failure behavior so that code doesn't crash 
       when Ipopt does not solve a sub-problem.*/
@@ -146,12 +151,13 @@ bool CouenneSetup::InitializeCouenne (char ** argv,
       std::cerr << 
 	"Couenne was compiled without AMPL Solver Library. Cannot initialize from AMPL NL File." 
 		<< std::endl;
-      return false;
+      exit (-1);
 #endif
     } else {
       assert (couenneProb_ != NULL);
       assert (IsValid (tminlp)); //TODO would be great to setup own TMINLP based on CouenneProblem formulation
-      ci -> initialize (roptions_, options_, journalist_, tminlp);
+      ci -> initialize (roptions_, options_, journalist_,  
+			Ipopt::SmartPtr <Bonmin::TMINLP> (dynamic_cast <Bonmin::TMINLP *> (Ipopt::GetRawPtr (tminlp))));
     }
   }
 
@@ -164,10 +170,6 @@ bool CouenneSetup::InitializeCouenne (char ** argv,
   int i;
 
   /// trying to avoid repetitions here...
-
-  // FIXME: doesn't work if suppress_all_output is true (gives
-  // segfault on options(), but checking options()!=NULL won't work as
-  // options() is a SmartPtr
 
 #define addJournalist(optname,jlevel) {				\
     options    () -> GetIntegerValue ((optname), i, "couenne."); \
@@ -210,7 +212,7 @@ bool CouenneSetup::InitializeCouenne (char ** argv,
     CSI -> setCutGenPtr (couenneCg);
 #else
     journalist()->Printf(J_ERROR, J_INITIALIZATION, "Couenne was compiled without CPLEX interface. Please reconfigure, recompile, and try again.\n");
-    return false;
+    exit (-1);
 #endif
   } else if (s == "xpress-mp") {
 
@@ -220,7 +222,7 @@ bool CouenneSetup::InitializeCouenne (char ** argv,
     CSI -> setCutGenPtr (couenneCg);
 #else
     journalist()->Printf(J_ERROR, J_INITIALIZATION, "Couenne was compiled without Xpress-MP interface. Please reconfigure, recompile, and try again.\n");
-    return false;
+    exit (-1);
 #endif
   } else if (s == "gurobi") {
 
@@ -230,7 +232,7 @@ bool CouenneSetup::InitializeCouenne (char ** argv,
     CSI -> setCutGenPtr (couenneCg);
 #else
     journalist()->Printf(J_ERROR, J_INITIALIZATION, "Couenne was compiled without GUROBI interface. Please reconfigure, recompile, and try again.\n");
-    return false;
+    exit (-1);
 #endif
   } else if (s == "soplex") {
 
@@ -240,11 +242,11 @@ bool CouenneSetup::InitializeCouenne (char ** argv,
     CSI -> setCutGenPtr (couenneCg);
 #else
     journalist()->Printf(J_ERROR, J_INITIALIZATION, "Couenne was compiled without Soplex. Please reconfigure, recompile, and try again.\n");
-    return false;
+    exit (-1);
 #endif
   } else {
     journalist ()-> Printf (J_ERROR, J_INITIALIZATION, "The LP solver you specified hasn't been added to Couenne yet.\n");
-    return false;
+    exit (-1);
   }
 
   continuousSolver_ -> passInMessageHandler(ci -> messageHandler());
@@ -270,35 +272,6 @@ bool CouenneSetup::InitializeCouenne (char ** argv,
   options () -> GetIntegerValue ("lp_log_level", lpLogLevel, "couenne.");
   continuousSolver_ -> messageHandler () -> setLogLevel (lpLogLevel);
 
-  //////////////////////////////////////////////////////////////
-
-  couenneCg -> Problem () -> setMaxCpuTime (getDoubleParameter (BabSetupBase::MaxTime));
-
-  ci -> extractLinearRelaxation (*continuousSolver_, *couenneCg);
-
-  // In case there are no discrete variables, we have already a
-  // heuristic solution for which create a initialization heuristic
-  if (!(extraStuff -> infeasibleNode ()) &&
-      ci -> isProvenOptimal () && 
-      ci -> haveNlpSolution ()) {
-
-    /// setup initial heuristic (in principle it should only run once...)
-    InitHeuristic* initHeuristic = new InitHeuristic 
-      (ci -> getObjValue (), ci -> getColSolution (), *couenneProb_);
-    HeuristicMethod h;
-    h.id = "Couenne Rounding NLP"; // same name as the real rounding one
-    h.heuristic = initHeuristic;
-    heuristics_.push_back(h);
-  }
-
-  if (extraStuff -> infeasibleNode ()){
-    journalist() -> Printf(J_SUMMARY, J_PROBLEM, "Initial linear relaxation constructed by Couenne is infeasible, exiting...\n");
-    return false;
-  }
-
-  //continuousSolver_ -> findIntegersAndSOS (false);
-  //addSos (); // only adds embedded SOS objects
-
   // Add Couenne SOS ///////////////////////////////////////////////////////////////
 
   int 
@@ -317,6 +290,8 @@ bool CouenneSetup::InitializeCouenne (char ** argv,
     nSOS = couenneProb_ -> findSOS (&(bb -> model()), dynamic_cast <OsiSolverInterface *> (nonlinearSolver ()), objects);
 
     nonlinearSolver () -> addObjects (nSOS, objects);
+
+    //printf ("boncouennesetup 1: %d SOS objects --> %d\n", nSOS, nonlinearSolver () -> numberObjects ());
 
     //printf ("==================== found %d SOS\n", nSOS);
     //nonlinearSolver () -> addObjects (nSOS, objects);
@@ -373,12 +348,14 @@ bool CouenneSetup::InitializeCouenne (char ** argv,
     varSelection = Bonmin::BabSetupBase::OSI_SIMPLE;
   }
 
+#ifdef TO_BE_REMOVED
   if ((Bonmin::BabSetupBase::OSI_STRONG == varSelection) &&
       (CouenneObject::VT_OBJ            == objType)){
 
-    printf ("Warning: Violation Transfer and strong branching are mutually exclusive.\nResetting to Violation Transfer only.\n");
+    printf ("Warning: Violation Transfer and strong branching are mutually exclusive.\nResetting to Violation Transfer only.");
     varSelection = Bonmin::BabSetupBase::OSI_SIMPLE;
   }
+#endif
 
   for (int i = 0; i < nVars; i++) { // for each variable
 
@@ -423,6 +400,8 @@ bool CouenneSetup::InitializeCouenne (char ** argv,
 	//|| ((var -> Type () == AUX) &&                                  // or, aux 
 	//    (var -> Image () -> Linearity () > LINEAR))) {              // of nonlinear
 
+	int ind = var -> Index ();
+
 	objects [nobj] = new CouenneVarObject (couenneCg, couenneProb_, var, this, journalist (), varSelection);
 	objects [nobj++] -> setPriority (var -> isInteger () ? intObjPriority : contObjPriority);
 	//objects [nobj++] -> setPriority (contObjPriority + var -> rank ());
@@ -440,7 +419,7 @@ bool CouenneSetup::InitializeCouenne (char ** argv,
 	//|| ((var -> Type () == AUX) &&                      // or, aux 
 	//(var -> Image () -> Linearity () > LINEAR))) { // of nonlinear
 
-	objects [nobj] = new CouenneVTObject (couenneCg, couenneProb_, var, this, journalist ());
+	objects [nobj] = new CouenneVTObject (couenneCg, couenneProb_, var, this, journalist (), varSelection);
 	objects [nobj++] -> setPriority (var -> isInteger () ? intObjPriority : contObjPriority);
 	//objects [nobj++] -> setPriority (contObjPriority + var -> rank ());
       }
@@ -459,16 +438,26 @@ bool CouenneSetup::InitializeCouenne (char ** argv,
   //   objects [nobj++] -> setPriority (contObjPriority);
   // }
 
+#ifdef COIN_HAS_NTY
+  if (couenneProb_ -> orbitalBranching ()) {
+
+    couenneProb_ -> ChangeBounds (couenneProb_ -> Lb (), couenneProb_ -> Ub (), couenneProb_ -> nVars ());
+    couenneProb_ -> Compute_Symmetry ();
+  }
+#endif
+
+  //couenneProb_ -> Print_Orbits ();
+
   // Add objects /////////////////////////////////
 
   continuousSolver_ -> addObjects (nobj, objects);
+
+  //printf ("boncouennesetup: %d objects --> %d\n", nobj, continuousSolver_ -> numberObjects ());
 
   for (int i = 0 ; i < nobj ; i++)
     delete objects [i];
 
   delete [] objects;
-
-  int freq;
 
   // Setup Fix Point bound tightener /////////////////////////////////////////////
 
@@ -531,8 +520,40 @@ bool CouenneSetup::InitializeCouenne (char ** argv,
   // Setup heuristic to solve MINLP problems. /////////////////////////////////
 
   std::string doHeuristic;
-
   options () -> GetStringValue ("local_optimization_heuristic", doHeuristic, "couenne.");
+
+  // ----------------------------------------------------------------
+
+  //////////////////////////////////////////////////////////////
+
+  couenneCg -> Problem () -> setMaxCpuTime (getDoubleParameter (BabSetupBase::MaxTime));
+
+  ci -> extractLinearRelaxation (*continuousSolver_, *couenneCg, true, doHeuristic == "yes");
+
+  // In case there are no discrete variables, we have already a
+  // heuristic solution for which create a initialization heuristic
+  if (!(extraStuff -> infeasibleNode ()) &&
+      ci -> isProvenOptimal () && 
+      ci -> haveNlpSolution ()) {
+
+    /// setup initial heuristic (in principle it should only run once...)
+    InitHeuristic* initHeuristic = new InitHeuristic 
+      (ci -> getObjValue (), ci -> getColSolution (), *couenneProb_);
+    HeuristicMethod h;
+    h.id = "Couenne Rounding NLP"; // same name as the real rounding one
+    h.heuristic = initHeuristic;
+    heuristics_.push_back(h);
+  }
+
+  if (extraStuff -> infeasibleNode ()){
+    journalist() -> Printf (J_SUMMARY, J_PROBLEM, "Linear relaxation infeasible, the problem is infeasible.\n");
+    retval = false;
+  }
+
+  // ----------------------------------------------------------------
+
+  //continuousSolver_ -> findIntegersAndSOS (false);
+  //addSos (); // only adds embedded SOS objects
 
   if (doHeuristic == "yes") {
 
@@ -561,14 +582,19 @@ bool CouenneSetup::InitializeCouenne (char ** argv,
 
   options () -> GetStringValue ("feas_pump_heuristic", doHeuristic, "couenne.");
 
-  if (doHeuristic == "yes") {
+  if (doHeuristic != "no") {
 
     int numSolve;
-    options () -> GetIntegerValue ("feas_pump_level", numSolve, "couenne.");
 
     CouenneFeasPump *nlpHeuristic = new CouenneFeasPump (couenneProb_, couenneCg, options ());
 
+    options () -> GetIntegerValue ("feas_pump_level", numSolve, "couenne.");
+
     nlpHeuristic -> setNumberSolvePerLevel (numSolve);
+
+    nlpHeuristic -> nCalls () = 
+      ("yes"  == doHeuristic) ? -1 :     // run it every time Cbc wants
+      ("once" == doHeuristic) ?  1 : -2; // second case means the answer was "only"
 
     HeuristicMethod h;
 
@@ -577,8 +603,7 @@ bool CouenneSetup::InitializeCouenne (char ** argv,
     heuristics_. push_back (h);
   }
 
-#if 0
-  { // inactive as of yet -- segfaults 
+  if (0) { // inactive as of yet -- segfaults 
 
     Ipopt::Index doHeuristicDiveFractional = false;
     options()->GetEnumValue("heuristic_dive_fractional",doHeuristicDiveFractional,prefix_.c_str());
@@ -696,7 +721,7 @@ bool CouenneSetup::InitializeCouenne (char ** argv,
       h.id = "MILP Rounding";
       heuristics_.push_back(h);
     }
-#endif
+  }
 
   // Add Branching rules ///////////////////////////////////////////////////////
 
@@ -741,6 +766,23 @@ bool CouenneSetup::InitializeCouenne (char ** argv,
   // heuristic is indeed feasible
   intParam_ [BabSetupBase::SpecialOption] = 16 | 4;
 
+  // Add PSD cut handler ///////////////////////////////////////////////////////
+
+  options () -> GetIntegerValue ("sdp_cuts", freq, "couenne.");
+
+  if (freq != 0) {
+
+    CouenneSdpCuts * couenneSDP = 
+      new CouenneSdpCuts (couenneProb_,
+			  journalist (),
+			  options    ());
+    CuttingMethod cg;
+    cg.frequency = freq;
+    cg.cgl = couenneSDP;
+    cg.id = "Couenne SDP cuts";
+    cutGenerators (). push_back (cg);
+  }
+
   // Add disjunctive cuts ///////////////////////////////////////////////////////
 
   options () -> GetIntegerValue ("minlp_disj_cuts", freq, "couenne.");
@@ -764,44 +806,23 @@ bool CouenneSetup::InitializeCouenne (char ** argv,
 
   // Add cross-aux redundant cuts ///////////////////////////////////////////////////////
 
-  // options () -> GetIntegerValue ("crossconv_cuts", freq, "couenne.");
+  options () -> GetIntegerValue ("crossconv_cuts", freq, "couenne.");
 
-  // if (freq != 0) {
+  if (freq != 0) {
 
-  //   CouenneCrossConv * couenneCross = 
-  //     new CouenneCrossConv (couenneProb,
-  // 			    journalist (),
-  // 			    options ());
+    CouenneCrossConv * couenneCross = 
+      new CouenneCrossConv (couenneProb,
+  			    journalist (),
+  			    options ());
 
-  //   CuttingMethod cg;
-  //   cg.frequency = freq;
-  //   cg.cgl = couenneCross;
-  //   cg.id = "Couenne cross-aux cuts";
-  //   cutGenerators (). push_back(cg);
-  // }
+    CuttingMethod cg;
+    cg.frequency = freq;
+    cg.cgl = couenneCross;
+    cg.id = "Couenne cross-aux cuts";
+    cutGenerators (). push_back(cg);
+  }
 
-  // Add sdp cuts ///////////////////////////////////////////////////////
-
-  // options () -> GetIntegerValue ("sdp_cuts", freq, "couenne.");
-
-  // if (freq != 0) {
-
-  //   CouenneDisjCuts * couenneDisj = 
-  //     new CouenneDisjCuts (ci, this, 
-  // 			   couenneCg, 
-  // 			   branchingMethod_, 
-  // 			   varSelection == OSI_STRONG, // if true, use strong branching candidates
-  // 			   journalist (),
-  // 			   options ());
-
-  //   CuttingMethod cg;
-  //   cg.frequency = freq;
-  //   cg.cgl = couenneDisj;
-  //   cg.id = "Couenne disjunctive cuts";
-  //   cutGenerators (). push_back(cg);
-  // }
-
-  return true;
+  return retval;
 }
  
 void CouenneSetup::registerOptions ()
@@ -815,7 +836,6 @@ void CouenneSetup::registerAllOptions (Ipopt::SmartPtr <Bonmin::RegisteredOption
   BabSetupBase        ::registerAllOptions (roptions);
   Bonmin::BonCbcFullNodeInfo  ::registerOptions (roptions);
 
-#if 0
   /// Heuristics
   Bonmin::LocalSolverBasedHeuristic    ::registerOptions (roptions);
   Bonmin::FixAndSolveHeuristic         ::registerOptions (roptions);
@@ -829,14 +849,13 @@ void CouenneSetup::registerAllOptions (Ipopt::SmartPtr <Bonmin::RegisteredOption
   Bonmin::HeuristicDiveVectorLength    ::registerOptions (roptions);
   Bonmin::HeuristicDiveMIPFractional   ::registerOptions (roptions);
   Bonmin::HeuristicDiveMIPVectorLength ::registerOptions (roptions);  
-#endif
 
   roptions -> AddStringOption3 ("milp_solver",
 				"Choose the subsolver to solve MILP sub-problems in OA decompositions.",
 				"Cbc_D",
 				"Cbc_D","Coin Branch and Cut with its default",
 				"Cbc_Par", "Coin Branch and Cut with passed parameters",
-				"Cplex","Ilog Cplex",
+				"Cplex","Cplex",
 				" To use Cplex, a valid license is required and you should have compiled OsiCpx in COIN-OR  (see Osi documentation).");
 
   roptions -> setOptionExtraInfo ("milp_solver",64);
@@ -866,7 +885,8 @@ void CouenneSetup::registerAllOptions (Ipopt::SmartPtr <Bonmin::RegisteredOption
   CouenneChooseVariable   ::registerOptions (roptions);
   CouenneFixPoint         ::registerOptions (roptions);
   CouenneDisjCuts         ::registerOptions (roptions);
-  //  CouenneCrossConv        ::registerOptions (roptions);
+  CouenneCrossConv        ::registerOptions (roptions);
+  CouenneSdpCuts          ::registerOptions (roptions);
   CouenneTwoImplied       ::registerOptions (roptions);
   NlpSolveHeuristic       ::registerOptions (roptions);
   CouenneFeasPump         ::registerOptions (roptions);
@@ -893,6 +913,12 @@ void CouenneSetup::registerAllOptions (Ipopt::SmartPtr <Bonmin::RegisteredOption
 				"yes", "",
 				"no", "");
 
+  roptions -> AddStringOption2 ("save_soltext",
+				"save pairs (index, value) of the solution at the end of the solve",
+				"no",
+				"yes", "",
+				"no", "");
+
   roptions -> AddStringOption2 ("test_mode",
 				"set to true if this is Couenne unit test",
 				"no",
@@ -902,11 +928,11 @@ void CouenneSetup::registerAllOptions (Ipopt::SmartPtr <Bonmin::RegisteredOption
   roptions -> AddStringOption5 ("lp_solver",
 				"Linear Programming solver for the linearization",
 				"clp",
-				"clp",    "Use the COIN-OR Open Source solver CLP",
+				"clp",    "Use the COIN-OR Open Source solver CLP (default)",
 				"cplex",  "Use the commercial solver Cplex (license is needed)",
 				"gurobi", "Use the commercial solver Gurobi (license is needed)",
 				"soplex", "Use the freely available Soplex",
-                               "xpress-mp", "Use the commercial solver Xpress MP (license is needed)"
+                                "xpress-mp", "Use the commercial solver Xpress MP (license is needed)"
 				);
 
 #define addLevOption(optname,comment) roptions -> AddBoundedIntegerOption (optname, comment, -2, J_LAST_LEVEL-1, J_NONE, "")

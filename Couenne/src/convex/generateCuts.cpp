@@ -1,4 +1,4 @@
-/* $Id: generateCuts.cpp 946 2013-04-15 22:20:38Z stefan $
+/* $Id: generateCuts.cpp 1071 2014-03-13 01:35:13Z pbelotti $
  *
  * Name:    generateCuts.cpp
  * Author:  Pietro Belotti
@@ -19,6 +19,8 @@
 #include "CouenneInfeasCut.hpp"
 
 #include "CouenneRecordBestSol.hpp"
+
+//#define FM_PRINT_INFO
 
 #ifdef COIN_HAS_NTY
 #include "Nauty.h"
@@ -97,6 +99,18 @@ void CouenneCutGenerator::generateCuts (const OsiSolverInterface &si,
 #endif
   {
 
+  // if si.lb(objInd) > cutoff,
+  //   return infeasCut
+
+  int indObj = problem_ -> Obj (0) -> Body () -> Index ();
+  
+  if ((indObj >= 0) && 
+      (si.getColLower () [indObj] > problem_ -> getCutOff () + COUENNE_EPS)) {
+
+    WipeMakeInfeas (cs);
+    return;
+  }
+
   // check if out of time or if an infeasibility cut (iis of type 0)
   // was added as a result of, e.g., pruning on BT. If so, no need to
   // run this.
@@ -116,9 +130,7 @@ void CouenneCutGenerator::generateCuts (const OsiSolverInterface &si,
     //problem_ -> setCutOff (bestVal - 1e-6); // FIXME: don't add numerical constants
     problem_ -> setCutOff (bestVal);
 
-    int indObj = problem_->Obj(0)->Body()->Index();
-
-    if (indObj >= 0) {
+    if ((indObj >= 0) && (si. getColUpper () [indObj] > bestVal)) {
       OsiColCut *objCut = new OsiColCut;
       objCut->setUbs(1, &indObj, &bestVal);
       cs.insert(objCut);
@@ -224,7 +236,7 @@ void CouenneCutGenerator::generateCuts (const OsiSolverInterface &si,
     // start with FBBT, should take advantage of cutoff found by NLP
     // run AFTER initial FBBT...
     if (problem_ -> doFBBT () &&
-	(! (problem_ -> boundTightening (chg_bds, babInfo))))
+	(! (problem_ -> boundTightening (chg_bds, info, babInfo))))
           jnlst_ -> Printf (J_STRONGWARNING, J_CONVEXIFYING,
             "Couenne: WARNING, first convexification is infeasible\n");
 
@@ -325,20 +337,19 @@ void CouenneCutGenerator::generateCuts (const OsiSolverInterface &si,
   } else {
 
     // use new optimum as lower bound for variable associated w/objective
-    int indobj = problem_ -> Obj (0) -> Body () -> Index ();
 
     // transmit solution from OsiSolverInterface to problem
     problem_ -> domain () -> push (&si, &cs);
 
-    if (indobj >= 0) {
+    if (indObj >= 0) {
 
       // Use current value of objvalue's x as a lower bound for bound
       // tightening
-      double lp_bound = problem_ -> domain () -> x (indobj);
+      double lp_bound = problem_ -> domain () -> x (indObj);
 
       //if (problem_ -> Obj (0) -> Sense () == MINIMIZE) 
-      {if (lp_bound > problem_ -> Lb (indobj)) problem_ -> Lb (indobj) = lp_bound;}
-	   //else {if (lp_bound < problem_ -> Ub (indobj)) problem_ -> Ub (indobj) = lp_bound;}
+      {if (lp_bound > problem_ -> Lb (indObj)) problem_ -> Lb (indObj) = lp_bound;}
+	   //else {if (lp_bound < problem_ -> Ub (indObj)) problem_ -> Ub (indObj) = lp_bound;}
     }
 
     updateBranchInfo (si, problem_, chg_bds, info); // info.depth >= 0 || info.pass >= 0
@@ -386,22 +397,24 @@ void CouenneCutGenerator::generateCuts (const OsiSolverInterface &si,
     // tightening is done, we can apply further tightening using orbit
     // information.
 
-#ifdef COIN_HAS_NTY
-    //    ChangeBounds (psi -> getColLower (),  
-    //		  psi -> getColUpper (), 
-    //		  psi -> getNumCols ());
-    if (problem_ -> orbitalBranching ())
-      problem_ -> Compute_Symmetry ();
-#endif
+// #ifdef COIN_HAS_NTY
+//     //    ChangeBounds (psi -> getColLower (),  
+//     //		  psi -> getColUpper (), 
+//     //		  psi -> getNumCols ());
+
+//     if (problem_ -> orbitalBranching ()){
+
+//       problem_ -> ChangeBounds (problem_ -> Lb (),
+// 				problem_ -> Ub (),
+// 				problem_ -> nVars ());
+
+//       problem_ -> Compute_Symmetry ();
+//     }
+// #endif
 
     // Bound tightening ////////////////////////////////////
 
-    /*printf ("== BT ================\n");
-      for (int i = 0; i < problem_ -> nVars (); i++)
-      if (problem_ -> Var (i) -> Multiplicity () > 0)
-      printf ("%4d %+20.8g [%+20.8g,%+20.8g]\n", i,
-      problem_ -> X  (i), problem_ -> Lb (i), problem_ -> Ub (i));
-      printf("=============================\n");*/
+    //bool is_feas = p -> btCore (chg_bds);
 
     // Reduced Cost BT -- to be done first to use rcost correctly
     if (!firstcall_  &&                         // have a linearization already
@@ -413,7 +426,7 @@ void CouenneCutGenerator::generateCuts (const OsiSolverInterface &si,
     // FBBT
     if (problem_ -> doFBBT () && 
 	//(info.pass <= 0) && // do it in subsequent rounds too
-	(! (problem_ -> boundTightening (chg_bds, babInfo))))
+	(! (problem_ -> boundTightening (chg_bds, info, babInfo))))
       throw infeasible;
 
     // OBBT
@@ -468,7 +481,6 @@ void CouenneCutGenerator::generateCuts (const OsiSolverInterface &si,
 	    printf ("x_%d [%g,%g] ", orbit[j], lb [orbit [j]], ub [orbit [j]]);
 	    fflush (stdout);
 	  }
-	  printf ("\n");
 	}
 
 	for (int j = 0; j < orbit.size (); j++) {
@@ -483,7 +495,7 @@ void CouenneCutGenerator::generateCuts (const OsiSolverInterface &si,
 	}
 
 	jnlst_ -> Printf (J_VECTOR, J_BOUNDTIGHTENING, 
-			  " --> new common lower bounds: [%g,--]\n", ll);
+			  " --> new common bounds: [%g,%g]\n", ll, uu);
 
 	for(int j = 0; j < orbit.size (); j++) {
 

@@ -1,4 +1,4 @@
-/* $Id: generateDisjCuts.cpp 946 2013-04-15 22:20:38Z stefan $
+/* $Id: generateDisjCuts.cpp 945 2013-04-06 20:25:21Z stefan $
  *
  * Name:    generateDisjCuts.cpp
  * Author:  Pietro Belotti
@@ -262,15 +262,14 @@ void CouenneDisjCuts::generateCuts (const OsiSolverInterface &si,
 
     int ncols = si.getNumCols ();
 
-    bool tightened = false;
-
     for (int i=0; i<ncols; i++, newLo++, newUp++) {
 
-      if (*newLo > *oldLo++ + COUENNE_EPS) {tighterLower.insert (i, *newLo); tightened = true;}
-      if (*newUp < *oldUp++ - COUENNE_EPS) {tighterUpper.insert (i, *newUp); tightened = true;}
+      if (*newLo > *oldLo++ + COUENNE_EPS) tighterLower.insert (i, *newLo);
+      if (*newUp < *oldUp++ - COUENNE_EPS) tighterUpper.insert (i, *newUp);
     }
 
-    if (tightened) {
+    if ((tighterLower.getNumElements () > 0) || 
+	(tighterUpper.getNumElements () > 0)) {
       OsiColCut tighter;
       tighter.setLbs (tighterLower);
       tighter.setUbs (tighterUpper);
@@ -303,6 +302,13 @@ void CouenneDisjCuts::generateCuts (const OsiSolverInterface &si,
 			"In-BB disjunctive cuts: %d row cuts, %d col cuts\n",
 			cs.sizeRowCuts () - initRowCuts,
 			cs.sizeColCuts () - initColCuts);
+  }
+
+  if (jnlst_ -> ProduceOutput (J_DETAILED, J_DISJCUTS)) {
+
+    printf ("Disjunctive cuts (%d row + %d col):\n", cs.sizeRowCuts () - initRowCuts, cs.sizeColCuts () - initColCuts);
+    for (int i=initRowCuts; i<cs.sizeRowCuts (); ++i) cs.rowCutPtr (i) -> print ();
+    for (int i=initColCuts; i<cs.sizeColCuts (); ++i) cs.colCutPtr (i) -> print ();
   }
 
   // else {

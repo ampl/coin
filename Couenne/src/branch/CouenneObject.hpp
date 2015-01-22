@@ -1,4 +1,4 @@
-/* $Id: CouenneObject.hpp 795 2012-01-26 03:19:52Z pbelotti $
+/* $Id: CouenneObject.hpp 793 2012-01-26 03:07:16Z pbelotti $
  *
  * Name:    CouenneObject.hpp
  * Authors: Pierre Bonami, IBM Corp.

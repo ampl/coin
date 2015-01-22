@@ -1,4 +1,4 @@
-/* $Id: CouenneCutGenerator.hpp 946 2013-04-15 22:20:38Z stefan $
+/* $Id: CouenneCutGenerator.hpp 945 2013-04-06 20:25:21Z stefan $
  *
  * Name:    CouenneCutGenerator.hpp
  * Author:  Pietro Belotti

@@ -1,4 +1,4 @@
-/* $Id: exprOpp.cpp 846 2012-05-07 14:10:50Z pbelotti $
+/* $Id: exprOpp.cpp 614 2011-06-08 14:20:39Z pbelotti $
  *
  * Name:    exprOpp.cpp
  * Author:  Pietro Belotti
@@ -83,20 +83,17 @@ expression *exprOpp::simplify () {
   // check if this is a -(-f(x))
   if (argument_ -> code () == COU_EXPROPP) {
     // leak. don't clone, use exprClone
-    expression *ret = argument_ -> Argument (); // -> clone ();
-    *(argument_ -> ArgPtr ()) = NULL; // unlink two levels below, will
-				      // delete only exprOp and its
-				      // argument
-    //delete argument_;
-    //argument_ = NULL;
+    expression *ret = argument_ -> Argument () -> clone ();
+    delete argument_;
+    argument_ = NULL;
     return ret;
   }
 
   // check if this is a -(const)
   if (argument_ -> Type () == CONST) {
     expression *ret = new exprConst (- argument_ -> Value ());
-    //delete argument_;
-    //argument_ = NULL;
+    delete argument_;
+    argument_ = NULL;
     return ret;
   }
 

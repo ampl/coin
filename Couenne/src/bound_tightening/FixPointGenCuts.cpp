@@ -1,4 +1,4 @@
-/* $Id: FixPointGenCuts.cpp 946 2013-04-15 22:20:38Z stefan $
+/* $Id: FixPointGenCuts.cpp 1079 2014-10-30 17:25:09Z pbelotti $
  *
  * Name:    FixPointGenCuts.cpp
  * Author:  Pietro Belotti
@@ -34,7 +34,7 @@ void CouenneFixPoint::generateCuts (const OsiSolverInterface &si,
   {
 
   /// Only run this if the latest FBBT terminated on the iteration
-  /// limit, as this suggest that the FPLP might be of some help.
+  /// limit, as this suggests that the FPLP might be of some help.
   /// Termination before iteration limit reached implies that a
   /// relaxation (on which the FPLP is based) won't generate better
   /// bounds.
@@ -51,10 +51,14 @@ void CouenneFixPoint::generateCuts (const OsiSolverInterface &si,
   if (isWiped (cs))
     return;
 
+  // do it at most once per node
+
   if (treeInfo.inTree && 
       treeInfo.level > 0 &&
       treeInfo.pass > 1)
     return;
+
+  double startTime = CoinCpuTime ();
 
   int nInitTightened = nTightened_;
 
@@ -65,11 +69,17 @@ void CouenneFixPoint::generateCuts (const OsiSolverInterface &si,
     fflush (stdout);
   }
 
-  ++nRuns_;
+  //++nRuns_;
 
   double now = CoinCpuTime ();
 
   problem_ -> domain () -> push (&si, &cs);
+
+  double 
+    *oldLB = CoinCopyOfArray (problem_ -> Lb (), problem_ -> nVars ()),
+    *oldUB = CoinCopyOfArray (problem_ -> Ub (), problem_ -> nVars ());
+
+  perfIndicator_. setOldBounds (problem_ -> Lb (), problem_ -> Ub ());
 
   /// An LP relaxation of a MINLP problem is available in the first
   /// parameter passed. Let us suppose that this LP relaxation is of
@@ -120,14 +130,14 @@ void CouenneFixPoint::generateCuts (const OsiSolverInterface &si,
   const CoinPackedMatrix *A = si. getMatrixByRow ();
 
   const int
-       n     = si.  getNumCols  (),
-       m     = si.  getNumRows  (),
-       nCuts = cs.sizeRowCuts   (),
-    *ind     = A -> getIndices  ();
+    n     = si.  getNumCols (),
+    m     = si.  getNumRows (),
+    nCuts = cs.sizeRowCuts  (),
+    *ind  = A -> getIndices ();
 
   const double
-    *lb  = si.  getColLower (),
-    *ub  = si.  getColUpper (),
+    *lb  = problem_ -> Lb (), //si.  getColLower (),
+    *ub  = problem_ -> Ub (), //si.  getColUpper (),
     *rlb = si.  getRowLower (),
     *rub = si.  getRowUpper (),
     *coe = A -> getElements ();
@@ -256,20 +266,80 @@ void CouenneFixPoint::generateCuts (const OsiSolverInterface &si,
 
   fplp -> setObjSense (-1.); // we want to maximize 
 
-  //printf ("(writing lp) ");
+  //printf ("(writing lp) "); fflush (stdout);
   //fplp -> writeLp ("fplp");
 
+  // sometimes Clp gets stuck on these fplps...
+  fplp -> setIntParam (OsiMaxNumIteration, CoinMax (100, fplp -> getNumRows ()));
+
+  // we are maximizing the size of the box. If the initial box [l0,u0]
+  // is bounded, since the final one is contained in [l0,u0] we can
+  // set as a primal limit (Clp will stop after reaching it) a value
+  // close to it, since we won't need tightening if the one norm is
+  // very close to the old one.
+
+  double one_norm = 0;
+  bool one_inf_bd = false;
+
+  for (int i=0; i<n; ++i) {
+
+    if ((oldLB [i] < -COUENNE_INFINITY) ||
+	(oldUB [i] >  COUENNE_INFINITY)) {
+      one_inf_bd = true;
+      break;
+    }
+
+    one_norm += (oldUB [i] - oldLB [i]);
+  }
+
+#define APPROX_USELESS .99
+
+  //csi -> setDblParam (OsiDualObjectiveLimit, COIN_DBL_MAX); 
+  if (!one_inf_bd)
+    fplp -> setDblParam (OsiPrimalObjectiveLimit, APPROX_USELESS * one_norm);
+
   fplp -> initialSolve ();
+
+  //fplp -> writeLp ("beforefplp"); // TODO: remove
+
+  // Extra pre-solve: if the initial LP is unbounded (that is,
+  // dual-infeasible but not primal-infeasible), then repeat after a
+  // call to BT. This is a cheap way not to throw
+
+  if (fplp   -> isProvenDualInfeasible   () &&
+      !(fplp -> isProvenPrimalInfeasible ())) {
+
+    problem_ -> Jnlst () -> Printf (J_WARNING, J_BOUNDTIGHTENING, "FPLP unbounded: extra BT\n");
+
+    if (!(problem_ -> doFBBT ()) &&   // if FBBT was not applied before (because it was excluded,
+	!(problem_ -> btCore (NULL))) // do a round of FBBT. If infeasible,
+      WipeMakeInfeas (cs);            // well, this is infeasible though FPLP will take the merit
+
+    // Otherwise, reset bounds on auxiliaries based on new bounds in problem_ -> domain ();
+    
+    for (int i=0; i<n; i++) {
+      fplp -> setColLower (  i, problem_ -> Lb (i)); // set lower bound for xL [i]
+      fplp -> setColLower (n+i, problem_ -> Lb (i)); //                     xU
+      fplp -> setColUpper (  i, problem_ -> Ub (i)); //     upper           xL
+      fplp -> setColUpper (n+i, problem_ -> Ub (i)); //                     xU
+    }
+
+    //fplp -> writeLp ("fplp+bt"); // TODO: remove
+
+    fplp -> resolve ();
+  }
+
+  const double 
+    *newLB = fplp -> getColSolution (),
+    *newUB = newLB + n;
+
+  double infeasBounds [] = {1,-1};
+
+  //problem_ -> Jnlst () -> Printf (J_WARNING, J_BOUNDTIGHTENING, "FBBTFP point:\n");
 
   if (fplp -> isProvenOptimal ()) {
 
     // if problem not solved to optimality, bounds are useless
-
-    const double 
-      *newLB = fplp -> getColSolution (),
-      *newUB = newLB + n,
-      *oldLB = si. getColLower (),
-      *oldUB = si. getColUpper ();
 
     // check old and new bounds
 
@@ -325,20 +395,45 @@ void CouenneFixPoint::generateCuts (const OsiSolverInterface &si,
     CPUtime_ += CoinCpuTime () - now;
 
     if (treeInfo.inTree && 
-	treeInfo.level <= 0) {
-
+	treeInfo.level <= 0)
       problem_ -> Jnlst () -> Printf (J_ERROR, J_COUENNE, "%d bounds tightened (%g seconds)\n", 
 				      nTightened_ - nInitTightened, CoinCpuTime () - now); 
-    }
 
-  } else
+  } else if (fplp -> isProvenPrimalInfeasible ()) {
+
+    if (treeInfo.inTree &&
+	treeInfo.level <= 0)
+      problem_ -> Jnlst () -> Printf (J_ERROR, J_COUENNE, " FPLP infeasible.\n");
+
+    WipeMakeInfeas (cs);
+
+    newLB = infeasBounds;
+    newUB = infeasBounds + 1;
+
+  } else {
+
+    // we won't use the solution from FPLP, and should tell the BT
+    // performance indicator that nothing should change.
+
     if (treeInfo.inTree && 
 	treeInfo.level <= 0)
-      problem_ -> Jnlst () -> Printf (J_ERROR, J_COUENNE, " FPLP infeasible or unbounded.\n");
+      problem_ -> Jnlst () -> Printf (J_ERROR, J_COUENNE, " FPLP inconclusive, won't be used.\n");
+
+    newLB = oldLB;
+    newUB = oldUB;
+  }
+
+  //  problem_ -> Jnlst () -> Printf (J_ERROR, J_BOUNDTIGHTENING, "END\n");
 
   delete fplp;
 
+  perfIndicator_. update (newLB, newUB, treeInfo.level);
+  perfIndicator_. addToTimer (CoinCpuTime () - startTime);
+
   problem_ -> domain () -> pop ();
+
+  delete [] oldLB;
+  delete [] oldUB;
 }
 
 

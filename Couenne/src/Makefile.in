@@ -14,6 +14,7 @@
 
 @SET_MAKE@
 
+#
 # Copyright (C) 2006 International Business Machines and others.
 # All Rights Reserved.
 # This file is distributed under the Eclipse Public License.
@@ -69,8 +70,6 @@ host_triplet = @host@
 @DEPENDENCY_LINKING_TRUE@       $(COUENNELIB_CFLAGS)
 
 
-# cut/crossconv/CouenneCrossConv.hpp
-# cut/sdpcuts/CouenneSdpCuts.hpp 
 # cut/sdpcuts/dsyevx_wrapper.hpp 
 # cut/sdpcuts/linquad_cuts.hpp 
 # cut/sdpcuts/populate.hpp 
@@ -109,7 +108,9 @@ am__DEPENDENCIES_1 = ./interfaces/libCouenneInterfaces.la \
 	./bound_tightening/libCouenneBoundTightening.la \
 	./bound_tightening/twoImpliedBT/libCouenneTwoImplied.la \
 	./util/libCouenneUtil.la \
-	./disjunctive/libCouenneDisjunctive.la
+	./disjunctive/libCouenneDisjunctive.la \
+	./cut/crossconv/libCouenneCrossConv.la \
+	./cut/sdpcuts/libCouenneSdpCuts.la
 am__DEPENDENCIES_2 =
 @DEPENDENCY_LINKING_TRUE@am__DEPENDENCIES_3 = $(am__DEPENDENCIES_2)
 am__libCouenne_la_SOURCES_DIST = main/CouenneBab.cpp \
@@ -146,6 +147,7 @@ am__includecoin_HEADERS_DIST = util/CouenneRootQ.hpp \
 	branch/CouenneOrbitObj.hpp branch/CouenneOrbitBranchingObj.hpp \
 	branch/CouenneSOSObject.hpp branch/CouenneProjections.hpp \
 	standardize/CouenneLQelems.hpp \
+	bound_tightening/CouenneBTPerfIndicator.hpp \
 	bound_tightening/CouenneFixPoint.hpp \
 	bound_tightening/CouenneAggrProbing.hpp \
 	bound_tightening/twoImpliedBT/CouenneTwoImplied.hpp \
@@ -190,7 +192,9 @@ am__includecoin_HEADERS_DIST = util/CouenneRootQ.hpp \
 	problem/CouenneJournalist.hpp problem/CouenneGlobalCutOff.hpp \
 	problem/CouenneRecordBestSol.hpp expression/CouenneTypes.hpp \
 	disjunctive/CouenneDisjCuts.hpp convex/CouenneCutGenerator.hpp \
-	branch/Nauty.h
+	cut/sdpcuts/CouenneSdpCuts.hpp cut/sdpcuts/CouennePSDcon.hpp \
+	cut/sdpcuts/CouenneMatrix.hpp \
+	cut/crossconv/CouenneCrossConv.hpp branch/Nauty.h
 includecoinHEADERS_INSTALL = $(INSTALL_HEADER)
 HEADERS = $(includecoin_HEADERS)
 ETAGS = etags
@@ -200,6 +204,7 @@ ABSBUILDDIR = @ABSBUILDDIR@
 ACLOCAL = @ACLOCAL@
 ADD_CFLAGS = @ADD_CFLAGS@
 ADD_CXXFLAGS = @ADD_CXXFLAGS@
+ADD_FFLAGS = @ADD_FFLAGS@
 ALWAYS_FALSE_FALSE = @ALWAYS_FALSE_FALSE@
 ALWAYS_FALSE_TRUE = @ALWAYS_FALSE_TRUE@
 AMDEP_FALSE = @AMDEP_FALSE@
@@ -282,6 +287,7 @@ CXXFLAGS = @CXXFLAGS@
 CYGPATH_W = @CYGPATH_W@
 DBG_CFLAGS = @DBG_CFLAGS@
 DBG_CXXFLAGS = @DBG_CXXFLAGS@
+DBG_FFLAGS = @DBG_FFLAGS@
 DEFS = @DEFS@
 DEPDIR = @DEPDIR@
 DEPENDENCY_LINKING_FALSE = @DEPENDENCY_LINKING_FALSE@
@@ -294,6 +300,7 @@ EGREP = @EGREP@
 EXEEXT = @EXEEXT@
 F77 = @F77@
 FFLAGS = @FFLAGS@
+FLIBS = @FLIBS@
 GRB_CFLAGS = @GRB_CFLAGS@
 GRB_CFLAGS_INSTALLED = @GRB_CFLAGS_INSTALLED@
 GRB_DATA = @GRB_DATA@
@@ -322,6 +329,7 @@ MAINTAINER_MODE_TRUE = @MAINTAINER_MODE_TRUE@
 MAKEINFO = @MAKEINFO@
 MPICC = @MPICC@
 MPICXX = @MPICXX@
+MPIF77 = @MPIF77@
 MSK_CFLAGS = @MSK_CFLAGS@
 MSK_CFLAGS_INSTALLED = @MSK_CFLAGS_INSTALLED@
 MSK_DATA = @MSK_DATA@
@@ -334,6 +342,7 @@ NTYLIB = @NTYLIB@
 OBJEXT = @OBJEXT@
 OPT_CFLAGS = @OPT_CFLAGS@
 OPT_CXXFLAGS = @OPT_CXXFLAGS@
+OPT_FFLAGS = @OPT_FFLAGS@
 PACKAGE = @PACKAGE@
 PACKAGE_BUGREPORT = @PACKAGE_BUGREPORT@
 PACKAGE_NAME = @PACKAGE_NAME@
@@ -453,11 +462,11 @@ libCouenne_la_DEPENDENCIES = \
 	./bound_tightening/libCouenneBoundTightening.la \
 	./bound_tightening/twoImpliedBT/libCouenneTwoImplied.la \
 	./util/libCouenneUtil.la \
-	./disjunctive/libCouenneDisjunctive.la 
+	./disjunctive/libCouenneDisjunctive.la \
+	./cut/crossconv/libCouenneCrossConv.la \
+	./cut/sdpcuts/libCouenneSdpCuts.la
 
 
-#	./cut/crossconv/libCouenneCrossConv.la
-#	./cut/sdpcuts/libCouenneSdpCuts.la
 #	./ellipcuts/libCouenneEllipCuts.la 
 #	./readnl/libCouenneReadnl.la 
 
@@ -501,6 +510,7 @@ includecoin_HEADERS = util/CouenneRootQ.hpp \
 	branch/CouenneOrbitObj.hpp branch/CouenneOrbitBranchingObj.hpp \
 	branch/CouenneSOSObject.hpp branch/CouenneProjections.hpp \
 	standardize/CouenneLQelems.hpp \
+	bound_tightening/CouenneBTPerfIndicator.hpp \
 	bound_tightening/CouenneFixPoint.hpp \
 	bound_tightening/CouenneAggrProbing.hpp \
 	bound_tightening/twoImpliedBT/CouenneTwoImplied.hpp \
@@ -545,7 +555,9 @@ includecoin_HEADERS = util/CouenneRootQ.hpp \
 	problem/CouenneJournalist.hpp problem/CouenneGlobalCutOff.hpp \
 	problem/CouenneRecordBestSol.hpp expression/CouenneTypes.hpp \
 	disjunctive/CouenneDisjCuts.hpp convex/CouenneCutGenerator.hpp \
-	$(am__append_4)
+	cut/sdpcuts/CouenneSdpCuts.hpp cut/sdpcuts/CouennePSDcon.hpp \
+	cut/sdpcuts/CouenneMatrix.hpp \
+	cut/crossconv/CouenneCrossConv.hpp $(am__append_4)
 all: config.h config_couenne.h
 	$(MAKE) $(AM_MAKEFLAGS) all-am
 
@@ -765,7 +777,7 @@ distclean-tags:
 	-rm -f TAGS ID GTAGS GRTAGS GSYMS GPATH tags
 
 distdir: $(DISTFILES)
-	$(mkdir_p) $(distdir)/bound_tightening $(distdir)/bound_tightening/twoImpliedBT $(distdir)/branch $(distdir)/convex $(distdir)/disjunctive $(distdir)/expression $(distdir)/expression/operators $(distdir)/expression/operators/bounds $(distdir)/expression/partial $(distdir)/heuristics $(distdir)/interfaces $(distdir)/main $(distdir)/problem $(distdir)/problem/depGraph $(distdir)/standardize $(distdir)/util
+	$(mkdir_p) $(distdir)/bound_tightening $(distdir)/bound_tightening/twoImpliedBT $(distdir)/branch $(distdir)/convex $(distdir)/cut/crossconv $(distdir)/cut/sdpcuts $(distdir)/disjunctive $(distdir)/expression $(distdir)/expression/operators $(distdir)/expression/operators/bounds $(distdir)/expression/partial $(distdir)/heuristics $(distdir)/interfaces $(distdir)/main $(distdir)/problem $(distdir)/problem/depGraph $(distdir)/standardize $(distdir)/util
 	@srcdirstrip=`echo "$(srcdir)" | sed 's|.|.|g'`; \
 	topsrcdirstrip=`echo "$(top_srcdir)" | sed 's|.|.|g'`; \
 	list='$(DISTFILES)'; for file in $$list; do \

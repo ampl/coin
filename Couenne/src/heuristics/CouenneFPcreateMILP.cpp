@@ -1,4 +1,4 @@
-/* $Id: CouenneFPcreateMILP.cpp 733 2011-07-03 22:32:52Z pbelotti $
+/* $Id: CouenneFPcreateMILP.cpp 1078 2014-05-16 05:58:02Z pbelotti $
  *
  * Name:    CouenneFPcreateMILP.cpp
  * Authors: Pietro Belotti
@@ -17,6 +17,7 @@
 #include "CouenneFeasPump.hpp"
 #include "CouenneProblem.hpp"
 #include "CouenneProblemElem.hpp"
+#include "CouenneExprVar.hpp"
 
 #define COUENNE_EIG_RATIO .1 // how much smaller than the largest eigenvalue should the minimum be set at?
 
@@ -25,8 +26,13 @@ using namespace Couenne;
 /// computes square root of a CouenneSparseMatrix
 void ComputeSquareRoot (const CouenneFeasPump *fp, CouenneSparseMatrix *hessian, CoinPackedVector *P);
 
+/// project matrix onto the cone of positive semidefinite matrices
+/// (possibly take square root of eigenvalue for MILP). Return number
+/// of nonzeros
+int PSDize (int n, double *A, double *B, bool doSqrRoot);
+
 /// create clone of MILP and add variables for special objective
-OsiSolverInterface *createCloneMILP (const CouenneFeasPump *fp, CbcModel *model, bool isMILP) {
+OsiSolverInterface *createCloneMILP (const CouenneFeasPump *fp, CbcModel *model, bool isMILP, int *match) {
 
   OsiSolverInterface *lp = model -> solver () -> clone ();
 
@@ -44,13 +50,23 @@ OsiSolverInterface *createCloneMILP (const CouenneFeasPump *fp, CbcModel *model,
     // creating MIP AND (integer variable OR FP_DIST_ALL)
     // creating LP  AND fractional variable
 
+    // TODO: should this really happen? I bet no
+
+    if (fp -> Problem () -> Var (j) -> Multiplicity () <= 0)
+      continue;
+
     bool intVar = lp -> isInteger (j);
 
     if ((isMILP && (intVar || (fp -> compDistInt () == CouenneFeasPump::FP_DIST_ALL)))
 	||
-	(!isMILP && !intVar))
+	(!isMILP && !intVar)) {
+
       // (empty) coeff col vector, lb = 0, ub = inf, obj coeff
       lp -> addCol (vec, 0., COIN_DBL_MAX, 1.); 
+
+      if (match) 
+	match [j] = lp -> getNumCols () - 1;
+    }
   }
 
   // Set to zero all other variables' obj coefficient. This means we
@@ -66,9 +82,8 @@ OsiSolverInterface *createCloneMILP (const CouenneFeasPump *fp, CbcModel *model,
   return lp;
 }
 
-
 /// modify MILP or LP to implement distance by adding extra rows (extra cols were already added by createCloneMILP)
-void addDistanceConstraints (const CouenneFeasPump *fp, OsiSolverInterface *lp, double *sol, bool isMILP) {
+void addDistanceConstraints (const CouenneFeasPump *fp, OsiSolverInterface *lp, double *sol, bool isMILP, int *match) {
 
   // Construct an (empty) Hessian. It will be modified later, but
   // the changes should be relatively easy for the case when
@@ -88,7 +103,7 @@ void addDistanceConstraints (const CouenneFeasPump *fp, OsiSolverInterface *lp, 
   // 
   // (the latter being equivalent to
   //
-  // - z_i <=   P^i (x - x^0)  or  P^i x + z_i >= P^i x^0 (***)
+  // - z_i <=   P^i (x - x^0)  or  P^i x + z_i >= P^i x^0 (***))
   //
   // so we'll use this instead as most coefficients don't change)
   // for each i, where q is the number of variables involved (either
@@ -129,17 +144,24 @@ void addDistanceConstraints (const CouenneFeasPump *fp, OsiSolverInterface *lp, 
     // simply set P = I
 
     for (int i=0; i<n; i++)
-      P[i].insert (i, 1.); 
+      if (fp -> Problem () -> Var (i) -> Multiplicity () > 0)
+        P[i].insert (i, 1. / sqrt ((double) n)); 
   }
 
   // Add 2q inequalities
 
-  for (int i = 0, j = n, k = j; k--; ++i) {
+  for (int i = 0, j = n, k = n; k--; ++i) {
+
+    if (match && match [i] < 0) 
+      continue;
+
+    if (fp -> Problem () -> Var (i) -> Multiplicity () <= 0)
+      continue;
 
     // two rows have to be added if:
     //
     // amending MIP AND (integer variable OR FP_DIST_ALL)
-    // amending ssLP  AND fractional variable
+    // amending LP  AND fractional variable
 
     bool intVar = lp -> isInteger (i);
 
@@ -155,6 +177,10 @@ void addDistanceConstraints (const CouenneFeasPump *fp, OsiSolverInterface *lp, 
 
       // right-hand side equals <P^i,x^0>
       double PiX0 = sparseDotProduct (vec, x0); 
+
+      assert (!match || match [i] >= 0);
+
+      //printf ("adding row %d with %d elements\n", j, vec.getNumElements());
 
       // j is the index of the j-th extra variable z_j, used for z_j >=  P (x - x0)  ===> z_j - Px >= - Px_0 ==> -z_j + Px <= Px_0
       // Second inequality is                                    z_j >= -P (x - x0)                          ==>  z_j + Px >= Px_0
@@ -183,6 +209,7 @@ void addDistanceConstraints (const CouenneFeasPump *fp, OsiSolverInterface *lp, 
 void ComputeSquareRoot (const CouenneFeasPump *fp, 
 			CouenneSparseMatrix *hessian, 
 			CoinPackedVector *P) {
+
   int 
     objInd = fp -> Problem () -> Obj (0) -> Body () -> Index (),
     n      = fp -> Problem () -> nVars ();
@@ -198,7 +225,7 @@ void ComputeSquareRoot (const CouenneFeasPump *fp,
 
   // Remove objective's row and column (equivalent to taking the
   // Lagrangian's Hessian, setting f(x) = x_z = c, and recomputing the
-  // hessian). 
+  // hessian).
 
   double maxElem = 0.; // used in adding diagonal element of x_z
 
@@ -222,17 +249,38 @@ void ComputeSquareRoot (const CouenneFeasPump *fp,
   // fill an input to Lapack/Blas procedures using hessian
 
   double *A = (double *) malloc (n*n * sizeof (double));
+  double *B = (double *) malloc (n*n * sizeof (double));
 
   CoinZeroN (A, n*n);
 
+  double sqrt_trace = 0;
+
   // Add Hessian part -- only lower triangular part
   for (int i=0; i<num; ++i, ++row, ++col, ++val)
-    if (*col <= *row)
+    if (*col <= *row) {
       A [*col * n + *row] = fp -> multHessMILP () * *val;
+      if (*col == *row)
+	sqrt_trace += *val * *val;
+    }
+
+  val -= num;
+  row -= num;
+  col -= num;
+
+  sqrt_trace = sqrt (sqrt_trace);
+
+  // Add Hessian part -- only lower triangular part
+  if (sqrt_trace > COUENNE_EPS)
+    for (int i=0; i<num; ++i, ++row, ++col)
+      A [*col * n + *row] /= sqrt_trace;
+
+  row -= num;
+  col -= num;
 
   // Add distance part
   for (int i=0; i<n; ++i)
-    A [i * (n+1)] += fp -> multDistMILP ();
+    if (fp -> Problem () -> Var (i) -> Multiplicity () > 0)
+      A [i * (n+1)] += fp -> multDistMILP () / sqrt (n);
 
   // Add gradient-parallel term to the hessian, (x_z - x_z_0)^2. This
   // amounts to setting the diagonal element to GRADIENT_WEIGHT. Don't
@@ -241,8 +289,44 @@ void ComputeSquareRoot (const CouenneFeasPump *fp,
   if (objInd >= 0)
     A [objInd * (n+1)] = maxElem * GRADIENT_WEIGHT * n;
 
+  PSDize (n, A, B, true); // use squareroot
+
+  double *eigenvec = A; // as overwritten by dsyev;
+
+  for     (int i=0; i<n; ++i)
+    for   (int j=0; j<n; ++j) { 
+
+      // multiply i-th row of B by j-th column of E
+
+      double elem = 0.;
+
+      for (int k=0; k<n; ++k)
+	elem += B [i + k * n] * eigenvec [j * n + k];
+
+      if (fabs (elem) > COUENNE_EPS)
+	P [i]. insert (j, elem);
+    }
+
+  // if (fp -> Problem () -> Jnlst () -> ProduceOutput (Ipopt::J_STRONGWARNING, J_NLPHEURISTIC)) {
+  //   printf ("P:\n");
+  //   printf ("P^{1/2}:\n");
+  // }
+
+  free (A); 
+  free (B);
+}
+
+
+///
+/// Project matrix onto the cone of positive semidefinite matrices
+/// (possibly take square root of eigenvalue for MILP). Return number
+/// of nonzeros
+//
+
+int PSDize (int n, double *A, double *B, bool doSqrRoot) {
+
   // call Lapack/Blas routines
-  double *eigenval = (double *) malloc (n   * sizeof (double));
+  double *eigenval = (double *) malloc (n * sizeof (double));
   int status;
 
   // compute eigenvalues and eigenvectors
@@ -257,8 +341,6 @@ void ComputeSquareRoot (const CouenneFeasPump *fp,
   // D = diagonal with square roots of eigenvalues
   //
   // Eventually, the square root is given by E' D E
-
-  double *B = (double *) malloc (n*n * sizeof(double));
 
   double *eigenvec = A; // as overwritten by dsyev;
 
@@ -278,9 +360,10 @@ void ComputeSquareRoot (const CouenneFeasPump *fp,
 
   if (MaxEigVal <= 0.)
 
-    // in this case it makes sense to invert each eigenvalue
-    // (i.e. take its inverse) and change its sign, as the steepest
-    // descent should correspond to the thinnest direction
+    // In this case, we are interested in minimizing a concave
+    // function. It makes sense to invert each eigenvalue (i.e. take
+    // its inverse) and change its sign, as the steepest descent
+    // should correspond to the thinnest direction
 
     for (int j=0; j<n; j++)
       eigenval [j] = 1. / (.1 - eigenval [j]);
@@ -299,12 +382,16 @@ void ComputeSquareRoot (const CouenneFeasPump *fp,
 
   // Now obtain sqrt (A)
 
+  int nnz = 0;
+
   for (int j=0; j<n; ++j) {
 
-    register double sqrtEig = sqrt (eigenval [j]);
+    register double multEig = doSqrRoot ? sqrt (eigenval [j]) : 
+                                                eigenval [j];
 
-    for (int i=n; i--;)
-      *B++ = sqrtEig * eigenvec [i*n+j];
+    for (int i=0; i<n; ++i)
+      if (fabs (*B++ = multEig * eigenvec [i*n+j]) > COUENNE_EPS)
+	++nnz;
   }
 
   B -= n*n;
@@ -316,30 +403,7 @@ void ComputeSquareRoot (const CouenneFeasPump *fp,
 
   // Now compute B * E
 
-  for     (int i=0; i<n; ++i)
-    for   (int j=0; j<n; ++j) { 
-
-      // multiply i-th row of B by j-th column of E
-
-      double elem = 0.;
-
-      for (int k=0; k<n; ++k)
-	elem += B [i + k * n] * eigenvec [j * n + k];
-
-      if (fabs (elem) > COUENNE_EPS)
-	P [i]. insert (j, elem);
-    }
-
-  if (fp -> Problem () -> Jnlst () -> ProduceOutput (Ipopt::J_STRONGWARNING, J_NLPHEURISTIC)) {
-
-    printf ("P:\n");
-
-
-    printf ("P^{1/2}:\n");
-
-  }
-
   free (eigenval);
-  free (A);
-  free (B);
+
+  return nnz;
 }

@@ -1,4 +1,4 @@
-/* $Id: exprGroup.cpp 969 2013-06-24 21:54:54Z pbelotti $
+/* $Id: exprGroup.cpp 942 2013-02-02 23:40:27Z pbelotti $
  *
  * Name:    exprGroup.cpp
  * Author:  Pietro Belotti
@@ -33,8 +33,7 @@ void cleanZeros (std::vector <std::pair <exprVar *, CouNumber> > &lcoeff) {
   size_t size = lcoeff.size ();
   
   while (size-- > 0) {
-    if ((i -> second ==  0.) || 
-	(i -> second == -0.)) {
+    if (i -> second ==  0.) { // or equivalently, i -> second == -0.
       lcoeff.erase (i);
       i = lcoeff.begin () + ind;
     } else {

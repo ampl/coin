@@ -1,4 +1,4 @@
-/* $Id: CouenneFPSolveNLP.cpp 720 2011-06-27 13:31:26Z pbelotti $
+/* $Id: CouenneFPSolveNLP.cpp 1058 2014-02-01 13:50:36Z pbelotti $
  *
  * Name:    CouenneFPSolveNLP.cpp
  * Authors: Pietro Belotti
@@ -24,7 +24,7 @@ using namespace Ipopt;
 using namespace Couenne;
 
 /// obtain continuous (if fractional) solution
-CouNumber CouenneFeasPump::solveNLP (CouNumber *iSol, CouNumber *&nSol) {
+CouNumber CouenneFeasPump::solveNLP (const CouNumber *iSol, CouNumber *&nSol) {
 
   // Solve the continuous nonlinear programming problem
   //
@@ -59,8 +59,8 @@ CouNumber CouenneFeasPump::solveNLP (CouNumber *iSol, CouNumber *&nSol) {
 
   problem_ -> domain () -> push (problem_ -> nVars (),
 				 iSol,
-				 NULL, // replaces problem_ -> domain () -> lb (),
-				 NULL); // replaces problem_ -> domain () -> ub (),
+				 problem_ -> domain () -> lb (),
+				 problem_ -> domain () -> ub ());
 				 //false); // to avoid overlapping with nsol within NLP
 
   // set new objective
@@ -72,8 +72,8 @@ CouNumber CouenneFeasPump::solveNLP (CouNumber *iSol, CouNumber *&nSol) {
   problem_ -> setObjective (0, newObj);
   nlp_     -> setObjective (newObj);
 
-  if (problem_ -> Jnlst () -> ProduceOutput (J_STRONGWARNING, J_NLPHEURISTIC)) {
-    printf ("now solving NLP:\n");
+  if (problem_ -> Jnlst () -> ProduceOutput (J_ALL, J_NLPHEURISTIC)) {
+    printf ("----------------------- now solving NLP:\n");
     problem_ -> print ();
     printf ("-----------------------\n");
   }
@@ -96,8 +96,15 @@ CouNumber CouenneFeasPump::solveNLP (CouNumber *iSol, CouNumber *&nSol) {
     if  (nSol)  CoinCopyN       (nlp_ -> getSolution (), problem_ -> nVars (), nSol);
     else nSol = CoinCopyOfArray (nlp_ -> getSolution (), problem_ -> nVars ());
 
-  else problem_ -> Jnlst () -> Printf 
-      (J_ERROR, J_NLPHEURISTIC, "FP: warning, NLP returns a NULL solution\n");
+  else problem_ -> Jnlst () -> Printf (J_WARNING, J_NLPHEURISTIC, "FP: warning, NLP returns a NULL solution\n");
+
+  if (nlp_ -> getSolution () && (problem_ -> Jnlst () -> ProduceOutput (J_ALL, J_NLPHEURISTIC))) { // check if non-NULL
+    printf ("######################## NLP solution (nlp):\n");
+    for (int i=0; i< problem_ -> nVars ();) {
+      printf ("%+e ", nSol [i]);
+      if (!(++i % 15)) printf ("\n");
+    }
+  }
 
   delete newObj;
 
@@ -109,7 +116,7 @@ CouNumber CouenneFeasPump::solveNLP (CouNumber *iSol, CouNumber *&nSol) {
       (status != Solved_To_Acceptable_Level))
 
     problem_ -> Jnlst () -> Printf 
-      (J_ERROR, J_NLPHEURISTIC, "Feasibility Pump: Error solving NLP problem\n");
+      (J_WARNING, J_NLPHEURISTIC, "Feasibility Pump: Error solving NLP problem\n");
 
   retval = nlp_ -> getSolValue ();
 

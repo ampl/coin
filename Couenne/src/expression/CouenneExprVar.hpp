@@ -1,4 +1,4 @@
-/* $Id: CouenneExprVar.hpp 490 2011-01-14 16:07:12Z pbelotti $
+/* $Id: CouenneExprVar.hpp 911 2012-10-28 19:50:15Z pbelotti $
  *
  * Name:    exprVar.hpp
  * Author:  Pietro Belotti
@@ -14,7 +14,6 @@
 #include <iostream>
 #include <set>
 
-//#include "CouenneJournalist.hpp"
 #include "CouenneTypes.hpp"
 #include "CouenneExpression.hpp"
 #include "CouenneExprConst.hpp"

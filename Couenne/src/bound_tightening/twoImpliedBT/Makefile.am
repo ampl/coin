@@ -1,4 +1,4 @@
-# $Id: Makefile.am 766 2011-08-14 11:18:22Z stefan $
+# $Id: Makefile.am 765 2011-08-14 11:12:19Z stefan $
 #
 # Copyright (C) 2006 International Business Machines and others.
 # All Rights Reserved.

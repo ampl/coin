@@ -1,4 +1,4 @@
-/* $Id: BonInitHeuristic.cpp 573 2011-05-09 21:09:02Z fmargot $ */
+/* $Id: BonInitHeuristic.cpp 886 2012-08-05 17:50:04Z pbelotti $ */
 // (C) Copyright International Business Machines Corporation 2007 
 // All Rights Reserved.
 // This code is published under the Eclipse Public License (EPL).
@@ -25,14 +25,15 @@ InitHeuristic::InitHeuristic (double objValue, const double* sol,
   setHeuristicName("InitHeuristic");
   nVars_ = cp.nVars();
 
-  if 
-#ifdef FM_CHECKNLP2
-    (cp.checkNLP2(sol, 0, false, true, true, cp.getFeasTol()))
-#else
-    (cp.checkNLP (sol, objValue, true)) // true for recomputing objValue 
-#endif
-      { 	
-	sol_ = new double [nVars_];
+  if (cp.checkNLP0 (sol, objValue, true, false, true, true)) {
+
+// #ifdef FM_CHECKNLP2
+//     (cp.checkNLP2(sol, 0, false, true, true, cp.getFeasTol()))
+// #else
+//     (cp.checkNLP (sol, objValue, true)) // true for recomputing objValue 
+// #endif
+
+      sol_ = new double [nVars_];
 
 #ifdef FM_CHECKNLP2
       CouenneRecordBestSol *rs = cp.getRecordBestSol();

@@ -1,4 +1,4 @@
-/* $Id: impliedBounds-exprTrilinear.cpp 560 2011-04-17 10:01:15Z stefan $
+/* $Id: impliedBounds-exprTrilinear.cpp 1047 2014-01-20 00:22:31Z pbelotti $
  *
  * Name:    impliedBounds-exprTrilinear.cpp
  * Author:  Pietro Belotti
@@ -30,4 +30,3 @@ bool exprTrilinear::impliedBound (int wind, CouNumber *l, CouNumber *u, t_chg_bo
 
   return false;
 }
-

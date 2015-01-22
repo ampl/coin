@@ -1,4 +1,4 @@
-/* $Id: CouenneBranchingObject.hpp 923 2012-11-27 18:55:39Z stefan $
+/* $Id: CouenneBranchingObject.hpp 925 2012-11-27 19:11:04Z stefan $
  *
  * Name:    CouenneBranchingObject.hpp
  * Authors: Pierre Bonami, IBM Corp.
@@ -90,7 +90,10 @@ public:
   /// Perform branching step
   void branchCore (OsiSolverInterface *, int, int, bool, double, t_chg_bounds *&);
 
+  // FIXME: horrible global variables. Brrr.
   static int nOrbBr;
+  static int maxDepthOrbBranch;
+  static int nSGcomputations;
 
 protected:
 

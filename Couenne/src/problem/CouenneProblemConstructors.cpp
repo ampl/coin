@@ -1,10 +1,10 @@
-/* $Id: CouenneProblemConstructors.cpp 795 2012-01-26 03:19:52Z pbelotti $
+/* $Id: CouenneProblemConstructors.cpp 937 2013-01-01 21:10:42Z pbelotti $
  *
  * Name:    CouenneProblemConstructors.cpp
  * Author:  Pietro Belotti
  * Purpose: Constructors and destructors of the class CouenneProblem
  *
- * (C) Carnegie-Mellon University, 2009-10.
+ * (C) Carnegie-Mellon University, 2009-11.
  * This file is licensed under the Eclipse Public License (EPL)
  */
 
@@ -34,6 +34,12 @@
 #include "CouenneObject.hpp"
 
 #include "CouenneRecordBestSol.hpp"
+#include "CouenneBTPerfIndicator.hpp"
+#include "CouenneSdpCuts.hpp"
+
+#ifdef COIN_HAS_NTY
+#include "Nauty.h"
+#endif
 
 using namespace Couenne;
 
@@ -49,7 +55,6 @@ CouenneProblem::CouenneProblem (struct ASL *asl,
   nIntVars_  (0),
   optimum_   (NULL),
   bestObj_   (COIN_DBL_MAX),
-  quadIndex_ (NULL),
   commuted_  (NULL),
   numbering_ (NULL),
   ndefined_  (0),
@@ -79,7 +84,11 @@ CouenneProblem::CouenneProblem (struct ASL *asl,
   multilinSep_ (CouenneProblem::MulSepNone),
   max_fbbt_iter_ (MAX_FBBT_ITER),
   orbitalBranching_ (false),
-  constObjVal_ (0.) {
+  constObjVal_ (0.),
+  perfIndicator_ (new CouenneBTPerfIndicator (this, "FBBT")),
+
+  nauty_info (NULL),
+  sdpCutGen_ (NULL) {
 
   double now = CoinCpuTime ();
 
@@ -154,7 +163,11 @@ CouenneProblem::CouenneProblem (const CouenneProblem &p):
   multilinSep_  (p.multilinSep_),
   max_fbbt_iter_  (p.max_fbbt_iter_),
   orbitalBranching_  (p.orbitalBranching_),
-  constObjVal_       (p.constObjVal_) {
+  constObjVal_       (p.constObjVal_),
+  perfIndicator_     (new CouenneBTPerfIndicator (*(p.perfIndicator_))),
+  nauty_info         (p.nauty_info) {
+
+  sdpCutGen_  = new CouenneSdpCuts (*(p.sdpCutGen_));
 
   for (int i=0; i < p.nVars (); i++)
     variables_ . push_back (NULL);
@@ -177,7 +190,7 @@ CouenneProblem::CouenneProblem (const CouenneProblem &p):
 
   if (p.optimum_) 
     optimum_ = CoinCopyOfArray (p.optimum_, nVars ());
-    
+
   // clear all spurious variables pointers not referring to the variables_ vector
   realign ();
 
@@ -193,7 +206,9 @@ CouenneProblem::CouenneProblem (const CouenneProblem &p):
     CoinCopyN (p.unusedOriginalsIndices_, nUnusedOriginals_, unusedOriginalsIndices_);
   }
 
-  recBSol = new CouenneRecordBestSol(*(p.recBSol));
+  if (p.recBSol) recBSol = new CouenneRecordBestSol (*(p.recBSol));
+  else           recBSol = new CouenneRecordBestSol ();
+
   lastPrioSort_ = p.lastPrioSort_;
 
   minDepthPrint_ = p.minDepthPrint_;
@@ -205,6 +220,14 @@ CouenneProblem::CouenneProblem (const CouenneProblem &p):
 /// Destructor
 
 CouenneProblem::~CouenneProblem () {
+
+  if (sdpCutGen_)
+    delete sdpCutGen_;
+
+  delete auxSet_;
+
+  if (perfIndicator_)
+    delete perfIndicator_;
 
   // delete optimal solution (if any)
   if (optimum_)
@@ -241,12 +264,17 @@ CouenneProblem::~CouenneProblem () {
        i != objects_.end (); ++i)
     delete (*i);
 
+#ifdef COIN_HAS_NTY
+  if (nauty_info)
+    delete nauty_info;
+#endif
+
   delete recBSol;
 }
 
 
 /// initializes parameters like doOBBT
-void CouenneProblem::initOptions(Ipopt::SmartPtr<Ipopt::OptionsList> options) {
+void CouenneProblem::initOptions (Ipopt::SmartPtr<Ipopt::OptionsList> options) {
 
   assert(IsValid(options));
 
@@ -272,8 +300,8 @@ void CouenneProblem::initOptions(Ipopt::SmartPtr<Ipopt::OptionsList> options) {
                  		  CouenneProblem::MulSepTight);
 
   options -> GetStringValue ("orbital_branching",   s, "couenne."); orbitalBranching_ = (s == "yes");
-  options -> GetStringValue ("quadrilinear_decomp", s, "couenne."); 
 
+  options -> GetStringValue ("quadrilinear_decomp", s, "couenne."); 
   if      (s == "rAI")     trilinDecompType_ = rAI;
   else if (s == "tri+bi")  trilinDecompType_ = tri_bi;
   else if (s == "bi+tri")  trilinDecompType_ = bi_tri;

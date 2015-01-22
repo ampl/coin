@@ -1,4 +1,4 @@
-/* $Id: CouenneSOSObject.cpp 808 2012-01-31 02:50:35Z pbelotti $
+/* $Id: CouenneSOSObject.cpp 807 2012-01-31 02:37:44Z pbelotti $
  *
  * Name:    CouenneSOSObject.cpp
  * Authors: Pietro Belotti, Lehigh University

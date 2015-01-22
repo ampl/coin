@@ -1,4 +1,4 @@
-/* $Id: BonCouenneInterface.cpp 1015 2013-11-12 15:24:22Z stefan $ */
+/* $Id: BonCouenneInterface.cpp 997 2013-08-11 23:21:38Z pbelotti $ */
 // (C) Copyright International Business Machines Corporation (IBM) 2006, 2007
 // All Rights Reserved.
 // This code is published under the Eclipse Public License (EPL).
@@ -114,9 +114,9 @@ CouenneInterface::extractLinearRelaxation
 	chg_bds [i].setUpper(t_chg_bounds::CHANGED);
       }
 
-      if (!(p -> boundTightening (chg_bds, NULL))) {
+      if (!(p -> boundTightening (chg_bds, CglTreeInfo (), NULL))) {
 	is_feasible = false;
-	*messageHandler() << "Couenne: Warning, tightened NLP is infeasible" << CoinMessageEol;
+	//*messageHandler() << "Couenne: Warning, tightened NLP is infeasible" << CoinMessageEol;
       }
 
       delete [] chg_bds;
@@ -138,8 +138,8 @@ CouenneInterface::extractLinearRelaxation
 	  if (lower       > upper)       CoinSwap (lower,       upper);
 	  if (p -> Lb (i) > p -> Ub (i)) CoinSwap (p -> Lb (i), p -> Ub (i));
 
-	  if (lower < p -> Lb (i) - COUENNE_EPS) setColLower (i, CoinMin(nub[i], p -> Lb (i)));
-	  if (upper > p -> Ub (i) + COUENNE_EPS) setColUpper (i, CoinMax(nlb[i], p -> Ub (i)));
+	  if (lower < p -> Lb (i) - COUENNE_EPS) setColLower (i, CoinMin (nub[i], p -> Lb (i)));
+	  if (upper > p -> Ub (i) + COUENNE_EPS) setColUpper (i, CoinMax (nlb[i], p -> Ub (i)));
 
 	} else { 
 	  // if not enabled, fix them in the NLP solver
@@ -151,7 +151,12 @@ CouenneInterface::extractLinearRelaxation
     if (is_feasible) {
       try {
 	options () -> SetNumericValue ("max_cpu_time", CoinMax (0.1, (p -> getMaxCpuTime () - CoinCpuTime ()) / 2));
+
 	initialSolve ();
+
+	if (isDualObjectiveLimitReached() &&
+	    (getNumIntegers () == 0))
+	  *messageHandler () << "Couenne: Warning, NLP is unbounded" << CoinMessageEol;
       }
       catch (Bonmin::TNLPSolver::UnsolvedError *E) {
 	// wrong, if NLP has problems this is not necessarily true...
@@ -235,7 +240,12 @@ CouenneInterface::extractLinearRelaxation
 
 	    try {
 	      options () -> SetNumericValue ("max_cpu_time", CoinMax (0.1, p -> getMaxCpuTime () - CoinCpuTime ()));
+
 	      resolve (); // solve with integer variables fixed
+
+	      if (isDualObjectiveLimitReached() &&
+		  (getNumIntegers () == 0))
+		*messageHandler () << "Couenne: Warning, NLP is is unbounded" << CoinMessageEol;
 	    }
 	    catch (Bonmin::TNLPSolver::UnsolvedError *E) {
 	    }
@@ -263,12 +273,12 @@ CouenneInterface::extractLinearRelaxation
 	  delete [] ubSave;
 	  delete [] lbCur;
 	  delete [] ubCur;
-	} 
+	}
       }
 
       // re-check optimality in case resolve () was called
       if (isProvenOptimal () && 
-	  (obj < p -> getCutOff ())           && // check #1 (before re-computing)
+	  //	  (obj < p -> getCutOff ()) && // check #1 (before re-computing) -- BUG. What if real object is actually better?
 
 #ifdef FM_CHECKNLP2
 	  (p->checkNLP2(solution, 0, false, true, false, p->getFeasTol())) &&
@@ -314,6 +324,9 @@ CouenneInterface::extractLinearRelaxation
 #endif
 
       }
+    } else {
+
+
     }
   }
 

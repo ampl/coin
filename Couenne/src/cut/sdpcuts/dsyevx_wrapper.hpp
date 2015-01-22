@@ -1,7 +1,8 @@
-/* $Id: dsyevx_wrapper.hpp 508 2011-02-15 21:52:44Z pbelotti $
+/* $Id: dsyevx_wrapper.hpp 930 2012-12-24 00:38:19Z pbelotti $
  *
  * Name:    dsyevx_wrapper.hpp
- * Author:  Andrea Qualizza
+ * Authors: Andrea Qualizza
+ *          Pietro Belotti
  * Purpose: 
  *
  * This file is licensed under the Eclipse Public License (EPL)
@@ -10,24 +11,12 @@
 #ifndef DSYEVX_HPP
 #define DSYEVX_HPP
 
-
-#include <tracer.hpp>
-
-
-// wrapper for Lapack's Fortran routine to compute all eigenvalues/vectors
-void dsyevx_full_wrapper (int n, double *A, int &m, double * &w, double * &z, Tracer *);
-
-// wrapper for Lapack's Fortran routine to compute only the positive eigenvalue/vector
-void dsyevx_wrapper_only_positive (int, double *, int &, double * &, double * &, Tracer *);
-
-// wrapper for Lapack's Fortran routine to compute only the negative eigenvalue/vector
-void dsyevx_wrapper_only_negative (int, double *, int &, double * &, double * &, Tracer *);
-
-// wrapper for Lapack's Fortran routine to compute only the most negative eigenvalue/vector
-void dsyevx_wrapper_only_most_neg (int, double *, int &, double * &, double * &, Tracer *);
-
-// wrapper for Lapack's Fortran routine to compute the first p eigenvalues/vectors
-void dsyevx_wrapper_first_p (int, double *, int &, double * &, double * &, int, Tracer *);
-
+int dsyevx_interface (int n, double *A, int &m, 
+		       double * &w, double * &z, // output values 
+		       double tolerance,
+		       double lb_ev, 
+		       double ub_ev,
+		       int firstidx,
+		       int lastidx);
 
 #endif

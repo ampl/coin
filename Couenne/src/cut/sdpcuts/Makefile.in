@@ -56,10 +56,8 @@ CONFIG_HEADER = $(top_builddir)/src/config.h \
 CONFIG_CLEAN_FILES =
 LTLIBRARIES = $(noinst_LTLIBRARIES)
 libCouenneSdpCuts_la_LIBADD =
-am_libCouenneSdpCuts_la_OBJECTS = CutGen.lo dsyevx_wrapper.lo \
-	Heuristics.lo linquad_cuts.lo misc_util.lo orthocut.lo \
-	populate.lo quadratic_cuts_check.lo report2.lo report.lo \
-	sdpcuts.lo sdpsol.lo sedumi.lo tracerreport.lo tracer.lo
+am_libCouenneSdpCuts_la_OBJECTS = CouenneSdpCuts.lo CouennePSDcon.lo \
+	CouenneMatrix.lo CutGen.lo CutGenSparse.lo dsyevx_wrapper.lo
 libCouenneSdpCuts_la_OBJECTS = $(am_libCouenneSdpCuts_la_OBJECTS)
 depcomp = $(SHELL) $(top_srcdir)/depcomp
 am__depfiles_maybe = depfiles
@@ -80,6 +78,7 @@ ABSBUILDDIR = @ABSBUILDDIR@
 ACLOCAL = @ACLOCAL@
 ADD_CFLAGS = @ADD_CFLAGS@
 ADD_CXXFLAGS = @ADD_CXXFLAGS@
+ADD_FFLAGS = @ADD_FFLAGS@
 ALWAYS_FALSE_FALSE = @ALWAYS_FALSE_FALSE@
 ALWAYS_FALSE_TRUE = @ALWAYS_FALSE_TRUE@
 AMDEP_FALSE = @AMDEP_FALSE@
@@ -162,6 +161,7 @@ CXXFLAGS = @CXXFLAGS@
 CYGPATH_W = @CYGPATH_W@
 DBG_CFLAGS = @DBG_CFLAGS@
 DBG_CXXFLAGS = @DBG_CXXFLAGS@
+DBG_FFLAGS = @DBG_FFLAGS@
 DEFS = @DEFS@
 DEPDIR = @DEPDIR@
 DEPENDENCY_LINKING_FALSE = @DEPENDENCY_LINKING_FALSE@
@@ -174,6 +174,7 @@ EGREP = @EGREP@
 EXEEXT = @EXEEXT@
 F77 = @F77@
 FFLAGS = @FFLAGS@
+FLIBS = @FLIBS@
 GRB_CFLAGS = @GRB_CFLAGS@
 GRB_CFLAGS_INSTALLED = @GRB_CFLAGS_INSTALLED@
 GRB_DATA = @GRB_DATA@
@@ -202,6 +203,7 @@ MAINTAINER_MODE_TRUE = @MAINTAINER_MODE_TRUE@
 MAKEINFO = @MAKEINFO@
 MPICC = @MPICC@
 MPICXX = @MPICXX@
+MPIF77 = @MPIF77@
 MSK_CFLAGS = @MSK_CFLAGS@
 MSK_CFLAGS_INSTALLED = @MSK_CFLAGS_INSTALLED@
 MSK_DATA = @MSK_DATA@
@@ -214,6 +216,7 @@ NTYLIB = @NTYLIB@
 OBJEXT = @OBJEXT@
 OPT_CFLAGS = @OPT_CFLAGS@
 OPT_CXXFLAGS = @OPT_CXXFLAGS@
+OPT_FFLAGS = @OPT_FFLAGS@
 PACKAGE = @PACKAGE@
 PACKAGE_BUGREPORT = @PACKAGE_BUGREPORT@
 PACKAGE_NAME = @PACKAGE_NAME@
@@ -310,34 +313,22 @@ noinst_LTLIBRARIES = libCouenneSdpCuts.la
 
 # List all source files for this library, including headers
 libCouenneSdpCuts_la_SOURCES = \
+	CouenneSdpCuts.cpp \
+	CouennePSDcon.cpp \
+	CouenneMatrix.cpp \
 	CutGen.cpp \
-	dsyevx_wrapper.cpp \
-	Heuristics.cpp \
-	linquad_cuts.cpp \
-	misc_util.cpp \
-	orthocut.cpp \
-	populate.cpp \
-	quadratic_cuts_check.cpp \
-	report2.cpp \
-	report.cpp \
-	sdpcuts.cpp \
-	sdpsol.cpp \
-	sedumi.cpp \
-	tracerreport.cpp \
-	tracer.cpp 
+	CutGenSparse.cpp \
+	dsyevx_wrapper.cpp
 
-
-#	disjunctive_cuts.cpp 
-#	rlt_cuts.cpp 
 
 # This is for libtool
 libCouenneSdpCuts_la_LDFLAGS = $(LT_LDFLAGS)
 
 # Here list all include flags, relative to this "srcdir" directory.  This
 # "cygpath" stuff is necessary to compile with native compilers on Windows
-AM_CPPFLAGS = $(COUENNELIB_CFLAGS) -I`$(CYGPATH_W) $(srcdir)/../..` \
-	-I`$(CYGPATH_W) $(srcdir)/../../convex` -I`$(CYGPATH_W) \
-	$(srcdir)/../../problem` $(am__append_1)
+AM_CPPFLAGS = -I`$(CYGPATH_W) $(srcdir)/../..` -I`$(CYGPATH_W) \
+	$(srcdir)/../../expression` -I`$(CYGPATH_W) \
+	$(srcdir)/../../problem` $(COUENNELIB_CFLAGS) $(am__append_1)
 
 # This line is necessary to allow VPATH compilation
 DEFAULT_INCLUDES = -I. -I`$(CYGPATH_W) $(srcdir)` -I$(top_builddir)/src
@@ -392,21 +383,12 @@ mostlyclean-compile:
 distclean-compile:
 	-rm -f *.tab.c
 
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/CouenneMatrix.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/CouennePSDcon.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/CouenneSdpCuts.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/CutGen.Plo@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/Heuristics.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/CutGenSparse.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/dsyevx_wrapper.Plo@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/linquad_cuts.Plo@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/misc_util.Plo@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/orthocut.Plo@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/populate.Plo@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/quadratic_cuts_check.Plo@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/report.Plo@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/report2.Plo@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/sdpcuts.Plo@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/sdpsol.Plo@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/sedumi.Plo@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/tracer.Plo@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/tracerreport.Plo@am__quote@
 
 .cpp.o:
 @am__fastdepCXX_TRUE@	if $(CXXCOMPILE) -MT $@ -MD -MP -MF "$(DEPDIR)/$*.Tpo" -c -o $@ $<; \

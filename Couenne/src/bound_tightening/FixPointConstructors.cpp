@@ -1,4 +1,4 @@
-/* $Id: FixPointConstructors.cpp 562 2011-04-23 18:04:55Z pbelotti $
+/* $Id: FixPointConstructors.cpp 1034 2013-12-15 18:05:05Z pbelotti $
  *
  * Name:    FixPointConstructors.cpp
  * Author:  Pietro Belotti
@@ -19,8 +19,8 @@ CouenneFixPoint::CouenneFixPoint (CouenneProblem *p,
   problem_    (p),
   firstCall_  (true),
   CPUtime_    (0.),
-  nRuns_      (0),
-  nTightened_ (0) {
+  nTightened_ (0),
+  perfIndicator_ (p, "Fixed Point LP") {
 
   std::string s;
   options -> GetStringValue ("fixpoint_bt_model", s, "couenne."); 
@@ -34,17 +34,12 @@ CouenneFixPoint::CouenneFixPoint (const CouenneFixPoint &rhs):
   problem_       (rhs.problem_),
   firstCall_     (rhs.firstCall_),
   CPUtime_       (rhs.CPUtime_),
-  nRuns_         (rhs.nRuns_),
-  nTightened_    (rhs.nTightened_) {}
+  nTightened_    (rhs.nTightened_),
+  perfIndicator_ (rhs.perfIndicator_) {}
 
 
 /// destructor
-CouenneFixPoint::~CouenneFixPoint () {
-
-  if (!firstCall_)
-    printf ("Fixed point BT: CPU time %g, %d runs, %d tightened\n", 
-	    CPUtime_, nRuns_, nTightened_);
-}
+CouenneFixPoint::~CouenneFixPoint () {}
 
 
 /// Add list of options to be read from file
@@ -63,7 +58,7 @@ void CouenneFixPoint::registerOptions (Ipopt::SmartPtr <Bonmin::RegisteredOption
     ("fixpoint_bt_model",
      "Choose whether to add an extended fixpoint LP model or a more compact one.",
      "compact",
-     "extended", "",
-     "compact", "",
-     "");
+     "extended", "Extended model with variables for lower/upper bounds of right-hand sides (see paper by Belotti, Cafieri, Lee, Liberti)",
+     "compact", "Compact equivalent model obtained by projecting lower/upper bounds of rhs",
+     "The \"extended\" option is for debugging purposes; the compact formulation is equivalent and this option should be used");
 }

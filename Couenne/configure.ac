@@ -1,4 +1,4 @@
-## $Id: configure.ac 1038 2013-12-18 16:31:07Z stefan $
+## $Id: configure.ac 1104 2015-01-20 00:39:34Z pbelotti $
 #
 # Copyright (C) 2006 International Business Machines.
 # All Rights Reserved.
@@ -13,7 +13,7 @@
 
 AC_PREREQ(2.59)
 
-AC_INIT([Couenne],[0.4.7],[couenne@list.coin-or.org])
+AC_INIT([Couenne],[0.5.0],[couenne@list.coin-or.org])
 
 AC_COPYRIGHT([
 Copyright 2006 Carnegie Mellon University, International Business Machines and others.
@@ -31,6 +31,11 @@ AC_CONFIG_SRCDIR(src/expression/expression.cpp)
 # /usr/local.
 AC_PREFIX_DEFAULT([`pwd`])
 
+# to make correct call to Fortran routines
+
+AC_COIN_PROG_F77
+AC_COIN_F77_WRAPPERS
+
 #############################################################################
 #                         Standard build tool stuff                         #
 #############################################################################
@@ -39,7 +44,7 @@ AC_PREFIX_DEFAULT([`pwd`])
 AC_CANONICAL_BUILD
 
 # Initialization specifically for project main directories
-AC_COIN_PROJECTDIR_INIT(Couenne,4:7:3)
+AC_COIN_PROJECTDIR_INIT(Couenne,5:0:4)
 
 # Check if user wants to produce debugging code
 AC_COIN_DEBUG_COMPILE(Couenne)
@@ -125,6 +130,7 @@ AC_CONFIG_FILES([Makefile
                  src/heuristics/Makefile
                  src/disjunctive/Makefile
                  src/cut/crossconv/Makefile
+                 src/cut/sdpcuts/Makefile
                  src/expression/Makefile
                  src/problem/Makefile
                  src/standardize/Makefile
@@ -135,7 +141,6 @@ AC_CONFIG_FILES([Makefile
 		 couenne.pc 
 		 couenne-uninstalled.pc])
 
-#                 src/cut/sdpcuts/Makefile
 #                 src/cut/ellipcuts/Makefile
 
 # Here put the location and name of the configuration header file

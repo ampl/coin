@@ -1,4 +1,4 @@
-/* $Id: exprUnary.cpp 851 2012-06-07 10:51:58Z stefan $
+/* $Id: exprUnary.cpp 837 2012-02-12 21:11:47Z pbelotti $
  *
  * Name:    exprUnary.cpp
  * Author:  Pietro Belotti
@@ -52,7 +52,6 @@ exprAux *exprUnary::standardize (CouenneProblem *p, bool addAux) {
   exprAux *subst;
 
   if ((subst = argument_ -> standardize (p))) {
-
     if ((subst -> Type () == AUX) ||
 	(subst -> Type () == VAR)) 
       argument_ = new exprClone (subst);
@@ -97,4 +96,30 @@ bool exprUnary::isInteger () {
   }
 
   return false;
+}
+
+
+// simplify unary operators
+expression *exprUnary:: simplify () {
+
+  register expression *subst;
+
+  // Simplify argument g(x) of this expression f(g(x))
+  if ((subst = argument_ -> simplify ())) {
+
+    delete argument_;
+    argument_ = subst;
+
+    // g(x) is a constant k, therefore return f (k)
+    if (subst -> Type () == CONST) {
+
+      expression *ret = new exprConst (operator () ());
+      argument_ = NULL;
+      delete subst;
+
+      return ret;
+    } 
+  }
+
+  return NULL;
 }

@@ -1,4 +1,4 @@
-/* $Id: reformulate.cpp 806 2012-01-30 23:44:01Z pbelotti $
+/* $Id: reformulate.cpp 818 2012-02-08 04:16:35Z pbelotti $
  *
  * Name:    reformulate.cpp
  * Author:  Pietro Belotti
@@ -85,7 +85,7 @@ void CouenneProblem::reformulate (CouenneCutGenerator *cg) {
     return;
   }
 
-  // clear all spurious variables pointers not referring to the variables_ vector
+  // clear all spurious variable pointers not referring to the variables_ vector
   realign ();
 
   // give a value to all auxiliary variables. Do it now to be able to
@@ -136,7 +136,10 @@ void CouenneProblem::reformulate (CouenneCutGenerator *cg) {
 
   }
 #else /* not FM_CHECKNLP2 */
-  if (checkNLP (X (), cutoff = X (objectives_ [0] -> Body () -> Index ()), true)) {
+  int objind = objectives_ [0] -> Body () -> Index ();
+  cutoff = objind >= 0 ? X (objind) : objectives_ [0] -> Body () -> Value ();
+
+  if (checkNLP (X (), cutoff, true)) {
     jnlst_ -> Printf (Ipopt::J_ERROR, J_PROBLEM,
 		      "Couenne: initial solution (value %g) is MINLP feasible\n",
 		      cutoff);
@@ -218,11 +221,8 @@ void CouenneProblem::reformulate (CouenneCutGenerator *cg) {
   else if (nVars () > 2*THRESHOLD_OUTPUT_REFORMULATE) 
     jnlst_ -> Printf (Ipopt::J_ERROR, J_COUENNE, "Reformulation: %.1f seconds\n", CoinCpuTime () - now); 
 
-  if (orbitalBranching_) {
-
-    jnlst_ -> Printf (Ipopt::J_ERROR, J_COUENNE, "Setting up symmetry groups\n"); 
+  if (orbitalBranching_)
     setupSymmetry ();
-  }
 
   //writeAMPL ("extended-aw.mod", true);
   //writeAMPL ("original.mod", false);

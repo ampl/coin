@@ -1,4 +1,4 @@
-/* $Id: CouenneExprHess.cpp 716 2011-06-26 12:43:43Z pbelotti $
+/* $Id: CouenneExprHess.cpp 883 2012-08-03 13:39:53Z pbelotti $
  *
  * Name:    CouenneExprHess.cpp
  * Authors: Pietro Belotti, Lehigh University
@@ -188,6 +188,9 @@ ExprHess::ExprHess (CouenneProblem *p):
 
   /// for each variable, fill a row of the hessian
   for (int i=0; i < nVars; i++) {
+
+    if (p -> Var (i) -> Multiplicity () <= 0)
+      continue;
 
     // create dense row. These will become numL later
     int          *rnz = (int          *) malloc (nVars * sizeof (int));   // row's number of nonzero

@@ -1,4 +1,4 @@
-/* $Id: fillDependence.cpp 490 2011-01-14 16:07:12Z pbelotti $
+/* $Id: fillDependence.cpp 1080 2014-10-30 20:06:40Z pbelotti $
  *
  * Name:    fillDependence.cpp
  * Author:  Pietro Belotti
@@ -30,6 +30,7 @@ void CouenneProblem::fillDependence (Bonmin::BabSetupBase *base, CouenneCutGener
        i != variables_.end (); ++i) {
 
     if (((*i) -> Type () == AUX)                           // consider auxs only
+        && ((*i) -> Multiplicity () > 0)
 	&& ((*i) -> Image () -> Linearity () > LINEAR)) {  // and nonlinear
 
       CouenneObject *infeasObj = (*i) -> properObject (cg, this, base, jnlst_);

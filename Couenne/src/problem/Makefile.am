@@ -15,6 +15,7 @@ libCouenneProblem_la_SOURCES = \
 	problemIO.cpp \
 	writeAMPL.cpp \
 	writeGAMS.cpp \
+	writeLP.cpp \
 	constraint.cpp \
 	fillQuadIndices.cpp \
 	fillDependence.cpp \
@@ -60,9 +61,11 @@ AM_CPPFLAGS = \
 	-I`$(CYGPATH_W) $(srcdir)/../expression` \
 	-I`$(CYGPATH_W) $(srcdir)/../expression/operators` \
 	-I`$(CYGPATH_W) $(srcdir)/../standardize` \
+	-I`$(CYGPATH_W) $(srcdir)/../bound_tightening` \
 	-I`$(CYGPATH_W) $(srcdir)/../branch` \
 	-I`$(CYGPATH_W) $(srcdir)/../problem` \
 	-I`$(CYGPATH_W) $(srcdir)/../problem/depGraph` \
+	-I`$(CYGPATH_W) $(srcdir)/../cut/sdpcuts` \
 	$(COUENNELIB_CFLAGS) $(ASL_CFLAGS)
 
 if COIN_HAS_NTY

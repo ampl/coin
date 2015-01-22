@@ -1,4 +1,4 @@
-/* $Id: CouenneExprUnary.hpp 846 2012-05-07 14:10:50Z pbelotti $
+/* $Id: CouenneExprUnary.hpp 614 2011-06-08 14:20:39Z pbelotti $
  *
  * Name:    exprUnary.hpp
  * Author:  Pietro Belotti
@@ -53,18 +53,18 @@ class exprUnary: public expression {
   {return zero_fun;}
 
   /// Destructor
-  virtual ~exprUnary ()
+  ~exprUnary ()
   {if (argument_) delete argument_;}
 
   /// return number of arguments
   inline int nArgs () const
   {return 1;}
 
-  /// return argument
+  /// return argument (when applicable, i.e., with univariate functions)
   virtual inline expression *Argument () const
   {return argument_;}
 
-  /// return pointer to argument
+  /// return pointer to argument (when applicable, i.e., with univariate functions)
   virtual inline expression **ArgPtr () 
   {return &argument_;}
 

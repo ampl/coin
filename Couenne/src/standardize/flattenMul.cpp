@@ -1,4 +1,4 @@
-/* $Id: flattenMul.cpp 563 2011-04-24 13:40:46Z pbelotti $
+/* $Id: flattenMul.cpp 811 2012-02-01 19:21:41Z pbelotti $
  *
  * Name:    flattenMul.cpp
  * Author:  Pietro Belotti
@@ -48,7 +48,12 @@ void CouenneProblem::flattenMul (expression *mul, CouNumber &coe,
   // for each factor (variable, function, or constant) of the product
   for (int i=0; i < nargs; i++) { 
 
-    expression *arg = al [i];
+    expression 
+      *arg = al [i],
+      *simpl = arg -> simplify ();
+
+    if (simpl)
+      al [i] = arg = simpl;
 
     if (jnlst_ -> ProduceOutput (Ipopt::J_ALL, J_REFORMULATE)) {
       printf ("  flatten arg %d ---> ", arg -> code ()); 

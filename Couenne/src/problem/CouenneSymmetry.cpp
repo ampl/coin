@@ -1,4 +1,4 @@
-/* $Id: CouenneSymmetry.cpp 725 2011-06-30 12:20:29Z pbelotti $
+/* $Id: CouenneSymmetry.cpp 925 2012-11-27 19:11:04Z stefan $
  *
  * Name:    CouenneSymmetry.cpp
  * Author:  Jim Ostrowski
@@ -8,15 +8,7 @@
  * This file is licensed under the Eclipse Public License (EPL)
  */
 
-#include <cassert>
-#include <vector>
-#include <algorithm>
-#include <ostream>
-#include <iterator>
 #include <stdio.h>
-
-#include "CouenneExprVar.hpp"
-#include "CouenneExprGroup.hpp"
 
 #include "CouenneProblem.hpp"
 
@@ -24,7 +16,17 @@ using namespace Couenne;
 
 #ifdef COIN_HAS_NTY
 
+#include <cassert>
+#include <vector>
+#include <algorithm>
+#include <ostream>
+#include <iterator>
+
+#include "CouenneExprVar.hpp"
+#include "CouenneExprGroup.hpp"
+
 #include "Nauty.h"
+#include "CouenneBranchingObject.hpp"
 
 void Node::node(int i, double c , double l, double u, int cod, int s){
   index = i;
@@ -303,7 +305,7 @@ void CouenneProblem::sym_setup (){
 
 void CouenneProblem::Compute_Symmetry() const{
 
-  ChangeBounds (Lb (), Ub (), nVars ());
+  //  ChangeBounds (Lb (), Ub (), nVars ());
 
   // jnlst_ -> Printf(Ipopt::J_VECTOR, J_BRANCHING,"== Computing Symmetry\n");
   // for (int i = 0; i < nVars (); i++)
@@ -314,7 +316,7 @@ void CouenneProblem::Compute_Symmetry() const{
 
   std::sort(node_info. begin (), node_info. end (), node_sort);
 
-  for (std::vector <Node>:: iterator i = node_info. begin ();  i != node_info. end (); ++i) 
+  for (std::vector <Node>:: iterator i = node_info. begin (); i != node_info. end (); ++i) 
     (*i).color_vertex(-1);
   
   int color = 1;
@@ -335,9 +337,11 @@ void CouenneProblem::Compute_Symmetry() const{
     }
   }
 
-  //Print_Orbits ();
+  // Print_Orbits ();
 
   nauty_info -> computeAuto();
+
+  ++CouenneBranchingObject::nSGcomputations;
 }
 
   
@@ -347,9 +351,10 @@ void CouenneProblem::Print_Orbits () const {
 
   std::vector<std::vector<int> > *new_orbits = nauty_info->getOrbits();
 
-  //printf("There were %d orbits and %d generators\n",
-  //nauty_info->getNumOrbits(),
-  //nauty_info->getNumGenerators());
+  printf ("Couenne: %d generators, group size: %.0g",
+	  //  nauty_info->getNumOrbits(),
+	  nauty_info -> getNumGenerators () ,
+	  nauty_info -> getGroupSize ());
 
   int nNonTrivialOrbits = 0;
 
@@ -365,7 +370,27 @@ void CouenneProblem::Print_Orbits () const {
     // printf("] \n");
   }
 
-  printf ("%d non-trivial orbits\n", nNonTrivialOrbits);
+  printf (" (%d non-trivial orbits).\n", nNonTrivialOrbits);
+
+#if 0
+  if (nNonTrivialOrbits) {
+
+    int orbCnt = 0;
+
+    std::vector<std::vector<int> > *orbits = nauty_info -> getOrbits ();
+
+    for   (std::vector <std::vector<int> >::iterator i = orbits -> begin ();  i != orbits -> end (); ++i) {
+
+      printf ("Orbit %d: ", orbCnt++);
+
+      for (std::vector<int>::iterator j = i -> begin (); j != i -> end (); ++j)
+	printf (" %d", *j);
+
+      printf ("\n");
+    }
+  }
+#endif
+
 
 #if 0
   if (nNonTrivialOrbits)
@@ -428,12 +453,15 @@ void CouenneProblem::setupSymmetry () {
 #ifdef COIN_HAS_NTY
   sym_setup ();
   Compute_Symmetry ();
-  Print_Orbits ();
+  if (jnlst_ -> ProduceOutput (Ipopt::J_ERROR, J_COUENNE)) {
+    Print_Orbits ();
+    //nauty_info -> setWriteAutoms ("couenne-generators.txt");
+  }
+
 #else
-  if (orbitalBranching_) {
-    printf ("\
+  if (orbitalBranching_) 
+    jnlst_ -> Printf (Ipopt::J_ERROR, J_COUENNE, "\
 Couenne: Warning, you have set orbital_branching but Nauty is not available.\n\
 Reconfigure with appropriate options --with-nauty-lib=/path/to/libnauty.* and --with-nauty-incdir=/path/to/nauty/include/files/\n");
-  }
 #endif
 }

@@ -1,4 +1,4 @@
-/* $Id: TwoImpliedGenCuts.cpp 946 2013-04-15 22:20:38Z stefan $
+/* $Id: TwoImpliedGenCuts.cpp 945 2013-04-06 20:25:21Z stefan $
  *
  * Name:    TwoImpliedGenCuts.cpp
  * Author:  Pietro Belotti
@@ -405,8 +405,8 @@ void CouenneTwoImplied::generateCuts (const OsiSolverInterface &si,
   // TODO: no need for copy, though we need it to compare to old problem's bounds
 
   double
-    *clb = CoinCopyOfArray (problem_ -> Lb (), n),
-    *cub = CoinCopyOfArray (problem_ -> Ub (), n),
+    *clb   = CoinCopyOfArray (problem_ -> Lb (), n),
+    *cub   = CoinCopyOfArray (problem_ -> Ub (), n),
     *oldLB = CoinCopyOfArray (problem_ -> Lb (), n),
     *oldUB = CoinCopyOfArray (problem_ -> Ub (), n);
 
@@ -604,10 +604,6 @@ void CouenneTwoImplied::generateCuts (const OsiSolverInterface &si,
 	(objInd >= 0) && 
 	babInfo && 
 	babInfo -> babPtr ()) {
-
-#ifdef DEBUG
-      printf ("FBBT\n");
-#endif
 
       CouNumber
 	UB      = babInfo -> babPtr () -> model (). getObjValue(),

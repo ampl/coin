@@ -1,4 +1,4 @@
-/* $Id: impliedBounds-exprSum.cpp 876 2012-07-31 16:11:58Z pbelotti $
+/* $Id: impliedBounds-exprSum.cpp 942 2013-02-02 23:40:27Z pbelotti $
  *
  * Name:    impliedBounds-exprSum.cpp
  * Author:  Pietro Belotti
@@ -120,8 +120,8 @@ bool exprSum::impliedBound (int wind, CouNumber *l, CouNumber *u, t_chg_bounds *
     for (register exprGroup::lincoeff::iterator el = lcoe.begin ();
 	 el != lcoe.end (); ++el) {
 
-      CouNumber coe = el -> second;
-      int       ind = el -> first -> Index ();
+      register CouNumber coe = el -> second;
+      register int       ind = el -> first -> Index ();
 
       if      (coe >  0.) {I1 [ipos] = ind; C1 [ipos++] = coe;}
       else if (coe < -0.) {I2 [ineg] = ind; C2 [ineg++] = coe;}
@@ -145,8 +145,8 @@ bool exprSum::impliedBound (int wind, CouNumber *l, CouNumber *u, t_chg_bounds *
   int infLo1 = -1, infLo2 = -1,
       infUp1 = -1, infUp2 = -1;
 
-  // upper bound of the sum, considering lower/upper bounds of the
-  // variables but neglecting the infinite ones:
+  // Upper bound of the sum, considering lower/upper bounds of the
+  // variables but negliging the infinite ones:
   //
   // lower = $a0 + \sum_{i in I_1: a_i <  \infinity} a_i l_i
   //             + \sum_{i in I_2: a_i > -\infinity} a_i u_i$
@@ -162,10 +162,10 @@ bool exprSum::impliedBound (int wind, CouNumber *l, CouNumber *u, t_chg_bounds *
     upper = a0 + scanBounds (ipos, +1, I1, C1, u, &infUp1)
                + scanBounds (ineg, -1, I2, C2, l, &infLo2);
 
-  // Now compute lower bound for all or for some of the variables:
-  // There is a bound for all variables only if both infUp1 and infLo2
-  // are -1, otherwise there is a bound only for one variable if one
-  // is -1 and the other is nonnegative.
+  // Compute lower bound for all or for some of the variables: There
+  // is a bound for all variables only if both infUp1 and infLo2 are
+  // -1, otherwise there is a bound only for one variable if one is -1
+  // and the other is nonnegative.
 
   bool tighter = false;
 
@@ -177,7 +177,9 @@ bool exprSum::impliedBound (int wind, CouNumber *l, CouNumber *u, t_chg_bounds *
       slackU = wu - upper; // 
 
     // if lower < wl or upper > wu, some bounds can be tightened.
-    // Otherwise, there is no implication, but if lower
+    // 
+    // otherwise, there is no implication, but if lower
+    //
     // steal some work to bound propagation... 
 
     if ((slackL > 0.) &&

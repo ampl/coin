@@ -1,8 +1,9 @@
+## $Id: Makefile.am 1024 2013-11-26 09:45:39Z stefan $
+#
 # Copyright (C) 2006 International Business Machines and others.
 # All Rights Reserved.
 # This file is distributed under the Eclipse Public License.
 #
-## $Id: Makefile.am 1037 2013-12-17 05:01:39Z tkr $
 #
 # Authors:  Andreas Waechter           IBM    2006-04-13
 #           Pietro Belotti
@@ -18,7 +19,7 @@ AUTOMAKE_OPTIONS = foreign
 lib_LTLIBRARIES = libCouenne.la
 
 # List all source files, including headers
-libCouenne_la_SOURCES =
+libCouenne_la_SOURCES = 
 if DEPENDENCY_LINKING
 libCouenne_la_SOURCES += \
 	main/CouenneBab.cpp \
@@ -44,10 +45,10 @@ libCouenne_la_DEPENDENCIES = \
 	./bound_tightening/libCouenneBoundTightening.la \
 	./bound_tightening/twoImpliedBT/libCouenneTwoImplied.la \
 	./util/libCouenneUtil.la \
-	./disjunctive/libCouenneDisjunctive.la 
+	./disjunctive/libCouenneDisjunctive.la \
+	./cut/crossconv/libCouenneCrossConv.la \
+	./cut/sdpcuts/libCouenneSdpCuts.la
 
-#	./cut/crossconv/libCouenneCrossConv.la
-#	./cut/sdpcuts/libCouenneSdpCuts.la
 #	./ellipcuts/libCouenneEllipCuts.la 
 #	./readnl/libCouenneReadnl.la 
 
@@ -120,6 +121,7 @@ includecoin_HEADERS = \
 	branch/CouenneSOSObject.hpp \
 	branch/CouenneProjections.hpp \
 	standardize/CouenneLQelems.hpp \
+	bound_tightening/CouenneBTPerfIndicator.hpp \
 	bound_tightening/CouenneFixPoint.hpp \
 	bound_tightening/CouenneAggrProbing.hpp \
 	bound_tightening/twoImpliedBT/CouenneTwoImplied.hpp \
@@ -172,10 +174,12 @@ includecoin_HEADERS = \
 	problem/CouenneRecordBestSol.hpp \
 	expression/CouenneTypes.hpp \
 	disjunctive/CouenneDisjCuts.hpp \
-	convex/CouenneCutGenerator.hpp
+	convex/CouenneCutGenerator.hpp \
+	cut/sdpcuts/CouenneSdpCuts.hpp \
+	cut/sdpcuts/CouennePSDcon.hpp \
+	cut/sdpcuts/CouenneMatrix.hpp \
+	cut/crossconv/CouenneCrossConv.hpp
 
-# cut/crossconv/CouenneCrossConv.hpp
-# cut/sdpcuts/CouenneSdpCuts.hpp 
 # cut/sdpcuts/dsyevx_wrapper.hpp 
 # cut/sdpcuts/linquad_cuts.hpp 
 # cut/sdpcuts/populate.hpp 

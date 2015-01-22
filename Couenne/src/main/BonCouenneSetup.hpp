@@ -1,4 +1,4 @@
-/* $Id: BonCouenneSetup.hpp 749 2011-07-31 11:54:55Z pbelotti $ */
+/* $Id: BonCouenneSetup.hpp 804 2012-01-30 23:40:42Z pbelotti $ */
 // (C) Copyright International Business Machines Corporation 2007
 // All Rights Reserved.
 // This code is published under the Eclipse Public License (EPL).
@@ -15,6 +15,8 @@
 #include "BonBonminSetup.hpp"
 #include "CbcFeasibilityBase.hpp"
 
+#include "CouenneTNLP.hpp"
+
 struct ASL;
 
 namespace Bonmin{
@@ -26,6 +28,7 @@ namespace Couenne {
   class CouenneInterface;
   class CouenneCutGenerator;
   class CouenneProblem;
+  class CouenneTNLP;
 
   class SmartAsl : public Ipopt::ReferencedObject{
   public:
@@ -77,7 +80,7 @@ namespace Couenne {
     /** Get the basic options if don't already have them.*/
     virtual void readOptionsFile(){
       if (readOptions_) return;
-      Bonmin::BabSetupBase::readOptionsFile("couenne.opt");
+      Bonmin::BabSetupBase::readOptionsFile ("couenne.opt");
     }
 
     /// return pointer to cut generator (used to get pointer to problem)

@@ -1,4 +1,4 @@
-/* $Id: CouenneVTObject.hpp 522 2011-03-07 21:13:46Z pbelotti $
+/* $Id: CouenneVTObject.hpp 991 2013-08-05 06:20:55Z fmargot $
  *
  * Name:    CouenneVTObject.hpp
  * Authors: Pietro Belotti, Carnegie Mellon University
@@ -25,9 +25,11 @@ public:
 		   CouenneProblem *p,
 		   exprVar *ref, 
 		   Bonmin::BabSetupBase *base, 
-		   JnlstPtr jnlst):
+		   JnlstPtr jnlst,
+		   int varSelection // either OSI_SIMPLE or OSI_STRONG
+		   ):
 
-    CouenneVarObject (c, p, ref, base, jnlst, Bonmin::BabSetupBase::OSI_SIMPLE) {}
+    CouenneVarObject (c, p, ref, base, jnlst, varSelection) {}
 
   /// Copy constructor
   CouenneVTObject (const CouenneVTObject &src):

@@ -1,6 +1,6 @@
-/* $Id: CouenneFeasPumpConstructors.cpp 720 2011-06-27 13:31:26Z pbelotti $
+/* $Id: CouenneFeasPumpConstructors.cpp 1094 2015-01-10 16:59:20Z pbelotti $
  *
- * Name:    CouenneFeasPump.cpp
+ * Name:    CouenneFeasPumpConstructors.cpp
  * Authors: Pietro Belotti
  *          Timo Berthold, ZIB Berlin
  * Purpose: Constructors and service methods of the Feasibility Pump class
@@ -41,10 +41,13 @@ void CouenneFeasPump::initIpoptApp () {
 
   app_ -> Options () -> SetIntegerValue ("max_iter", 1000);
   app_ -> Options () -> SetIntegerValue // 0 for none, 4 for summary, 5 for iteration output
-    ("print_level", (problem_ -> Jnlst () -> ProduceOutput (J_ERROR,         J_NLPHEURISTIC) ? 4 : 
-		     problem_ -> Jnlst () -> ProduceOutput (J_STRONGWARNING, J_NLPHEURISTIC) ? 5 : 0));
+    ("print_level", (problem_ -> Jnlst () -> ProduceOutput (J_ITERSUMMARY,  J_NLPHEURISTIC) ? 4 : 
+		     problem_ -> Jnlst () -> ProduceOutput (J_MOREDETAILED, J_NLPHEURISTIC) ? 5 : 0));
 
   app_ -> Options () -> SetStringValue ("fixed_variable_treatment", "make_parameter");
+
+  // Suppress iteration output from nonlinear solver
+  app_ -> Options () -> SetStringValue ("sb", "yes", false, true);
 
   if (status != Solve_Succeeded)
     printf ("FP: Error in initialization\n");
@@ -81,13 +84,15 @@ CouenneFeasPump::CouenneFeasPump (CouenneProblem *couenne,
   maxIter_             (COIN_INT_MAX),
   useSCIP_             (false),
   milpMethod_          (0),
-  tabuMgt_             (FP_TABU_NONE) {
+  tabuMgt_             (FP_TABU_NONE),
+  nCalls_              (0),
+  fadeMult_            (1) {
+
+  int compareTerm = INTEGER_VARS;
 
   if (IsValid (options)) {
 
     std::string s;
-
-    int compareTerm;
 
     options -> GetIntegerValue ("feas_pump_iter",       maxIter_,             "couenne.");
     options -> GetIntegerValue ("feas_pump_level",      numberSolvePerLevel_, "couenne.");
@@ -100,6 +105,8 @@ CouenneFeasPump::CouenneFeasPump (CouenneProblem *couenne,
     options -> GetNumericValue ("feas_pump_mult_dist_milp", multDistMILP_,    "couenne.");
     options -> GetNumericValue ("feas_pump_mult_hess_milp", multHessMILP_,    "couenne.");
     options -> GetNumericValue ("feas_pump_mult_objf_milp", multObjFMILP_,    "couenne.");
+
+    options -> GetNumericValue ("feas_pump_fademult",  fadeMult_,     "couenne.");
 
     options -> GetStringValue  ("feas_pump_convcuts", s, "couenne."); 
 
@@ -119,8 +126,6 @@ CouenneFeasPump::CouenneFeasPump (CouenneProblem *couenne,
     options -> GetIntegerValue ("feas_pump_milpmethod", milpMethod_, "couenne."); 
     options -> GetIntegerValue ("feas_pump_poolcomp",   compareTerm, "couenne."); 
 
-    pool_ = new CouenneFPpool ((enum what_to_compare) compareTerm);
-
     options -> GetStringValue  ("feas_pump_tabumgt", s, "couenne.");
 
     tabuMgt_ = 
@@ -139,8 +144,12 @@ CouenneFeasPump::CouenneFeasPump (CouenneProblem *couenne,
       problem_ -> Jnlst () -> Printf (J_ERROR, J_COUENNE, "Warning: you have set feas_pump_usescip to true, but SCIP is not installed.\n");
 #endif
 
-  } else
-    pool_ = new CouenneFPpool (SUM_NINF);
+  }
+
+  pool_ = new CouenneFPpool (problem_, (enum what_to_compare) compareTerm);
+
+  //pool_ = new CouenneFPpool (SUM_NINF);
+  //pool_ = new CouenneFPpool (problem_, INTEGER_VARS);
 
   setHeuristicName ("Couenne Feasibility Pump");
 
@@ -149,49 +158,8 @@ CouenneFeasPump::CouenneFeasPump (CouenneProblem *couenne,
 
   
 // Copy constructor ///////////////////////////////////////////// 
-CouenneFeasPump::CouenneFeasPump (const CouenneFeasPump &other) {
-
-  operator= (other);
-
-  // CbcHeuristic         (other),
-
-  // problem_             (other. problem_),
-  // couenneCG_           (other. couenneCG_),
-  // nlp_                 (other. nlp_),
-  // app_                 (NULL),
-  // milp_                (other.milp_   ? other. milp_   -> clone () : NULL),
-  // postlp_              (other.postlp_ ? other. postlp_ -> clone () : NULL),
-  // pool_                (NULL),
-
-  // numberSolvePerLevel_ (other. numberSolvePerLevel_),
-
-  // multDistNLP_         (other. multDistNLP_),
-  // multHessNLP_         (other. multHessNLP_),
-  // multObjFNLP_         (other. multObjFNLP_),
-			       	       
-  // multDistMILP_        (other. multDistMILP_),
-  // multHessMILP_        (other. multHessMILP_),
-  // multObjFMILP_        (other. multObjFMILP_),
-
-  // compDistInt_         (other. compDistInt_),
-  // milpCuttingPlane_    (other. milpCuttingPlane_),
-  // nSepRounds_          (other. nSepRounds_),
-
-  // maxIter_             (other. maxIter_),
-  // useSCIP_             (other. useSCIP_),
-  // milpMethod_          (other. milpMethod_),
-  // tabuMgt_             (other. tabuMgt_) {
-
-  // if (other. pool_)
-  //   pool_ = new CouenneFPpool (*(other. pool_));
-
-  // for (std::set <CouenneFPsolution, compareSol>::const_iterator i = other.tabuPool_.begin (); 
-  //      i != other.tabuPool_.end ();
-  //      ++i)
-  //   tabuPool_. insert (CouenneFPsolution (*i));
-
-  // initIpoptApp ();
-}
+CouenneFeasPump::CouenneFeasPump (const CouenneFeasPump &other)
+{operator= (other);}
 
 
 // Clone //////////////////////////////////////////////////////// 
@@ -231,6 +199,8 @@ CouenneFeasPump &CouenneFeasPump::operator= (const CouenneFeasPump & rhs) {
     useSCIP_             = rhs. useSCIP_;
     milpMethod_          = rhs. milpMethod_;
     tabuMgt_             = rhs. tabuMgt_;
+    nCalls_              = rhs. nCalls_;
+    fadeMult_            = rhs. fadeMult_;
 
     if (rhs. pool_)
       pool_ = new CouenneFPpool (*(rhs. pool_));
@@ -270,6 +240,12 @@ expression *CouenneFeasPump::updateNLPObj (const double *iSol) {
 
   const double *iS = iSol;
 
+  // TODO:
+  //
+  // 1) resize list
+  // 2) separate H norm from distance
+  // 3
+
   if ((multHessNLP_ == 0.) || 
       (nlp_ -> optHessian () == NULL)) {
 
@@ -278,7 +254,10 @@ expression *CouenneFeasPump::updateNLPObj (const double *iSol) {
     // here the objective function is ||x-x^0||_2^2
 
     // create the argument list (x_i - x_i^0)^2 for all i's
-    for (int i=0; i<problem_ -> nVars (); i++) {
+    for (int i=0; i<problem_ -> nVars (); ++i, ++iS) {
+
+      if (problem_ -> Var (i) -> Multiplicity () <= 0)
+	continue;
 
       if (compDistInt_ == FP_DIST_INT && 
 	  !(problem_ -> Var (i) -> isInteger ()))
@@ -289,8 +268,6 @@ expression *CouenneFeasPump::updateNLPObj (const double *iSol) {
       if      (*iS == 0.) base =              new exprClone (problem_ -> Var (i));
       else if (*iS <  0.) base = new exprSum (new exprClone (problem_ -> Var (i)), new exprConst (-*iS));
       else                base = new exprSub (new exprClone (problem_ -> Var (i)), new exprConst  (*iS));
-
-      ++iS;
 
       list [nTerms++] = new exprPow (base, new exprConst (2.));
     }
@@ -311,22 +288,42 @@ expression *CouenneFeasPump::updateNLPObj (const double *iSol) {
     // P is a convex combination, with weights multDistMILP_ and
     // multHessMILP_, of the distance and the Hessian respectively
 
-    bool *diag = NULL;
-
-    if (multDistNLP_ > 0.) { // only use this if distance is used
-
-      diag = new bool [problem_ -> nVars ()];
-      CoinFillN (diag, problem_ -> nVars (), false);
-    }
-
     int    *row = nlp_ -> optHessian () -> row ();
     int    *col = nlp_ -> optHessian () -> col ();
     double *val = nlp_ -> optHessian () -> val ();
 
     int     num = nlp_ -> optHessian () -> num ();
 
+    double
+      trace_H = 0,
+      nActualTerms = 0;
+
+    // create the argument list (x_i - x_i^0)^2 for all i's
+    for (int i=0; i<problem_ -> nVars (); ++i) 
+      if (!((problem_ -> Var (i) -> Multiplicity () <= 0) ||
+	    (compDistInt_ == FP_DIST_INT && 
+	     !(problem_ -> Var (i) -> isInteger ()))))
+	nActualTerms += 1;
+
+    nActualTerms = (nActualTerms == 0) ? 1 : (1 / sqrt (nActualTerms));
+
+    // Add Hessian part -- only lower triangular part
+    for (int i=0; i<num; ++i, ++val) 
+      if (*row++ == *col++)
+	trace_H += *val * *val;
+
+    trace_H = (trace_H < COUENNE_EPS) ? 1 : (1 / sqrt (trace_H));
+
+    row = nlp_ -> optHessian () -> row ();
+    col = nlp_ -> optHessian () -> col ();
+    val = nlp_ -> optHessian () -> val ();
+
     // Add Hessian part -- only lower triangular part
     for (int i=0; i<num; ++i, ++row, ++col, ++val) {
+
+      if ((problem_ -> Var (*row) -> Multiplicity () <= 0) ||
+	  (problem_ -> Var (*col) -> Multiplicity () <= 0))
+	continue;
 
       // check if necessary given options
 
@@ -339,16 +336,16 @@ expression *CouenneFeasPump::updateNLPObj (const double *iSol) {
 
       if (*col < *row) { // that is, lower triangular
 
-	if (2. * *val == 1.) // check if this would have trivial coefficient when doubled (off-diagonal element)
+	if (2. * *val * trace_H == 1.) // check if this would have trivial coefficient when doubled (off-diagonal element)
 
 	  list [nTerms++] = new exprMul (new exprSub (new exprClone (problem_ -> Var (*row)), new exprConst (iSol [*row])),
 					 new exprSub (new exprClone (problem_ -> Var (*col)), new exprConst (iSol [*col])));
 
-	else if (fabs (*val) > COUENNE_EPS) { // we don't need extreme precision...
+	else if (fabs (*val * trace_H) > COUENNE_EPS) { // we don't need extreme precision...
 
 	  expression **mlist = new expression * [3];
 
-	  mlist [0] = new exprConst (2. * *val);  // twice elements off diagonal
+	  mlist [0] = new exprConst (2. * *val * trace_H);  // twice elements off diagonal
 	  mlist [1] = new exprSub (new exprClone (problem_ -> Var (*row)), new exprConst (iSol [*row]));
 	  mlist [2] = new exprSub (new exprClone (problem_ -> Var (*col)), new exprConst (iSol [*col]));
 
@@ -357,28 +354,33 @@ expression *CouenneFeasPump::updateNLPObj (const double *iSol) {
 
       } else if (*col == *row) { // or diagonal elements
 
-	if (multDistNLP_ > 0.)
-	  diag [*col] = true;
+	//if (multDistNLP_ != 0.)
+	//diag [*col] = true;
 
-	if (*val + multDistNLP_ == 1.)
+	if (trace_H * *val + multDistNLP () * nActualTerms == 1.) // the plus is for the distance term
 
 	  list [nTerms++] = new exprPow (new exprSub (new exprClone (problem_ -> Var (*row)), 
-						      new exprConst (iSol [*row])), new exprConst (2.));
+						      new exprConst (iSol [*row])), 
+					 new exprConst (2.));
 
-	else if (fabs (*val + multDistNLP_) > COUENNE_EPS)
+	else if (fabs (trace_H * *val + nActualTerms * multDistNLP ()) > COUENNE_EPS)
 
-	  list [nTerms++] = new exprMul (new exprConst (*val + multDistNLP_),
+	  list [nTerms++] = new exprMul (new exprConst (trace_H * *val + nActualTerms * multDistNLP ()),
 					 new exprPow (new exprSub (new exprClone (problem_ -> Var (*row)), 
-								   new exprConst (iSol [*row])), new exprConst (2.)));
+								   new exprConst (iSol [*row])), 
+						      new exprConst (2.)));
       }
     }
 
-    // third, add missing diagonal elements
-      
-    if (multDistNLP_ > 0.) {
+    // third, add missing diagonal elements. NO! Already added above (fewer terms)
+    /*
+    if (multDistNLP () > 0.) {
 
       // create the argument list (x_i - x_i^0)^2 for all i's
-      for (int i=0; i<problem_ -> nVars (); i++) {
+      for (int i=0; i<problem_ -> nVars (); ++i, ++iS) {
+
+	if (problem_ -> Var (i) -> Multiplicity () <= 0)
+	  continue;
 	  
 	if ((compDistInt_ == FP_DIST_INT && 
 	     !(problem_ -> Var (i) -> isInteger ())) ||
@@ -391,17 +393,20 @@ expression *CouenneFeasPump::updateNLPObj (const double *iSol) {
 	else if (*iS <  0.) base = new exprSum (new exprClone (problem_ -> Var (i)), new exprConst (-*iS));
 	else                base = new exprSub (new exprClone (problem_ -> Var (i)), new exprConst  (*iS));
 
-	++iS;
+	base = new exprMul (base, new exprConst (nActualTerms));
 
 	list [nTerms++] = new exprPow (base, new exprConst (2.));
       }
 
       delete [] diag;
-    }
+    } */
   }
 
-  if (multObjFNLP_ != 0.) 
-    list [nTerms++] = new exprMul (new exprConst (multObjFNLP_),
+  // as per latest development: objective is multiplied by one to
+  // normalize it with distance and Hessian-based objective
+
+  if (multObjFNLP () != 0.) 
+    list [nTerms++] = new exprMul (new exprConst (multObjFNLP ()),
 				   new exprClone (problem_ -> Obj (0) -> Body ()));
 
   // resize list
@@ -410,13 +415,17 @@ expression *CouenneFeasPump::updateNLPObj (const double *iSol) {
   list = CoinCopyOfArray (tmp, nTerms);
   delete [] tmp;
 
-  return new exprSum (list, nTerms);
+  expression *retexpr = new exprSum (list, nTerms);
+
+  // printf ("new objective: "); retexpr -> print (); printf ("\n");
+
+  return retexpr;
 }
 
 
 /// Reads a (possibly fractional) solution and fixes the integer
 /// components in the nonlinear problem for later re-solve
-void CouenneFeasPump::fixIntVariables (double *sol) {
+bool CouenneFeasPump::fixIntVariables (const double *sol) {
 
   assert (sol);
 
@@ -424,7 +433,8 @@ void CouenneFeasPump::fixIntVariables (double *sol) {
 
   for (int i = problem_ -> nVars (); i--;)
 
-    if (problem_ -> Var (i) -> isInteger ()) {
+    if ((problem_ -> Var (i) -> isInteger ()) &&
+	(problem_ -> Var (i) -> Multiplicity () > 0)) {
 
       double 
 	value = sol [i],
@@ -449,22 +459,33 @@ void CouenneFeasPump::fixIntVariables (double *sol) {
   // Now, to restrict the bounding box even more (and hopefully make
   // it easier) apply BT
 
-  problem_ -> btCore (chg_bds);
+  bool retval = problem_ -> btCore (chg_bds); // maybe fixing makes the nlp infeasible
 
   delete [] chg_bds;
+
+  return retval;
 }
 
 
 /// initialize options
 void CouenneFeasPump::registerOptions (Ipopt::SmartPtr <Bonmin::RegisteredOptions> roptions) {
 
-  roptions -> AddStringOption2
+  roptions -> AddStringOption4
     ("feas_pump_heuristic",
      "Apply the nonconvex Feasibility Pump",
      "no",
-     "no","",
-     "yes","",
+     "no",   "never called",
+     "yes",  "called any time Cbc calls heuristics",
+     "once", "call it at most once",
+     "only", "Call it exactly once and then exit",
      "An implementation of the Feasibility Pump for nonconvex MINLPs");
+
+  roptions -> AddBoundedNumberOption
+    ("feas_pump_fademult",
+     "decrease/increase rate of multipliers",
+     0, false,
+     1, false,
+     1, "1 keeps initial multipliers from one call to the next; any <1 multiplies ALL of them");
 
   roptions -> AddLowerBoundedIntegerOption
     ("feas_pump_level",
@@ -474,13 +495,13 @@ void CouenneFeasPump::registerOptions (Ipopt::SmartPtr <Bonmin::RegisteredOption
      3, "Solve as many nlp's at the nodes for each level of the tree. "
      "Nodes are randomly selected. If for a "
      "given level there are less nodes than this number nlp are solved for every nodes. "
-     "For example if parameter is 8, nlp's are solved for all node until level 8, " 
+     "For example, if parameter is 8 NLPs are solved for all node until level 8, " 
      "then for half the node at level 9, 1/4 at level 10.... "
      "Set to -1 to perform at all nodes.");
 
   roptions -> AddLowerBoundedIntegerOption
     ("feas_pump_iter",
-     "Number of iterations in the main Feasibility Pump loop",
+     "Number of iterations in the main Feasibility Pump loop (default: 10)",
      -1,
      10, "-1 means no limit");
 
@@ -502,9 +523,9 @@ void CouenneFeasPump::registerOptions (Ipopt::SmartPtr <Bonmin::RegisteredOption
 
       roptions -> AddBoundedNumberOption
 	(option, help,
-	 0., false,
-	 1., false,
-	 0., "0: no weight, 1: full weight");
+	 -1., true,
+	 +1., false,
+	 0., "0: neglected; 1: full weight; a in ]0,1[: weight is a^k where k is the FP iteration; a in ]-1,0[: weight is 1-|a|^k");
     }
 
   roptions -> AddStringOption3
@@ -526,7 +547,7 @@ void CouenneFeasPump::registerOptions (Ipopt::SmartPtr <Bonmin::RegisteredOption
 
   roptions -> AddBoundedIntegerOption
     ("feas_pump_nseprounds",
-     "Number of rounds that separate convexification cuts. Must be at least 1",
+     "Number of rounds of convexification cuts. Must be at least 1",
      1, 1e5, 4,
      "");
 
@@ -554,12 +575,17 @@ void CouenneFeasPump::registerOptions (Ipopt::SmartPtr <Bonmin::RegisteredOption
   roptions -> AddBoundedIntegerOption
     ("feas_pump_milpmethod",
      "How should the integral solution be constructed?",
-     -1, 4, -1, 
-       "0: automatic, 1: aggressive heuristics, large node limit, 2: default, node limit, 3: RENS, 4: Objective Feasibility Pump,  -1: solve MILP completely");
+     -1, 6, 0, 
+       "0: automatic, 1: aggressive heuristics, large node limit, 2: default, node limit, 3: RENS, 4: Objective Feasibility Pump, 5: MINLP rounding heuristic, 6: rounding, -1: solve MILP completely");
 
   roptions -> AddBoundedIntegerOption
     ("feas_pump_poolcomp",
      "Priority field to compare solutions in FP pool",
-     0, 2, 0, 
-       "0: total number of infeasible objects (integer and nonlinear), 1: maximum infeasibility (integer or nonlinear), 2: objective value.");
+     0, 4, 4,
+       "\
+0: total number of infeasible objects (integer and nonlinear); \
+1: maximum infeasibility (integer or nonlinear); \
+2: objective value; \
+3: compare value of all variables; \
+4: compare value of all integers (RECOMMENDED).");
 }

@@ -1,4 +1,4 @@
-// $Id: Couenne.cpp 530 2011-03-12 16:52:06Z pbelotti $
+// $Id: Couenne.cpp 959 2013-05-24 04:43:23Z stefan $
 //
 // (C) Copyright International Business Machines Corporation and Carnegie Mellon University 2006, 2007
 // All Rights Reserved.
@@ -36,6 +36,10 @@
 #include "CbcCutGenerator.hpp"      
 #include "CouenneCutGenerator.hpp" 
 #include "CouenneProblem.hpp"
+
+#ifdef COIN_HAS_SCIP
+#include "lpiswitch.h"
+#endif
 
 
 namespace Ipopt {
@@ -77,6 +81,10 @@ bool parseCommandLine(int argc, char* argv[], Ipopt::SmartPtr<Ipopt::OptionsList
 
 int main (int argc, char *argv[]) {
   WindowsErrorPopupBlocker();
+
+#ifdef COIN_HAS_SCIP
+  SCIPlpiSwitchSetDefaultSolver();
+#endif
 
   double time_start = CoinCpuTime();
   

@@ -1,4 +1,4 @@
-/* $Id: boundTightening.cpp 802 2012-01-30 23:11:34Z pbelotti $
+/* $Id: boundTightening.cpp 1033 2013-12-14 19:34:28Z pbelotti $
  *
  * Name:    boundTightening.cpp
  * Author:  Pietro Belotti
@@ -12,6 +12,7 @@
 #include "CouenneProblem.hpp"
 #include "CouenneExprVar.hpp"
 #include "CouenneProblemElem.hpp"
+#include "CouenneBTPerfIndicator.hpp"
 #include "BonBabInfos.hpp"
 #include "BonCbc.hpp"
 
@@ -23,6 +24,10 @@ using namespace Couenne;
 // core of the bound tightening procedure
 
 bool CouenneProblem::btCore (t_chg_bounds *chg_bds) const {
+
+  fbbtReachedIterLimit_ = false;
+
+  bool null_chg_bds = (NULL == chg_bds);
 
   if (!chg_bds) {
 
@@ -64,7 +69,9 @@ bool CouenneProblem::btCore (t_chg_bounds *chg_bds) const {
       }
   }
 
-  if (max_fbbt_iter_)  do {
+  if (max_fbbt_iter_) 
+
+  do {
 
     if (CoinCpuTime () > maxCpuTime_)
       break;
@@ -86,6 +93,8 @@ bool CouenneProblem::btCore (t_chg_bounds *chg_bds) const {
 
     if ((ntightened < 0) || (nbwtightened < 0)) {
       Jnlst () -> Printf (Ipopt::J_ITERSUMMARY, J_BOUNDTIGHTENING, "infeasible BT\n");
+      if (null_chg_bds) 
+	delete [] chg_bds;
       return false;
     }
 
@@ -124,6 +133,9 @@ bool CouenneProblem::btCore (t_chg_bounds *chg_bds) const {
   } while (((ntightened > 0) || (nbwtightened > 0)) && 
 	   (ntightened + nbwtightened > THRES_IMPROVED) &&
 	   ((max_fbbt_iter_ < 0) || (niter++ < max_fbbt_iter_)));
+
+  if (null_chg_bds) 
+    delete [] chg_bds;
 
   fbbtReachedIterLimit_ = ((max_fbbt_iter_ > 0) && (niter >= max_fbbt_iter_));
 
@@ -166,9 +178,13 @@ bool CouenneProblem::btCore (t_chg_bounds *chg_bds) const {
 /// turns out to be infeasible with given bounds, true otherwise.
 
 bool CouenneProblem::boundTightening (t_chg_bounds *chg_bds, 
+				      const CglTreeInfo info, 
 				      Bonmin::BabInfo * babInfo) const {
 
-  //  double startTime = CoinCpuTime ();
+  double startTime = CoinCpuTime ();
+
+  perfIndicator_ -> setOldBounds (Lb (), Ub ());
+
   //
   // #define SMALL_BOUND 1e4
   //   for (int i=nOrigVars (); i--;) {
@@ -207,7 +223,12 @@ bool CouenneProblem::boundTightening (t_chg_bounds *chg_bds,
     }
   }
 
-  return btCore (chg_bds);
+  bool retval = btCore (chg_bds);
+
+  perfIndicator_ -> update     (Lb (), Ub (), info.level);
+  perfIndicator_ -> addToTimer (CoinCpuTime () - startTime);
+
+  return retval;
 
   //printf ("Total cpu time = %e\n", CoinCpuTime () - startTime);
   //exit (-1);

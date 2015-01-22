@@ -1,4 +1,4 @@
-/* $Id: exprDiv.cpp 846 2012-05-07 14:10:50Z pbelotti $
+/* $Id: exprDiv.cpp 811 2012-02-01 19:21:41Z pbelotti $
  *
  * Name:    exprDiv.cpp
  * Author:  Pietro Belotti
@@ -9,8 +9,6 @@
  */
 
 #include "assert.h"
-
-#include <stdio.h>
 
 #include "CouenneExprDiv.hpp"
 #include "CouenneExprConst.hpp"
@@ -33,7 +31,6 @@ using namespace Couenne;
 expression *exprDiv::simplify () {
 
   exprOp:: simplify ();
-  expression *ret = NULL;
 
   if ((*arglist_) -> Type () == CONST) { // expr = a / y 
 
@@ -43,38 +40,29 @@ expression *exprDiv::simplify () {
 
       CouNumber c1 = arglist_ [1] -> Value ();
 
-      if (fabs (c1) == 0.) {
-	printf ("Couenne: Warning, division by zero -- "); print (); printf ("\n");
-      }
-      else {
-	// delete arglist_ [0]; 
-	// delete arglist_ [1];
-	ret = new exprConst (c0 / c1);
-	//arglist_ [0] = arglist_ [1] = NULL;
-      }
+      delete arglist_ [0]; 
+      delete arglist_ [1];
+      arglist_ [0] = arglist_ [1] = NULL;
+
+      return new exprConst (c0 / c1);
     }
     else {
-      if (fabs (c0) == 0.) // expr = 0/y
+      if (fabs (c0) < COUENNE_EPS_SIMPL) // expr = 0/y
 	return new exprConst (0.);
 
       // otherwise, expression = k/y, return k*inv(y)
 
-      //expression *ret;
+      expression *ret;
 
-      if (fabs (arglist_ [0] -> Value () - 1.) == 0.) {
-	//delete *arglist_;
-	//*arglist_ = NULL;
+      if (fabs (arglist_ [0] -> Value () - 1.) < COUENNE_EPS) {
+	delete *arglist_;
+	*arglist_ = NULL;
 	ret = new exprInv (arglist_ [1]);
-	arglist_ [1] = NULL;
       }
-      else {
-	
-	ret = new exprMul (arglist_ [0], new exprInv (arglist_ [1]));
-	arglist_ [0] = arglist_ [1] = NULL; // unlinking both arguments of useless expressions
-      }
+      else ret = new exprMul (arglist_ [0], new exprInv (arglist_ [1]));
 
-      //arglist_ = NULL;
-      //return ret;
+      arglist_ = NULL;
+      return ret;
     }
   }
   else // only need to check if f2 == 0
@@ -82,14 +70,17 @@ expression *exprDiv::simplify () {
     if (arglist_ [1] -> Type () == CONST) { // expression = x/h,
 					    // transform into (1/h)*x
 
-      ret = new exprMul (new exprConst (1. / (arglist_ [1] -> Value ())), arglist_ [0]);
+      expression *ret = new exprMul (new exprConst (1. / (arglist_ [1] -> Value ())), 
+				     arglist_ [0]);
+      delete arglist_ [1];
+      arglist_ [0] = arglist_ [1] = NULL;
+      //delete arglist_;
+      //arglist_ = NULL;
 
-      //delete arglist_ [1];
-      arglist_ [0] = NULL;
-      //return ret;
+      return ret;
     }
 
-  return ret;
+  return NULL;
 }
 
 

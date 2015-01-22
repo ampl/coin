@@ -1,4 +1,4 @@
-/* $Id: CouenneExprJac.cpp 716 2011-06-26 12:43:43Z pbelotti $
+/* $Id: CouenneExprJac.cpp 883 2012-08-03 13:39:53Z pbelotti $
  *
  * Name:    CouenneExprMatr.cpp
  * Authors: Pietro Belotti, Lehigh University
@@ -140,6 +140,10 @@ ExprJac::ExprJac (CouenneProblem *p):
 
     for (std::set <int>::iterator k = deplist.begin (); k != deplist.end (); ++k) {
 
+      // highly unlikely that x_k shows up in c's body, but you never know...
+      if (p -> Var (*k) -> Multiplicity () <= 0)
+	continue;
+
       expression 
 	*J = c -> Body () -> differentiate (*k), // derivative of the
                   	                         // constraint's body
@@ -200,6 +204,9 @@ ExprJac::ExprJac (CouenneProblem *p):
     int nTerms = 0;
 
     for (std::set <int>::iterator k = deplist.begin (); k != deplist.end (); ++k) {
+
+      if (p -> Var (*k) -> Multiplicity () <= 0)
+	continue;
 
       expression 
 	*J = (*k == e -> Index ()) ? 

@@ -1,4 +1,4 @@
-/* $Id: problem.cpp 867 2012-07-03 16:58:04Z stefan $
+/* $Id: problem.cpp 1085 2014-11-20 17:32:59Z pbelotti $
  *
  * Name:    problem.cpp
  * Author:  Pietro Belotti
@@ -137,7 +137,16 @@ void CouenneProblem::initAuxs () const {
 	if (var -> sign () != expression::AUX_LEQ) Ub (ord) = floor (Ub (ord) + COUENNE_EPS);
       }
 
-      X (ord) = CoinMax (Lb (ord), CoinMin (Ub (ord), (*(var -> Image ())) ()));
+      double image = (*(var -> Image ())) ();
+
+      X (ord) = (*var) (); // take value, then only change if violating constraint (</>/=)
+
+      if      ((var -> sign () != expression::AUX_LEQ) && X (ord) < image) X (ord) = image;
+      else if ((var -> sign () != expression::AUX_GEQ) && X (ord) > image) X (ord) = image;
+
+      // normalize within bounds
+
+      X (ord) = CoinMax (Lb (ord), CoinMin (Ub (ord), X (ord)));
 
       Jnlst () -> Printf (Ipopt::J_MOREMATRIX, J_PROBLEM, 
 			  " --> [%10g,%10g] (%g)\n", Lb (ord), Ub (ord), X (ord));
@@ -192,10 +201,12 @@ void CouenneProblem::getAuxs (CouNumber * x) const {
 
 	bool isInt = var -> isDefinedInteger ();
 
-	/*printf ("checking "); var -> print ();
-	printf (" = %g = %g. Sign: %d, int: %d, [%g,%g]", 
-		X (index), (*(var -> Image ())) (),
-		var -> sign (), isInt, l, u);*/
+	// if (Jnlst () -> ProduceOutput (Ipopt::J_ERROR, J_PROBLEM)) {
+	//   printf ("checking "); var -> print ();
+	//   printf (" = %g = %g. Sign: %d, int: %d, [%g,%g]", 
+	// 	  X (index), (*(var -> Image ())) (),
+	// 	  var -> sign (), isInt, l, u);
+	// }
 
 	if ((var -> sign () == expression::AUX_EQ) &&
 	    ((index >= nOrigVars_) ||
@@ -206,11 +217,11 @@ void CouenneProblem::getAuxs (CouNumber * x) const {
 	  CoinMax ((var -> sign () != expression::AUX_LEQ) ? (isInt ? ceil  (l - COUENNE_EPS) : l) : -COIN_DBL_MAX, 
 	  CoinMin ((var -> sign () != expression::AUX_GEQ) ? (isInt ? floor (u + COUENNE_EPS) : u) :  COIN_DBL_MAX, x));
 
-	// heuristic feasibility heuristic: if semiaux, round value to nearest integer if variable is integer
+	// feasibility heuristic: if semiaux, round value to nearest integer if variable is integer
 
 	if (isInt) {
-	  if (var -> sign () == expression::AUX_GEQ) x = ceil  (x - COUENNE_EPS);
-	  if (var -> sign () == expression::AUX_LEQ) x = floor (x + COUENNE_EPS);
+	  if      (var -> sign () == expression::AUX_GEQ) x = ceil  (x - COUENNE_EPS);
+	  else if (var -> sign () == expression::AUX_LEQ) x = floor (x + COUENNE_EPS);
 	}
 
 	//printf (" -> %g\n", X (index));
@@ -314,6 +325,9 @@ void CouenneProblem::fillObjCoeff (double *&obj) {
 /// set cutoff from NLP solution
 void CouenneProblem::setCutOff (CouNumber cutoff, const double *s) const {
 
+  if (cutoff > COUENNE_INFINITY/2) 
+    return;
+
   int indobj = objectives_ [0] -> Body () -> Index ();
 
   // AW: Should we use the value of the objective variable computed by 
@@ -321,7 +335,7 @@ void CouenneProblem::setCutOff (CouNumber cutoff, const double *s) const {
   if ((indobj >= 0) && (cutoff < pcutoff_ -> getCutOff () - COUENNE_EPS)) {
 
     //if (fabs (cutoff - pcutoff_ -> getCutOff ()) > (1 + fabs (cutoff)) * 2 * SafeCutoff) // avoid too many printouts
-    Jnlst () -> Printf (Ipopt::J_WARNING, J_PROBLEM, "Couenne: new MINLP solution, value %.10e\n", cutoff);
+    Jnlst () -> Printf (Ipopt::J_ERROR, J_COUENNE, "Couenne: new cutoff value %.10e (%g seconds)\n", cutoff, CoinCpuTime ());
 			//pcutoff_ -> getCutOff ());
 
     if (Var (indobj) -> isInteger ())
@@ -356,7 +370,10 @@ void CouenneProblem::installCutOff () const {
 
   int indobj = objectives_ [0] -> Body () -> Index ();
 
-  assert (indobj >= 0);
+  //assert (indobj >= 0);
+
+  if (indobj < 0) 
+    return;
 
   //Jnlst () -> Printf (Ipopt::J_WARNING, J_PROBLEM,
   //"installing cutoff %.10e vs current ub %.10e\n",
@@ -377,6 +394,9 @@ void CouenneProblem::realign () {
   // link variables to problem's domain
   for (std::vector <exprVar *>::iterator i = variables_.begin ();
        i != variables_.end (); ++i) {
+
+    if ((*i) -> Multiplicity () <= 0)
+      continue;
 
     (*i) -> linkDomain (&domain_);
     (*i) -> realign (this);
