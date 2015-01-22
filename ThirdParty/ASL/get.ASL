@@ -17,32 +17,30 @@ if test ! $wgetcount = 1; then
   fi
 fi
 
-coinasl=solvers-20130815.tgz
+coinasl=1.3.0
 
 echo " "
 echo "Running script for downloading the source code for the ASL"
 echo " "
 
-rm -f solvers.tgz
+rm -f $coinasl.tar.gz
 
-echo "Downloading the source code from projects.coin-or.org..."
-if $wgetcmd http://www.coin-or.org/BuildTools/ASL/$coinasl ;
+echo "Downloading the source code from Github..."
+if $wgetcmd https://github.com/ampl/mp/archive/$coinasl.tar.gz ;
 then
-  mv $coinasl solvers.tgz
+  echo "Download finished."
 else
   echo
-  echo "Failed, try downloading the source code from www.ampl.com..."
-  $wgetcmd http://www.ampl.com/netlib/ampl/solvers.tgz
+  echo "Download failed...exiting"
 fi
 
 rm -rf solvers
 
 echo "Unpacking the source code..."
-gunzip -f solvers.tgz
-tar xf solvers.tar
-
-#echo "Uncompressing the source files..."
-#gunzip -fr solvers
+gunzip -f $coinasl.tar.gz
+tar xf $coinasl.tar
+mv mp-$coinasl/src/asl/solvers .
+rm -rf mp-$coinasl
 
 echo "Adding No_dtoa to CFLAGS..."
 cd solvers
@@ -51,7 +49,7 @@ sed -e 's/CFLAGS = /CFLAGS = -DNo_dtoa /g' makefile.u.orig > makefile.u
 cd ..
 
 echo "Deleting the tar file..."
-rm solvers.tar
+rm $coinasl.tar
 
 echo " "
 echo "Done downloading the source code for ASL."

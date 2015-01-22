@@ -2,7 +2,7 @@
 # All Rights Reserved.
 # This file is distributed under the Eclipse Public License.
 
-## $Id: Makefile.am 2311 2011-06-19 14:28:22Z stefan $
+## $Id: Makefile.am 3103 2013-11-21 19:56:05Z stefan $
 
 AUTOMAKE_OPTIONS = foreign
 
@@ -70,6 +70,10 @@ DEFAULT_INCLUDES = -I. -I`$(CYGPATH_W) $(srcdir)`
 
 AM_CPPFLAGS = \
 	-I`$(CYGPATH_W) $(srcdir)/$(METISDIR)/Lib`
+
+if DEPENDENCY_LINKING
+libcoinmetis_la_LIBADD = $(METIS_PCLIBS)
+endif
 
 libcoinmetis_la_LDFLAGS = $(LT_LDFLAGS)
 

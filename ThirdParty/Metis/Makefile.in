@@ -80,7 +80,9 @@ am__installdirs = "$(DESTDIR)$(libdir)" "$(DESTDIR)$(pkgconfiglibdir)" \
 	"$(DESTDIR)$(thirdpartyincludedir)"
 libLTLIBRARIES_INSTALL = $(INSTALL)
 LTLIBRARIES = $(lib_LTLIBRARIES)
-libcoinmetis_la_LIBADD =
+am__DEPENDENCIES_1 =
+@DEPENDENCY_LINKING_TRUE@libcoinmetis_la_DEPENDENCIES =  \
+@DEPENDENCY_LINKING_TRUE@	$(am__DEPENDENCIES_1)
 am_libcoinmetis_la_OBJECTS = balance.lo bucketsort.lo ccgraph.lo \
 	coarsen.lo compress.lo debug.lo estmem.lo fm.lo fortran.lo \
 	frename.lo graph.lo initpart.lo kmetis.lo kvmetis.lo kwayfm.lo \
@@ -325,6 +327,7 @@ DEFAULT_INCLUDES = -I. -I`$(CYGPATH_W) $(srcdir)`
 AM_CPPFLAGS = \
 	-I`$(CYGPATH_W) $(srcdir)/$(METISDIR)/Lib`
 
+@DEPENDENCY_LINKING_TRUE@libcoinmetis_la_LIBADD = $(METIS_PCLIBS)
 libcoinmetis_la_LDFLAGS = $(LT_LDFLAGS)
 thirdpartyincludedir = $(includedir)/coin/ThirdParty
 thirdpartyinclude_HEADERS = \
