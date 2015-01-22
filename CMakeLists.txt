@@ -772,6 +772,8 @@ if (BUILD_IPOPT AND EXISTS ${COIN_SOURCE_DIR}/Couenne)
   add_couenne_library(CouenneDisjunctive disjunctive)
   add_couenne_library(CouenneInterfaces interfaces)
   add_couenne_library(CouenneHeuristics heuristics)
+  add_couenne_library(CouenneCrossConv cut/crossconv)
+  add_couenne_library(CouenneSdpCuts cut/sdpcuts)
 
   if (COIN_HAS_ASL)
     set(COUENNEINTERFACE_FROM_ASL 1)
@@ -782,7 +784,8 @@ if (BUILD_IPOPT AND EXISTS ${COIN_SOURCE_DIR}/Couenne)
   add_coin_library(Couenne/src NAME Couenne
     CouenneInterfaces CouenneHeuristics CouenneProblem CouenneStandardize
     CouenneExpression CouenneBranch CouenneConvex CouenneBoundTightening
-    CouenneTwoImplied CouenneUtil CouenneDisjunctive bonmin)
+    CouenneTwoImplied CouenneUtil CouenneDisjunctive CouenneCrossConv CouenneSdpCuts
+    bonmin lapack)
 
   add_executable(couenne-executable Couenne/src/main/BonCouenne.cpp)
   set_target_properties(couenne-executable PROPERTIES
