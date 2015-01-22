@@ -1,4 +1,4 @@
-/* $Id: CbcTree.hpp 1813 2012-11-22 19:00:22Z forrest $ */
+/* $Id: CbcTree.hpp 1943 2013-07-21 09:05:45Z forrest $ */
 // Copyright (C) 2004, International Business Machines
 // Corporation and others.  All Rights Reserved.
 // This code is licensed under the terms of the Eclipse Public License (EPL).
@@ -162,6 +162,18 @@ public:
     /// Get bounds
     inline int * newBounds() const { return newBound_; }
 
+    /// Last objective in branch-and-cut search tree
+    inline double lastObjective() const {
+        return lastObjective_;
+    }
+    /// Last depth in branch-and-cut search tree
+    inline int lastDepth() const {
+        return lastDepth_;
+    }
+    /// Last number of objects unsatisfied
+    inline int lastUnsatisfied() const {
+        return lastUnsatisfied_;
+    }
     /// Adds branching information to complete state
     void addBranchingInformation(const CbcModel * model, const CbcNodeInfo * nodeInfo,
                                  const double * currentLower,
@@ -181,7 +193,7 @@ public:
 protected:
     /// Storage vector for the heap
     std::vector <CbcNode *> nodes_;
-	  /// Sort predicate for heap ordering.
+    /// Sort predicate for heap ordering.
     CbcCompare comparison_;
     /// Maximum "node" number so far to split ties
     int maximumNodeNumber_;
@@ -189,6 +201,12 @@ protected:
     int numberBranching_;
     /// Maximum size of variable list
     int maximumBranching_;
+    /// Objective of last node pushed on tree
+    double lastObjective_;
+    /// Depth of last node pushed on tree
+    int lastDepth_;
+    /// Number unsatisfied of last node pushed on tree
+    int lastUnsatisfied_;
     /** Integer variables branched or bounded
         top bit set if new upper bound
         next bit set if a branch

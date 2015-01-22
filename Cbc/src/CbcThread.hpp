@@ -1,4 +1,4 @@
-/* $Id: CbcThread.hpp 2023 2014-03-25 12:59:22Z forrest $ */
+/* $Id: CbcThread.hpp 2022 2014-03-25 11:18:50Z forrest $ */
 // Copyright (C) 2009, International Business Machines
 // Corporation and others.  All Rights Reserved.
 // This code is licensed under the terms of the Eclipse Public License (EPL).

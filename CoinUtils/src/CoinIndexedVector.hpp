@@ -1,4 +1,4 @@
-/* $Id: CoinIndexedVector.hpp 1554 2012-10-31 16:52:28Z forrest $ */
+/* $Id: CoinIndexedVector.hpp 1767 2015-01-05 12:36:13Z forrest $ */
 // Copyright (C) 2000, International Business Machines
 // Corporation and others.  All Rights Reserved.
 // This code is licensed under the terms of the Eclipse Public License (EPL).
@@ -417,7 +417,9 @@ void operator/=(const CoinIndexedVector& op2);
    /** capacity returns the size which could be accomodated without
        having to reallocate storage.
    */
-   int capacity() const { return capacity_; }
+   inline int capacity() const { return capacity_; }
+   inline void setCapacity(int value)
+   { capacity_ = value; }
    /// Sets packed mode
    inline void setPackedMode(bool yesNo)
    { packedMode_=yesNo;}

@@ -1,4 +1,4 @@
-/* $Id: CbcHeuristicRandRound.cpp 1902 2013-04-10 16:58:16Z stefan $ */
+/* $Id: CbcHeuristicRandRound.cpp 2094 2014-11-18 11:15:36Z forrest $ */
 // Copyright (C) 2008, International Business Machines
 // Corporation and others.  All Rights Reserved.
 // This code is licensed under the terms of the Eclipse Public License (EPL).
@@ -107,7 +107,7 @@ CbcHeuristicRandRound::solution(double & solutionValue,
     bool atRoot = model_->getNodeCount() == 0;
     int passNumber = model_->getCurrentPassNumber();
     //    Just do once
-    if (!atRoot || passNumber != 1) {
+    if (!atRoot || passNumber > 1) {
         // std::cout << "Leaving the Randomized Rounding Heuristic" << std::endl;
         return 0;
     }
@@ -123,6 +123,10 @@ CbcHeuristicRandRound::solution(double & solutionValue,
 
     double start = CoinCpuTime();
     numCouldRun_++; //
+#ifdef HEURISTIC_INFORM
+    printf("Entering heuristic %s - nRuns %d numCould %d when %d\n",
+	   heuristicName(),numRuns_,numCouldRun_,when_);
+#endif
     // Todo: Ask JJHF what "number of times
     // the heuristic could run" means.
 

@@ -1,4 +1,4 @@
-/* $Id: CoinStructuredModel.cpp 1726 2014-08-05 16:15:35Z tkr $ */
+/* $Id: CoinStructuredModel.cpp 1691 2014-03-19 12:43:56Z forrest $ */
 // Copyright (C) 2008, International Business Machines
 // Corporation and others.  All Rights Reserved.
 // This code is licensed under the terms of the Eclipse Public License (EPL).

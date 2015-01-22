@@ -1,4 +1,4 @@
-/* $Id: Cbc_ampl.cpp 2034 2014-05-13 07:25:03Z forrest $ */
+/* $Id: Cbc_ampl.cpp 2035 2014-05-13 07:26:07Z forrest $ */
 /****************************************************************
 Copyright (C) 1997-2000 Lucent Technologies
 Modifications for Coin -  Copyright (C) 2006, International Business Machines Corporation and others.

@@ -1,4 +1,4 @@
-/* $Id: ClpSimplexOther.hpp 1884 2012-11-05 17:38:48Z forrest $ */
+/* $Id: ClpSimplexOther.hpp 2070 2014-11-18 11:12:54Z forrest $ */
 // Copyright (C) 2004, International Business Machines
 // Corporation and others.  All Rights Reserved.
 // This code is licensed under the terms of the Eclipse Public License (EPL).
@@ -225,8 +225,12 @@ public:
      /** Restores solution from dualized problem
          non-zero return code indicates minor problems
      */
-  int restoreFromDual(const ClpSimplex * dualProblem,
-		      bool checkAccuracy=false);
+     int restoreFromDual(const ClpSimplex * dualProblem,
+			 bool checkAccuracy=false);
+     /** Sets solution in dualized problem
+         non-zero return code indicates minor problems
+     */
+     int setInDual(ClpSimplex * dualProblem);
      /** Does very cursory presolve.
          rhs is numberRows, whichRows is 3*numberRows and whichColumns is 2*numberColumns.
      */

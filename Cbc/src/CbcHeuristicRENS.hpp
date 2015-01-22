@@ -1,4 +1,4 @@
-// $Id: CbcHeuristicRENS.hpp 1902 2013-04-10 16:58:16Z stefan $
+// $Id: CbcHeuristicRENS.hpp 2105 2015-01-05 13:11:11Z forrest $
 // Copyright (C) 2006, International Business Machines
 // Corporation and others.  All Rights Reserved.
 // This code is licensed under the terms of the Eclipse Public License (EPL).
@@ -66,6 +66,9 @@ protected:
         2 - fix at UB as well
 	3 - fix on 0.01*average dj
 	add 16 to allow two tries
+	32 - if solution exists use to keep more variables
+	64 - if priorities keep high priority
+	128 - if priorities keep low priority
     */
     int rensType_;
 };

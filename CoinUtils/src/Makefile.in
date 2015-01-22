@@ -87,8 +87,8 @@ am_libCoinUtils_la_OBJECTS = CoinAlloc.lo CoinBuild.lo \
 	CoinPresolvePsdebug.lo CoinPresolveMonitor.lo \
 	CoinPresolveSingleton.lo CoinPresolveSubst.lo \
 	CoinPresolveTighten.lo CoinPresolveTripleton.lo \
-	CoinPresolveUseless.lo CoinPresolveZeros.lo CoinSearchTree.lo \
-	CoinShallowPackedVector.lo CoinSnapshot.lo \
+	CoinPresolveUseless.lo CoinPresolveZeros.lo CoinRational.lo \
+	CoinSearchTree.lo CoinShallowPackedVector.lo CoinSnapshot.lo \
 	CoinWarmStartBasis.lo CoinWarmStartVector.lo \
 	CoinWarmStartDual.lo CoinWarmStartPrimalDual.lo
 libCoinUtils_la_OBJECTS = $(am_libCoinUtils_la_OBJECTS)
@@ -399,6 +399,7 @@ libCoinUtils_la_SOURCES = \
 	CoinPresolveTripleton.cpp CoinPresolveTripleton.hpp \
 	CoinPresolveUseless.cpp CoinPresolveUseless.hpp \
 	CoinPresolveZeros.cpp CoinPresolveZeros.hpp \
+	CoinRational.cpp CoinRational.hpp \
 	CoinSearchTree.cpp CoinSearchTree.hpp \
 	CoinShallowPackedVector.cpp CoinShallowPackedVector.hpp \
 	CoinSignal.hpp \
@@ -639,6 +640,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/CoinPresolveTripleton.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/CoinPresolveUseless.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/CoinPresolveZeros.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/CoinRational.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/CoinSearchTree.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/CoinShallowPackedVector.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/CoinSimpFactorization.Plo@am__quote@

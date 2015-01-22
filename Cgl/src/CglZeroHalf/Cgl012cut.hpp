@@ -1,4 +1,4 @@
-// $Id: Cgl012cut.hpp 1150 2013-10-21 18:24:45Z tkr $
+// $Id: Cgl012cut.hpp 1149 2013-10-21 18:23:53Z tkr $
 // Copyright (C) 2010, International Business Machines
 // Corporation and others.  All Rights Reserved.
 // This code is licensed under the terms of the Eclipse Public License (EPL).

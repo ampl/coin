@@ -4,7 +4,7 @@
 
   This code is licensed under the terms of the Eclipse Public License (EPL).
 
-  $Id: CbcEventHandler.hpp 1986 2013-11-29 17:24:44Z forrest $
+  $Id: CbcEventHandler.hpp 1987 2013-11-29 17:27:29Z forrest $
 */
 
 #ifndef CbcEventHandler_H
@@ -45,6 +45,7 @@
   clp-specific code.
 
 */
+
 #include <cstddef>
 #include <map>
 
@@ -53,7 +54,7 @@
 class CbcModel ;
 
 /*
-  cvs/svn: $Id: CbcEventHandler.hpp 1986 2013-11-29 17:24:44Z forrest $
+  cvs/svn: $Id: CbcEventHandler.hpp 1987 2013-11-29 17:27:29Z forrest $
 */
 
 /*! \class CbcEventHandler
@@ -98,6 +99,12 @@ public:
         beforeSolution2,
         /*! After failed heuristic. */
         afterHeuristic,
+        /*! On entry to small branch and bound. */
+        smallBranchAndBound,
+        /*! After a pass of heuristic. */
+        heuristicPass,
+        /*! When converting constraints to cuts. */
+        convertToCuts,
         /*! End of search. */
         endSearch
     } ;
@@ -120,7 +127,9 @@ public:
         /*! Add special cuts. */
         addCuts,
         /*! Pretend solution never happened. */
-        killSolution
+        killSolution,
+        /*! Take action on modified data. */
+        takeAction
 
     } ;
 
@@ -139,6 +148,14 @@ public:
       from a map.
     */
     virtual CbcAction event(CbcEvent whichEvent) ;
+
+    /*! \brief Return the action to be taken for an event - and modify data.
+
+      Return the action that should be taken in response to the event passed as
+      the parameter. The default implementation simply reads a return code
+      from a map.
+    */
+    virtual CbcAction event(CbcEvent whichEvent, void * data) ;
 
     //@}
 

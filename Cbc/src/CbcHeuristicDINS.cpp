@@ -1,4 +1,4 @@
-// $Id: CbcHeuristicDINS.cpp 1902 2013-04-10 16:58:16Z stefan $
+// $Id: CbcHeuristicDINS.cpp 2094 2014-11-18 11:15:36Z forrest $
 // Copyright (C) 2006, International Business Machines
 // Corporation and others.  All Rights Reserved.
 // This code is licensed under the terms of the Eclipse Public License (EPL).
@@ -167,6 +167,10 @@ CbcHeuristicDINS::solution(double & solutionValue,
     const double * bestSolution = model_->bestSolution();
     if (!bestSolution)
         return 0; // No solution found yet
+#ifdef HEURISTIC_INFORM
+    printf("Entering heuristic %s - nRuns %d numCould %d when %d\n",
+	   heuristicName(),numRuns_,numCouldRun_,when_);
+#endif
     if (numberSolutions_ < model_->getSolutionCount()) {
         // new solution - add info
         numberSolutions_ = model_->getSolutionCount();
@@ -180,7 +184,7 @@ CbcHeuristicDINS::solution(double & solutionValue,
             for (int i = 0; i < maximumKeepSolutions_; i++)
                 values_[i] = NULL;
         } else {
-            assert (numberIntegers == numberIntegers_);
+            assert (numberIntegers >= numberIntegers_);
         }
         // move solutions (0 will be most recent)
         {
@@ -192,7 +196,7 @@ CbcHeuristicDINS::solution(double & solutionValue,
             values_[0] = temp;
         }
         int i;
-        for (i = 0; i < numberIntegers; i++) {
+        for (i = 0; i < numberIntegers_; i++) {
             int iColumn = integerVariable[i];
             double value = bestSolution[iColumn];
             double nearest = floor(value + 0.5);
@@ -201,10 +205,10 @@ CbcHeuristicDINS::solution(double & solutionValue,
         numberKeptSolutions_ = CoinMin(numberKeptSolutions_ + 1, maximumKeepSolutions_);
     }
     int finalReturnCode = 0;
-    if (((model_->getNodeCount() % howOften_) == howOften_ / 2 || !model_->getNodeCount()) && (model_->getCurrentPassNumber() == 1 || model_->getCurrentPassNumber() == 999999)) {
+    if (((model_->getNodeCount() % howOften_) == howOften_ / 2 || !model_->getNodeCount()) && (model_->getCurrentPassNumber() <= 1 || model_->getCurrentPassNumber() == 999999)) {
         OsiSolverInterface * solver = model_->solver();
 
-        int numberIntegers = model_->numberIntegers();
+        //int numberIntegers = model_->numberIntegers();
         const int * integerVariable = model_->integerVariable();
 
         const double * currentSolution = solver->getColSolution();
@@ -222,8 +226,8 @@ CbcHeuristicDINS::solution(double & solutionValue,
             solver->getDblParam(OsiPrimalTolerance, primalTolerance);
             const double * continuousSolution = newSolver->getColSolution();
             // Space for added constraint
-            double * element = new double [numberIntegers];
-            int * column = new int [numberIntegers];
+            double * element = new double [numberIntegers_];
+            int * column = new int [numberIntegers_];
             int i;
             int nFix = 0;
             int nCouldFix = 0;
@@ -232,7 +236,7 @@ CbcHeuristicDINS::solution(double & solutionValue,
             int nEl = 0;
             double bias = localSpace;
             int okSame = numberKeptSolutions_ - 1;
-            for (i = 0; i < numberIntegers; i++) {
+            for (i = 0; i < numberIntegers_; i++) {
                 int iColumn = integerVariable[i];
                 const OsiObject * object = model_->object(i);
                 // get original bounds
@@ -332,11 +336,11 @@ CbcHeuristicDINS::solution(double & solutionValue,
             model_->messageHandler()->message(CBC_FPUMP2, model_->messages())
             << generalPrint
             << CoinMessageEol;
-            if (nFix > numberIntegers / 10) {
+            if (nFix > numberIntegers_ / 10) {
 #ifdef JJF_ZERO
                 newSolver->initialSolve();
                 printf("obj %g\n", newSolver->getObjValue());
-                for (i = 0; i < numberIntegers; i++) {
+                for (i = 0; i < numberIntegers_; i++) {
                     int iColumn = integerVariable[i];
                     printf("%d new bounds %g %g - solutions %g %g\n",
                            iColumn, newSolver->getColLower()[iColumn],

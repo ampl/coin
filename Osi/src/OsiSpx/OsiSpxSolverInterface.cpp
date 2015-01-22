@@ -9,7 +9,7 @@
 //-----------------------------------------------------------------------------
 // Copyright (C) 2002, Tobias Pfender, International Business Machines
 // Corporation and others.  All Rights Reserved.
-// Last edit: $Id: OsiSpxSolverInterface.cpp 1968 2014-06-12 16:03:54Z stefan $
+// Last edit: $Id: OsiSpxSolverInterface.cpp 1967 2014-06-12 16:02:12Z stefan $
 
 #include "CoinPragma.hpp"
 

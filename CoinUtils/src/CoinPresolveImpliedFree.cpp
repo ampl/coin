@@ -1,4 +1,4 @@
-/* $Id: CoinPresolveImpliedFree.cpp 1595 2013-04-19 14:39:06Z forrest $ */
+/* $Id: CoinPresolveImpliedFree.cpp 1769 2015-01-06 17:49:32Z forrest $ */
 // Copyright (C) 2002, International Business Machines
 // Corporation and others.  All Rights Reserved.
 // This code is licensed under the terms of the Eclipse Public License (EPL).
@@ -21,7 +21,39 @@
 #if PRESOLVE_DEBUG > 0 || PRESOLVE_CONSISTENCY > 0
 #include "CoinPresolvePsdebug.hpp"
 #endif
+static int numberBadElements=0; 
+int check_row (CoinBigIndex *mrstrt, 
+	   double *rowels, int *hcol, int *hinrow, 
+	   double coeff_factor, double kill_ratio,  int irowx, int irowy)
+{
+  const double tolerance = kill_ratio*coeff_factor;
+  CoinBigIndex krsy = mrstrt[irowy] ;
+  CoinBigIndex krey = krsy+hinrow[irowy] ;
+  CoinBigIndex krsx = mrstrt[irowx] ;
+  CoinBigIndex krex = krsx+hinrow[irowx] ;
+  CoinBigIndex krowx = krsx ;
+  int nFill=0;
 
+  for (CoinBigIndex krowy = krsy ; krowy < krey ; krowy++) {
+    int j = hcol[krowy] ;
+    while (krowx < krex && hcol[krowx] < j) krowx++ ;
+    double newcoeff;
+    if (krowx < krex && hcol[krowx] == j) {
+      newcoeff = rowels[krowx]+rowels[krowy]*coeff_factor ;
+    } else {
+      newcoeff = rowels[krowy]*coeff_factor ;
+      nFill++;
+    }
+    // kill small 
+    if (fabs(newcoeff) <tolerance) {
+      if (newcoeff>0.1*tolerance)
+	numberBadElements++;
+      nFill--;
+    }
+    krowx++ ;
+  }
+  return nFill;
+}
 /*
   Implied Free and Subst Transforms
 
@@ -156,15 +188,17 @@ const CoinPresolveAction *implied_free_action::presolve (
 */
 # ifdef COIN_LIGHTWEIGHT_PRESOLVE
   if (prob->pass_ == 1) {
+#else
+    if (prob->presolveOptions_&0x10) {
 # endif
     next = testRedundant(prob,next) ;
     if (prob->status_&0x01 != 0) {
       if ((prob->presolveOptions_&0x4000) != 0)
-        prob->status &= !0x01 ;
+        prob->status_ &= !0x01 ;
       else
 	return (next) ;
     }
-# ifdef COIN_LIGHTWEIGHT_PRESOLVE
+# if 1 //def COIN_LIGHTWEIGHT_PRESOLVE
   }
 # endif
 # endif
@@ -636,14 +670,14 @@ const CoinPresolveAction *implied_free_action::presolve (
   int unprocessed = 0 ;
   for (iLook = 0 ; iLook < numberFree ; iLook++) {
     const int tgtcol = whichFree[iLook] ;
-
+    
     if (colLengths[tgtcol] != 1) {
       whichFree[unprocessed] = whichFree[iLook] ;
       implied_free[unprocessed] = implied_free[iLook] ;
       unprocessed++ ;
       continue ;
     }
-
+    
     const int tgtrow = implied_free[iLook] ;
     const int tgtrow_len = rowLengths[tgtrow] ;
 
@@ -672,9 +706,9 @@ const CoinPresolveAction *implied_free_action::presolve (
 	  maxNewCost=CoinMax(maxNewCost,newCost);
 	}
       }
-      if (maxNewCost>1000.0*(maxOldCost+1.0) /*&& maxOldCost*/) {
+      if (maxNewCost>1000.0*(maxOldCost+1.0) && maxOldCost) {
 	//printf("too big %d tgtcost %g maxOld %g maxNew %g\n",
-	//     tgtcol,tgtcol_cost,maxOldCost,maxNewCost);
+	//   tgtcol,tgtcol_cost,maxOldCost,maxNewCost);
 	continue;
       }
     }
@@ -785,6 +819,189 @@ const CoinPresolveAction *implied_free_action::presolve (
   any left.
 */
   if (unprocessed != 0) {
+    // if not integer - don't allow much fill
+    if (!prob->anyInteger())
+    {
+      int numberFree=unprocessed;
+      int nBad=0;
+      unprocessed=0;
+      // Take out ones that make much denser or might lead to instability
+      /*
+	Unpack the row- and column-major representations.
+      */
+      CoinBigIndex *rowStarts = prob->mrstrt_ ;
+      int *rowLengths = prob->hinrow_ ;
+      double *rowCoeffs = prob->rowels_ ;
+      int *colIndices = prob->hcol_ ;
+      
+      CoinBigIndex *colStarts = prob->mcstrt_ ;
+      int *colLengths = prob->hincol_ ;
+      double *colCoeffs = prob->colels_ ;
+      int *rowIndices = prob->hrow_ ;
+      
+      /*
+	This array is used to hold the indices of columns involved in substitutions,
+	where we have the potential for cancellation. At the end they'll be
+	checked to eliminate any actual zeros that may result.
+	
+	NOTE that usefulColumnInt_ is already in use for parameters implied_free and
+	whichFree when this routine is called from implied_free.
+      */
+      
+      int *rowsUsed = &prob->usefulRowInt_[0] ;
+      int nRowsUsed = 0 ;
+      /*
+	Open a loop to process the (equality r, implied free variable t) pairs
+	in whichFree and implied_free.
+	
+	It can happen that removal of (row, natural singleton) pairs back in
+	implied_free will reduce the length of column t. It can also happen
+	that previous processing here has resulted in fillin or cancellation. So
+	check again for column length and exclude natural singletons and overly
+	dense columns.
+      */
+      for (int iLook = 0 ; iLook < numberFree ; iLook++) {
+	const int tgtcol = whichFree[iLook] ;
+	const int tgtrow = implied_free[iLook] ;
+	
+	if (colLengths[tgtcol] < 2 || colLengths[tgtcol] > maxLook) {
+#     if PRESOLVE_DEBUG > 3
+	  std::cout
+	    << "    skipping eqn " << tgtrow << " x(" << tgtcol
+	    << "); length now " << colLengths[tgtcol] << "." << std::endl ;
+#     endif
+	  continue ;
+	}
+	
+	CoinBigIndex tgtcs = colStarts[tgtcol] ;
+	CoinBigIndex tgtce = tgtcs+colLengths[tgtcol] ;
+	/*
+	  A few checks to make sure that the candidate pair is still suitable.
+	  Processing candidates earlier in the list can eliminate coefficients.
+	  * Don't use this pair if any involved row i has become a row singleton
+	  or empty.
+	  * Don't use this pair if any involved row has been modified as part of
+	  the processing for a previous candidate pair on this call.
+	  * Don't use this pair if a(i,tgtcol) has become zero.
+	  
+	  The checks on a(i,tgtcol) seem superfluous but it's possible that
+	  implied_free identified two candidate pairs to eliminate the same column. If
+	  we've already processed one of them, we could be in trouble.
+	*/
+	double tgtcoeff = 0.0 ;
+	bool dealBreaker = false ;
+	for (CoinBigIndex kcol = tgtcs ; kcol < tgtce ; ++kcol) {
+	  const int i = rowIndices[kcol] ;
+	  if (rowLengths[i] < 2 || prob->rowUsed(i)) {
+	    dealBreaker = true ;
+	    break ;
+	  }
+	  const double aij = colCoeffs[kcol] ;
+	  if (fabs(aij) <= ZTOLDP2) {
+	    dealBreaker = true ;
+	    break ;
+	  }
+	  if (i == tgtrow) tgtcoeff = aij ;
+	}
+	
+	if (dealBreaker == true) {
+#     if PRESOLVE_DEBUG > 3
+	  std::cout
+	    << "    skipping eqn " << tgtrow << " x(" << tgtcol
+	    << "); deal breaker (1)." << std::endl ;
+#     endif
+	  continue ;
+	}
+	/*
+	  Check for numerical stability.A large coeff_factor will inflate the
+	  coefficients in the substitution formula.
+	*/
+	dealBreaker = false ;
+	for (CoinBigIndex kcol = tgtcs ; kcol < tgtce ; ++kcol) {
+	  const double coeff_factor = fabs(colCoeffs[kcol]/tgtcoeff) ;
+	  if (coeff_factor > 10.0)
+	    dealBreaker = true ;
+	}
+	if (dealBreaker == true) {
+#     if PRESOLVE_DEBUG > 3
+	  std::cout
+	    << "    skipping eqn " << tgtrow << " x(" << tgtcol
+	    << "); deal breaker (2)." << std::endl ;
+#     endif
+	  continue ;
+	}
+	/*
+	  Count up the total number of coefficients in entangled rows and mark them as
+	  contaminated.
+	*/
+	int ntotels = 0 ;
+	for (CoinBigIndex kcol = tgtcs ; kcol < tgtce ; ++kcol) {
+	  const int i = rowIndices[kcol] ;
+	  ntotels += rowLengths[i] ;
+	  PRESOLVEASSERT(!prob->rowUsed(i)) ;
+	  prob->setRowUsed(i) ;
+	  rowsUsed[nRowsUsed++] = i ;
+	}
+	
+	CoinBigIndex tgtrs = rowStarts[tgtrow] ;
+	CoinBigIndex tgtre = tgtrs+rowLengths[tgtrow] ;
+	
+	// kill small if wanted
+	int relax= (prob->presolveOptions()&0x60000)>>17;
+	double tolerance = 1.0e-12;
+	for (int i=0;i<relax;i++)
+	  tolerance *= 10.0;
+	
+	/*
+	  Sort the target row for efficiency
+	*/
+	CoinSort_2(colIndices+tgtrs,colIndices+tgtre,rowCoeffs+tgtrs) ;
+	CoinBigIndex start=colStarts[tgtcol];
+	CoinBigIndex end = start+colLengths[tgtcol];
+	numberBadElements=0;
+	int numberFill=-rowLengths[tgtrow];
+	for (int colndx = start ; colndx < end ; ++colndx) {
+	  int i = rowIndices[colndx] ;
+	  if (i == tgtrow) continue ;
+	  
+	  double ait = colCoeffs[colndx] ;
+	  double coeff_factor = -ait/tgtcoeff ;
+	  
+	  CoinBigIndex krs = rowStarts[i] ;
+	  CoinBigIndex kre = krs+rowLengths[i] ;
+	  /*
+	    Sort the row for efficiency and call add_row to do the actual business of
+	    changing coefficients due to substitution. This has the potential to trigger
+	    compaction of the row-major bulk store, so update bulk store indices.
+	  */
+	  CoinSort_2(colIndices+krs,colIndices+kre,rowCoeffs+krs) ;
+	  
+	  numberFill += check_row(rowStarts,rowCoeffs,colIndices,
+				  rowLengths,coeff_factor,tolerance,i,tgtrow);
+	}
+	if (numberBadElements||3*numberFill>2*(colLengths[tgtcol]+rowLengths[tgtrow])) {
+	  //printf("Bad subst col %d row %d - %d small elements, fill %d\n",
+	  //	 tgtcol,tgtrow,numberBadElements,numberFill);
+	  if (numberBadElements)
+	    nBad++;
+	} else {
+	  whichFree[unprocessed]=tgtcol;
+	  implied_free[unprocessed++]=tgtrow;
+	  //printf("Good subst col %d row %d - fill %d\n",
+	  //	 tgtcol,tgtrow,numberFill);
+	}
+      }
+      /*
+	That's it, we've processed all the candidate pairs.
+	
+	Clear the row used flags.
+      */
+      for (int i = 0 ; i < nRowsUsed ; i++) prob->unsetRowUsed(rowsUsed[i]) ;
+#if CLP_USEFUL_PRINTOUT
+      printf("%d allowed through out of %d - %d on coefficient\n",
+	     unprocessed,numberFree,nBad);
+#endif      
+    }
     next = subst_constraint_action::presolve(prob,implied_free,whichFree,
     					     unprocessed,next,maxLook) ;
   }

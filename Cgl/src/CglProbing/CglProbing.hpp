@@ -1,4 +1,4 @@
-// $Id: CglProbing.hpp 1123 2013-04-06 20:47:24Z stefan $
+// $Id: CglProbing.hpp 1201 2014-03-07 17:24:04Z forrest $
 // Copyright (C) 2002, International Business Machines
 // Corporation and others.  All Rights Reserved.
 // This code is licensed under the terms of the Eclipse Public License (EPL).
@@ -126,6 +126,11 @@ public:
 		    int minimumSize=2, int maximumSize=100);
   /// Delete all clique information
   void deleteCliques();
+  /** Create a fake model by adding cliques
+      if type&4 then delete rest of model first,
+      if 1 then add proper cliques, 2 add fake cliques */
+  OsiSolverInterface * cliqueModel(const OsiSolverInterface * model,
+				   int type);
   //@}
 
   /**@name Get tighter column bounds */
@@ -220,6 +225,26 @@ public:
   void setRowCuts(int type);
   /// Get
   int rowCuts() const;
+  //@}
+  /// Clique type
+  typedef struct {
+    unsigned int equality:1; //  nonzero if clique is ==
+  } CliqueType;
+
+  /**@name Information on cliques */
+  //@{
+  /// Number of cliques
+  inline int numberCliques() const
+  { return numberCliques_;}
+  /// Clique type
+  inline CliqueType * cliqueType() const
+  { return cliqueType_;}
+  /// Start of each clique
+  inline int * cliqueStart() const
+  { return cliqueStart_;}
+  /// Entries for clique
+  inline CliqueEntry * cliqueEntry() const
+  { return cliqueEntry_;}
   //@}
 
   /**@name Whether use objective as constraint */
@@ -403,14 +428,11 @@ private:
   /// Number of cliques
   int numberCliques_;
   /// Clique type
-  typedef struct {
-    unsigned int equality:1; //  nonzero if clique is ==
-  } cliqueType;
-  cliqueType * cliqueType_;
+  CliqueType * cliqueType_;
   /// Start of each clique
   int * cliqueStart_;
   /// Entries for clique
-  cliqueEntry * cliqueEntry_;
+  CliqueEntry * cliqueEntry_;
   /** Start of oneFixes cliques for a column in matrix or -1 if not
       in any clique */
   int * oneFixStart_;
@@ -425,7 +447,7 @@ private:
       So first clique mentioned in row is always 0.  If no entries for row
       then no cliques.  If sequence > numberColumns then not in clique.
   */
-  cliqueEntry * cliqueRow_;
+  CliqueEntry * cliqueRow_;
   /// cliqueRow_ starts for each row
   int * cliqueRowStart_;
   /// If not null and [i] !=0 then also tighten even if continuous

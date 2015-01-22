@@ -1,4 +1,4 @@
-/* $Id: ClpMessage.hpp 1928 2013-04-06 12:54:16Z stefan $ */
+/* $Id: ClpMessage.hpp 1926 2013-03-26 15:23:38Z forrest $ */
 // Copyright (C) 2002, International Business Machines
 // Corporation and others.  All Rights Reserved.
 // This code is licensed under the terms of the Eclipse Public License (EPL).

@@ -1,4 +1,4 @@
-/* $Id: CoinAbcCommon.hpp 1910 2013-01-27 02:00:13Z stefan $ */
+/* $Id: CoinAbcCommon.hpp 2074 2014-12-10 09:43:54Z forrest $ */
 // Copyright (C) 2000, International Business Machines
 // Corporation and others, Copyright (C) 2012, FasterCoin.  All Rights Reserved.
 // This code is licensed under the terms of the Eclipse Public License (EPL).
@@ -40,6 +40,11 @@ typedef unsigned int CoinSimplexUnsignedInt;
 //#define EARLY_FACTORIZE
 #ifndef FAKE_CILK
 #include <cilk/cilk.h>
+//gcc4.9 main branch has not got cilk_for!!!!!!!!!!!
+#ifdef GCC_4_9
+#undef cilk_for
+#define cilk_for for
+#endif
 #else
 #define cilk_for for
 #define cilk_spawn
@@ -190,7 +195,7 @@ typedef const int cipfint;
 enum CBLAS_ORDER {CblasRowMajor=101, CblasColMajor=102 };
 enum CBLAS_TRANSPOSE {CblasNoTrans=111, CblasTrans=112, CblasConjTrans=113,
 		      AtlasConj=114};
-#define CLAPACK
+//#define CLAPACK
 // using simple lapack interface
 extern "C" 
 {

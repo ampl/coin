@@ -1,4 +1,4 @@
-/* $Id: ClpSimplexNonlinear.hpp 1665 2011-01-04 17:55:54Z lou $ */
+/* $Id: ClpSimplexNonlinear.hpp 2025 2014-03-19 12:49:55Z forrest $ */
 // Copyright (C) 2004, International Business Machines
 // Corporation and others.  All Rights Reserved.
 // This code is licensed under the terms of the Eclipse Public License (EPL).
@@ -40,9 +40,11 @@ public:
      /** Primal algorithm for quadratic
          Using a semi-trust region approach as for pooling problem
          This is in because I have it lying around
-
      */
-     int primalSLP(int numberPasses, double deltaTolerance);
+     int primalSLP(int numberPasses, double deltaTolerance,
+		int otherOptions=0);
+     /// May use a cut approach for solving any LP
+     int primalDualCuts(char * rowsIn, int startUp, int algorithm);
      /** Primal algorithm for nonlinear constraints
          Using a semi-trust region approach as for pooling problem
          This is in because I have it lying around

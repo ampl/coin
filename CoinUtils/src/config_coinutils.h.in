@@ -6,6 +6,9 @@
 /* Define to 1 if stdint.h is available for CoinUtils */
 #undef COINUTILS_HAS_STDINT_H
 
+/* Define to 1 if stdint.h is available for CoinUtils */
+#undef COINUTILS_HAS_CSTDINT
+
 /* Version number of project */
 #undef COINUTILS_VERSION
 

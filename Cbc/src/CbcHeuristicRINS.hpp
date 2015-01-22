@@ -1,4 +1,4 @@
-/* $Id: CbcHeuristicRINS.hpp 1902 2013-04-10 16:58:16Z stefan $ */
+/* $Id: CbcHeuristicRINS.hpp 1956 2013-08-17 15:28:45Z forrest $ */
 // Copyright (C) 2006, International Business Machines
 // Corporation and others.  All Rights Reserved.
 // This code is licensed under the terms of the Eclipse Public License (EPL).
@@ -70,6 +70,10 @@ public:
     /// Resets lastNode
     inline void setLastNode(int value) {
         lastNode_ = value;
+    }
+    /// Resets number of solutions
+    inline void setSolutionCount(int value) {
+        numberSolutions_ = value;
     }
 
 protected:

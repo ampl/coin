@@ -1,4 +1,4 @@
-// $Id: CbcHeuristicVND.cpp 1902 2013-04-10 16:58:16Z stefan $
+// $Id: CbcHeuristicVND.cpp 2094 2014-11-18 11:15:36Z forrest $
 // Copyright (C) 2006, International Business Machines
 // Corporation and others.  All Rights Reserved.
 // This code is licensed under the terms of the Eclipse Public License (EPL).
@@ -167,6 +167,10 @@ CbcHeuristicVND::solution(double & solutionValue,
     const double * bestSolution = model_->bestSolution();
     if (!bestSolution)
         return 0; // No solution found yet
+#ifdef HEURISTIC_INFORM
+    printf("Entering heuristic %s - nRuns %d numCould %d when %d\n",
+	   heuristicName(),numRuns_,numCouldRun_,when_);
+#endif
     if (numberSolutions_ < model_->getSolutionCount()) {
         // new solution - add info
         numberSolutions_ = model_->getSolutionCount();
@@ -198,7 +202,7 @@ CbcHeuristicVND::solution(double & solutionValue,
         if ((numberNodes > 40 && numberNodes <= 50) || (numberNodes > 90 && numberNodes < 100))
             numberNodes = howOften_;
     }
-    if ((numberNodes % howOften_) == 0 && (model_->getCurrentPassNumber() == 1 ||
+    if ((numberNodes % howOften_) == 0 && (model_->getCurrentPassNumber() <= 1 ||
                                            model_->getCurrentPassNumber() == 999999)) {
         lastNode_ = model_->getNodeCount();
         OsiSolverInterface * solver = model_->solver();

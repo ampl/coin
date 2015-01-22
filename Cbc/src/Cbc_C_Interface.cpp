@@ -1,4 +1,4 @@
-// $Id: Cbc_C_Interface.cpp 2059 2014-08-23 16:31:35Z tkr $
+// $Id: Cbc_C_Interface.cpp 2039 2014-06-20 02:34:45Z mlubin $
 // Copyright (C) 2004, International Business Machines
 // Corporation and others.  All Rights Reserved.
 // This code is licensed under the terms of the Eclipse Public License (EPL).

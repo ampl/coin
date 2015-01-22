@@ -4,7 +4,7 @@
 
   This code is licensed under the terms of the Eclipse Public License (EPL).
 
-  $Id: CbcGeneric.cpp 1902 2013-04-10 16:58:16Z stefan $
+  $Id: CbcGeneric.cpp 1899 2013-04-09 18:12:08Z stefan $
 */
 /*
   This file is part of cbc-generic.
@@ -65,7 +65,7 @@
 
 namespace {
 
-char svnid[] = "$Id: CbcGeneric.cpp 1902 2013-04-10 16:58:16Z stefan $" ;
+char svnid[] = "$Id: CbcGeneric.cpp 1899 2013-04-09 18:12:08Z stefan $" ;
 
 }
 

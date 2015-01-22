@@ -1,4 +1,4 @@
-/* $Id: CbcMessage.cpp 1916 2013-04-26 16:21:11Z tkr $ */
+/* $Id: CbcMessage.cpp 2094 2014-11-18 11:15:36Z forrest $ */
 // Copyright (C) 2002, International Business Machines
 // Corporation and others.  All Rights Reserved.
 // This code is licensed under the terms of the Eclipse Public License (EPL).
@@ -53,11 +53,11 @@ static Cbc_message us_english[] = {
     {CBC_UNBOUNDED, 34, 1, "The LP relaxation is unbounded!"},
     {CBC_OTHER_STATS, 35, 1, "Maximum depth %d, %g variables fixed on reduced cost"},
     {CBC_HEURISTICS_OFF, 36, 1, "Heuristics switched off as %d branching objects are of wrong type"},
-    {CBC_STATUS2, 37, 1, "%d nodes, %d on tree, best %g - possible %g depth %d unsat %d its %d (%.2f seconds)"},
+    {CBC_STATUS2, 37, 1, "%d nodes, %d on tree, best %g - possible %g depth %d unsat %d value %g its %d (%.2f seconds)"},
     {CBC_FPUMP1, 38, 1, "%s"},
     {CBC_FPUMP2, 39, 2, "%s"},
-    {CBC_STATUS3, 40, 1, "%d nodes (+%d), %d on tree, best %g - possible %g depth %d unsat %d its %d (+%d) (%.2f seconds)"},
-    {CBC_OTHER_STATS2, 41, 1, "Maximum depth %d, %g variables fixed on reduced cost (%d nodes in complete fathoming taking %d iterations)"},
+    {CBC_STATUS3, 40, 1, "%d nodes (+%d/%d), %d on tree, best %g - possible %g depth %d unsat %d its %d (+%d) (%.2f seconds)"},
+    {CBC_OTHER_STATS2, 41, 1, "Maximum depth %d, %g variables fixed on reduced cost (complete fathoming %d times, %d nodes taking %d iterations)"},
     {CBC_RELAXED1, 42, 1, "Possible objective of %.18g but variable %d is %g from integer value, integer tolerance %g"},
     {CBC_RELAXED2, 43, 2, "Possible objective of %.18g but had to fudge solution with tolerance of %g - check scaling of problem?"},
     {CBC_RESTART, 44, 1, "Reduced cost fixing - %d rows, %d columns - restarting search"},

@@ -109,12 +109,13 @@ am_libCbc_la_OBJECTS = CbcBranchAllDifferent.lo CbcBranchCut.lo \
 	CbcHeuristicGreedy.lo CbcHeuristicLocal.lo \
 	CbcHeuristicPivotAndFix.lo CbcHeuristicRandRound.lo \
 	CbcHeuristicRENS.lo CbcHeuristicRINS.lo CbcHeuristicVND.lo \
-	CbcMessage.lo CbcModel.lo CbcNode.lo CbcNodeInfo.lo CbcNWay.lo \
-	CbcObject.lo CbcObjectUpdateData.lo CbcPartialNodeInfo.lo \
-	CbcSimpleInteger.lo CbcSimpleIntegerDynamicPseudoCost.lo \
+	CbcHeuristicDW.lo CbcMessage.lo CbcModel.lo CbcNode.lo \
+	CbcNodeInfo.lo CbcNWay.lo CbcObject.lo CbcObjectUpdateData.lo \
+	CbcPartialNodeInfo.lo CbcSimpleInteger.lo \
+	CbcSimpleIntegerDynamicPseudoCost.lo \
 	CbcSimpleIntegerPseudoCost.lo CbcSOS.lo CbcStatistics.lo \
-	CbcStrategy.lo CbcSubProblem.lo CbcThread.lo CbcTree.lo \
-	CbcTreeLocal.lo
+	CbcStrategy.lo CbcSubProblem.lo CbcSymmetry.lo CbcThread.lo \
+	CbcTree.lo CbcTreeLocal.lo
 libCbc_la_OBJECTS = $(am_libCbc_la_OBJECTS)
 @DEPENDENCY_LINKING_TRUE@libCbcSolver_la_DEPENDENCIES =  \
 @DEPENDENCY_LINKING_TRUE@	$(am__DEPENDENCIES_1) libCbc.la
@@ -562,6 +563,7 @@ libCbc_la_SOURCES = \
 	CbcHeuristicRENS.cpp CbcHeuristicRENS.hpp \
 	CbcHeuristicRINS.cpp CbcHeuristicRINS.hpp \
 	CbcHeuristicVND.cpp CbcHeuristicVND.hpp \
+	CbcHeuristicDW.cpp CbcHeuristicDW.hpp \
 	CbcMessage.cpp CbcMessage.hpp \
 	CbcModel.cpp CbcModel.hpp \
 	CbcNode.cpp CbcNode.hpp \
@@ -579,6 +581,7 @@ libCbc_la_SOURCES = \
 	CbcStatistics.cpp CbcStatistics.hpp \
 	CbcStrategy.cpp CbcStrategy.hpp \
 	CbcSubProblem.cpp CbcSubProblem.hpp \
+	CbcSymmetry.cpp CbcSymmetry.hpp \
 	CbcThread.cpp CbcThread.hpp \
 	CbcTree.cpp CbcTree.hpp \
 	CbcTreeLocal.cpp CbcTreeLocal.hpp
@@ -696,6 +699,7 @@ includecoin_HEADERS = \
 	CbcHeuristicRENS.hpp \
 	CbcHeuristicRINS.hpp \
 	CbcHeuristicVND.hpp \
+	CbcHeuristicDW.hpp \
 	CbcMessage.hpp \
 	CbcModel.hpp \
 	CbcNode.hpp \
@@ -893,6 +897,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/CbcGeneric.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/CbcHeuristic.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/CbcHeuristicDINS.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/CbcHeuristicDW.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/CbcHeuristicDive.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/CbcHeuristicDiveCoefficient.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/CbcHeuristicDiveFractional.Plo@am__quote@
@@ -930,6 +935,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/CbcStatistics.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/CbcStrategy.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/CbcSubProblem.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/CbcSymmetry.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/CbcThread.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/CbcTree.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/CbcTreeLocal.Plo@am__quote@

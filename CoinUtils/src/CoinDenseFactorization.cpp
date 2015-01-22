@@ -1,4 +1,4 @@
-/* $Id: CoinDenseFactorization.cpp 1417 2011-04-17 15:05:57Z forrest $ */
+/* $Id: CoinDenseFactorization.cpp 1759 2014-11-18 11:07:23Z forrest $ */
 // Copyright (C) 2008, International Business Machines
 // Corporation and others.  All Rights Reserved.
 // This code is licensed under the terms of the Eclipse Public License (EPL).
@@ -15,9 +15,9 @@
 #include "CoinPackedMatrix.hpp"
 #include "CoinFinite.hpp"
 #if COIN_BIG_DOUBLE==1
-#undef DENSE_CODE
+#undef COIN_FACTORIZATION_DENSE_CODE
 #endif
-#ifdef DENSE_CODE
+#ifdef COIN_FACTORIZATION_DENSE_CODE
 // using simple lapack interface
 extern "C" 
 {
@@ -105,7 +105,7 @@ CoinDenseFactorization & CoinDenseFactorization::operator = ( const CoinDenseFac
   }
   return *this;
 }
-#ifdef DENSE_CODE
+#ifdef COIN_FACTORIZATION_DENSE_CODE
 #define WORK_MULT 2
 #else
 #define WORK_MULT 2
@@ -196,7 +196,7 @@ CoinDenseFactorization::factor ( )
 {
   numberPivots_=0;
   status_= 0;
-#ifdef DENSE_CODE
+#ifdef COIN_FACTORIZATION_DENSE_CODE
   if (numberRows_==numberColumns_&&(solveMode_%10)!=0) {
     int info;
     F77_FUNC(dgetrf,DGETRF)(&numberRows_,&numberRows_,
@@ -328,7 +328,7 @@ CoinDenseFactorization::makeNonSingular(int * sequence, int numberColumns)
 void 
 CoinDenseFactorization::postProcess(const int * sequence, int * pivotVariable)
 {
-#ifdef DENSE_CODE
+#ifdef COIN_FACTORIZATION_DENSE_CODE
   if ((solveMode_%10)==0) {
 #endif
     for (int i=0;i<numberRows_;i++) {
@@ -344,7 +344,7 @@ CoinDenseFactorization::postProcess(const int * sequence, int * pivotVariable)
       pivotRow_[i+numberRows_]=k;
 #endif
     }
-#ifdef DENSE_CODE
+#ifdef COIN_FACTORIZATION_DENSE_CODE
   } else {
     // lapack
     for (int i=0;i<numberRows_;i++) {
@@ -380,7 +380,7 @@ CoinDenseFactorization::replaceColumn ( CoinIndexedVector * regionSparse,
   if (fabs(pivotValue)<zeroTolerance_)
     return 2;
   pivotValue = 1.0/pivotValue;
-#ifdef DENSE_CODE
+#ifdef COIN_FACTORIZATION_DENSE_CODE
   if ((solveMode_%10)==0) {
 #endif
     if (regionSparse->packedMode()) {
@@ -406,7 +406,7 @@ CoinDenseFactorization::replaceColumn ( CoinIndexedVector * regionSparse,
     int realPivotRow = pivotRow_[pivotRow];
     elements[realPivotRow]=pivotValue;
     pivotRow_[2*numberRows_+numberPivots_]=realPivotRow;
-#ifdef DENSE_CODE
+#ifdef COIN_FACTORIZATION_DENSE_CODE
   } else {
     // lapack
     if (regionSparse->packedMode()) {
@@ -442,7 +442,7 @@ CoinDenseFactorization::updateColumn ( CoinIndexedVector * regionSparse,
   int *regionIndex = regionSparse2->getIndices (  );
   int numberNonZero = regionSparse2->getNumElements (  );
   double *region = regionSparse->denseVector (  );
-#ifdef DENSE_CODE
+#ifdef COIN_FACTORIZATION_DENSE_CODE
   if ((solveMode_%10)==0) {
 #endif
     if (!regionSparse2->packedMode()) {
@@ -466,7 +466,7 @@ CoinDenseFactorization::updateColumn ( CoinIndexedVector * regionSparse,
 	region2[j]=0.0;
       }
     }
-#ifdef DENSE_CODE
+#ifdef COIN_FACTORIZATION_DENSE_CODE
   } else {
     // lapack
     if (!regionSparse2->packedMode()) {
@@ -492,7 +492,7 @@ CoinDenseFactorization::updateColumn ( CoinIndexedVector * regionSparse,
 #endif
   int i;
   CoinFactorizationDouble * elements = elements_;
-#ifdef DENSE_CODE
+#ifdef COIN_FACTORIZATION_DENSE_CODE
   if ((solveMode_%10)==0) {
 #endif
     // base factorization L
@@ -513,7 +513,7 @@ CoinDenseFactorization::updateColumn ( CoinIndexedVector * regionSparse,
 	region[j] -= value*elements[j];
       }
     }
-#ifdef DENSE_CODE
+#ifdef COIN_FACTORIZATION_DENSE_CODE
   } else {
     char trans = 'N';
     int ione=1;
@@ -535,7 +535,7 @@ CoinDenseFactorization::updateColumn ( CoinIndexedVector * regionSparse,
   }
   // permute back and get nonzeros
   numberNonZero=0;
-#ifdef DENSE_CODE
+#ifdef COIN_FACTORIZATION_DENSE_CODE
   if ((solveMode_%10)==0) {
 #endif
     if (!noPermute) {
@@ -579,7 +579,7 @@ CoinDenseFactorization::updateColumn ( CoinIndexedVector * regionSparse,
 	}
       }
     }
-#ifdef DENSE_CODE
+#ifdef COIN_FACTORIZATION_DENSE_CODE
   } else {
     // lapack
     if (!noPermute) {
@@ -626,7 +626,7 @@ CoinDenseFactorization::updateTwoColumnsFT(CoinIndexedVector * regionSparse1,
 					  CoinIndexedVector * regionSparse3,
 					   bool /*noPermute*/)
 {
-#ifdef DENSE_CODE
+#ifdef COIN_FACTORIZATION_DENSE_CODE
 #if 0
   CoinIndexedVector s2(*regionSparse2);
   CoinIndexedVector s3(*regionSparse3);
@@ -637,7 +637,7 @@ CoinDenseFactorization::updateTwoColumnsFT(CoinIndexedVector * regionSparse1,
 #endif
     updateColumn(regionSparse1,regionSparse2);
     updateColumn(regionSparse1,regionSparse3);
-#ifdef DENSE_CODE
+#ifdef COIN_FACTORIZATION_DENSE_CODE
   } else {
     // lapack
     assert (numberRows_==numberColumns_);
@@ -771,7 +771,7 @@ CoinDenseFactorization::updateColumnTranspose ( CoinIndexedVector * regionSparse
   int *regionIndex = regionSparse2->getIndices (  );
   int numberNonZero = regionSparse2->getNumElements (  );
   double *region = regionSparse->denseVector (  );
-#ifdef DENSE_CODE
+#ifdef COIN_FACTORIZATION_DENSE_CODE
   if ((solveMode_%10)==0) {
 #endif
     if (!regionSparse2->packedMode()) {
@@ -796,7 +796,7 @@ CoinDenseFactorization::updateColumnTranspose ( CoinIndexedVector * regionSparse
 	region2[j]=0.0;
       }
     }
-#ifdef DENSE_CODE
+#ifdef COIN_FACTORIZATION_DENSE_CODE
   } else {
     // lapack
     if (!regionSparse2->packedMode()) {
@@ -828,7 +828,7 @@ CoinDenseFactorization::updateColumnTranspose ( CoinIndexedVector * regionSparse
     }
     region[iPivot] = value*elements[iPivot];
   }
-#ifdef DENSE_CODE
+#ifdef COIN_FACTORIZATION_DENSE_CODE
   if ((solveMode_%10)==0) {
 #endif
     // base factorization U
@@ -853,7 +853,7 @@ CoinDenseFactorization::updateColumnTranspose ( CoinIndexedVector * regionSparse
       }
       region[i] = value;
     }
-#ifdef DENSE_CODE
+#ifdef COIN_FACTORIZATION_DENSE_CODE
   } else {
     char trans = 'T';
     int ione=1;
@@ -864,7 +864,7 @@ CoinDenseFactorization::updateColumnTranspose ( CoinIndexedVector * regionSparse
 #endif
   // permute back and get nonzeros
   numberNonZero=0;
-#ifdef DENSE_CODE
+#ifdef COIN_FACTORIZATION_DENSE_CODE
   if ((solveMode_%10)==0) {
 #endif
     if (!regionSparse2->packedMode()) {
@@ -888,7 +888,7 @@ CoinDenseFactorization::updateColumnTranspose ( CoinIndexedVector * regionSparse
 	}
       }
     }
-#ifdef DENSE_CODE
+#ifdef COIN_FACTORIZATION_DENSE_CODE
   } else {
     // lapack
     if (!regionSparse2->packedMode()) {

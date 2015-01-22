@@ -1,4 +1,4 @@
-/* $Id: CoinModelUseful.cpp 1585 2013-04-06 20:42:02Z stefan $ */
+/* $Id: CoinModelUseful.cpp 1583 2013-04-06 14:54:42Z stefan $ */
 // Copyright (C) 2005, International Business Machines
 // Corporation and others.  All Rights Reserved.
 // This code is licensed under the terms of the Eclipse Public License (EPL).

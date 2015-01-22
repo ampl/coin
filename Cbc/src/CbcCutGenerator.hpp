@@ -1,4 +1,4 @@
-/* $Id: CbcCutGenerator.hpp 1883 2013-04-06 13:33:15Z stefan $ */
+/* $Id: CbcCutGenerator.hpp 2081 2014-09-25 11:31:17Z forrest $ */
 // Copyright (C) 2003, International Business Machines
 // Corporation and others.  All Rights Reserved.
 // This code is licensed under the terms of the Eclipse Public License (EPL).
@@ -172,9 +172,13 @@ public:
     inline int maximumTries() const
     { return maximumTries_;}
 
-    /// Get switches (for debug)
+    /// Get switches 
     inline int switches() const {
         return switches_;
+    }
+    /// Set switches (for copying from virgin state)
+    inline void setSwitches(int value) {
+        switches_ = value;
     }
     /// Get whether the cut generator should be called in the normal place
     inline bool normal() const {
@@ -346,6 +350,15 @@ public:
     inline void setWhetherCallAtEnd(bool yesNo) {
         switches_ &= ~4096;
         switches_ |= yesNo ? 4096 : 0;
+    }
+    /// Whether needs refresh on copy
+    inline bool needsRefresh() const {
+        return (switches_&8192) != 0;
+    }
+    /// Set whether needs refresh on copy
+    inline void setNeedsRefresh(bool yesNo) {
+        switches_ &= ~8192;
+        switches_ |= yesNo ? 8192 : 0;
     }
     /// Number of cuts generated at root
     inline int numberCutsAtRoot() const {

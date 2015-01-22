@@ -1,4 +1,4 @@
-/* $Id: CoinPresolveSingleton.cpp 1581 2013-04-06 12:48:50Z stefan $ */
+/* $Id: CoinPresolveSingleton.cpp 1580 2013-03-19 13:00:14Z forrest $ */
 // Copyright (C) 2002, International Business Machines
 // Corporation and others.  All Rights Reserved.
 // This code is licensed under the terms of the Eclipse Public License (EPL).

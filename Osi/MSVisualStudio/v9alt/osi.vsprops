@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="Windows-1252"?>
+<VisualStudioPropertySheet
+	ProjectType="Visual C++"
+	Version="8.00"
+	Name="osi"
+	InheritedPropertySheets="$(COIN_ROOT)\BuildTools\MSVisualStudio\v9alt\coin.vsprops;$(CoinRoot)\CoinUtils\CoinUtils\MSVisualStudio\v9alt\coinutils.vsprops"
+	>
+	<Tool
+		Name="VCCLCompilerTool"
+		AdditionalIncludeDirectories="&quot;$(OsiIncludeDir)&quot;"
+	/>
+	<Tool
+		Name="VCLibrarianTool"
+		AdditionalLibraryDirectories=""
+	/>
+	<Tool
+		Name="VCLinkerTool"
+		AdditionalDependencies="libOsi.lib"
+		AdditionalLibraryDirectories=""
+	/>
+	<UserMacro
+		Name="OsiIncludeDir"
+		Value="$(CoinRoot)\Osi\Osi\src\Osi"
+	/>
+	<UserMacro
+		Name="OsiCommonTestIncludeDir"
+		Value="$(CoinRoot)\Osi\Osi\src\OsiCommonTest"
+	/>
+</VisualStudioPropertySheet>

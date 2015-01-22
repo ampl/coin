@@ -1,4 +1,4 @@
-// $Id: CbcSimpleInteger.hpp 1902 2013-04-10 16:58:16Z stefan $
+// $Id: CbcSimpleInteger.hpp 1943 2013-07-21 09:05:45Z forrest $
 // Copyright (C) 2002, International Business Machines
 // Corporation and others.  All Rights Reserved.
 // This code is licensed under the terms of the Eclipse Public License (EPL).
@@ -209,7 +209,7 @@ public:
     */
     virtual CbcBranchingObject * createCbcBranch(OsiSolverInterface * solver, const OsiBranchingInformation * info, int way) ;
     /// Fills in a created branching object
-    void fillCreateBranch(CbcIntegerBranchingObject * branching, const OsiBranchingInformation * info, int way) ;
+  /*virtual*/ void fillCreateBranch(CbcIntegerBranchingObject * branching, const OsiBranchingInformation * info, int way) ;
 
     using CbcObject::solverBranch ;
     /** Create an OsiSolverBranch object

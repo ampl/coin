@@ -1,4 +1,4 @@
-// $Id: CglMessage.hpp 1113 2013-04-06 13:28:20Z stefan $
+// $Id: CglMessage.hpp 1105 2013-03-19 12:43:52Z forrest $
 // Copyright (C) 2005, International Business Machines
 // Corporation and others.  All Rights Reserved.
 // This code is licensed under the terms of the Eclipse Public License (EPL).

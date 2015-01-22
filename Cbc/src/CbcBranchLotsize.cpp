@@ -1,4 +1,4 @@
-/* $Id: CbcBranchLotsize.cpp 2055 2014-08-09 16:05:41Z forrest $ */
+/* $Id: CbcBranchLotsize.cpp 2043 2014-07-01 13:03:51Z forrest $ */
 // Copyright (C) 2002, International Business Machines
 // Corporation and others.  All Rights Reserved.
 // This code is licensed under the terms of the Eclipse Public License (EPL).

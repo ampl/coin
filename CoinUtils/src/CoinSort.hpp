@@ -1,4 +1,4 @@
-/* $Id: CoinSort.hpp 1596 2013-04-25 14:29:25Z stefan $ */
+/* $Id: CoinSort.hpp 1594 2013-04-19 14:33:00Z forrest $ */
 // Copyright (C) 2000, International Business Machines
 // Corporation and others.  All Rights Reserved.
 // This code is licensed under the terms of the Eclipse Public License (EPL).

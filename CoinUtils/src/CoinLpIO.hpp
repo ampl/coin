@@ -1,4 +1,4 @@
-/* $Id: CoinLpIO.hpp 1727 2014-08-05 16:30:20Z tkr $ */
+/* $Id: CoinLpIO.hpp 1749 2014-10-24 20:00:14Z tkr $ */
 // Last edit: 11/5/08
 //
 // Name:     CoinLpIO.hpp; Support for Lp files
@@ -19,6 +19,7 @@
 
 #include "CoinPackedMatrix.hpp"
 #include "CoinMessage.hpp"
+class CoinSet;
 
 const int MAX_OBJECTIVES = 2;
 
@@ -66,9 +67,11 @@ Notes: <UL>
       For valid row names, see the method is_invalid_name(). 
  <LI> Column names must be followed by a blank space. They must be distinct. 
       For valid column names, see the method is_invalid_name(). 
- <LI> The objective function name must be followed by ':' without blank space.
-      Objective function name is optional (if no objective function name
-      is given, it is set to "obj" by default).
+ <LI> Multiple objectives may be specified, but when there are multiple
+      objectives, they must have names (to indicate where each one starts).
+ <LI> The objective function names must be followed by ':' without blank space.
+      If there is a single objective, the objective function name is optional.
+      If no name is given, the name is set to "obj" by default.
       For valid objective function names, see the method is_invalid_name(). 
  <LI> Ranged constraints are written as two constraints.
       If a name is given for a ranged constraint, the upper bound constraint 
@@ -487,6 +490,20 @@ public:
 
   /// Dump the data. Low level method for debugging.
   void print() const;
+  
+  /// Load in SOS stuff
+  void loadSOS(int numberSets,const CoinSet * sets);
+  
+  /// Load in SOS stuff
+  void loadSOS(int numberSets,const CoinSet ** sets);
+  
+  /// Number of SOS sets
+  inline int numberSets() const
+  { return numberSets_;}
+
+  /// Set information
+  inline CoinSet ** setInformation() const
+  { return set_;}
   //@}
 /**@name Message handling */
 //@{
@@ -577,6 +594,12 @@ protected:
   /// Pointer to dense vector specifying if a variable is continuous
   /// (0) or integer (1).
   char * integerType_;
+  
+  /// Pointer to sets
+  CoinSet ** set_;
+
+  /// Number of sets
+  int numberSets_;
   
   /// Current file name
   char * fileName_;
@@ -707,13 +730,15 @@ protected:
   int is_sense(const char *buff) const;
 
   /// Return an integer indicating if one of the keywords "Bounds", "Integers",
-  /// "Generals", "Binaries", "End", or one
-  /// of their variants has been read.
+  /// "Generals", "Binaries", "Semi-continuous", "Sos", "End", or one
+  /// of their variants has been read. (note Semi-continuous not coded)
   /// Return 1 if buff is the keyword "Bounds" or one of its variants.
   /// Return 2 if buff is the keyword "Integers" or "Generals" or one of their 
   /// variants.
   /// Return 3 if buff is the keyword "Binaries" or one of its variants.
-  /// Return 4 if buff is the keyword "End" or one of its variants.
+  /// Return 4 if buff is the keyword "Semi-continuous" or one of its variants.
+  /// Return 5 if buff is the keyword "Sos" or one of its variants.
+  /// Return 6 if buff is the keyword "End" or one of its variants.
   /// Return 0 otherwise.
   int is_keyword(const char *buff) const;
 

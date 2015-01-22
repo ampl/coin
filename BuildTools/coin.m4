@@ -2,7 +2,7 @@
 # All Rights Reserved.
 # This file is distributed under the Eclipse Public License.
 #
-## $Id: coin.m4 3254 2014-08-25 23:50:58Z tkr $
+## $Id: coin.m4 3339 2015-01-18 08:58:03Z stefan $
 #
 # Author: Andreas Wachter    IBM      2006-04-14
 
@@ -297,7 +297,7 @@ case $build in
       fi ;;
   *-*-solaris*)
   	     comps="CC xlC_r aCC g++ c++ pgCC icpc gpp cxx cc++ cl FCC KCC RCC" ;;
-  *-darwin*) comps="g++ c++ CC" ;;
+  *-darwin*) comps="clang++ g++ c++ CC" ;;
   *-linux-gnu*)
              comps="g++ c++ pgCC icpc gpp cxx cc++ cl FCC KCC RCC xlC_r aCC CC" ;;
           *) comps="xlC_r aCC CC g++ c++ pgCC icpc gpp cxx cc++ cl FCC KCC RCC" ;;
@@ -324,7 +324,7 @@ AC_LANG_POP(C++)
 coin_cxx_is_cl=false
 # It seems that we need to cleanup something here for the Windows
 case "$CXX" in
-  clang* ) ;;
+  clang* | */clang*) ;;
   cl* | */cl* | CL* | */CL* | icl* | */icl* | ICL* | */ICL*)
     sed -e 's/^void exit (int);//' confdefs.h >> confdefs.hh
     mv confdefs.hh confdefs.h
@@ -719,7 +719,7 @@ case $build in
 	       comps="xlc gcc pgcc icc cc"
 	     fi
 	     ;;
-  *-*-darwin*) comps="clang gcc" ;;
+  *-*-darwin*) comps="clang gcc cc" ;;
   *-linux-gnu*) comps="gcc cc pgcc icc xlc" ;;
   *-linux-*) comps="xlc gcc cc pgcc icc" ;;
   *)         comps="xlc_r xlc cc gcc pgcc icc" ;;
@@ -1536,27 +1536,26 @@ if test "x$1" = xforce_shared; then
   fi
   enable_shared=yes;
 else
-  # On Cygwin and AIX, building DLLs doesn't work
   case $build in
     *-cygwin* | *-mingw*)
       coin_disable_shared=yes
       if test x"$enable_shared" = xyes; then
         case "$CC" in
           clang* )
-            AC_MSG_WARN([DLL building not supported. I'm disabling your choice.])
+            AC_MSG_WARN([Building of DLLs not supported in this configuration.])
             ;;
           cl* | */cl* | CL* | */CL* | icl* | */icl* | ICL* | */ICL*)
-            AC_MSG_NOTICE([DLL building not supported, but will build with -MD(d) instead of -MT(d).])
+            AC_MSG_NOTICE([Building of DLLs not supported in this configuration.])
             ;;
           *gcc*)
-	    if test x"$enable_dependency_linking" = xyes; then
+            if test x"$enable_dependency_linking" = xyes; then
               coin_disable_shared=no
             else
-              AC_MSG_WARN([To build shared libraries with gcc on CYGWIN or MSys, use --enable-dependency-linking])
+              AC_MSG_WARN([Dependency linking seems to be disabled, so shared libraries (DLLs) will not be built])
             fi
             ;;
           *)
-            AC_MSG_WARN([DLL building not supported. I'm disabling your choice.])
+            AC_MSG_WARN([Building of DLLs not supported in this configuration.])
             ;;
         esac
       fi
@@ -1565,7 +1564,7 @@ else
       coin_disable_shared=yes
       platform=AIX
       if test x"$enable_shared" = xyes; then
-        AC_MSG_WARN([Shared objects are not supported. I'm disabling your choice.])
+        AC_MSG_WARN([Shared objects are not supported.])
       fi
     ;;
   esac
@@ -1660,14 +1659,40 @@ fi
 
 # AC_MSG_NOTICE([End of INIT_AUTO_TOOLS.])
 
-AC_ARG_ENABLE([dependency-linking],[],
+AC_ARG_ENABLE([dependency-linking],
+  [AC_HELP_STRING([--disable-dependency-linking],
+                  [disable linking library dependencies into shared libraries])],
   [dependency_linking="$enableval"],
-  [dependency_linking=no])
+  [dependency_linking=auto])
 
-# ToDo
-# For now, don't use the -no-undefined flag, since the Makefiles are
-# not yet set up that way.  But we need to fix this, when we want
-# to comile DLLs under Windows.
+if test "$dependency_linking" = auto; then
+  # On Cygwin and AIX, building DLLs doesn't work
+  dependency_linking=no
+  if test x"$enable_shared" = xyes; then
+    case $build in
+      *-cygwin* | *-mingw*)
+        case "$CC" in
+          clang* )
+            dependency_linking=yes
+            ;;
+          cl* | */cl* | CL* | */CL* | icl* | */icl* | ICL* | */ICL*)
+            dependency_linking=no
+            ;;
+          *gcc*)
+            dependency_linking=yes
+            ;;
+          *)
+            dependency_linking=yes
+            ;;
+        esac
+        ;;
+      *)
+        dependency_linking=yes
+        ;;
+    esac
+  fi
+fi
+
 if test "$dependency_linking" = yes ;
 then
   LT_LDFLAGS="-no-undefined"
@@ -3954,9 +3979,9 @@ else
       AC_MSG_CHECKING([for BLAS in Veclib])
       coin_need_flibs=no
       coin_save_LIBS="$LIBS"
-      LIBS="-framework vecLib $LIBS"
+      LIBS="-framework Accelerate $LIBS"
       AC_COIN_TRY_FLINK([daxpy],
-                        [use_blas='-framework vecLib'
+                        [use_blas='-framework Accelerate'
                          if test $coin_need_flibs = yes ; then
                            use_blas="$use_blas $FLIBS"
                          fi

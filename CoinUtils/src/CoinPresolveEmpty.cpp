@@ -1,4 +1,4 @@
-/* $Id: CoinPresolveEmpty.cpp 1607 2013-07-16 09:01:29Z stefan $ */
+/* $Id: CoinPresolveEmpty.cpp 1606 2013-07-15 11:48:47Z forrest $ */
 // Copyright (C) 2002, International Business Machines
 // Corporation and others.  All Rights Reserved.
 // This code is licensed under the terms of the Eclipse Public License (EPL).

@@ -1,4 +1,4 @@
-/* $Id: CoinMessage.cpp 1726 2014-08-05 16:15:35Z tkr $ */
+/* $Id: CoinMessage.cpp 1693 2014-03-21 09:43:12Z forrest $ */
 // Copyright (C) 2002, International Business Machines
 // Corporation and others.  All Rights Reserved.
 // This code is licensed under the terms of the Eclipse Public License (EPL).
@@ -34,7 +34,7 @@ static Coin_message us_english[]=
  which %s is unable to read"},
   {COIN_MPS_EOF,6004,0,"EOF on file %s"},
   {COIN_MPS_RETURNING,6005,0,"Returning as too many errors"},
-  {COIN_MPS_CHANGED,3007,1,"Generated %s names had duplicates - %d changed"},
+  {COIN_MPS_CHANGED,3008,1,"Generated %s names had duplicates - %d changed"},
   {COIN_SOLVER_MPS,8,1,"%s read with %d errors"},
   {COIN_PRESOLVE_COLINFEAS,501,2,"Problem is infeasible due to column %d, %.16g %.16g"},
   {COIN_PRESOLVE_ROWINFEAS,502,2,"Problem is infeasible due to row %d, %.16g %.16g"},

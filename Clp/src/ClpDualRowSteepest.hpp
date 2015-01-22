@@ -1,4 +1,4 @@
-/* $Id: ClpDualRowSteepest.hpp 1665 2011-01-04 17:55:54Z lou $ */
+/* $Id: ClpDualRowSteepest.hpp 2070 2014-11-18 11:12:54Z forrest $ */
 // Copyright (C) 2002, International Business Machines
 // Corporation and others.  All Rights Reserved.
 // This code is licensed under the terms of the Eclipse Public License (EPL).
@@ -54,6 +54,11 @@ public:
          5) for strong branching - initialize (uninitialized) , infeasibilities
      */
      virtual void saveWeights(ClpSimplex * model, int mode);
+     /// Pass in saved weights
+     void passInSavedWeights(const CoinIndexedVector * saved);
+     /// Get saved weights
+     inline CoinIndexedVector * savedWeights()
+     { return savedWeights_;} 
      /// Gets rid of last update
      virtual void unrollWeights();
      /// Gets rid of all arrays
@@ -103,6 +108,10 @@ public:
      /// Mode
      inline int mode() const {
           return mode_;
+     }
+     /// Set mode
+     inline void setMode(int mode) {
+          mode_ = mode;
      }
      /// Set/ get persistence
      inline void setPersistence(Persistence life) {

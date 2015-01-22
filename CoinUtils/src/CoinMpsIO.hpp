@@ -1,4 +1,4 @@
-/* $Id: CoinMpsIO.hpp 1643 2013-10-16 03:43:21Z tkr $ */
+/* $Id: CoinMpsIO.hpp 1642 2013-10-16 00:43:14Z tkr $ */
 // Copyright (C) 2000, International Business Machines
 // Corporation and others.  All Rights Reserved.
 // This code is licensed under the terms of the Eclipse Public License (EPL).

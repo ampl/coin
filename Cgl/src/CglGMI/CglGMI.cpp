@@ -26,6 +26,7 @@
 #include "CoinFactorization.hpp"
 #include "CglGMI.hpp"
 #include "CoinFinite.hpp"
+#include "CoinRational.hpp"
 
 //-------------------------------------------------------------------
 // Generate GMI cuts
@@ -889,9 +890,10 @@ bool CglGMI::scaleCutIntegral(double* cutElem, int* cutIndex, int cutNz,
   long maxdnom = 1000; 
   long numerator = 0, denominator = 0;
   // Initialize gcd and lcm
-  if (nearestRational(cutRhs, maxdelta, maxdnom, numerator, denominator)) {
-    gcd = labs(numerator);
-    lcm = denominator;
+  CoinRational r = CoinRational(cutRhs, maxdelta, maxdnom);
+  if (r.getNumerator() != 0){
+     gcd = labs(r.getNumerator());
+     lcm = r.getDenominator();
   }
   else{
 #if defined GMI_TRACE_CLEAN
@@ -903,9 +905,10 @@ bool CglGMI::scaleCutIntegral(double* cutElem, int* cutIndex, int cutNz,
     if (solver->isContinuous(cutIndex[i]) && !param.getINTEGRAL_SCALE_CONT()) {
       continue;
     }
-    if(nearestRational(cutElem[i], maxdelta, maxdnom, numerator, denominator)) {
-      gcd = computeGcd(gcd,labs(numerator));
-      lcm *= denominator/(computeGcd(lcm,denominator));
+    CoinRational r = CoinRational(cutElem[i], maxdelta, maxdnom);
+    if (r.getNumerator() != 0){
+       gcd = computeGcd(gcd, r.getNumerator());
+       lcm *= r.getDenominator()/(computeGcd(lcm,r.getDenominator()));
     }
     else{
 #if defined GMI_TRACE_CLEAN
@@ -928,137 +931,6 @@ bool CglGMI::scaleCutIntegral(double* cutElem, int* cutIndex, int cutNz,
   cutRhs *= scale;
   return true;
 } /* scaleCutIntegral */
-
-/************************************************************************/
-/* arguments:
- * val = double precision value that must be converted
- * maxdelta = max allowed difference between val and the rational computed
- * maxdnom = max allowed denominator
- * numerator = the numerator will be stored here if successful
- * denominator = the denominator will be stored here if successful
- * returns true if successful, false if not.
- *
- * This function is based on SCIPrealToRational() from SCIP, scip@zib.de.
- * The copyright of SCIP and of this function belongs to ZIB.
- * We explicitly obtained the rights to license this function under GPL 
- * from ZIB. More information can be obtained from the authors.
- *
- * Copyright (C) 2012 Konrad-Zuse-Zentrum                           
- *                    fuer Informationstechnik Berlin
- */
-bool CglGMI::nearestRational(double val, double maxdelta, long maxdnom,
-			      long& numerator, long& denominator)
-{
-
-  /// Denominators that should be tried for the integral scaling phase.
-  /// These values are taken from SCIP.
-  static const double simplednoms[] = {1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0, 
-				       8.0, 9.0, 11.0, 12.0, 13.0, 14.0, 
-				       15.0, 16.0, 17.0, 18.0, 19.0, 25.0, 
-				       -1.0};
-
-  double a, b;
-  double g0, g1, gx;
-  double h0, h1, hx;
-  double delta0, delta1;
-  double epsilon;
-  int i;
-
-  /* try the simple denominators first: each value of the simplednoms table 
-   * multiplied by powers of 10 is tried as denominator
-   */
-  for (i = 0; simplednoms[i] > 0.0; ++i) {
-    double num, dnom;
-    double ratval0, ratval1;
-    double diff;
-    
-    /* try powers of 10 (including 10^0) */
-    dnom = simplednoms[i];
-    while (dnom <= maxdnom) {
-      num = floor(val * dnom);
-      ratval0 = num/dnom;
-      ratval1 = (num+1.0)/dnom;
-      diff = fabs(val - ratval0);
-      if (diff < maxdelta) {
-	numerator = (long)num;
-	denominator = (long)dnom;
-	return true;
-      }
-      diff = fabs(val - ratval1);
-      if (diff < maxdelta) {
-	numerator = (long)(num+1.0);
-	denominator = (long)dnom;
-	return true;
-      }
-      dnom *= 10.0;
-    }
-  }
-
-  /* the simple denominators didn't work: calculate rational
-   * representation with arbitrary denominator */
-  epsilon = maxdelta/2.0;
-
-  b = val;
-  a = floor(b + epsilon);
-  g0 = a;
-  h0 = 1.0;
-  g1 = 1.0;
-  h1 = 0.0;
-  delta0 = val - g0/h0;
-  delta1 = (delta0 < 0.0 ? val - (g0-1.0)/h0 : val - (g0+1.0)/h0);
-  
-  while ((fabs(delta0) > maxdelta) && (fabs(delta1) > maxdelta)) {
-    if ((b-a) < epsilon || h0 < 0 || h1 < 0)
-      return false;
-
-    b = 1.0 / (b - a);
-    a = floor(b + epsilon);
-    
-    if (a < 0.0)
-      return false;
-    gx = g0;
-    hx = h0;
-    
-    g0 = a * g0 + g1;
-    h0 = a * h0 + h1;
-    
-    g1 = gx;
-    h1 = hx;
-    
-    if (h0 > maxdnom)
-      return false;
-    
-    delta0 = val - g0/h0;
-    delta1 = (delta0 < 0.0 ? val - (g0-1.0)/h0 : val - (g0+1.0)/h0);
-  }
-
-  if (fabs(g0) > (LONG_MAX >> 4) || h0 > (LONG_MAX >> 4))
-    return false;
-
-  if (h0 > 0.5)
-    return false;
-
-  if (delta0 < -maxdelta) {
-    if (fabs(delta1) > maxdelta)
-      return false;
-    numerator = (long)(g0 - 1.0);
-    denominator = (long)h0;
-  }
-  else if (delta0 > maxdelta) {
-    if (fabs(delta1) > maxdelta)
-      return false;
-    numerator = (long)(g0 + 1.0);
-    denominator = (long)h0;
-  }
-  else{
-    numerator = (long)g0;
-    denominator = (long)h0;
-  }
-  if ((denominator < 1) || 
-      (fabs(val - (double)(numerator)/(double)(denominator)) > maxdelta))
-    return false;
-  return true;
-} /* nearestRational */
 
 /************************************************************************/
 long CglGMI::computeGcd(long a, long b) {

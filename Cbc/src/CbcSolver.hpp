@@ -1,4 +1,4 @@
-/* $Id: CbcSolver.hpp 2004 2014-01-14 14:50:43Z forrest $ */
+/* $Id: CbcSolver.hpp 1998 2013-12-19 18:11:05Z forrest $ */
 // Copyright (C) 2007, International Business Machines
 // Corporation and others.  All Rights Reserved.
 // This code is licensed under the terms of the Eclipse Public License (EPL).
@@ -234,6 +234,24 @@ private:
     int readMode_;
     //@}
 };
+//#############################################################################
+
+/// Structure to hold useful arrays
+typedef struct {
+    // Priorities
+    int * priorities_;
+    // SOS priorities
+    int * sosPriority_;
+    // Direction to branch first
+    int * branchDirection_;
+    // Input solution
+    double * primalSolution_;
+    // Down pseudo costs
+    double * pseudoDown_;
+    // Up pseudo costs
+    double * pseudoUp_;
+} CbcSolverUsefulData2;
+
 //#############################################################################
 
 /**

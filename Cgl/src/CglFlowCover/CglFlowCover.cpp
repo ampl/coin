@@ -1,4 +1,4 @@
-// $Id: CglFlowCover.cpp 1207 2014-07-13 09:21:59Z forrest $
+// $Id: CglFlowCover.cpp 1217 2014-09-14 00:02:28Z unxusr $
 //-----------------------------------------------------------------------------
 // name:     Cgl Lifted Simple Generalized Flow Cover Cut Generator
 // author:   Yan Xu                email: yan.xu@sas.com
@@ -35,6 +35,9 @@ std::ostream& operator<<( std::ostream& os, const CglFlowVUB &v )
   os << " VAR = " << v.getVar() << "\t VAL = " << v.getVal() << std::endl; 
   return os; 
 }
+
+// Initialize static memeber
+int CglFlowCover::numFlowCuts_ = 0;
 
 //-------------------------------------------------------------------
 // Determine row types. Find the VUBS and VLBS. 
@@ -226,9 +229,11 @@ CglFlowCover::flowPreprocess(const OsiSolverInterface& si)
 void CglFlowCover::generateCuts(const OsiSolverInterface & si, OsiCuts & cs,
 				const CglTreeInfo info)
 {
+  static int count=0;
   if (getMaxNumCuts() <= 0) return;
     
   if (getNumFlowCuts() >= getMaxNumCuts()) return;
+  ++count;
 
 #if 0
   bool preInit = false;
@@ -346,7 +351,6 @@ CglFlowCover::CglFlowCover()
   :
   CglCutGenerator(),
   maxNumCuts_(2000),
-  numFlowCuts_(0),
   EPSILON_(1.0e-6),
   UNDEFINED_(-1),
   INFTY_(1.0e30),
@@ -370,7 +374,6 @@ CglFlowCover::CglFlowCover (const CglFlowCover & source)
   :
   CglCutGenerator(source), 
   maxNumCuts_(source.maxNumCuts_),
-  numFlowCuts_(source.numFlowCuts_),
   EPSILON_(source.EPSILON_),
   UNDEFINED_(source.UNDEFINED_),
   INFTY_(source.INFTY_),
@@ -380,6 +383,7 @@ CglFlowCover::CglFlowCover (const CglFlowCover & source)
   numCols_(source.numCols_),
   doneInitPre_(source.doneInitPre_)
 { 
+  setNumFlowCuts(source.numFlowCuts_);
   if (numCols_ > 0) {
     vubs_ = new CglFlowVUB [numCols_];
     vlbs_ = new CglFlowVLB [numCols_];
@@ -418,13 +422,14 @@ CglFlowCover::operator=(const CglFlowCover& rhs)
   if (this != &rhs) {
     CglCutGenerator::operator=(rhs);
     maxNumCuts_ = rhs.maxNumCuts_;
-    numFlowCuts_ = rhs.numFlowCuts_;
     EPSILON_ = rhs.EPSILON_;
     UNDEFINED_ = rhs.UNDEFINED_;
     INFTY_ = rhs.INFTY_;
     TOLERANCE_ = rhs.TOLERANCE_;
     numRows_ = rhs.numRows_;
     numCols_ = rhs.numCols_;
+    //    numFlowCuts_ = rhs.numFlowCuts_;
+    setNumFlowCuts(rhs.numFlowCuts_);
     doneInitPre_ = rhs.doneInitPre_;
     if (numCols_ > 0) {
       vubs_ = new CglFlowVUB [numCols_];
@@ -481,6 +486,8 @@ CglFlowCover::generateOneFlowCut( const OsiSolverInterface & si,
     
   CglFlowVLB VLB;
   CglFlowVUB VUB;
+  static int count=0;
+  ++count;
   CGLFLOW_DEBUG=false;
   doLift=true;
   // Get integer types
@@ -1175,7 +1182,8 @@ CglFlowCover::generateOneFlowCut( const OsiSolverInterface & si,
 #endif
     cutLen = j;
     // Skip if no elements ? - bug somewhere
-    assert (cutLen);
+    if (cutLen == 0)
+        return false;
         
     // Recheck the violation.
     violation = 0.0;
@@ -1258,7 +1266,7 @@ CglFlowCover::determineOneRowType(const OsiSolverInterface& si,
     return CGLFLOW_ROW_UNDEFINED;
   if (sense == 'R')
     return CGLFLOW_ROW_UNINTERSTED; // Could be fixed
-
+    
   CglFlowRowType rowType = CGLFLOW_ROW_UNDEFINED;
   // Get integer types
   const char * columnType = si.getColType ();

@@ -2,7 +2,7 @@
 # All Rights Reserved.
 # This file is distributed under the Eclipse Public License.
 
-## $Id: configure.ac 2058 2014-08-28 01:09:24Z tkr $
+## $Id: configure.ac 2096 2015-01-18 23:59:15Z tkr $
 
 # Author:  Andreas Waechter            IBM    2006-04-13
 
@@ -12,7 +12,7 @@
 
 AC_PREREQ(2.59)
 
-AC_INIT([Clp],[1.15.10],[clp@list.coin-or.org])
+AC_INIT([Clp],[1.16.0],[clp@list.coin-or.org])
 
 AC_COPYRIGHT([
 Copyright 2006 International Business Machines and others.
@@ -41,7 +41,7 @@ AC_CANONICAL_BUILD
 # the source root directory contains definition of where to find those
 # externals.  The following macro ensures that those externals are
 # retrieved by svn if they are not there yet.
-AC_COIN_PROJECTDIR_INIT(Clp,13:10:12)
+AC_COIN_PROJECTDIR_INIT(Clp,14:0:13)
 
 # Check if user wants to produce debugging code
 AC_COIN_DEBUG_COMPILE(Clp)
@@ -160,6 +160,8 @@ AM_CONDITIONAL(COIN_HAS_WSMP, [test "$use_wsmp" != no])
 #############################################################################
 #                             Other dependencies                            #
 #############################################################################
+# Ampl Solver library
+AC_COIN_CHECK_PACKAGE(ASL, [coinasl], [ClpLib])
 
 AC_COIN_CHECK_GNU_READLINE(ClpLib)
 

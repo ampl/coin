@@ -1,4 +1,4 @@
-/* $Id: ClpSimplexOther.cpp 2029 2014-04-14 16:21:34Z forrest $ */
+/* $Id: ClpSimplexOther.cpp 2074 2014-12-10 09:43:54Z forrest $ */
 // Copyright (C) 2004, International Business Machines
 // Corporation and others.  All Rights Reserved.
 // This code is licensed under the terms of the Eclipse Public License (EPL).
@@ -716,6 +716,17 @@ ClpSimplexOther::writeBasis(const char *filename,
                     // Dummy row name if values
                     if (writeValues)
                          fprintf(fp, "      _dummy_");
+               } else if( (getColumnStatus(iColumn) == ClpSimplex::superBasic||
+			   getColumnStatus(iColumn) == ClpSimplex::isFree)&&
+			  writeValues) {
+                    printit = true;
+                    if (lengthNames_)
+                         fprintf(fp, " BS %s", columnNames_[iColumn].c_str());
+                    else
+                         fprintf(fp, " BS C%7.7d", iColumn);
+                    // Dummy row name if values
+                    if (writeValues)
+                         fprintf(fp, "      _dummy_");
                }
           }
           if (printit && writeValues) {
@@ -1100,7 +1111,8 @@ ClpSimplexOther::restoreFromDual(const ClpSimplex * dualProblem,
                               setColumnStatus(iColumn, isFixed);
                          columnActivity_[iColumn] = columnUpper_[iColumn];
                     } else {
-                         abort();
+			 setColumnStatus(iColumn, superBasic);
+                         columnActivity_[iColumn] = otherValue;
                     }
                }
           } else {
@@ -1143,7 +1155,8 @@ ClpSimplexOther::restoreFromDual(const ClpSimplex * dualProblem,
                                    setColumnStatus(iColumn, isFixed);
                               columnActivity_[iColumn] = columnUpper_[iColumn];
                          } else {
-                              abort();
+			      setColumnStatus(iColumn, superBasic);
+			      columnActivity_[iColumn] = otherValue;
                          }
                     }
                }
@@ -1268,6 +1281,104 @@ ClpSimplexOther::restoreFromDual(const ClpSimplex * dualProblem,
      }
 #endif
      return returnCode;
+}
+/* Sets solution in dualized problem
+   non-zero return code indicates minor problems
+*/
+int 
+ClpSimplexOther::setInDual(ClpSimplex * dualProblem)
+{
+  // Number of rows in dual problem was original number of columns
+  assert (numberColumns_ == dualProblem->numberRows());
+  // out If slack on d-row basic then column at bound otherwise column basic
+  // out If d-column basic then rhs tight
+  // if column at bound then slack on d-row basic
+  // if column basic then slack on d-row at bound
+  // if rhs non-basic then d-column basic
+  // if rhs basic then d-column ? 
+  int numberBasic = 0;
+  int iRow, iColumn = 0;
+  //int numberExtraRows = dualProblem->numberColumns()-numberRows_;
+  //const double * objective = this->objective();
+  //double * dualDual = dualProblem->dualRowSolution();
+  //double * dualDj = dualProblem->dualColumnSolution();
+  double * dualSol = dualProblem->primalColumnSolution();
+  //double * dualActs = dualProblem->primalRowSolution();
+  const double * lower = dualProblem->columnLower();
+  const double * upper = dualProblem->columnUpper();
+  // position at bound information
+  int jColumn = numberRows_;
+  for (iColumn = 0; iColumn < numberColumns_; iColumn++) {
+    Status status = getColumnStatus(iColumn);
+    Status statusD = dualProblem->getRowStatus(iColumn);
+    Status statusDJ = dualProblem->getColumnStatus(jColumn);
+    if (status==atLowerBound||
+	status==isFixed||
+	status==atUpperBound) {
+      dualProblem->setRowStatus(iColumn,basic);
+      numberBasic++;
+      if (columnUpper_[iColumn] < 1.0e20 &&
+	  columnLower_[iColumn] > -1.0e20) {
+	bool mainLower =(fabs(columnLower_[iColumn]) < fabs(columnUpper_[iColumn]));
+	// fix this
+	if (mainLower) {
+	  if (status==atUpperBound) {
+	    dualProblem->setColumnStatus(jColumn,atUpperBound);
+	  } else {
+	    dualProblem->setColumnStatus(jColumn,atUpperBound);
+	  }
+	} else {
+	  if (status==atUpperBound) {
+	    dualProblem->setColumnStatus(jColumn,atLowerBound);
+	  } else {
+	    dualProblem->setColumnStatus(jColumn,atLowerBound);
+	  }
+	}
+	assert(statusDJ == dualProblem->getColumnStatus(jColumn));
+	jColumn++;
+      }
+    } else if (status==isFree) {
+      dualProblem->setRowStatus(iColumn,basic);
+      numberBasic++;
+    } else {
+      assert (status==basic);
+      //numberBasic++;
+    }
+    assert(statusD == dualProblem->getRowStatus(iColumn));
+  }
+  // now rows (no ranges at first)
+  for (iRow = 0; iRow < numberRows_; iRow++) {
+    Status status = getRowStatus(iRow);
+    Status statusD = dualProblem->getColumnStatus(iRow);
+    if (status == basic) {
+      // dual variable is at bound
+      if (!lower[iRow]) {
+	dualProblem->setColumnStatus(iRow,atLowerBound);
+      } else if (!upper[iRow]) {
+	dualProblem->setColumnStatus(iRow,atUpperBound);
+      } else {
+	dualProblem->setColumnStatus(iRow,isFree);
+	dualSol[iRow]=0.0;
+      }
+    } else {
+      // dual variable is basic
+      dualProblem->setColumnStatus(iRow,basic);
+      numberBasic++;
+    }
+    if (rowLower_[iRow] < -1.0e20 &&
+	rowUpper_[iRow] > 1.0e20) {
+      if (rowUpper_[iRow] != rowLower_[iRow]) {
+	printf("can't handle ranges yet\n");
+	abort();
+      }
+    }
+    assert(statusD == dualProblem->getColumnStatus(iRow));
+  }
+  if (numberBasic != numberColumns_) {
+    printf("Bad basis - ranges - coding needed ??\n");
+    abort();
+  }
+  return 0;
 }
 /* Does very cursory presolve.
    rhs is numberRows, whichRows is 3*numberRows and whichColumns is 2*numberColumns
@@ -1547,6 +1658,13 @@ ClpSimplexOther::crunch(double * rhs, int * whichRow, int * whichColumn,
                     } else {
                          up[iRow] = CoinMax(upper - rowLower2[iRow], 0.0) + tolerance;
                     }
+		    // tighten row bounds
+		    if (lower>-1.0e10)
+		      rowLower2[iRow] = CoinMax(rowLower2[iRow],
+						lower - 1.0e-6*(1.0+fabs(lower))); 
+		    if (upper<1.0e10)
+		      rowUpper2[iRow] = CoinMin(rowUpper2[iRow],
+						upper + 1.0e-6*(1.0+fabs(upper))); 
                }
                if (!feasible) {
                     delete small;
@@ -2860,7 +2978,7 @@ ClpSimplexOther::parametrics(double startingTheta, double & endingTheta,
   // save data
   ClpDataSave data = saveData();
   int numberTotal = numberRows_ + numberColumns_;
-  int ratio = (2*sizeof(int))/sizeof(double);
+  int ratio = static_cast<int>((2*sizeof(int))/sizeof(double));
   assert (ratio==1||ratio==2);
   // allow for unscaled - even if not needed
   int lengthArrays = 4*numberTotal+(3*numberTotal+2)*ratio+2*numberRows_+1;
@@ -10442,4 +10560,17 @@ ClpSimplex::miniPostsolve(const ClpSimplex * presolvedModel, void * infoIn)
   delete infoX;
   delete [] infoA;
   delete [] rowLowerX;
+}
+// mini presolve and solve
+void 
+ClpSimplex::miniSolve(char * rowType, char *columnType,int algorithm, int startUp)
+{
+  listInfo * info = NULL;
+  ClpSimplex * small2 = miniPresolve(rowType,columnType,reinterpret_cast<void **>(&info));
+  if (algorithm<0)
+    small2->dual(startUp);
+  else 
+    small2->primal(startUp);
+  miniPostsolve(small2,info);
+  delete info;
 }

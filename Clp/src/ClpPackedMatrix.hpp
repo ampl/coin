@@ -1,4 +1,4 @@
-/* $Id: ClpPackedMatrix.hpp 1836 2011-12-15 20:22:39Z lou $ */
+/* $Id: ClpPackedMatrix.hpp 2078 2015-01-05 12:39:49Z forrest $ */
 // Copyright (C) 2002, International Business Machines
 // Corporation and others.  All Rights Reserved.
 // This code is licensed under the terms of the Eclipse Public License (EPL).
@@ -9,15 +9,6 @@
 #include "CoinPragma.hpp"
 
 #include "ClpMatrixBase.hpp"
-
-// Compilers can produce better code if they know about __restrict
-#ifndef COIN_RESTRICT
-#ifdef COIN_USE_RESTRICT
-#define COIN_RESTRICT __restrict
-#else
-#define COIN_RESTRICT
-#endif
-#endif
 
 /** This implements CoinPackedMatrix as derived from ClpMatrixBase.
 

@@ -1,4 +1,4 @@
-/* $Id: CbcNode.hpp 1573 2011-01-05 01:12:36Z lou $ */
+/* $Id: CbcNode.hpp 1957 2013-08-27 15:19:55Z forrest $ */
 // Copyright (C) 2002, International Business Machines
 // Corporation and others.  All Rights Reserved.
 // This code is licensed under the terms of the Eclipse Public License (EPL).
@@ -307,6 +307,12 @@ public:
         if (yesNo) state_ |= 2;
         else state_ &= ~2;
     }
+    /// Get state (really for debug)
+    inline int getState() const
+    { return state_;}
+    /// Set state (really for debug)
+    inline void setState(int value)
+    { state_ = value;}
     /// Print
     void print() const;
     /// Debug

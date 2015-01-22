@@ -1564,6 +1564,13 @@ public:
 
   /**@name Miscellaneous */
   //@{
+  /** Check two models against each other.  Return nonzero if different.
+      Ignore names if that set.
+      (Note initial version does not check names)
+      May modify both models by cleaning up
+  */
+  int differentModel(OsiSolverInterface & other, 
+		     bool ignoreNames=true);
 #ifdef COIN_SNAPSHOT
   /// Return a CoinSnapshot
   virtual CoinSnapshot * snapshot(bool createArrays=true) const;

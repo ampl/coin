@@ -1,4 +1,4 @@
-/* $Id: ClpPresolve.hpp 1928 2013-04-06 12:54:16Z stefan $ */
+/* $Id: ClpPresolve.hpp 2074 2014-12-10 09:43:54Z forrest $ */
 // Copyright (C) 2002, International Business Machines
 // Corporation and others.  All Rights Reserved.
 // This code is licensed under the terms of the Eclipse Public License (EPL).
@@ -174,6 +174,23 @@ public:
      inline void setDoTwoxtwo(bool doTwoxTwo) {
           if (!doTwoxTwo) presolveActions_  &= ~2048;
           else presolveActions_ |= 2048;
+     }
+     /// Whether we want to allow duplicate intersections
+     inline bool doIntersection() const {
+          return (presolveActions_ & 4096) != 0;
+     }
+     inline void setDoIntersection(bool doIntersection) {
+          if (doIntersection) presolveActions_  &= ~4096;
+          else presolveActions_ |= 4096;
+     }
+     /** How much we want to zero small values from aggregation - ratio
+	 0 - 1.0e-12, 1 1.0e-11, 2 1.0e-10, 3 1.0e-9 */
+     inline int zeroSmall() const {
+          return (presolveActions_&(8192|16384))>>13;
+     }
+     inline void setZeroSmall(int value) {
+         presolveActions_  &= ~(8192|16384);
+	 presolveActions_ |= value<<13;
      }
      /// Set whole group
      inline int presolveActions() const {

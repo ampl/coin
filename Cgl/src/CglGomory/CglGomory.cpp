@@ -555,10 +555,14 @@ CglGomory::generateCuts(
 #else
   double relaxation = factorization.conditionNumber();
 #endif
+  // if very small be a bit more careful
+  if (relaxation<1.0e-10)
+    relaxation=1.0/sqrt(relaxation);
 #ifdef COIN_DEVELOP_z
   if (relaxation>1.0e49)
     printf("condition %g\n",relaxation);
 #endif
+  //printf("condition %g %g\n",relaxation,conditionNumberMultiplier_);
   relaxation *= conditionNumberMultiplier_;
   double bounds[2]={-COIN_DBL_MAX,0.0};
   int iColumn,iRow;
@@ -879,6 +883,8 @@ CglGomory::generateCuts(
 	// adjustment to rhs
 	double rhs=0.0;
 	int number=0;
+	// number of terms (so includes modifications and cancellations)
+	int numberCoefficients=0;
 #ifdef CGL_DEBUG_GOMORY
 	    if (!gomory_try)
 	      printf("start for basic column %d\n",iColumn);
@@ -951,6 +957,7 @@ CglGomory::generateCuts(
 	      }
 	      if (fabs(coefficient)>= COIN_INDEXED_TINY_ELEMENT) {
 		cutElement[j] = coefficient;
+		numberCoefficients++;
 		cutIndex[number++]=j;
 		// If too many - break from loop
 		if (number>limit) 
@@ -1015,7 +1022,11 @@ CglGomory::generateCuts(
 		 k<rowStart[iRow]+rowLength[iRow];k++) {
 	      int jColumn=column[k];
 	      double value=rowElements[k];
+	      double oldValue=cutElement[jColumn];
 	      cutVector.quickAdd(jColumn,-coefficient*value);
+	      numberCoefficients++;
+	      if (!intVar[jColumn]&&!oldValue) 
+		numberNonInteger++;
 	    }
 	  }
 	}
@@ -1025,13 +1036,22 @@ CglGomory::generateCuts(
 	double sum=0.0;
 	rhs = - rhs;
 	int n = cutVector.getNumElements();
+	// If too many - just clear vector and skip
+	if (n>limit) {
+	  cutVector.clear();
+	  continue;
+	}
 #if MORE_GOMORY_CUTS==1||MORE_GOMORY_CUTS==3
 	double violation2=violation;
 #endif
 	number=0;
+	double sumCoefficients=0.0;
 	for (j=0;j<n;j++) {
 	  int jColumn =cutIndex[j];
 	  double value=-cutElement[jColumn];
+	  sumCoefficients += fabs(value);
+	  if (fabs(colsol[jColumn])>10.0)
+	    sumCoefficients += 2.0*fabs(value);
 	  cutElement[jColumn]=0.0;
 	  if (fabs(value)>1.0e-8) {
 	    sum+=value*colsol[jColumn];
@@ -1219,11 +1239,33 @@ CglGomory::generateCuts(
 	    CoinFillN(cutElement,number+1,0.0);
 	  } else {
 	    // relax rhs a tiny bit
+	    //#define CGL_GOMORY_OLD_RELAX
+#ifndef CGL_GOMORY_OLD_RELAX
+#if 0
+	    double rhs2=rhs;
+	    rhs2 += 1.0e-8;
+	    // relax if lots of elements for mixed gomory
+	    if (number>=20) {
+	      rhs2  += 1.0e-7*(static_cast<double> (number/20));
+	    }
+#endif
+	    rhs += 1.0e-7;
+	    if (numberCoefficients>=10||true) {
+	      rhs  += 1.0e-7*sumCoefficients+1.0e-8*numberCoefficients;
+	    }
+#if 0
+	    if (numberCoefficients>number*3)
+	    printf("old rhs %.18g new %.18g - n,nNon,nC,sumC %d,%d,%d %g\n",
+		   rhs2,rhs,number,numberNonInteger,numberCoefficients,
+		   sumCoefficients);
+#endif
+#else
 	    rhs += 1.0e-8;
 	    // relax if lots of elements for mixed gomory
 	    if (number>=20) {
 	      rhs  += 1.0e-7*(static_cast<double> (number/20));
 	    }
+#endif
 	  }
 	  // Take off tiny elements
 	  // for first pass reject
@@ -1254,6 +1296,7 @@ CglGomory::generateCuts(
 	      } else {
 		int iColumn = cutIndex[i];
 		if (colUpper[iColumn]!=colLower[iColumn]||globalCuts) {
+		  value=fabs(value);
 		  largest=CoinMax(largest,value);
 		  smallest=CoinMin(smallest,value);
 		  cutIndex[number]=cutIndex[i];
@@ -1274,6 +1317,71 @@ CglGomory::generateCuts(
 #endif
 #if MORE_GOMORY_CUTS==1||MORE_GOMORY_CUTS==3
 	      accurate=false;
+#endif
+	    } else {
+#define TRY7 2
+#define PRINT_NUMBER 0
+#if PRINT_NUMBER
+	      if (number==PRINT_NUMBER) {
+		printf("==========\n<= %.18g ",rhs);
+		for (int i=0;i<PRINT_NUMBER;i++)
+		  printf("%.18g ",packed[i]);
+		printf("\n");
+	      }
+#endif
+	      if (number>limit)  
+		continue;
+#if TRY7==1
+	      // Just scale
+	      double multiplier = 1.0/sqrt(largest*smallest);
+	      for (int i=0;i<number;i++)
+		packed[i] *= multiplier;
+	      rhs *= multiplier;
+	      if (number==PRINT_NUMBER) {
+		printf("multiplier %g %g %g\n",
+		       multiplier,smallest,largest);
+	      }
+#elif TRY7==2
+	      // Look at ratio
+	      double scaleFactor=fabs(rhs);
+	      for (int i=0;i<number;i++) {
+		double value=packed[i];
+		double ratio = fabs(rhs/value);
+		double nearest=floor(ratio+0.5);
+		if (fabs(ratio-nearest)<1.0e-6 && nearest >= 1.0) {
+		  int iColumn=cutIndex[i];
+		  if (intVar[iColumn]) {
+		    if (colLower[iColumn]>=0.0) {
+		      if (value>0.0) {
+			// better if smaller
+			if (ratio>nearest) {
+			  packed[i]=scaleFactor/nearest;
+			}			  
+		      } else {
+			// better if larger
+			if (ratio<nearest) {
+			  packed[i]=-scaleFactor/nearest;
+			}			  
+		      }
+		      //if (value!=packed[i])
+		      //printf("column %d rhs %.18g element %g ratio %.18g - new element %.18g\n",
+		      //       iColumn,rhs,value,ratio,packed[i]);
+		      //assert (fabs(value-packed[i])<1.0e-4);
+		    } else {
+		      printf("column %d rhs %g element %g ratio %.18g - bounds %g,%g\n",
+			     iColumn,rhs,value,ratio,colLower[iColumn],colUpper[iColumn]);
+		    }
+		  }
+		}
+	      }
+#endif
+#if PRINT_NUMBER
+	      if (number==PRINT_NUMBER) {
+		printf("after %.18g ",rhs);
+		for (int i=0;i<PRINT_NUMBER;i++)
+		  printf("%.18g ",packed[i]);
+		printf("\n");
+	      }
 #endif
 	    }
 	  }

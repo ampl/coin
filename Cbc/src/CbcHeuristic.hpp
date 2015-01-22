@@ -1,4 +1,4 @@
-/* $Id: CbcHeuristic.hpp 1883 2013-04-06 13:33:15Z stefan $ */
+/* $Id: CbcHeuristic.hpp 2094 2014-11-18 11:15:36Z forrest $ */
 // Copyright (C) 2002, International Business Machines
 // Corporation and others.  All Rights Reserved.
 // This code is licensed under the terms of the Eclipse Public License (EPL).
@@ -169,6 +169,7 @@ public:
                 try keep halving distance to known cutoff
         16 bit - needs new solution to run
         1024 bit - stop all heuristics on max time
+	65536 bit and above used for temporary communication
     */
     inline int switches() const {
         return switches_;
@@ -331,7 +332,7 @@ protected:
     std::string heuristicName_;
 
     /// How often to do (code can change)
-    int howOften_;
+    mutable int howOften_;
     /// How much to increase how often
     double decayFactor_;
     /** Switches (does not apply equally to all heuristics)
@@ -458,6 +459,15 @@ public:
     void setSeed(int value) {
         seed_ = value;
     }
+    /** Check whether the heuristic should run at all
+        0 - before cuts at root node (or from doHeuristics)
+        1 - during cuts at root
+        2 - after root node cuts
+        3 - after cuts at other nodes
+        4 - during cuts at other nodes
+            8 added if previous heuristic in loop found solution
+    */
+    virtual bool shouldHeurRun(int whereFrom);
 
 protected:
     // Data

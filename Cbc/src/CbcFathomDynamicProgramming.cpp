@@ -1,5 +1,5 @@
 /*
-  $Id: CbcFathomDynamicProgramming.cpp 1888 2013-04-06 20:52:59Z stefan $
+  $Id: CbcFathomDynamicProgramming.cpp 1886 2013-04-06 18:13:35Z stefan $
 */
 // Copyright (C) 2004, International Business Machines
 // Corporation and others.  All Rights Reserved.

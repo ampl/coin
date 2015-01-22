@@ -1,4 +1,4 @@
-/* $Id: CbcFathom.hpp 1902 2013-04-10 16:58:16Z stefan $ */
+/* $Id: CbcFathom.hpp 1889 2013-04-07 13:46:46Z stefan $ */
 // Copyright (C) 2004, International Business Machines
 // Corporation and others.  All Rights Reserved.
 // This code is licensed under the terms of the Eclipse Public License (EPL).

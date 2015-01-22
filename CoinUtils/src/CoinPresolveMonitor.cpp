@@ -1,4 +1,4 @@
-/* $Id: CoinPresolveMonitor.cpp 1585 2013-04-06 20:42:02Z stefan $ */
+/* $Id: CoinPresolveMonitor.cpp 1582 2013-04-06 14:33:07Z stefan $ */
 // Copyright (C) 2011 Lou Hafer
 // This code is licensed under the terms of the Eclipse Public License (EPL).
 

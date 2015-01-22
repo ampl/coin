@@ -1,4 +1,4 @@
-/* $Id: ClpDualRowPivot.hpp 1732 2011-05-31 08:09:41Z forrest $ */
+/* $Id: ClpDualRowPivot.hpp 2070 2014-11-18 11:12:54Z forrest $ */
 // Copyright (C) 2002, International Business Machines
 // Corporation and others.  All Rights Reserved.
 // This code is licensed under the terms of the Eclipse Public License (EPL).
@@ -54,7 +54,9 @@ public:
          3) after something happened but no factorization
             (e.g. check for infeasible)
          4) as 2 but restore weights from previous snapshot
-         5) for strong branching - initialize  , infeasibilities
+         5) for strong branching - initialize to 1 , infeasibilities
+	 6) scale back
+         7) for strong branching - initialize full weights , infeasibilities
      */
      virtual void saveWeights(ClpSimplex * model, int mode);
      /// checks accuracy and may re-initialize (may be empty)

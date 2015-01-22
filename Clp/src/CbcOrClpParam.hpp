@@ -1,5 +1,5 @@
 
-/* $Id: CbcOrClpParam.hpp 1928 2013-04-06 12:54:16Z stefan $ */
+/* $Id: CbcOrClpParam.hpp 2070 2014-11-18 11:12:54Z forrest $ */
 // Copyright (C) 2002, International Business Machines
 // Corporation and others.  All Rights Reserved.
 // This code is licensed under the terms of the Eclipse Public License (EPL).
@@ -102,6 +102,7 @@ enum CbcOrClpParameterType
      CLP_PARAM_INT_USESOLUTION,
      CLP_PARAM_INT_RANDOMSEED,
      CLP_PARAM_INT_MORESPECIALOPTIONS,
+     CLP_PARAM_INT_DECOMPOSE_BLOCKS,
 
      CBC_PARAM_INT_STRONGBRANCHING = 151,
      CBC_PARAM_INT_CUTDEPTH,
@@ -127,6 +128,7 @@ enum CbcOrClpParameterType
      CBC_PARAM_INT_DENSE,
      CBC_PARAM_INT_EXPERIMENT,
      CBC_PARAM_INT_DIVEOPT,
+     CBC_PARAM_INT_DIVEOPTSOLVES,
      CBC_PARAM_INT_STRATEGY,
      CBC_PARAM_INT_SMALLFACT,
      CBC_PARAM_INT_HOPTIONS,
@@ -141,6 +143,7 @@ enum CbcOrClpParameterType
      CBC_PARAM_INT_STRONG_STRATEGY,
      CBC_PARAM_INT_EXTRA_VARIABLES,
      CBC_PARAM_INT_MAX_SLOW_CUTS,
+     CBC_PARAM_INT_MOREMOREMIPOPTIONS,
 
      CLP_PARAM_STR_DIRECTION = 201,
      CLP_PARAM_STR_DUALPIVOT,
@@ -215,6 +218,8 @@ enum CbcOrClpParameterType
      CBC_PARAM_STR_REDSPLIT2CUTS,
      CBC_PARAM_STR_GMICUTS,
      CBC_PARAM_STR_CUTOFF_CONSTRAINT,
+     CBC_PARAM_STR_DW,
+     CBC_PARAM_STR_ORBITAL,
 
      CLP_PARAM_ACTION_DIRECTORY = 301,
      CLP_PARAM_ACTION_DIRSAMPLE,
@@ -265,8 +270,9 @@ enum CbcOrClpParameterType
      CLP_PARAM_ACTION_ENVIRONMENT,
      CLP_PARAM_ACTION_PARAMETRICS,
      CLP_PARAM_ACTION_GMPL_SOLUTION,
+     CLP_PARAM_ACTION_RESTORESOL,
 
-     CBC_PARAM_ACTION_BAB = 351,
+     CBC_PARAM_ACTION_BAB = 361,
      CBC_PARAM_ACTION_MIPLIB,
      CBC_PARAM_ACTION_STRENGTHEN,
      CBC_PARAM_ACTION_PRIORITYIN,
@@ -379,17 +385,26 @@ public:
      const char * setCurrentOptionWithMessage ( int value );
      /// Sets current parameter option using string
      void setCurrentOption (const std::string value );
+     /// Sets current parameter option using string with message
+     const char * setCurrentOptionWithMessage (const std::string value );
      /// Returns current parameter option position
-     inline int currentOptionAsInteger (  ) const {
-          return currentKeyWord_;
-     }
+     int currentOptionAsInteger (  ) const ;
+     /** Returns current parameter option position
+	 but if fake keyword returns a fake value and sets
+	 fakeInteger to true value.  If not fake then fakeInteger is -COIN_INT_MAX
+      */
+     int currentOptionAsInteger ( int & fakeInteger ) const;
      /// Sets int value
      void setIntValue ( int value );
+     /// Sets int value with message
+     const char * setIntValueWithMessage ( int value );
      inline int intValue () const {
           return intValue_;
      }
      /// Sets double value
      void setDoubleValue ( double value );
+     /// Sets double value with message
+     const char * setDoubleValueWithMessage ( double value );
      inline double doubleValue () const {
           return doubleValue_;
      }
@@ -424,6 +439,14 @@ public:
      inline int whereUsed() const {
           return whereUsed_;
      }
+     /// Gets value of fake keyword
+     inline int fakeKeyWord() const
+     { return fakeKeyWord_;}
+     /// Sets value of fake keyword 
+     inline void setFakeKeyWord(int value, int fakeValue)
+     { fakeKeyWord_ = value; fakeValue_ = fakeValue;}
+     /// Sets value of fake keyword to current size of keywords 
+     void setFakeKeyWord(int fakeValue);
 
 private:
      /// gutsOfConstructor
@@ -474,6 +497,13 @@ private:
          4 - used by ampl
      */
      int whereUsed_;
+     /** If >=0 then integers allowed as a fake keyword
+	 So minusnnnn would got to -nnnn in currentKeyword_
+	 and plusnnnn would go to fakeKeyword_+nnnn
+     */
+     int fakeKeyWord_;
+     /// Return this as main value if an integer
+     int fakeValue_;
      //@}
 };
 /// Simple read stuff
@@ -495,6 +525,7 @@ void establishParams (int &numberParameters, CbcOrClpParam *const parameters);
 // Given a parameter type - returns its number in list
 int whichParam (CbcOrClpParameterType name,
                 int numberParameters, CbcOrClpParam *const parameters);
-// Dump a solution to file
+// Dump/restore a solution to file
 void saveSolution(const ClpSimplex * lpSolver, std::string fileName);
+void restoreSolution(ClpSimplex * lpSolver, std::string fileName, int mode);
 #endif	/* CbcOrClpParam_H */

@@ -1,4 +1,4 @@
-/* $Id: ClpCholeskyBase.cpp 1878 2012-08-30 15:43:19Z forrest $ */
+/* $Id: ClpCholeskyBase.cpp 2030 2014-04-15 15:54:11Z forrest $ */
 // Copyright (C) 2002, International Business Machines
 // Corporation and others.  All Rights Reserved.
 // This code is licensed under the terms of the Eclipse Public License (EPL).
@@ -195,7 +195,6 @@ ClpCholeskyBase::operator=(const ClpCholeskyBase& rhs)
           link_ = ClpCopyOfArray(rhs.link_, numberRows_);
           workInteger_ = ClpCopyOfArray(rhs.workInteger_, numberRows_);
           clique_ = ClpCopyOfArray(rhs.clique_, numberRows_);
-          delete rowCopy_;
           rowCopy_ = rhs.rowCopy_->clone();
           whichDense_ = NULL;
           denseColumn_ = NULL;
@@ -640,8 +639,8 @@ ClpCholeskyBase::order(ClpInterior * model)
      model_ = model;
 #define BASE_ORDER 2
 #if BASE_ORDER>0
-     if (!doKKT_ && model_->numberRows() > 6) {
-          if (preOrder(false, true, false))
+     if (model_->numberRows() > 6 ) {
+          if (preOrder(doKKT_, true, doKKT_))
                return -1;
           //rowsDropped_ = new char [numberRows_];
           numberRowsDropped_ = 0;

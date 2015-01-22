@@ -1,4 +1,4 @@
-/* $Id: unitTestClp.cpp 1985 2013-11-25 15:50:40Z tkr $ */
+/* $Id: unitTestClp.cpp 2105 2015-01-05 13:11:11Z forrest $ */
 // Copyright (C) 2002, International Business Machines
 // Corporation and others.  All Rights Reserved.
 // This code is licensed under the terms of the Eclipse Public License (EPL).
@@ -200,6 +200,7 @@ int CbcClpUnitTest (const CbcModel &saveModel, const std::string &dirMiplib,
   Load up the problem vector. Note that the row counts here include the
   objective function.
 */
+#if 1
     PUSH_MPS("10teams", 230, 2025, 924, 917, 1, false);
     PUSH_MPS("air03", 124, 10757, 340160, 338864.25, 0, false);
     PUSH_MPS("air04", 823, 8904, 56137, 55535.436, 2, false);
@@ -263,6 +264,7 @@ int CbcClpUnitTest (const CbcModel &saveModel, const std::string &dirMiplib,
     PUSH_MPS("stein45", 331, 45, 30, 22.0, 1, false);
     PUSH_MPS("swath", 884, 6805, 497.603, 334.4968581, 7, false);
     PUSH_MPS("vpm1", 234, 378, 20, 15.4167, 0, false);
+#endif
     PUSH_MPS("vpm2", 234, 378, 13.75, 9.8892645972, 0, false);
   }
 #undef PUSH_MPS
@@ -580,14 +582,21 @@ int CbcClpUnitTest (const CbcModel &saveModel, const std::string &dirMiplib,
       }
 #     endif
       if (stuff && stuff[8] >= 1) {
+	printf("Fast node size Columns %d rows %d - depth %d\n",
+	       modelC->numberColumns(),modelC->numberRows(),
+	       model->fastNodeDepth());
 	  if (modelC->numberColumns() + modelC->numberRows() <= 10000 &&
 		  model->fastNodeDepth() == -1)
-	      model->setFastNodeDepth(-9);
+	    model->setFastNodeDepth(-10/*-9*/);
       }
     }
-    //OsiObject * obj = new CbcBranchToFixLots(model,0.3,0.0,3,3000003);
-    //model->addObjects(1,&obj);
-    //delete obj;
+#ifdef CONFLICT_CUTS
+    {
+      model->setCutoffAsConstraint(true);
+      int moreOptions=model->moreSpecialOptions();
+      model->setMoreSpecialOptions(moreOptions|4194304);
+    }
+#endif
 /*
   Finally, the actual call to solve the MIP with branch-and-cut.
 */

@@ -1,4 +1,4 @@
-/* $Id: ClpPrimalColumnSteepest.cpp 1955 2013-05-14 10:10:07Z forrest $ */
+/* $Id: ClpPrimalColumnSteepest.cpp 2074 2014-12-10 09:43:54Z forrest $ */
 // Copyright (C) 2002, International Business Machines
 // Corporation and others.  All Rights Reserved.
 // This code is licensed under the terms of the Eclipse Public License (EPL).
@@ -511,7 +511,7 @@ ClpPrimalColumnSteepest::pivotColumn(CoinIndexedVector * updates,
           infeas[sequenceOut] = 0.0;
      }
      if (model_->factorization()->pivots() && model_->numberPrimalInfeasibilities())
-          tolerance = CoinMax(tolerance, 1.0e-10 * model_->infeasibilityCost());
+          tolerance = CoinMax(tolerance, 1.0e-15 * model_->infeasibilityCost());
      tolerance *= tolerance; // as we are using squares
 
      int iPass;
@@ -2871,6 +2871,16 @@ void
 ClpPrimalColumnSteepest::saveWeights(ClpSimplex * model, int mode)
 {
      model_ = model;
+     if (mode==6) {
+       // If incoming weight is 1.0 then return else as 5
+       assert (weights_);
+       int sequenceIn = model_->sequenceIn();
+       assert (sequenceIn>=0&&sequenceIn<model_->numberRows()+model_->numberColumns());
+       if (weights_[sequenceIn]==(mode_!=1) ? 1.0 : 1.0+ADD_ONE)
+	 return;
+       else
+	 mode=5;
+     }
      if (mode_ == 4 || mode_ == 5) {
           if (mode == 1 && !weights_)
                numberSwitched_ = 0; // Reset
@@ -2956,6 +2966,9 @@ ClpPrimalColumnSteepest::saveWeights(ClpSimplex * model, int mode)
                }
                savedPivotSequence_ = -2;
                savedSequenceOut_ = -2;
+	       if (pivotSequence_ < 0 || pivotSequence_ >= 
+		   numberRows+numberColumns) 
+		 pivotSequence_ = -1;
 
           } else {
                if (mode != 4) {
@@ -3697,7 +3710,7 @@ ClpPrimalColumnSteepest::partialPricing(CoinIndexedVector * updates,
           tolerance = CoinMin(1000.0, tolerance);
      }
      if (model_->factorization()->pivots() && model_->numberPrimalInfeasibilities())
-          tolerance = CoinMax(tolerance, 1.0e-10 * model_->infeasibilityCost());
+          tolerance = CoinMax(tolerance, 1.0e-15 * model_->infeasibilityCost());
      // So partial pricing can use
      model_->setCurrentDualTolerance(tolerance);
      model_->factorization()->updateColumnTranspose(spareRow2, updates);

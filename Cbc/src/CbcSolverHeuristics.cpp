@@ -1,4 +1,4 @@
-/* $Id: CbcSolverHeuristics.cpp 1902 2013-04-10 16:58:16Z stefan $ */
+/* $Id: CbcSolverHeuristics.cpp 2105 2015-01-05 13:11:11Z forrest $ */
 // Copyright (C) 2007, International Business Machines
 // Corporation and others.  All Rights Reserved.
 // This code is licensed under the terms of the Eclipse Public License (EPL).
@@ -29,6 +29,8 @@
 #include "CbcHeuristicGreedy.hpp"
 #include "CbcHeuristicFPump.hpp"
 #include "CbcHeuristicRINS.hpp"
+#include "CbcHeuristicDW.hpp"
+#include "CbcHeuristicVND.hpp"
 
 #include "CbcHeuristicDiveCoefficient.hpp"
 #include "CbcHeuristicDiveFractional.hpp"
@@ -1164,9 +1166,11 @@ int doHeuristics(CbcModel * model, int type, CbcOrClpParam* parameters_,
     int useRand = parameters_[whichParam(CBC_PARAM_STR_RANDROUND, numberParameters_, parameters_)].currentOptionAsInteger();
     int useRINS = parameters_[whichParam(CBC_PARAM_STR_RINS, numberParameters_, parameters_)].currentOptionAsInteger();
     int useRENS = parameters_[whichParam(CBC_PARAM_STR_RENS, numberParameters_, parameters_)].currentOptionAsInteger();
+    int useVND = parameters_[whichParam(CBC_PARAM_STR_VND, numberParameters_, parameters_)].currentOptionAsInteger();
     int useDINS = parameters_[whichParam(CBC_PARAM_STR_DINS, numberParameters_, parameters_)].currentOptionAsInteger();
     int useDIVING2 = parameters_[whichParam(CBC_PARAM_STR_DIVINGS, numberParameters_, parameters_)].currentOptionAsInteger();
     int useNaive = parameters_[whichParam(CBC_PARAM_STR_NAIVE, numberParameters_, parameters_)].currentOptionAsInteger();
+    int useDW = parameters_[whichParam(CBC_PARAM_STR_DW, numberParameters_, parameters_)].currentOptionAsInteger();
     int kType = (type < 10) ? type : 1;
     assert (kType == 1 || kType == 2);
     // FPump done first as it only works if no solution
@@ -1293,11 +1297,17 @@ int doHeuristics(CbcModel * model, int type, CbcOrClpParam* parameters_,
                 double fakeIncrement = parameters_[whichParam(CBC_PARAM_DBL_FAKEINCREMENT, numberParameters_, parameters_)].doubleValue();
                 if (fakeIncrement)
                     increment = fakeIncrement;
-                heuristic4.setAbsoluteIncrement(increment);
+		if (increment>=0.0)
+		  heuristic4.setAbsoluteIncrement(increment);
+		else
+		  heuristic4.setRelativeIncrement(-increment);
                 heuristic4.setMaximumRetries(r + 1);
                 if (printStuff) {
                     if (increment) {
-                        sprintf(generalPrint, "Increment of %g", increment);
+		      if (increment>0.0)
+                        sprintf(generalPrint, "Absolute increment of %g", increment);
+		      else
+                        sprintf(generalPrint, "Relative increment of %g", -increment);
                         generalMessageHandler->message(CBC_GENERAL, generalMessages)
                         << generalPrint
                         << CoinMessageEol;
@@ -1380,21 +1390,26 @@ int doHeuristics(CbcModel * model, int type, CbcOrClpParam* parameters_,
 	heuristic6a.setRensType(2+16);
         model->addHeuristic(&heuristic6a) ;
     }
-    if (useRENS >= kType && useRENS <= kType + 1) {
-#ifndef JJF_ONE
+    if ((useRENS >= kType && useRENS <= kType + 1)||
+	useRENS>2) {
         CbcHeuristicRENS heuristic6(*model);
         heuristic6.setHeuristicName("RENS");
         heuristic6.setFractionSmall(0.4);
         heuristic6.setFeasibilityPumpOptions(1008003);
-        int nodes [] = { -2, 50, 50, 50, 200, 1000, 10000};
+        int nodes [] = { -2, 50, 50, 50, 200, 1000, 10000, -1, -1, 200};
         heuristic6.setNumberNodes(nodes[useRENS]);
-#else
-        CbcHeuristicVND heuristic6(*model);
-        heuristic6.setHeuristicName("VND");
-        heuristic5.setFractionSmall(0.5);
-        heuristic5.setDecayFactor(5.0);
-#endif
+	heuristic6.setRensType(useRENS!=9 ? 0 : 32);
         model->addHeuristic(&heuristic6) ;
+        anyToDo = true;
+    }
+    if (useVND >= kType && useVND <= kType + 1) {
+        CbcHeuristicVND heuristic6b(*model);
+        heuristic6b.setHeuristicName("VND");
+        heuristic6b.setFractionSmall(0.4);
+        heuristic6b.setFeasibilityPumpOptions(1008003);
+        int nodes [] = { -2, 50, 50, 50, 200, 1000, 10000};
+        heuristic6b.setNumberNodes(nodes[useVND]);
+        model->addHeuristic(&heuristic6b) ;
         anyToDo = true;
     }
     if (useNaive >= kType && useNaive <= kType + 1) {
@@ -1453,7 +1468,7 @@ int doHeuristics(CbcModel * model, int type, CbcOrClpParam* parameters_,
     }
 
     if (useDIVING > 0) {
-        int majorIterations=64;
+        int majorIterations=parameters_[whichParam(CBC_PARAM_INT_DIVEOPTSOLVES, numberParameters_, parameters_)].intValue();
         int diveOptions2 = parameters_[whichParam(CBC_PARAM_INT_DIVEOPT, numberParameters_, parameters_)].intValue();
         int diveOptions;
         if (diveOptions2 > 99) {
@@ -1464,14 +1479,25 @@ int doHeuristics(CbcModel * model, int type, CbcOrClpParam* parameters_,
             diveOptions = diveOptions2;
             diveOptions2 = 0;
         }
-        if (diveOptions < 0 || diveOptions > 9)
+        if (diveOptions < 0 || diveOptions > 29)
             diveOptions = 2;
+	int diveOptionsNotC=diveOptions;
+	if (diveOptions>10) {
+	  if (diveOptions>20) {
+	    diveOptions-=20;
+	    diveOptionsNotC-=20;
+	  } else {
+	    diveOptions -= 10;
+	    diveOptionsNotC = 4;
+	  }
+	  useDIVING = 63;
+	}
         if ((useDIVING&1) != 0) {
             CbcHeuristicDiveVectorLength heuristicDV(*model);
             heuristicDV.setHeuristicName("DiveVectorLength");
-            heuristicDV.setWhen(diveOptions);
+            heuristicDV.setWhen(diveOptionsNotC);
+	    heuristicDV.setMaxIterations(majorIterations);
 	    if (diveOptions2) {
-	      heuristicDV.setMaxIterations(majorIterations);
 	      heuristicDV.setPercentageToFix(0.0);
 	      heuristicDV.setMaxSimplexIterations(COIN_INT_MAX);
 	      heuristicDV.setMaxSimplexIterationsAtRoot(COIN_INT_MAX-(diveOptions2-1));
@@ -1481,9 +1507,9 @@ int doHeuristics(CbcModel * model, int type, CbcOrClpParam* parameters_,
         if ((useDIVING&2) != 0) {
             CbcHeuristicDiveGuided heuristicDG(*model);
             heuristicDG.setHeuristicName("DiveGuided");
-            heuristicDG.setWhen(diveOptions);
+            heuristicDG.setWhen(diveOptionsNotC);
+	    heuristicDG.setMaxIterations(majorIterations);
 	    if (diveOptions2) {
-	      heuristicDG.setMaxIterations(majorIterations);
 	      heuristicDG.setPercentageToFix(0.0);
 	      heuristicDG.setMaxSimplexIterations(COIN_INT_MAX);
 	      heuristicDG.setMaxSimplexIterationsAtRoot(COIN_INT_MAX-(diveOptions2-1));
@@ -1493,9 +1519,9 @@ int doHeuristics(CbcModel * model, int type, CbcOrClpParam* parameters_,
         if ((useDIVING&4) != 0) {
             CbcHeuristicDiveFractional heuristicDF(*model);
             heuristicDF.setHeuristicName("DiveFractional");
-            heuristicDF.setWhen(diveOptions);
+            heuristicDF.setWhen(diveOptionsNotC);
+	    heuristicDF.setMaxIterations(majorIterations);
 	    if (diveOptions2) {
-	      heuristicDF.setMaxIterations(majorIterations);
 	      heuristicDF.setPercentageToFix(0.0);
 	      heuristicDF.setMaxSimplexIterations(COIN_INT_MAX);
 	      heuristicDF.setMaxSimplexIterationsAtRoot(COIN_INT_MAX-(diveOptions2-1));
@@ -1506,8 +1532,8 @@ int doHeuristics(CbcModel * model, int type, CbcOrClpParam* parameters_,
             CbcHeuristicDiveCoefficient heuristicDC(*model);
             heuristicDC.setHeuristicName("DiveCoefficient");
             heuristicDC.setWhen(diveOptions);
+	    heuristicDC.setMaxIterations(majorIterations);
 	    if (diveOptions2) {
-	      heuristicDC.setMaxIterations(majorIterations);
 	      heuristicDC.setPercentageToFix(0.0);
 	      heuristicDC.setMaxSimplexIterations(COIN_INT_MAX);
 	      heuristicDC.setMaxSimplexIterationsAtRoot(COIN_INT_MAX-(diveOptions2-1));
@@ -1517,9 +1543,9 @@ int doHeuristics(CbcModel * model, int type, CbcOrClpParam* parameters_,
         if ((useDIVING&16) != 0) {
             CbcHeuristicDiveLineSearch heuristicDL(*model);
             heuristicDL.setHeuristicName("DiveLineSearch");
-            heuristicDL.setWhen(diveOptions);
+            heuristicDL.setWhen(diveOptionsNotC);
+	    heuristicDL.setMaxIterations(majorIterations);
 	    if (diveOptions2) {
-	      heuristicDL.setMaxIterations(majorIterations);
 	      heuristicDL.setPercentageToFix(0.0);
 	      heuristicDL.setMaxSimplexIterations(COIN_INT_MAX);
 	      heuristicDL.setMaxSimplexIterationsAtRoot(COIN_INT_MAX-(diveOptions2-1));
@@ -1529,9 +1555,9 @@ int doHeuristics(CbcModel * model, int type, CbcOrClpParam* parameters_,
         if ((useDIVING&32) != 0) {
             CbcHeuristicDivePseudoCost heuristicDP(*model);
             heuristicDP.setHeuristicName("DivePseudoCost");
-            heuristicDP.setWhen(diveOptions /*+ diveOptions2*/);
+            heuristicDP.setWhen(diveOptionsNotC /*+ diveOptions2*/);
+	    heuristicDP.setMaxIterations(majorIterations);
 	    if (diveOptions2) {
-	      heuristicDP.setMaxIterations(majorIterations);
 	      heuristicDP.setPercentageToFix(0.0);
 	      heuristicDP.setMaxSimplexIterations(COIN_INT_MAX);
 	      heuristicDP.setMaxSimplexIterationsAtRoot(COIN_INT_MAX-(diveOptions2-1));
@@ -1588,16 +1614,35 @@ int doHeuristics(CbcModel * model, int type, CbcOrClpParam* parameters_,
         model->addHeuristic(&heuristic5) ;
         anyToDo = true;
     }
-    if (useCombine >= kType && useCombine <= kType + 1) {
+    if (useDW >= kType && useDW <= kType + 1) {
+        CbcHeuristicDW heuristic13(*model);
+        heuristic13.setHeuristicName("Dantzig-Wolfe");
+	heuristic13.setNumberPasses(100);
+	heuristic13.setNumberBadPasses(10);
+	int numberIntegers=0;
+	const OsiSolverInterface * solver = model->solver();
+	int numberColumns = solver->getNumCols();
+	for (int i=0;i<numberColumns;i++) {
+	  if(solver->isInteger(i))
+	    numberIntegers++;
+	}
+	heuristic13.setNumberNeeded(CoinMin(200,numberIntegers/10));
+        model->addHeuristic(&heuristic13);
+        anyToDo = true;
+    }
+    if (useCombine >= kType && (useCombine-1)%3 <= kType ) {
         CbcHeuristicLocal heuristic2(*model);
         heuristic2.setHeuristicName("combine solutions");
         heuristic2.setFractionSmall(0.5);
-        heuristic2.setSearchType(1);
+	int searchType=1;
+	if (useCombine>3)
+	  searchType += 10; // experiment
+        heuristic2.setSearchType(searchType);
         model->addHeuristic(&heuristic2);
         anyToDo = true;
     }
-    if ((useProximity >= kType && useProximity <= kType + 1)||
-	(kType == 1 && useProximity >= 4)) {
+    if ((useProximity >= kType && useProximity <= kType + 1) ||
+	(kType == 1 && useProximity > 3) ){
         CbcHeuristicProximity heuristic2a(*model);
         heuristic2a.setHeuristicName("Proximity Search");
         heuristic2a.setFractionSmall(9999999.0);
@@ -1609,6 +1654,15 @@ int doHeuristics(CbcModel * model, int type, CbcOrClpParam* parameters_,
 	  // more print out and stronger feasibility pump
 	  if (useProximity==6)
 	    heuristic2a.setFeasibilityPumpOptions(-3);
+	} else {
+	  int proximityNumber;
+	  parameters_[whichParam(CBC_PARAM_STR_PROXIMITY, numberParameters_, parameters_)].currentOptionAsInteger(proximityNumber);
+	  if (proximityNumber>0) {
+	    heuristic2a.setNumberNodes(proximityNumber);
+	    // more print out and stronger feasibility pump
+	    if (proximityNumber>=300)
+	      heuristic2a.setFeasibilityPumpOptions(-3);
+	  }
 	}
         model->addHeuristic(&heuristic2a);
         anyToDo = true;

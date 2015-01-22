@@ -1,4 +1,4 @@
-/* $Id: CoinSearchTree.hpp 1590 2013-04-10 16:48:33Z stefan $ */
+/* $Id: CoinSearchTree.hpp 1685 2014-01-27 03:05:07Z tkr $ */
 // Copyright (C) 2006, International Business Machines
 // Corporation and others.  All Rights Reserved.
 // This code is licensed under the terms of the Eclipse Public License (EPL).
@@ -285,7 +285,7 @@ public:
 	if (incrInserted) {
 	    numInserted_ += sib.toProcess();
 	}
-	size_ += sib.size();
+	size_ += sib.toProcess();
     }
 };
 

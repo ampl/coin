@@ -1,4 +1,4 @@
-// $Id: CbcFullNodeInfo.cpp 1902 2013-04-10 16:58:16Z stefan $
+// $Id: CbcFullNodeInfo.cpp 2048 2014-07-16 09:29:16Z forrest $
 // Copyright (C) 2002, International Business Machines
 // Corporation and others.  All Rights Reserved.
 // This code is licensed under the terms of the Eclipse Public License (EPL).
@@ -129,27 +129,31 @@ void CbcFullNodeInfo::applyToModel (CbcModel *model,
 
 {
     OsiSolverInterface *solver = model->solver() ;
-
+    // may be end game
+    if (!active_)
+      return;
     // branch - do bounds
-    assert (active_ == 7 || active_ == 15);
+    assert ((active_&~16) == 7 || (active_&~16) == 15);
     int i;
     solver->setColLower(lower_);
     solver->setColUpper(upper_);
-    int numberColumns = model->getNumCols();
-    // move basis - but make sure size stays
-    // for bon-min - should not be needed int numberRows = model->getNumRows();
-    int numberRows = basis->getNumArtificial();
-    delete basis ;
-    if (basis_) {
+    if (basis) {
+      int numberColumns = model->getNumCols();
+      // move basis - but make sure size stays
+      // for bon-min - should not be needed int numberRows = model->getNumRows();
+      int numberRows = basis->getNumArtificial();
+      delete basis ;
+      if (basis_) {
         basis = dynamic_cast<CoinWarmStartBasis *>(basis_->clone()) ;
         basis->resize(numberRows, numberColumns);
 #ifdef CBC_CHECK_BASIS
         std::cout << "Basis (after applying root " << this << ") " << std::endl ;
         basis->print() ;
 #endif
-    } else {
+      } else {
         // We have a solver without a basis
         basis = NULL;
+      }
     }
     for (i = 0; i < numberCuts_; i++)
         addCuts[currentNumberCuts+i] = cuts_[i];

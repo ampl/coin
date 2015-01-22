@@ -1,4 +1,4 @@
-/* $Id: Coin_C_defines.h 1735 2014-08-23 04:12:22Z tkr $ */
+/* $Id: Coin_C_defines.h 1690 2014-03-13 17:45:21Z mlubin $ */
 /*
   Copyright (C) 2002, 2003 International Business Machines Corporation
   and others.  All Rights Reserved.

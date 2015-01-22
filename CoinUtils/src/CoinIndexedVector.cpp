@@ -1,4 +1,4 @@
-/* $Id: CoinIndexedVector.cpp 1727 2014-08-05 16:30:20Z tkr $ */
+/* $Id: CoinIndexedVector.cpp 1758 2014-11-14 16:03:49Z forrest $ */
 // Copyright (C) 2000, International Business Machines
 // Corporation and others.  All Rights Reserved.
 // This code is licensed under the terms of the Eclipse Public License (EPL).
@@ -1124,8 +1124,8 @@ CoinIndexedVector::gutsOfSetPackedVector(int size, int numberIndices,
 #ifndef COIN_FAST_CODE
     if (indexValue<0) 
       throw CoinError("negative index", "setVector", "CoinIndexedVector");
-    else if (indexValue>=size) 
-      throw CoinError("too large an index", "setVector", "CoinIndexedVector");
+    //else if (indexValue>=size) 
+    //throw CoinError("too large an index", "setVector", "CoinIndexedVector");
 #endif    
     if (fabs(elems[i])>=COIN_INDEXED_TINY_ELEMENT) {
       elements_[nElements_]=elems[i];

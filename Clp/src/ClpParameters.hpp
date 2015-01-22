@@ -1,4 +1,4 @@
-/* $Id: ClpParameters.hpp 2045 2014-08-13 15:05:38Z tkr $ */
+/* $Id: ClpParameters.hpp 2046 2014-08-14 04:13:10Z tkr $ */
 // Copyright (C) 2000, 2002, International Business Machines
 // Corporation and others.  All Rights Reserved.
 // This code is licensed under the terms of the Eclipse Public License (EPL).

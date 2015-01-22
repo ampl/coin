@@ -1,4 +1,4 @@
-/* $Id: ClpMatrixBase.hpp 1722 2011-04-17 09:58:37Z stefan $ */
+/* $Id: ClpMatrixBase.hpp 2078 2015-01-05 12:39:49Z forrest $ */
 // Copyright (C) 2002, International Business Machines
 // Corporation and others.  All Rights Reserved.
 // This code is licensed under the terms of the Eclipse Public License (EPL).
@@ -13,6 +13,14 @@
 class CoinIndexedVector;
 class ClpSimplex;
 class ClpModel;
+// Compilers can produce better code if they know about __restrict
+#ifndef COIN_RESTRICT
+#ifdef COIN_USE_RESTRICT
+#define COIN_RESTRICT __restrict
+#else
+#define COIN_RESTRICT
+#endif
+#endif
 
 /** Abstract base class for Clp Matrices
 
@@ -263,33 +271,33 @@ public:
          @pre <code>x</code> must be of size <code>numColumns()</code>
          @pre <code>y</code> must be of size <code>numRows()</code> */
      virtual void times(double scalar,
-                        const double * x, double * y) const = 0;
+                        const double * COIN_RESTRICT x, double * COIN_RESTRICT y) const = 0;
      /** And for scaling - default aborts for when scaling not supported
          (unless pointers NULL when as normal)
      */
      virtual void times(double scalar,
-                        const double * x, double * y,
-                        const double * rowScale,
-                        const double * columnScale) const;
+                        const double * COIN_RESTRICT x, double * COIN_RESTRICT y,
+                        const double * COIN_RESTRICT rowScale,
+                        const double * COIN_RESTRICT columnScale) const;
      /** Return <code>y + x * scalar * A</code> in <code>y</code>.
          @pre <code>x</code> must be of size <code>numRows()</code>
          @pre <code>y</code> must be of size <code>numColumns()</code> */
      virtual void transposeTimes(double scalar,
-                                 const double * x, double * y) const = 0;
+                                 const double * COIN_RESTRICT x, double * COIN_RESTRICT y) const = 0;
      /** And for scaling - default aborts for when scaling not supported
          (unless pointers NULL when as normal)
      */
      virtual void transposeTimes(double scalar,
-                                 const double * x, double * y,
-                                 const double * rowScale,
-                                 const double * columnScale,
-                                 double * spare = NULL) const;
+                                 const double * COIN_RESTRICT x, double * COIN_RESTRICT y,
+                                 const double * COIN_RESTRICT rowScale,
+                                 const double * COIN_RESTRICT columnScale,
+                                 double * COIN_RESTRICT spare = NULL) const;
 #if COIN_LONG_WORK
      // For long double versions (aborts if not supported)
      virtual void times(CoinWorkDouble scalar,
-                        const CoinWorkDouble * x, CoinWorkDouble * y) const ;
+                        const CoinWorkDouble * COIN_RESTRICT x, CoinWorkDouble * COIN_RESTRICT y) const ;
      virtual void transposeTimes(CoinWorkDouble scalar,
-                                 const CoinWorkDouble * x, CoinWorkDouble * y) const ;
+                                 const CoinWorkDouble * COIN_RESTRICT x, CoinWorkDouble * COIN_RESTRICT y) const ;
 #endif
      /** Return <code>x * scalar *A + y</code> in <code>z</code>.
          Can use y as temporary array (will be empty at end)

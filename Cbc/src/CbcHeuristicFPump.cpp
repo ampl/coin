@@ -1,4 +1,4 @@
-/* $Id: CbcHeuristicFPump.cpp 1883 2013-04-06 13:33:15Z stefan $ */
+/* $Id: CbcHeuristicFPump.cpp 2094 2014-11-18 11:15:36Z forrest $ */
 // Copyright (C) 2004, International Business Machines
 // Corporation and others.  All Rights Reserved.
 // This code is licensed under the terms of the Eclipse Public License (EPL).
@@ -25,7 +25,9 @@
 #include "CoinWarmStartBasis.hpp"
 #include "CoinTime.hpp"
 #include "CbcEventHandler.hpp"
-
+#ifdef SWITCH_VARIABLES
+#include "CbcSimpleIntegerDynamicPseudoCost.hpp"
+#endif
 
 // Default Constructor
 CbcHeuristicFPump::CbcHeuristicFPump()
@@ -237,6 +239,10 @@ CbcHeuristicFPump::solution(double & solutionValue,
 */
     if (!when() || (when() == 1 && model_->phase() != 1))
         return 0; // switched off
+#ifdef HEURISTIC_INFORM
+    printf("Entering heuristic %s - nRuns %d numCould %d when %d\n",
+	   heuristicName(),numRuns_,numCouldRun_,when_);
+#endif
     // See if at root node
     bool atRoot = model_->getNodeCount() == 0;
     int passNumber = model_->getCurrentPassNumber();
@@ -270,10 +276,10 @@ CbcHeuristicFPump::solution(double & solutionValue,
             //good = (((passNumber-1)%(kOption-2))==0);
             good = false;
         }
-        if (passNumber != 1 && !good)
+        if (passNumber > 1 && !good)
             return 0;
     } else {
-        if (passNumber != 1)
+        if (passNumber > 1)
             return 0;
     }
     // loop round doing repeated pumps
@@ -308,6 +314,9 @@ CbcHeuristicFPump::solution(double & solutionValue,
     const double * lower = model_->solver()->getColLower();
     const double * upper = model_->solver()->getColUpper();
     bool doGeneral = (accumulate_ & 4) != 0;
+    int numberUnsatisfied=0;
+    double sumUnsatisfied=0.0;
+    const double * initialSolution = model_->solver()->getColSolution();
     j = 0;
 /*
   Scan the objects, recording the columns and counting general integers.
@@ -326,6 +335,11 @@ CbcHeuristicFPump::solution(double & solutionValue,
             dynamic_cast<const  OsiSimpleInteger *> (object);
         assert(integerObject || integerObject2);
 #endif
+	double value = initialSolution[iColumn];
+	double nearest = floor(value + 0.5);
+	sumUnsatisfied += fabs(value - nearest);
+	if (fabs(value - nearest) > 1.0e-6) 
+	  numberUnsatisfied++;
         if (upper[iColumn] - lower[iColumn] > 1.000001) {
             general++;
             if (doGeneral)
@@ -365,6 +379,11 @@ CbcHeuristicFPump::solution(double & solutionValue,
     if (doGeneral)
         printf("DOing general with %d out of %d\n", general, numberIntegers);
 #endif
+    sprintf(pumpPrint, "Initial state - %d integers unsatisfied sum - %g",
+	    numberUnsatisfied, sumUnsatisfied);
+    model_->messageHandler()->message(CBC_FPUMP1, model_->messages())
+      << pumpPrint
+      << CoinMessageEol;
 /*
   This `closest solution' will satisfy integrality, but violate some other
   constraints?
@@ -395,7 +414,12 @@ CbcHeuristicFPump::solution(double & solutionValue,
 */
     model_->solver()->resolve();
     if (!model_->solver()->isProvenOptimal()) {
-        // presumably max time or some such
+
+        delete[] integerVariable;
+        delete[] newSolution;
+        if (closestSolution)
+            delete[] closestSolution;
+        
         return 0;
     }
     numRuns_++;
@@ -573,11 +597,28 @@ CbcHeuristicFPump::solution(double & solutionValue,
         }
         // if cutoff exists then add constraint
         bool useCutoff = (fabs(cutoff) < 1.0e20 && (fakeCutoff_ != COIN_DBL_MAX || numberTries > 1));
+	bool tryOneClosePass=fakeCutoff_<solver->getObjValue();
         // but there may be a close one
         if (firstCutoff < 2.0*solutionValue && numberTries == 1 && CoinMin(cutoff, fakeCutoff_) < 1.0e20)
             useCutoff = true;
-        if (useCutoff) {
+        if (useCutoff || tryOneClosePass) {
             double rhs = CoinMin(cutoff, fakeCutoff_);
+	    if (tryOneClosePass) {
+	      // If way off then .05
+	      if (fakeCutoff_<=-1.0e100) {
+		// use value as percentage - so 100==0.0, 101==1.0 etc
+		// probably something like pow I could use but ...
+		double fraction = 0.0;
+		while (fakeCutoff_<-1.01e100) {
+		  fakeCutoff_ *= 0.1;
+		  fraction += 0.01;
+		}
+		rhs = solver->getObjValue()+fraction*fabs(solver->getObjValue());
+	      } else {
+		rhs = 2.0*solver->getObjValue()-fakeCutoff_; // flip difference
+	      }
+	      fakeCutoff_=COIN_DBL_MAX;
+	    }
             const double * objective = solver->getObjCoefficients();
             int numberColumns = solver->getNumCols();
             int * which = new int[numberColumns];
@@ -828,6 +869,109 @@ CbcHeuristicFPump::solution(double & solutionValue,
                                 newSolutionValue = saveValue;
                             if (returnCode && newSolutionValue < saveValue)
                                 numberBandBsolutions++;
+			} else if (numberColumns>numberIntegersOrig) {
+			  // relax continuous
+			  bool takeHint;
+			  OsiHintStrength strength;
+			  solver->getHintParam(OsiDoDualInResolve, takeHint, strength);
+			  //solver->setHintParam(OsiDoReducePrint, false, OsiHintTry);
+			  solver->setHintParam(OsiDoDualInResolve, false, OsiHintDo);
+			  //solver->setHintParam(OsiDoScale, false, OsiHintDo);
+			  solver->resolve();
+			  solver->setHintParam(OsiDoDualInResolve, takeHint, strength);
+			  if (solver->isProvenOptimal()) {
+			    memcpy(newSolution,solver->getColSolution(),
+				   numberColumns*sizeof(double));
+			    newSolutionValue = -saveOffset;
+			    for (  i = 0 ; i < numberColumns ; i++ ) {
+			      newSolutionValue += saveObjective[i] * newSolution[i];
+			    }
+			    newSolutionValue *= direction;
+			    sprintf(pumpPrint, "Relaxing continuous gives %g", newSolutionValue);
+			    //#define DEBUG_BEST
+#ifdef DEBUG_BEST
+			    {
+			      int numberColumns=solver->getNumCols();
+			      FILE * fp = fopen("solution.data2","wb");
+			      printf("Solution data on file solution.data2\n");
+			      size_t numberWritten;
+			      numberWritten=fwrite(&numberColumns,sizeof(int),1,fp);
+			      assert (numberWritten==1);
+			      numberWritten=fwrite(&newSolutionValue,sizeof(double),1,fp);
+			      assert (numberWritten==1);
+			      numberWritten=fwrite(newSolution,sizeof(double),numberColumns,fp);
+			      assert (numberWritten==numberColumns);
+			      fclose(fp);
+			      const double * rowLower = solver->getRowLower();
+			      const double * rowUpper = solver->getRowUpper();
+			      const double * columnLower = solver->getColLower();
+			      const double * columnUpper = solver->getColUpper();
+			      int numberRows = solver->getNumRows() ;
+			      double *rowActivity = new double[numberRows] ;
+			      memset(rowActivity, 0, numberRows*sizeof(double)) ;
+			      const double * element = solver->getMatrixByCol()->getElements();
+			      const int * row = solver->getMatrixByCol()->getIndices();
+			      const CoinBigIndex * columnStart = solver->getMatrixByCol()->getVectorStarts();
+			      const int * columnLength = solver->getMatrixByCol()->getVectorLengths();
+			      double largestAway=0.0;
+			      int away=-1;
+			      double saveOffset;
+			      solver->getDblParam(OsiObjOffset, saveOffset);
+			      double newSolutionValue = -saveOffset;
+			      const double * objective = solver->getObjCoefficients();
+			      for ( int iColumn=0 ; iColumn<numberColumns ; ++iColumn ) {
+				double value=newSolution[iColumn];
+				CoinBigIndex start = columnStart[iColumn];
+				CoinBigIndex end = start + columnLength[iColumn];
+				for (CoinBigIndex j = start; j < end; j++) {
+				  int iRow = row[j];
+				  if (iRow==1996)
+				    printf("fp col %d val %g el %g old y %g\n",
+				  iColumn,value,element[j],rowActivity[iRow]);
+				  rowActivity[iRow] += value * element[j];
+				}
+				newSolutionValue += objective[iColumn] * newSolution[iColumn];
+				if (solver->isInteger(iColumn)) {
+				  double intValue = floor(value+0.5);
+				  if (fabs(value-intValue)>largestAway) {
+				    largestAway=fabs(value-intValue);
+				    away=iColumn;
+				  }
+				}
+			      }
+			      printf("Largest away from int at column %d was %g - obj %g\n",away,
+				     largestAway,newSolutionValue);
+			      double largestInfeasibility=0.0;
+			      for (int i = 0 ; i < numberRows ; i++) {
+#if 0 //def CLP_INVESTIGATE
+				double inf;
+				inf = rowLower[i] - rowActivity[i];
+				if (inf > primalTolerance)
+				  printf("Row %d inf %g sum %g %g <= %g <= %g\n",
+					 i, inf, rowSum[i], rowLower[i], rowActivity[i], rowUpper[i]);
+				inf = rowActivity[i] - rowUpper[i];
+				if (inf > primalTolerance)
+				  printf("Row %d inf %g %g <= %g <= %g\n",
+					 i, inf, rowLower[i], rowActivity[i], rowUpper[i]);
+#endif
+				double infeasibility = CoinMax(rowActivity[i]-rowUpper[i],
+							       rowLower[i]-rowActivity[i]);
+				if (infeasibility>largestInfeasibility) {
+				  largestInfeasibility = infeasibility;
+				  printf("Binf of %g on row %d\n",
+					 infeasibility,i);
+				}
+			      }
+			      delete [] rowActivity ;
+			      printf("Blargest infeasibility is %g - obj %g\n", largestInfeasibility,newSolutionValue);
+			    }
+#endif
+			  } else {
+			    sprintf(pumpPrint,"Infeasible when relaxing continuous!\n");
+			  }
+			  model_->messageHandler()->message(CBC_FPUMP1, model_->messages())
+			    << pumpPrint
+			    << CoinMessageEol;
                         }
                     }
                     if (returnCode && newSolutionValue < saveValue) {
@@ -990,6 +1134,16 @@ CbcHeuristicFPump::solution(double & solutionValue,
                 double costValue = (1.0 - scaleFactor) * solver->getObjSense();
                 int numberChanged = 0;
                 const double * oldObjective = solver->getObjCoefficients();
+		bool fixOnesAtBound=false;
+		if (tryOneClosePass&&numberPasses==2) {
+		  // take off
+		  tryOneClosePass=false;
+		  int n=solver->getNumRows()-1;
+		  double rhs = solver->getRowUpper()[n];
+		  solver->setRowUpper(n,rhs+1.0e15);
+		  useRhs+=1.0e15;
+		  fixOnesAtBound=true;
+		}
                 for (i = 0; i < numberColumns; i++) {
                     // below so we can keep original code and allow for objective
                     int iColumn = i;
@@ -1008,11 +1162,15 @@ CbcHeuristicFPump::solution(double & solutionValue,
                     }
                     double newValue = 0.0;
                     if (newSolution[iColumn] < lower[iColumn] + primalTolerance) {
-                        newValue = costValue + scaleFactor * saveObjective[iColumn];
+		      newValue = costValue + scaleFactor * saveObjective[iColumn];
+		      if (fixOnesAtBound)
+			newValue = 100.0*costValue;
                     } else {
-                        if (newSolution[iColumn] > upper[iColumn] - primalTolerance) {
-                            newValue = -costValue + scaleFactor * saveObjective[iColumn];
-                        }
+		      if (newSolution[iColumn] > upper[iColumn] - primalTolerance) {
+			newValue = -costValue + scaleFactor * saveObjective[iColumn];
+		      if (fixOnesAtBound)
+			newValue = -100.0*costValue;
+		      }
                     }
 #ifdef RAND_RAND
                     if (!offRandom)
@@ -1235,15 +1393,16 @@ CbcHeuristicFPump::solution(double & solutionValue,
                     newNumberInfeas = 0;
                     {
                         const double * newSolution = solver->getColSolution();
-                        for (  i = 0 ; i < numberColumns ; i++ ) {
-                            if (solver->isInteger(i)) {
-                                double value = newSolution[i];
+                        for (int iColumn = 0 ; iColumn < numberColumns ; iColumn++ ) {
+                            if (solver->isInteger(iColumn)) {
+                                double value = newSolution[iColumn];
                                 double nearest = floor(value + 0.5);
                                 newSumInfeas += fabs(value - nearest);
-                                if (fabs(value - nearest) > 1.0e-6)
+                                if (fabs(value - nearest) > 1.0e-6) {
                                     newNumberInfeas++;
+				}
                             }
-                            newTrueSolutionValue += saveObjective[i] * newSolution[i];
+                            newTrueSolutionValue += saveObjective[iColumn] * newSolution[iColumn];
                         }
                         newTrueSolutionValue *= direction;
                         if (numberPasses == 1 && secondPassOpt) {
@@ -1545,6 +1704,36 @@ CbcHeuristicFPump::solution(double & solutionValue,
                 model_->messageHandler()->message(CBC_FPUMP1, model_->messages())
                 << pumpPrint
                 << CoinMessageEol;
+		CbcEventHandler *eventHandler = model_->getEventHandler() ;
+		if (eventHandler) {
+		  typedef struct {
+		    double newSumInfeas;
+		    double trueSolutionValue;
+		    double spareDouble[2];
+		    OsiSolverInterface * solver;
+		    void * sparePointer[2];
+		    int numberPasses;
+		    int totalNumberPasses;
+		    int numberInfeas;
+		    int numberIterations;
+		    int spareInt[3];
+		  } HeurPass;
+		  HeurPass temp;
+		  temp.solver=solver;
+		  temp.newSumInfeas = newSumInfeas;
+		  temp.trueSolutionValue = newTrueSolutionValue;
+		  temp.numberPasses=numberPasses;
+		  temp.totalNumberPasses=totalNumberPasses;
+		  temp.numberInfeas=newNumberInfeas;
+		  temp.numberIterations=numberIterations;
+		  CbcEventHandler::CbcAction status = 
+		    eventHandler->event(CbcEventHandler::heuristicPass,
+					&temp);
+		  if (status==CbcEventHandler::killSolution) {
+		    exitAll = true;
+		    break;
+		  }
+		}
                 if (closestSolution && solver->getObjValue() < closestObjectiveValue) {
                     int i;
                     const double * objective = solver->getObjCoefficients();
@@ -1937,7 +2126,11 @@ CbcHeuristicFPump::solution(double & solutionValue,
                             //simplex->writeMps("test.mps",2,1);
                             if (nFixed*3 > numberColumns*2)
                                 simplex->allSlackBasis(); // may as well go from all slack
+			    int logLevel=simplex->logLevel();
+			    if (logLevel<=1)
+			      simplex->setLogLevel(0);
                             simplex->primal(1);
+			    simplex->setLogLevel(logLevel);
                             clpSolver->setWarmStart(NULL);
                         }
 #endif
@@ -2363,14 +2556,18 @@ CbcHeuristicFPump::rounds(OsiSolverInterface * solver, double * solution,
     const double * columnLower = solver->getColLower();
     const double * columnUpper = solver->getColUpper();
     // Check if valid with current solution (allow for 0.99999999s)
+    double newSumInfeas = 0.0;
+    int newNumberInfeas = 0;
     for (i = 0; i < numberIntegers; i++) {
         int iColumn = integerVariable[i];
         double value = solution[iColumn];
         double round = floor(value + 0.5);
-        if (fabs(value - round) > primalTolerance)
-            break;
+        if (fabs(value - round) > primalTolerance) {
+	  newSumInfeas += fabs(value-round);
+	  newNumberInfeas++;
+	}
     }
-    if (i == numberIntegers) {
+    if (!newNumberInfeas) {
         // may be able to use solution even if 0.99999's
         double * saveLower = CoinCopyOfArray(columnLower, numberColumns);
         double * saveUpper = CoinCopyOfArray(columnUpper, numberColumns);

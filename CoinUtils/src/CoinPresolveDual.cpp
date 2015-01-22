@@ -1,4 +1,4 @@
-/* $Id: CoinPresolveDual.cpp 1607 2013-07-16 09:01:29Z stefan $ */
+/* $Id: CoinPresolveDual.cpp 1699 2014-05-22 17:06:09Z forrest $ */
 // Copyright (C) 2002, International Business Machines
 // Corporation and others.  All Rights Reserved.
 // This code is licensed under the terms of the Eclipse Public License (EPL).
@@ -172,7 +172,7 @@ const CoinPresolveAction
   const CoinBigIndex *const mrstrt = prob->mrstrt_ ;
   const int *const hinrow = prob->hinrow_ ;
   const int *const hcol = prob->hcol_ ;
-# if REMOVE_DUAL_ACTION_REPAIR_SOLN > 0
+# if 1 //REMOVE_DUAL_ACTION_REPAIR_SOLN > 0
   const double *const rowels = prob->rowels_ ;
 # endif
 
@@ -192,6 +192,298 @@ const CoinPresolveAction
 */
   double *ymin	= prob->usefulRowDouble_ ;
   double *ymax	= ymin+nrows ;
+  /* use arrays to say which bound active
+     1 - lower
+     2 - upper
+     4 - fixed
+     8 - don't touch
+  */
+  char * active = reinterpret_cast<char *>(prob->usefulColumnInt_);
+  int nOneBound=0;
+  for (int j = 0 ; j < ncols ; j++) {
+    char type;
+    if (cup[j] >= ekkinf) {
+      if(clo[j] <= -ekkinf) 
+	type=0;
+      else
+	type=1;
+    } else {
+      if(clo[j] <= -ekkinf) 
+	type=2;
+      else if(clo[j] < cup[j]) 
+	type=3;
+      else
+	type=4;
+    }
+    if (type==1||type==2)
+      nOneBound++;
+    active[j]=type;
+  }
+  int nFreed=0;
+#define USE_ACTIVE 1
+  //#define PRESOLVE_DEBUG 2
+  for (int i = 0; i < nrows; i++) {
+    const CoinBigIndex krs = mrstrt[i] ;
+    const CoinBigIndex kre = krs + hinrow[i] ;
+    int positive = 0 ;
+    int negative = 0 ;
+    int onlyPositive = -1 ;
+    int onlyNegative = -1 ;
+    for (CoinBigIndex k = krs ; k < kre ; k++) {
+      const double coeff = rowels[k] ;
+      const int icol = hcol[k] ;
+      char type = active[icol];
+      const double lb = clo[icol] ;
+      const double ub = cup[icol] ;
+      if (type==0 || (type&8) != 0) {
+	// free or already used
+	positive=2;
+	negative=2;
+	break;
+      } else if (type==1) {
+	// lower bound active
+	if (coeff > 0.0) {
+	  positive ++ ;
+	} else {
+	  negative ++ ;
+	}
+      } else if (type==2) {
+	// upper bound active
+	if (coeff < 0.0) {
+	  positive ++ ;
+	} else {
+	  negative ++ ;
+	}
+      } else if (type==3) {
+	// both bounds active
+	if (coeff > 0.0) {
+	  onlyPositive=k;
+	  positive ++ ;
+	} else {
+	  onlyNegative=k;
+	  negative ++ ;
+	}
+      } else {
+	// fixed
+      }
+    }
+    bool doneSomething=false;
+    if (onlyPositive>=0&&positive==1) {
+      const double coeff = rowels[onlyPositive] ;
+      const int icol = hcol[onlyPositive] ;
+      const double lb = clo[icol] ;
+      const double ub = cup[icol] ;
+      // Get possible without icol
+      double maxUp = 0.0 ;
+      double maxDown = 0.0;
+#if USE_ACTIVE>2
+      printf("%d pos coeff %g bounds %g,%g rhs %g,%g - %d negative",
+	     icol,coeff,lb,ub,rlo[i],rup[i],negative);
+      printf(", row is %g <= ",rlo[i]);
+#endif
+      for (CoinBigIndex k = krs ; k < kre ; k++) {
+	const int icol2 = hcol[k] ;
+#if USE_ACTIVE>2
+	printf("(%d,%g - bounds %g,%g) ",icol2,rowels[k],
+	       clo[icol2],cup[icol2]);
+#endif
+	if (icol2==icol)
+	  continue;
+	const double coeff2 = rowels[k] ;
+	const double lb2 = clo[icol2] ;
+	const double ub2 = cup[icol2] ;
+	if (coeff2 > 0.0) {
+	  if (ub2>1.0e30)
+	    maxUp = COIN_DBL_MAX;
+	  else
+	    maxUp += coeff2*ub2;
+	  if (lb2<-1.0e30)
+	    maxDown = -COIN_DBL_MAX;
+	  else
+	    maxDown += coeff2*lb2;
+	} else {
+	  if (lb2<-1.0e30)
+	    maxUp = COIN_DBL_MAX;
+	  else
+	    maxUp += coeff2*lb2;
+	  if (ub2>1.0e30)
+	    maxDown = -COIN_DBL_MAX;
+	  else
+	    maxDown += coeff2*ub2;
+	}
+      }
+      double impliedLower = (rlo[i]-maxUp)/coeff;
+      double impliedUpper = (rup[i]-maxDown)/coeff;
+#if USE_ACTIVE>2
+      printf("<= %g - implied l,u %g,%g\n",rup[i],impliedLower,impliedUpper);
+#endif
+      if (impliedLower>lb-1.0e-7) {
+#if USE_ACTIVE==2
+	printf("%d pos coeff %g bounds %g,%g maxDown %g rhs %g,%g - %d negative\n",
+	       icol,coeff,lb,ub,maxDown,rlo[i],rup[i],negative);
+#endif
+#if USE_ACTIVE>1
+	printf("can take off lb as implied lower %g > %g\n",impliedLower,lb);
+#endif
+	doneSomething=true;
+	active[icol]=2+8;
+	nFreed++;
+#define TRY_UPPER 3
+#if TRY_UPPER > 1
+      } else if (impliedUpper<ub+1.0e-7) {
+#if 0
+	printf("%d pos coeff %g bounds %g,%g maxDown %g, maxUp %g rhs %g,%g\n",
+	       icol,coeff,lb,ub,maxDown,maxUp,rlo[i],rup[i]);
+	printf("row is %g <= ",rlo[i]);
+	for (CoinBigIndex k = krs ; k < kre ; k++) {
+	  const int icol2 = hcol[k] ;
+	  printf("(%d,%g - bounds %g,%g) ",icol2,rowels[k],
+		 clo[icol2],cup[icol2]);
+	}
+	printf("<= %g - implied l,u %g,%g\n",rup[i],impliedLower,impliedUpper);
+	printf("can take off ub as implied upper %g < %g\n",impliedUpper,ub);
+#endif
+#if TRY_UPPER > 2
+	doneSomething=true;
+	active[icol]=1+8;
+	nFreed++;
+#endif
+#endif
+      } else {
+#if 0
+	printf("cant take off lb as implied lower %g - ",impliedLower);
+	printf("row is %g <= ",rlo[i]);
+	for (CoinBigIndex k = krs ; k < kre ; k++) {
+	  const double coeff = rowels[k] ;
+	  const int icol = hcol[k] ;
+	  printf("(%d,%g) ",icol,coeff);
+	}
+	printf("<= %g\n",rup[i]);
+#endif
+      }
+    }
+    if (onlyNegative>=0&&negative==1&&!doneSomething) {
+      const double coeff = rowels[onlyNegative] ;
+      const int icol = hcol[onlyNegative] ;
+      const double lb = clo[icol] ;
+      const double ub = cup[icol] ;
+      // Get possible without icol
+      double maxUp = 0.0 ;
+      double maxDown = 0.0 ;
+#if USE_ACTIVE>2
+      printf("%d neg coeff %g bounds %g,%g rhs %g,%g - %d positive",
+	     icol,coeff,lb,ub,rlo[i],rup[i],positive);
+      printf(", row is %g <= ",rlo[i]);
+#endif
+      for (CoinBigIndex k = krs ; k < kre ; k++) {
+	const int icol2 = hcol[k] ;
+#if USE_ACTIVE>2
+	printf("(%d,%g - bounds %g,%g) ",icol2,rowels[k],
+	       clo[icol2],cup[icol2]);
+#endif
+	if (icol2==icol)
+	  continue;
+	const double coeff2 = rowels[k] ;
+	const double lb2 = clo[icol2] ;
+	const double ub2 = cup[icol2] ;
+	if (coeff2 > 0.0) {
+	  if (ub2>1.0e30)
+	    maxUp = COIN_DBL_MAX;
+	  else
+	    maxUp += coeff2*ub2;
+	  if (lb2<-1.0e30)
+	    maxDown = -COIN_DBL_MAX;
+	  else
+	    maxDown += coeff2*lb2;
+	} else {
+	  if (lb2<-1.0e30)
+	    maxUp = COIN_DBL_MAX;
+	  else
+	    maxUp += coeff2*lb2;
+	  if (ub2>1.0e30)
+	    maxDown = -COIN_DBL_MAX;
+	  else
+	    maxDown += coeff2*ub2;
+	}
+      }
+      double impliedLower = (rup[i]-maxDown)/coeff;
+      double impliedUpper = (rlo[i]-maxUp)/coeff;
+#if USE_ACTIVE>2
+      printf("<= %g - implied l,u %g,%g\n",rup[i],impliedLower,impliedUpper);
+#endif
+      int nOne=0;
+      for (CoinBigIndex k = krs ; k < kre ; k++) {
+	const double coeff = rowels[k] ;
+	const int icol = hcol[k] ;
+	if (hincol[icol]==1 && coeff>0.0)
+	  nOne++;
+      }
+      if (nOne>=hinrow[i]-1) {
+	for (CoinBigIndex k = krs ; k < kre ; k++) {
+	  const int icol = hcol[k] ;
+	  const double coeff = rowels[k] ;
+	  if (hincol[icol]==1 && coeff>0.0) {
+#if USE_ACTIVE>2
+	    printf("(%d has one entry) ",icol);
+#endif
+	    if (active[icol]==3 || clo[icol]<-1.0e30) 
+	      nOne=0; // no good
+	  }
+	}
+#if USE_ACTIVE>2
+	printf("\n");
+#endif
+      }
+      if (impliedLower>lb-1.0e-7 /*&& nOne*/) {
+#if USE_ACTIVE>1
+	printf("second type can take off lb of %g on column %d as implied lower %g - effective upper %g, coeff %g on row %d\n",lb,icol,impliedLower,maxUp,coeff,i);
+#endif
+	active[icol]=2+8;
+	nFreed++;
+#if 0 //TRY_UPPER
+      } else if (impliedLower>lb-1.0e-7 ) {
+	printf("second type can't take off lb of %g on column %d as implied lower %g - effective upper %g, coeff %g on row %d\n",lb,icol,impliedLower,maxUp,coeff,i);
+#endif
+#if TRY_UPPER>1
+      } else if (impliedUpper<ub+1.0e-7) {
+#if 0
+	printf("%d neg coeff %g bounds %g,%g maxDown %g, maxUp %g rhs %g,%g\n",
+	       icol,coeff,lb,ub,maxDown,maxUp,rlo[i],rup[i]);
+	printf("row is %g <= ",rlo[i]);
+	for (CoinBigIndex k = krs ; k < kre ; k++) {
+	  const int icol2 = hcol[k] ;
+	  printf("(%d,%g - bounds %g,%g) ",icol2,rowels[k],
+		 clo[icol2],cup[icol2]);
+	}
+	printf("<= %g - implied l,u %g,%g\n",rup[i],impliedLower,impliedUpper);
+	printf("can take off ub as implied upper %g < %g\n",impliedUpper,ub);
+#endif
+#if TRY_UPPER > 2
+	doneSomething=true;
+	active[icol]=1+8;
+	nFreed++;
+#endif
+#endif
+      }
+    } else if (!positive&&false) {
+      printf("all negative %g <= ",rlo[i]);
+      for (CoinBigIndex k = krs ; k < kre ; k++) {
+	const double coeff = rowels[k] ;
+	const int icol = hcol[k] ;
+	printf("(%d,%g) ",icol,coeff);
+      }
+      printf("<= %g\n",rup[i]);
+    } else if (!negative&&false) {
+      printf("all positive %g <= ",rlo[i]);
+      for (CoinBigIndex k = krs ; k < kre ; k++) {
+	const double coeff = rowels[k] ;
+	const int icol = hcol[k] ;
+	printf("(%d,%g) ",icol,coeff);
+      }
+      printf("<= %g\n",rup[i]);
+    }
+  }
+  //printf("%d had only one bound - %d added\n",nOneBound,nFreed);
 /*
   Initialise row dual min/max. The defaults are +/- infty, but if we know
   that the logical has no upper (lower) bound, it can only be nonbasic at
@@ -235,8 +527,13 @@ const CoinPresolveAction
   for (int j = 0 ; j < ncols ; j++) {
     if (integerType[j]) continue ;
     if (hincol[j] != 1) continue ;
+#ifndef USE_ACTIVE
     const bool no_ub = (cup[j] >= ekkinf) ;
     const bool no_lb = (clo[j] <= -ekkinf) ;
+#else
+    const bool no_ub = (active[j]&6)==0 ;
+    const bool no_lb = (active[j]&5)==0 ;
+#endif
     if (no_ub != no_lb) {
       const int &i = hrow[mcstrt[j]] ;
       double aij = colels[mcstrt[j]] ;
@@ -337,7 +634,14 @@ const CoinPresolveAction
   Continuous variables only.
 */
       if (!integerType[j]) {
-	if (cup[j] > ekkinf) {
+#ifndef USE_ACTIVE
+	const bool no_cub = (cup[j] >= ekkinf) ;
+	const bool no_clb = (clo[j] <= -ekkinf) ;
+#else
+	const bool no_cub = (active[j]&6)==0 ;
+	const bool no_clb = (active[j]&5)==0 ;
+#endif
+	if (no_cub) {
 	  if (nflagu == 1 && cbarjmax < -ztolcbarj) {
 	    for (CoinBigIndex k = kcs ; k < kce; k++) {
 	      const int i = hrow[k] ;
@@ -421,7 +725,7 @@ const CoinPresolveAction
   same errors. Consider the likelihood that this whole block needs to be
   edited to sway min/max, & similar.
 */
-	if (clo[j]<-ekkinf) {
+	if (no_clb) {
 	  // cbarj can not be positive
 	  if (cbarjmin > ztolcbarj&&nflagl == 1) {
 	    // We can make bound finite one way
@@ -950,7 +1254,163 @@ const CoinPresolveAction
   might prevent us from achieving integrality. Scan canFix, count and
   record suitable rows (use the second partition of usefulRowInt_).
 */
-# if PRESOLVE_DEBUG > 0
+  // get min max stuff - we can re-use ymin/ymax
+  int * infCount = prob->usefulRowInt_+2*nrows;
+  {
+    // copied from CglProbing 
+    int i, j, k, kre;
+    int krs;
+    int iflagu, iflagl;
+    double dmaxup, dmaxdown;
+    
+    for (i = 0; i < nrows; ++i) {
+      if (rlo[i]==rup[i]) {
+	infCount[i]=10|(10<<16);
+      } else if (rlo[i]>-1.0e20||rup[i]<1.0e20) {
+	iflagu = 0;
+	iflagl = 0;
+	dmaxup = 0.0;
+	dmaxdown = 0.0;
+	krs = mrstrt[i];
+	kre = mrstrt[i]+hinrow[i];
+      
+	/* ------------------------------------------------------------*/
+	/* Compute L(i) and U(i) */
+	/* ------------------------------------------------------------*/
+	for (k = krs; k < kre; ++k) {
+	  double value=rowels[k];
+	  j = hcol[k];
+	  if (value > 0.0) {
+	    if (cup[j] < 1.0e12) 
+	      dmaxup += cup[j] * value;
+	    else
+	      ++iflagu;
+	    if (clo[j] > -1.0e12) 
+	      dmaxdown += clo[j] * value;
+	    else
+	      ++iflagl;
+	  } else if (value<0.0) {
+	    if (cup[j] < 1.0e12) 
+	      dmaxdown += cup[j] * value;
+	    else
+	      ++iflagl;
+	    if (clo[j] > -1.0e12) 
+	      dmaxup += clo[j] * value;
+	    else
+	      ++iflagu;
+	  }
+	}
+	iflagl = CoinMin(iflagl,2);
+	iflagu = CoinMin(iflagu,2);
+	infCount[i]=iflagl|(iflagu<<16);
+	ymax[i]=dmaxup;
+	ymin[i]=dmaxdown;
+      } else {
+	infCount[i]=10|(10<<16);
+      }
+    }
+  }
+  for (int j = 0 ; j < ncols ; j++) {
+    if (hincol[j] == 1 && cost[j]>-1.0e10 ) {
+      // can we make equality row
+      double coeff = colels[mcstrt[j]];
+      int irow=hrow[mcstrt[j]];
+      int iflagl = infCount[irow]&63;
+      int iflagu = infCount[irow]>>16;
+      if (iflagu>1&&iflagl>1)
+	continue;
+      double dmaxdown = ymin[irow];
+      double dmaxup = ymax[irow];
+#if USE_ACTIVE>1
+      printf("singleton col %d has %g on row %d - rhs %g,%g infs %d,%d maxes %g,%g\n",
+	     j,coeff,irow,rlo[irow],rup[irow],
+	     iflagl,iflagu,
+	     dmaxdown,dmaxup);
+#endif
+      if (coeff>0.0) {
+	if (clo[j]>-1.0e12) {
+	  dmaxdown -= coeff*clo[j];
+	  if (iflagl)
+	    dmaxdown=-1.0e60;
+	} else if (iflagl>1) {
+	  dmaxdown = -1.0e60;
+	}
+	if (cup[j]<1.0e12) {
+	  dmaxup -= coeff*cup[j];
+	  if (iflagu)
+	    dmaxup=1.0e60;
+	} else if (iflagu>1) {
+	  dmaxup = 1.0e60;
+	}
+      } else {
+      }
+      double rhs;
+      if (cost[j]>0.0) {
+	// we want as small as possible
+	if (coeff>0) {
+	  if (rlo[irow]>-1.0e12)
+	    rhs = rlo[irow]/coeff;
+	  else
+	    rhs=-COIN_DBL_MAX;
+	} else {
+	  if (rup[irow]<1.0e12)
+	    rhs = -rup[irow]/coeff;
+	  else
+	    rhs=COIN_DBL_MAX;
+	}
+      } else {
+	// we want as large as possible
+	if (coeff>0) {
+	  if (rup[irow]<1.0e12) {
+	    rhs = rup[irow];
+	    if (cup[j]*coeff+dmaxdown>rhs-1.0e-7&&
+		clo[j]*coeff+dmaxup<rhs+1.0e-7) {
+#if 0 //USE_ACTIVE<2
+      printf("singleton col %d has %g on row %d - rhs %g,%g infs %d,%d maxes %g,%g\n",
+	     j,coeff,irow,rlo[irow],rup[irow],
+	     iflagl,iflagu,
+	     dmaxdown,dmaxup);
+#endif
+      //printf("making rup equality\n");
+	      canFix[irow]=1;
+	      infCount[irow]=10|(10<<16);
+	    }
+	    rhs /= coeff;
+	  } else {
+	    if (cup[j]*coeff+dmaxdown>1.0e30) {
+	      //printf("unbounded?\n");
+	    }
+	  }
+	} else {
+	  if (rlo[irow]>-1.0e12) {
+	    rhs = rlo[irow];
+	    if (cup[j]*coeff+dmaxdown<rhs+1.0e-7
+				      &&
+				      clo[j]*coeff+dmaxup>rhs-1.0e-7) {
+#if USE_ACTIVE>1
+      printf("singleton col %d has %g on row %d - rhs %g,%g infs %d,%d maxes %g,%g\n",
+	     j,coeff,irow,rlo[irow],rup[irow],
+	     iflagl,iflagu,
+	     dmaxdown,dmaxup);
+	      printf("making rlo equality\n");
+#endif
+	      canFix[irow]=-11;
+	      infCount[irow]=10|(10<<16);
+	    }
+	    rhs /= coeff;
+	  } else {
+	    if (cup[j]*coeff+dmaxdown>1.0e30) {
+	      //printf("unbounded?\n");
+	    }
+	  }
+	}
+      }
+#if USE_ACTIVE>1
+      printf("adjusted maxes %g,%g - rhs %g\n",dmaxdown,dmaxup,rhs);
+#endif
+    }
+  }
+# if 1 // PRESOLVE_DEBUG > 0
   int makeEqCandCnt = 0 ;
   for (int i = 0 ; i < nrows ; i++) {
     if (abs(canFix[i]) == 1) makeEqCandCnt++ ;
@@ -958,22 +1418,103 @@ const CoinPresolveAction
 # endif
   int makeEqCnt = nrows ;
   for (int i = 0 ; i < nrows ; i++) {
-    if (abs(canFix[i]) == 1) {
-      const CoinBigIndex &krs = mrstrt[i] ;
+    if (abs(canFix[i]) == 1 && hinrow[i] >1 ) {
+      const CoinBigIndex krs = mrstrt[i] ;
       const CoinBigIndex kre = krs+hinrow[i] ;
+      int nBinary=0;
+      int nOther=0;
+      int nSameCoeff=0;
+      double rhs = canFix[i]==1 ? rup[i] : rlo[i];
+      double firstCoeff=0.0;
+      int j=-1;
       for (CoinBigIndex k = krs ; k < kre ; k++) {
-	const int j = hcol[k] ;
-	if (cup[j] > clo[j] && (integerType[j]||prob->colProhibited2(j))) {
-	  canFix[i] = 0 ;
-#	  if PRESOLVE_DEBUG > 1
+	j = hcol[k] ;
+	double coeff = rowels[k];
+	if (cup[j] > clo[j] ) {
+	  if (!firstCoeff) {
+	    firstCoeff=coeff;
+	    nSameCoeff=1;
+	  } else {
+	    if (coeff==firstCoeff)
+	      nSameCoeff++;
+	    else if (coeff!=-firstCoeff)
+	      nOther=1;
+	  }
+	  if(prob->colProhibited2(j)) {
+	    nBinary=1;
+	    nOther=1;
+	    break;
+	  } else if (integerType[j]) {
+	    if (clo[j]==0.0&&cup[j]==1.0) {
+	      nBinary++;
+	    } else {
+	      nBinary=1;
+	      nOther=1;
+	      break;
+	    }
+	  } else {
+	    nOther++;
+	  }
+	} else {
+	  rhs -= coeff*clo[j];
+	}
+      }
+      bool canFixThis=true;
+      if (nBinary) {
+	if (nOther) {
+	  canFixThis = false ;
+# if PRESOLVE_DEBUG > 1
 	  std::cout
 	    << "NDUAL(eq): cannot convert row " << i << " to equality; "
 	    << "unfixed integer variable x(" << j << ")." << std::endl ;
 #         endif
-          break ;
+	} else {
+	  // may be able to if all easy integer
+	  if (!rhs) {
+	    // for now just two of opposite sign
+	    if (nSameCoeff==1&&nBinary==2) {
+	      // ok
+# if PRESOLVE_DEBUG > 1
+	      printf("int eq row is %g <= ",rlo[i]);
+	      for (CoinBigIndex k = krs ; k < kre ; k++) {
+		const double coeff = rowels[k] ;
+		const int icol = hcol[k] ;
+		printf("(%d,%g - bounds %g,%g) ",icol,coeff,clo[icol],cup[icol]);
+	      }
+	      printf("<= %g\n",rup[i]);
+#endif
+	    } else {
+	      canFixThis = false ;
+# if PRESOLVE_DEBUG > 1
+	      std::cout
+		<< "NDUAL(eq2): cannot convert row " << i << " to equality; "
+		<< "unfixed integer variable x(" << j << ")." << std::endl ;
+#         endif
+	    }
+	  } else if (rhs==1.0 && canFix[i]==1 &&
+		     nSameCoeff==nBinary && firstCoeff==1.0) {
+	    // ok
+# if PRESOLVE_DEBUG > 1
+	    printf("int2 eq row is %g <= ",rlo[i]);
+	    for (CoinBigIndex k = krs ; k < kre ; k++) {
+	      const double coeff = rowels[k] ;
+	      const int icol = hcol[k] ;
+	      printf("(%d,%g - bounds %g,%g) ",icol,coeff,clo[icol],cup[icol]);
+	    }
+	    printf("<= %g\n",rup[i]);
+#endif
+	  } else {
+	    canFixThis = false ;
+# if PRESOLVE_DEBUG > 1
+	    std::cout
+	      << "NDUAL(eq3): cannot convert row " << i << " to equality; "
+	      << "unfixed integer variable x(" << j << ")." << std::endl ;
+#         endif
+	  }
 	}
       }
-      if (canFix[i] != 0) canFix[makeEqCnt++] = i ;
+      if (canFixThis>0) 
+	canFix[makeEqCnt++] = i ;
     }
   }
   makeEqCnt -= nrows ;
@@ -992,7 +1533,7 @@ const CoinPresolveAction
   if (makeEqCnt > 0) {
     action *bndRecords = new action[makeEqCnt] ;
     for (int k = 0 ; k < makeEqCnt ; k++) {
-      const int &i = canFix[k+nrows] ;
+      const int i = canFix[k+nrows] ;
 #     if PRESOLVE_DEBUG > 1
       std::cout << "NDUAL(eq): forcing row " << i << " to equality;" ;
       if (canFix[i] == -1)
@@ -1020,7 +1561,7 @@ const CoinPresolveAction
   delete[] cbarmin ;
   delete[] cbarmax ;
 # endif
-
+#undef PRESOLVE_DEBUG
 # if COIN_PRESOLVE_TUNING > 0
   double thisTime = 0.0 ;
   if (prob->tuning_) thisTime = CoinCpuTime() ;

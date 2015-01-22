@@ -1,4 +1,4 @@
-/* $Id: CbcHeuristicGreedy.cpp 1888 2013-04-06 20:52:59Z stefan $ */
+/* $Id: CbcHeuristicGreedy.cpp 2094 2014-11-18 11:15:36Z forrest $ */
 // Copyright (C) 2005, International Business Machines
 // Corporation and others.  All Rights Reserved.
 // This code is licensed under the terms of the Eclipse Public License (EPL).
@@ -117,10 +117,14 @@ CbcHeuristicGreedyCover::solution(double & solutionValue,
         return 0; // switched off
     if (model_->getNodeCount() > numberTimes_)
         return 0;
+#ifdef HEURISTIC_INFORM
+    printf("Entering heuristic %s - nRuns %d numCould %d when %d\n",
+	   heuristicName(),numRuns_,numCouldRun_,when_);
+#endif
     // See if at root node
     bool atRoot = model_->getNodeCount() == 0;
     int passNumber = model_->getCurrentPassNumber();
-    if (atRoot && passNumber != 1)
+    if (atRoot && passNumber > 1)
         return 0;
     OsiSolverInterface * solver = model_->solver();
     const double * columnLower = solver->getColLower();
@@ -536,7 +540,7 @@ CbcHeuristicGreedyEquality::solution(double & solutionValue,
     // See if at root node
     bool atRoot = model_->getNodeCount() == 0;
     int passNumber = model_->getCurrentPassNumber();
-    if (atRoot && passNumber != 1)
+    if (atRoot && passNumber > 1)
         return 0;
     OsiSolverInterface * solver = model_->solver();
     const double * columnLower = solver->getColLower();
@@ -972,7 +976,7 @@ CbcHeuristicGreedySOS::solution(double & solutionValue,
     // See if at root node
     bool atRoot = model_->getNodeCount() == 0;
     int passNumber = model_->getCurrentPassNumber();
-    if (atRoot && passNumber != 1)
+    if (atRoot && passNumber > 1)
         return 0;
     OsiSolverInterface * solver = model_->solver();
     int numberColumns = solver->getNumCols();

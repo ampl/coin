@@ -1,4 +1,4 @@
-/* $Id: ClpFactorization.hpp 1665 2011-01-04 17:55:54Z lou $ */
+/* $Id: ClpFactorization.hpp 2078 2015-01-05 12:39:49Z forrest $ */
 // Copyright (C) 2002, International Business Machines
 // Corporation and others.  All Rights Reserved.
 // This code is licensed under the terms of the Eclipse Public License (EPL).
@@ -23,6 +23,9 @@ class CoinOtherFactorization;
 #endif
 #ifndef COIN_FAST_CODE
 #define COIN_FAST_CODE
+#endif
+#ifndef CLP_FACTORIZATION_NEW_TIMING
+#define CLP_FACTORIZATION_NEW_TIMING 1
 #endif
 
 /** This just implements CoinFactorization when an ClpMatrixBase object
@@ -221,16 +224,10 @@ public:
           else return 0 ;
      }
 #endif
-     inline bool timeToRefactorize() const {
-          if (coinFactorizationA_) {
-               return (coinFactorizationA_->pivots() * 3 > coinFactorizationA_->maximumPivots() * 2 &&
-                       coinFactorizationA_->numberElementsR() * 3 > (coinFactorizationA_->numberElementsL() +
-                                 coinFactorizationA_->numberElementsU()) * 2 + 1000 &&
-                       !coinFactorizationA_->numberDense());
-          } else {
-               return coinFactorizationB_->pivots() > coinFactorizationB_->numberRows() / 2.45 + 20;
-          }
-     }
+     bool timeToRefactorize() const;
+#if CLP_FACTORIZATION_NEW_TIMING>1
+     void statsRefactor(char when) const;
+#endif
      /// Level of detail of messages
      inline int messageLevel (  ) const {
           if (coinFactorizationA_) return coinFactorizationA_->messageLevel();
@@ -420,7 +417,16 @@ private:
      /// Switch to dense if number rows <= this
      int goDenseThreshold_;
 #endif
+#ifdef CLP_FACTORIZATION_NEW_TIMING
+     /// For guessing when to re-factorize
+     mutable double shortestAverage_;
+     mutable double totalInR_;
+     mutable double totalInIncreasingU_;
+     mutable int endLengthU_;
+     mutable int lastNumberPivots_;
+     mutable int effectiveStartNumberU_;
+#endif
      //@}
 };
-
+ 
 #endif

@@ -1,4 +1,4 @@
-// $Id: CbcSOS.hpp 1902 2013-04-10 16:58:16Z stefan $
+// $Id: CbcSOS.hpp 2070 2014-09-08 09:24:45Z forrest $
 // Copyright (C) 2002, International Business Machines
 // Corporation and others.  All Rights Reserved.
 // This code is licensed under the terms of the Eclipse Public License (EPL).
@@ -179,6 +179,8 @@ private:
     int sosType_;
     /// Whether integer valued
     bool integerValued_;
+    /// Whether odd values e.g. negative
+    bool oddValues_;
 };
 
 /** Branching object for Special ordered sets

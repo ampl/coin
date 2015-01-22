@@ -1,4 +1,4 @@
-// $Id: CglClique.cpp 1123 2013-04-06 20:47:24Z stefan $
+// $Id: CglClique.cpp 1201 2014-03-07 17:24:04Z forrest $
 // Copyright (C) 2000, International Business Machines
 // Corporation and others.  All Rights Reserved.
 // This code is licensed under the terms of the Eclipse Public License (EPL).
@@ -843,6 +843,9 @@ CglFakeClique::assignSolver(OsiSolverInterface * fakeSolver)
   if (probing_)
     probing_->refreshSolver(fakeSolver_);
 }
+#ifdef COIN_HAS_CLP
+#include "OsiClpSolverInterface.hpp"
+#endif
 // Generate cuts
 void
 CglFakeClique::generateCuts(const OsiSolverInterface& si, OsiCuts & cs,
@@ -851,14 +854,59 @@ CglFakeClique::generateCuts(const OsiSolverInterface& si, OsiCuts & cs,
   if (fakeSolver_) {
     assert (si.getNumCols()==fakeSolver_->getNumCols());
     fakeSolver_->setColLower(si.getColLower());
-    fakeSolver_->setColSolution(si.getColSolution());
+    const double * solution = si.getColSolution();
+    fakeSolver_->setColSolution(solution);
     fakeSolver_->setColUpper(si.getColUpper());
+    // get and set branch and bound cutoff
+    double cutoff;
+    si.getDblParam(OsiDualObjectiveLimit,cutoff);
+    fakeSolver_->setDblParam(OsiDualObjectiveLimit,COIN_DBL_MAX);
+#ifdef COIN_HAS_CLP
+    OsiClpSolverInterface * clpSolver
+      = dynamic_cast<OsiClpSolverInterface *> (fakeSolver_);
+    if (clpSolver) {
+      // fix up fake solver
+      const ClpSimplex * siSimplex = clpSolver->getModelPtr();
+      // need to set djs
+      memcpy(siSimplex->primalColumnSolution(),
+	     si.getReducedCost(),si.getNumCols()*sizeof(double));
+      fakeSolver_->setDblParam(OsiDualObjectiveLimit,cutoff);
+    }
+#endif
+    const CoinPackedMatrix * matrixByRow = si.getMatrixByRow();
+    const double * elementByRow = matrixByRow->getElements();
+    const int * column = matrixByRow->getIndices();
+    const CoinBigIndex * rowStart = matrixByRow->getVectorStarts();
+    const int * rowLength = matrixByRow->getVectorLengths();
+    const double * rowUpper = si.getRowUpper();
+    const double * rowLower = si.getRowLower();
+    
+    // Scan all rows looking for possibles
+    int numberRows = si.getNumRows();
+    double tolerance = 1.0e-3;
+    for (int iRow=0;iRow<numberRows;iRow++) {
+      CoinBigIndex start = rowStart[iRow];
+      CoinBigIndex end = start + rowLength[iRow];
+      double upRhs = rowUpper[iRow]; 
+      double loRhs = rowLower[iRow]; 
+      double sum = 0.0;
+      for (CoinBigIndex j=start;j<end;j++) {
+	int iColumn=column[j];
+	double value = elementByRow[j];
+	sum += solution[iColumn]*value;
+      }
+      if (sum<loRhs-tolerance||sum>upRhs+tolerance) {
+	// add as cut
+	OsiRowCut rc;
+	rc.setLb(loRhs);
+	rc.setUb(upRhs);
+	rc.setRow(end-start,column+start,elementByRow+start,false);
+	CoinAbsFltEq equal(1.0e-12);
+	cs.insertIfNotDuplicate(rc,equal);
+      }
+    }
     CglClique::generateCuts(*fakeSolver_,cs,info);
     if (probing_) {
-      // get and set branch and bound cutoff
-      double cutoff;
-      si.getDblParam(OsiDualObjectiveLimit,cutoff);
-      fakeSolver_->setDblParam(OsiDualObjectiveLimit,cutoff);
       probing_->generateCuts(*fakeSolver_,cs,info);
     }
   } else {

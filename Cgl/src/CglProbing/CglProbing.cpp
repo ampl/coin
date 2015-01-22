@@ -1,5 +1,4 @@
-// $Id: CglProbing.cpp 1202 2014-03-17 13:58:06Z forrest $
-
+// $Id: CglProbing.cpp 1230 2014-11-18 11:10:45Z forrest $
 // Copyright (C) 2002, International Business Machines
 // Corporation and others.  All Rights Reserved.
 // This code is licensed under the terms of the Eclipse Public License (EPL).
@@ -1336,11 +1335,12 @@ int CglProbing::generateCutsAndModify(const OsiSolverInterface & si,
   }
   int saveMode = mode_;
   bool rowCliques=false;
-  if (!mode_) {
+  if (!(mode_&15)) {
     if (info->pass!=4||info->inTree) {
       mode_=1;
     } else {
       saveMode=1; // make sure do just once
+      mode_=0;
       rowCliques=true;
     }
   }
@@ -1651,7 +1651,6 @@ int CglProbing::gutsOfGenerateCuts(const OsiSolverInterface & si,
   if (fabs(cutoff)>1.0e30)
     assert (cutoff>1.0e30);
   int mode=mode_;
-  
   int nCols=si.getNumCols(); 
 
   // get integer variables
@@ -3008,6 +3007,11 @@ int CglProbing::probe( const OsiSolverInterface & si,
     nRowsFake=nRows;
   }
   row_cut rowCut(nRowsFake, !info->inTree);
+  row_cut * rowCutFake = NULL;
+  if ((mode_&8)!=0) {
+    // redo to be more compact
+    rowCutFake = new row_cut(10000, !info->inTree);
+  }
   totalTimesCalled_++;
   const int * column = rowCopy->getIndices();
   const CoinBigIndex * rowStart = rowCopy->getVectorStarts();
@@ -3256,7 +3260,13 @@ int CglProbing::probe( const OsiSolverInterface & si,
 	}
       }
     }
-    int leftTotalStack=maxStack*CoinMax(200,maxProbe);
+    double leftTotalStackD=maxStack;
+    leftTotalStackD *= CoinMax(200,maxProbe);
+    int leftTotalStack;
+    if (leftTotalStackD<COIN_INT_MAX)
+      leftTotalStack=static_cast<int>(leftTotalStackD);
+    else
+      leftTotalStack=COIN_INT_MAX;
 #ifdef PROBING5
     if (!info->inTree&&!info->pass)
       leftTotalStack = 1234567890;
@@ -4544,6 +4554,26 @@ int CglProbing::probe( const OsiSolverInterface & si,
               break;
             }
           }
+	  if (rowCutFake&&!notFeasible&&iway==1) {
+	    assert (j==stackC[0]);
+	    // add to cliques
+	    for (istackC=1;istackC<nstackC;istackC++) {
+	      int icol=stackC[istackC];
+	      // for now back to just 0-1
+	      if (!colUpper[icol]&&!saveL[istackC]&&saveU[istackC]==1.0) {
+		OsiRowCut rc;
+		rc.setLb(-COIN_DBL_MAX);
+		rc.setUb(1.0);
+		index[0]=icol;
+		element[0]=1.0;
+		index[1]=j;
+		element[1]= 1.0;
+		rc.setRow(2,index,element,false);
+		rowCutFake->addCutIfNotDuplicate(rc);
+		//printf("XX x%d + x%d <= 1\n",j,icol);
+	      }
+	    }
+	  }
 	  if (!notFeasible&&saveFixingInfo) {
 	    // save fixing info
 	    assert (j==stackC[0]);
@@ -5803,6 +5833,18 @@ int CglProbing::probe( const OsiSolverInterface & si,
     }
   }
 #endif
+  if (rowCutFake) {
+    numberCliques_ = rowCutFake->numberCuts();
+    CoinBigIndex numberElements = 2*numberCliques_;
+    cliqueEntry_  = new CliqueEntry [numberElements];
+    int * column = reinterpret_cast<int *>(cliqueEntry_);
+    numberElements = 0;
+    for (int iCut=0;iCut<numberCliques_;iCut++) {
+      column[numberElements++]=rowCutFake->cut(iCut)->row().getIndices()[0];
+      column[numberElements++]=rowCutFake->cut(iCut)->row().getIndices()[1];
+    }
+  }
+  delete rowCutFake;
   return (ninfeas);
 }
 // Does probing and adding cuts
@@ -5843,7 +5885,13 @@ int CglProbing::probeCliques( const OsiSolverInterface & si,
   int * cliqueStack=NULL;
   int * cliqueCount=NULL;
   int * to_01=NULL;
+  int * cliqueAdd = NULL;
+  int maxCliqueAdded=nCols+nRows;
+  int numberCliqueAdded=0;
+  int * cliqueAdd2 = NULL;
   if (!mode_) {
+    cliqueAdd = new int [2*maxCliqueAdded];
+    cliqueAdd2 = cliqueAdd + maxCliqueAdded;
     to_01 = new int[nCols];
     cliqueStack = new int[numberCliques_];
     cliqueCount = new int[numberCliques_];
@@ -6793,6 +6841,13 @@ int CglProbing::probeCliques( const OsiSolverInterface & si,
                   // restore
                   cliqueCount[iClique]= cliqueStart_[iClique+1]-cliqueStart_[iClique];
                   if (!size) {
+		    if (numberCliqueAdded<maxCliqueAdded) {
+		      printf("Can add %d (going to 0) to clique %d (%d entries)\n",
+			   j,iClique,cliqueCount[iClique]);
+		      cliqueAdd[numberCliqueAdded]=j;
+		      cliqueAdd2[numberCliqueAdded]=iClique;
+		      numberCliqueAdded++;
+		    }
                     if (logLevel_>1)
                       printf("** could extend clique by adding j!\n");
                   }
@@ -7147,6 +7202,13 @@ int CglProbing::probeCliques( const OsiSolverInterface & si,
                   // restore
                   cliqueCount[iClique]= cliqueStart_[iClique+1]-cliqueStart_[iClique];
                   if (!size) {
+		    if (numberCliqueAdded<maxCliqueAdded) {
+		      printf("Can add %d (going to 1) to clique %d (%d entries)\n",
+			   j,iClique,cliqueCount[iClique]);
+ 		      cliqueAdd[numberCliqueAdded]=j|0x80000000;
+		      cliqueAdd2[numberCliqueAdded]=iClique;
+		      numberCliqueAdded++;
+		    }
                     if (logLevel_>1)
                       printf("** could extend clique by adding j!\n");
                   }
@@ -7325,9 +7387,101 @@ int CglProbing::probeCliques( const OsiSolverInterface & si,
       }
     }
   }
+  if (numberCliqueAdded) {
+    CoinSort_2(cliqueAdd2,cliqueAdd2+numberCliqueAdded,cliqueAdd);
+    // do cliqueStart and cliqueEntry
+    int numberEntries = cliqueStart_[numberCliques_];
+    numberEntries += numberCliqueAdded;
+    CliqueEntry * entry = new CliqueEntry [numberEntries];
+    // use cliqueCount
+    memset(cliqueCount,0,numberCliques_*sizeof(int));
+    for (int i=0;i<numberCliqueAdded;i++) {
+      cliqueCount[cliqueAdd2[i]]++;
+    }
+    int nAdd2 = numberCliqueAdded;
+    int last = cliqueStart_[numberCliques_];
+    int put = last+numberCliqueAdded;
+    cliqueStart_[numberCliques_] = put;
+    for (int iClique=numberCliques_-1;iClique>=0;iClique--) {
+      // add in new
+      for (int i=0;i<cliqueCount[iClique];i++) {
+	--nAdd2;
+	int iColumn = cliqueAdd[nAdd2] &0x7fffffff;
+	bool oneFixes = ((cliqueAdd[nAdd2]&0x80000000)!=0);
+	--put;
+	setSequenceInCliqueEntry(entry[put],iColumn);
+	setOneFixesInCliqueEntry(entry[put],oneFixes);
+	assert(iColumn>=0 && iColumn<numberColumns_);
+      }
+      // move existing
+      int start = cliqueStart_[iClique];
+      for (int i=last-1;i>=start;i--) 
+	entry[--put]=cliqueEntry_[i];
+      last = start;
+      cliqueStart_[iClique]=put;
+    }
+    assert (!put);
+    delete [] cliqueEntry_;
+    cliqueEntry_ = entry;
+    for (int j=0;j<numberEntries;j++) {
+      assert(sequenceInCliqueEntry(cliqueEntry_[j])>=0);
+      assert(sequenceInCliqueEntry(cliqueEntry_[j])<numberColumns_);
+    }
+    // now create other stuff
+    int * which = cliqueAdd;
+    delete [] whichClique_;
+    assert (nCols==numberColumns_);
+    whichClique_ = new int[numberEntries];
+    for (int i=0;i<numberColumns_;i++) {
+      oneFixStart_[i]=0;
+      zeroFixStart_[i]=0;
+      endFixStart_[i]=0;
+    }
+    // Now do column lists
+    // First do counts
+    for (int iClique=0;iClique<numberCliques_;iClique++) {
+      for (int j=cliqueStart_[iClique];j<cliqueStart_[iClique+1];j++) {
+	int iColumn = sequenceInCliqueEntry(cliqueEntry_[j]);
+	if (oneFixesInCliqueEntry(cliqueEntry_[j]))
+	  oneFixStart_[iColumn]++;
+	else
+	  zeroFixStart_[iColumn]++;
+      }
+    }
+    // now get starts and use which and end as counters
+    numberEntries=0;
+    for (int iColumn=0;iColumn<numberColumns_;iColumn++) {
+      if (oneFixStart_[iColumn]>=0) {
+	int n1=oneFixStart_[iColumn];
+	int n2=zeroFixStart_[iColumn];
+	oneFixStart_[iColumn]=numberEntries;
+	which[iColumn]=numberEntries;
+	numberEntries += n1;
+	zeroFixStart_[iColumn]=numberEntries;
+	endFixStart_[iColumn]=numberEntries;
+	numberEntries += n2;
+      }
+    }
+    // now put in
+    for (int iClique=0;iClique<numberCliques_;iClique++) {
+      for (int j=cliqueStart_[iClique];j<cliqueStart_[iClique+1];j++) {
+	int iColumn = sequenceInCliqueEntry(cliqueEntry_[j]);
+	if (oneFixesInCliqueEntry(cliqueEntry_[j])) {
+	  int put = which[iColumn];
+	  which[iColumn]++;
+	  whichClique_[put]=iClique;
+	} else {
+	  int put = endFixStart_[iColumn];
+	  endFixStart_[iColumn]++;
+	  whichClique_[put]=iClique;
+	}
+      }
+    }
+  }
   delete [] cliqueStack;
   delete [] cliqueCount;
   delete [] to_01;
+  delete [] cliqueAdd;
   delete [] stackC0;
   delete [] lo0;
   delete [] up0;
@@ -8623,7 +8777,7 @@ int CglProbing::snapshot ( const OsiSolverInterface & si,
   int returnCode=0;
   int ninfeas= 
     tighten(colLower_, colUpper_, column, rowElements,
-	    rowStart, NULL,rowLength, rowLower_, rowUpper_,
+	    rowStart, rowStartPos,rowLength, rowLower_, rowUpper_,
 	    numberRows_, numberColumns_, intVar, 5, primalTolerance_);
   delete [] rowStartPos;
   if (ninfeas) {
@@ -8655,7 +8809,7 @@ int CglProbing::snapshot ( const OsiSolverInterface & si,
   int * index = new int[numberRows_];
   int nDrop=0,nKeep=0;
   for (i=0;i<numberRows_;i++) {
-    if (rowLower_[i]<-1.0e30&&rowUpper_[i]>1.0e30) {
+    if (rowLower_[i]<-1.0e30&&rowUpper_[i]>1.0e30&&false) {
       index[nDrop++]=i;
     } else {
       rowLower_[nKeep]=rowLower_[i];
@@ -8722,7 +8876,8 @@ void CglProbing::deleteSnapshot()
 // Mode stuff
 void CglProbing::setMode(int mode)
 {
-  if (mode>=0&&mode<3) {
+  int mode2 = mode&7;
+  if (mode2>=0&&mode2<3) {
     // take off bottom bit
     mode_ &= ~15;
     mode_ |= mode;
@@ -8984,12 +9139,12 @@ CglProbing::CglProbing (  const CglProbing & rhs)
   else
     lookedAt_ = NULL;
   if (numberCliques_) {
-    cliqueType_ = new cliqueType [numberCliques_];
+    cliqueType_ = new CliqueType [numberCliques_];
     CoinMemcpyN(rhs.cliqueType_,numberCliques_,cliqueType_);
     cliqueStart_ = new int [numberCliques_+1];
     CoinMemcpyN(rhs.cliqueStart_,(numberCliques_+1),cliqueStart_);
     int n = cliqueStart_[numberCliques_];
-    cliqueEntry_ = new cliqueEntry [n];
+    cliqueEntry_ = new CliqueEntry [n];
     CoinMemcpyN(rhs.cliqueEntry_,n,cliqueEntry_);
     oneFixStart_ = new int [numberColumns_];
     CoinMemcpyN(rhs.oneFixStart_,numberColumns_,oneFixStart_);
@@ -9161,12 +9316,12 @@ CglProbing::operator=(
     else
       lookedAt_ = NULL;
     if (numberCliques_) {
-      cliqueType_ = new cliqueType [numberCliques_];
+      cliqueType_ = new CliqueType [numberCliques_];
       CoinMemcpyN(rhs.cliqueType_,numberCliques_,cliqueType_);
       cliqueStart_ = new int [numberCliques_+1];
       CoinMemcpyN(rhs.cliqueStart_,(numberCliques_+1),cliqueStart_);
       int n = cliqueStart_[numberCliques_];
-      cliqueEntry_ = new cliqueEntry [n];
+      cliqueEntry_ = new CliqueEntry [n];
       CoinMemcpyN(rhs.cliqueEntry_,n,cliqueEntry_);
       oneFixStart_ = new int [numberColumns_];
       CoinMemcpyN(rhs.oneFixStart_,numberColumns_,oneFixStart_);
@@ -9384,9 +9539,9 @@ CglProbing::createCliques( OsiSolverInterface & si,
     }
   }
   if (numberCliques_>0) {
-    cliqueType_ = new cliqueType [numberCliques_];
+    cliqueType_ = new CliqueType [numberCliques_];
     cliqueStart_ = new int [numberCliques_+1];
-    cliqueEntry_ = new cliqueEntry [numberEntries];
+    cliqueEntry_ = new CliqueEntry [numberEntries];
     oneFixStart_ = new int [numberColumns_];
     zeroFixStart_ = new int [numberColumns_];
     endFixStart_ = new int [numberColumns_];
@@ -9557,6 +9712,83 @@ CglProbing::deleteCliques()
   cliqueRowStart_=NULL;
   numberCliques_=0;
 }
+/* Create a fake model by adding cliques
+   if type&4 then delete rest of model first,
+   if 1 then add proper cliques, 2 add fake cliques */
+OsiSolverInterface * 
+CglProbing::cliqueModel(const OsiSolverInterface * model,
+			int type)
+{
+  OsiSolverInterface * newModel = model->clone();
+  if ((type&4)!=0) {
+    int numberRows = newModel->getNumRows();
+    int * which =new int [numberRows];
+    for (int i=0;i<numberRows;i++)
+      which[i]=i;
+    newModel->deleteRows(numberRows,which);
+    delete [] which;
+  }
+  type &= 3;
+  if (type!=2) {
+    CoinBigIndex numberElements = cliqueStart_[numberCliques_];
+    int * column = new int [numberElements];
+    double * element = new double [numberElements];
+    double * rowLower = new double [numberCliques_];
+    double * rowUpper = new double [numberCliques_];
+    numberElements = 0;
+    for (int iClique=0;iClique<numberCliques_;iClique++) {
+      int nMinus=0;
+      for (int j=cliqueStart_[iClique];j<cliqueStart_[iClique+1];j++) {
+	int iColumn = sequenceInCliqueEntry(cliqueEntry_[j]);
+	column[numberElements]=iColumn;
+	double value;
+	if (oneFixesInCliqueEntry(cliqueEntry_[j])) {
+	  value=1.0;
+	} else {
+	  value=-1.0;
+	  nMinus++;
+	}
+	element[numberElements++]=value;
+      }
+      rowLower[iClique]=-COIN_DBL_MAX;
+      rowUpper[iClique]=1-nMinus;
+    }
+    newModel->addRows(numberCliques_,cliqueStart_,column,element,
+		      rowLower,rowUpper);
+    delete [] column;
+    delete [] element;
+    delete [] rowLower;
+    delete [] rowUpper;
+  } else {
+    int numberCuts = numberCliques_;
+    CoinBigIndex numberElements = 2*numberCuts;
+    int * column = new int [numberElements];
+    double * element = new double [numberElements];
+    double * rowLower = new double [numberCuts];
+    double * rowUpper = new double [numberCuts];
+    CoinBigIndex * start = new CoinBigIndex [numberCuts+1];
+    start[0]=0;
+    numberElements = 0;
+    int * entry = reinterpret_cast<int *>(cliqueEntry_);
+    for (int iCut=0;iCut<numberCuts;iCut++) {
+      column[numberElements]=entry[numberElements];
+      element[numberElements++]=1.0; 
+      column[numberElements]=entry[numberElements];
+      element[numberElements++]=1.0; 
+      rowLower[iCut]=0.0;
+      rowUpper[iCut]=1.0;
+      start[iCut+1]=numberElements;
+    }
+    newModel->addRows(numberCuts,start,column,element,
+		      rowLower,rowUpper);
+    delete [] column;
+    delete [] element;
+    delete [] rowLower;
+    delete [] rowUpper;
+    delete [] start;
+  }
+  return newModel;
+}
 /*
   Returns true if may generate Row cuts in tree (rather than root node).
   Used so know if matrix will change in tree.  Really
@@ -9590,7 +9822,7 @@ CglProbing::setupRowCliqueInformation(const OsiSolverInterface & si)
   cliqueRowStart_ = new int [numberRows_+1];
   cliqueRowStart_[0]=0;
   // Temporary array while building list
-  cliqueEntry ** array = new cliqueEntry * [numberRows_];
+  CliqueEntry ** array = new CliqueEntry * [numberRows_];
   // Which cliques in use
   int * which = new int[numberCliques_];
   int * count = new int[numberCliques_];
@@ -9624,7 +9856,7 @@ CglProbing::setupRowCliqueInformation(const OsiSolverInterface & si)
     // find largest cliques
     bool finished=false;
     int numberInThis=0;
-    cliqueEntry * entries = NULL;
+    CliqueEntry * entries = NULL;
     array[iRow]=entries;
     while (!finished) {
       int largest=1;
@@ -9640,7 +9872,7 @@ CglProbing::setupRowCliqueInformation(const OsiSolverInterface & si)
       if (whichClique>=0&&largest<numberFree) {
         if (!numberInThis) {
           int length=rowLength[iRow];
-          entries = new cliqueEntry [length];
+          entries = new CliqueEntry [length];
           array[iRow]=entries;
           for (int i=0;i<length;i++) {
             setOneFixesInCliqueEntry(entries[i],false);
@@ -9699,7 +9931,7 @@ CglProbing::setupRowCliqueInformation(const OsiSolverInterface & si)
   delete [] count;
   delete [] back;
   // Now put info in one array
-  cliqueRow_ = new cliqueEntry [cliqueRowStart_[numberRows_]];
+  cliqueRow_ = new CliqueEntry [cliqueRowStart_[numberRows_]];
   for (iRow=0;iRow<numberRows_;iRow++) {
     if (array[iRow]) {
       int start = cliqueRowStart_[iRow];
@@ -9873,4 +10105,5 @@ CglImplication::generateCpp( FILE * fp)
   fprintf(fp,"0#include \"CglImplication.hpp\"\n");
   fprintf(fp,"3  CglImplication implication;\n");
   return "implication";
+
 }

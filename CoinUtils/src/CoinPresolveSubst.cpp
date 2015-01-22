@@ -1,4 +1,4 @@
-/* $Id: CoinPresolveSubst.cpp 1581 2013-04-06 12:48:50Z stefan $ */
+/* $Id: CoinPresolveSubst.cpp 1761 2014-12-10 09:43:07Z forrest $ */
 // Copyright (C) 2002, International Business Machines
 // Corporation and others.  All Rights Reserved.
 // This code is licensed under the terms of the Eclipse Public License (EPL).
@@ -70,10 +70,11 @@ void dbg_find_elem (const CoinPostsolveMatrix *postMtx, int i, int j)
   Returns false if the addition completes without error, true if there's a
   problem.
 */
-bool add_row (CoinBigIndex *mrstrt, double *rlo, double *acts, double *rup,
-	     double *rowels, int *hcol, int *hinrow, presolvehlink *rlink,
-	      int nrows, double coeff_factor, double kill_ratio,  int irowx, int irowy,
-	     int *x_to_y)
+static bool 
+add_row (CoinBigIndex *mrstrt, double *rlo, double *acts, double *rup,
+	 double *rowels, int *hcol, int *hinrow, presolvehlink *rlink,
+	 int nrows, double coeff_factor, double kill_ratio,  int irowx, int irowy,
+	 int *x_to_y)
 {
   CoinBigIndex krsy = mrstrt[irowy] ;
   CoinBigIndex krey = krsy+hinrow[irowy] ;
@@ -501,6 +502,11 @@ const CoinPresolveAction *subst_constraint_action::presolve (
     }
     std::cout << std::endl ;
 #   endif
+    // kill small if wanted
+    int relax= (prob->presolveOptions()&0x60000)>>17;
+    double tolerance = 1.0e-12;
+    for (int i=0;i<relax;i++)
+      tolerance *= 10.0;
 
 /*
   Sort the target row for efficiency when doing elimination.
@@ -539,9 +545,6 @@ const CoinPresolveAction *subst_constraint_action::presolve (
   compaction of the row-major bulk store, so update bulk store indices.
 */
       CoinSort_2(colIndices+krs,colIndices+kre,rowCoeffs+krs) ;
-      // kill small if wanted
-      double tolerance = ((prob->presolveOptions()&0x20000)!=0) ?
-	1.0e-9*coeff_factor : 1.0e-12*coeff_factor;
       
       bool outOfSpace = add_row(rowStarts,rlo,acts,rup,rowCoeffs,colIndices,
 				rowLengths,rlink,nrows,coeff_factor,tolerance,i,tgtrow,

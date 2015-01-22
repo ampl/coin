@@ -1,4 +1,4 @@
-/* $Id: CbcHeuristicRINS.cpp 1902 2013-04-10 16:58:16Z stefan $ */
+/* $Id: CbcHeuristicRINS.cpp 2094 2014-11-18 11:15:36Z forrest $ */
 // Copyright (C) 2006, International Business Machines
 // Corporation and others.  All Rights Reserved.
 // This code is licensed under the terms of the Eclipse Public License (EPL).
@@ -157,6 +157,10 @@ CbcHeuristicRINS::solution(double & solutionValue,
     const double * bestSolution = model_->bestSolution();
     if (!bestSolution)
         return 0; // No solution found yet
+#ifdef HEURISTIC_INFORM
+    printf("Entering heuristic %s - nRuns %d numCould %d when %d\n",
+	   heuristicName(),numRuns_,numCouldRun_,when_);
+#endif
     if (numberSolutions_ < model_->getSolutionCount()) {
         // new solution - add info
         numberSolutions_ = model_->getSolutionCount();
@@ -197,7 +201,7 @@ CbcHeuristicRINS::solution(double & solutionValue,
     if (howOften_ >= 100 && numberNodes >= lastNode_ + 2*howOften_) {
         numberNodes = howOften_;
     }
-    if ((numberNodes % howOften_) == 0 && (model_->getCurrentPassNumber() == 1 ||
+    if ((numberNodes % howOften_) == 0 && (model_->getCurrentPassNumber() <= 1 ||
                                            model_->getCurrentPassNumber() == 999999)) {
         lastNode_ = model_->getNodeCount();
         OsiSolverInterface * solver = model_->solver();
@@ -324,7 +328,20 @@ CbcHeuristicRINS::solution(double & solutionValue,
                 }
 #endif
             }
-            //printf("%d integers have same value\n",nFix);
+	    if (solutionValue==-COIN_DBL_MAX) {
+	      // return fixings in betterSolution
+	      const double * colLower = newSolver->getColLower();
+	      const double * colUpper = newSolver->getColUpper();
+	      for (int iColumn = 0; iColumn < numberColumns; iColumn++) {
+		if (colLower[iColumn]==colUpper[iColumn])
+		  betterSolution[iColumn]=colLower[iColumn];
+		else
+		  betterSolution[iColumn]=COIN_DBL_MAX;
+	      }
+	      delete newSolver;
+	      return 0;
+	    }
+            //printf("RINS %d integers have same value\n",nFix);
             returnCode = smallBranchAndBound(newSolver, numberNodes_, betterSolution, solutionValue,
                                              model_->getCutoff(), "CbcHeuristicRINS");
             if (returnCode < 0) {

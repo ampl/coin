@@ -1,4 +1,4 @@
-// $Id: Clp_C_Interface.cpp 2020 2014-01-31 15:25:40Z stefan $
+// $Id: Clp_C_Interface.cpp 2019 2014-01-31 05:18:01Z stefan $
 // Copyright (C) 2003, International Business Machines
 // Corporation and others.  All Rights Reserved.
 // This code is licensed under the terms of the Eclipse Public License (EPL).

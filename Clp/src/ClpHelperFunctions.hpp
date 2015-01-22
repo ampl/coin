@@ -1,4 +1,4 @@
-/* $Id: ClpHelperFunctions.hpp 1817 2011-11-03 09:26:23Z forrest $ */
+/* $Id: ClpHelperFunctions.hpp 2034 2014-06-12 16:10:26Z stefan $ */
 // Copyright (C) 2003, International Business Machines
 // Corporation and others.  All Rights Reserved.
 // This code is licensed under the terms of the Eclipse Public License (EPL).

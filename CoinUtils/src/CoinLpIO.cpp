@@ -1,4 +1,4 @@
-/* $Id: CoinLpIO.cpp 1728 2014-08-05 16:33:45Z tkr $ */
+/* $Id: CoinLpIO.cpp 1753 2014-10-27 03:36:08Z tkr $ */
 // Last edit: 11/5/08
 //
 // Name:     CoinLpIO.cpp; Support for Lp files
@@ -24,7 +24,9 @@
 #include "CoinHelperFunctions.hpp"
 #include "CoinPackedMatrix.hpp"
 #include "CoinLpIO.hpp"
+#include "CoinMpsIO.hpp"
 #include "CoinFinite.hpp"
+#include "CoinSort.hpp"
 
 using namespace std;
 
@@ -49,6 +51,8 @@ CoinLpIO::CoinLpIO() :
   rowsense_(NULL),
   num_objectives_(0),
   integerType_(NULL),
+  set_(NULL),
+  numberSets_(0),
   fileName_(NULL),
   infinity_(COIN_DBL_MAX),
   epsilon_(1e-5),
@@ -97,15 +101,17 @@ CoinLpIO::CoinLpIO(const CoinLpIO& rhs)
     rowrange_(NULL),
     rowsense_(NULL),
     integerType_(NULL),
+    set_(NULL),
+    numberSets_(0),
     fileName_(CoinStrdup("")),
     infinity_(COIN_DBL_MAX),
     epsilon_(1e-5),
-    numberAcross_(10),
-    decimals_(5)
+    numberAcross_(10)
 {
-    for (int j = 0; j < MAX_OBJECTIVES; j++){
+    num_objectives_ = rhs.num_objectives_;
+    for (int j = 0; j < num_objectives_; j++){
        objective_[j] = NULL;
-       objName_[j] = NULL;
+       objName_[j] = CoinStrdup(rhs.objName_[j]);
        objectiveOffset_[j] = 0;
     }
     card_previous_names_[0] = 0;
@@ -149,7 +155,6 @@ void CoinLpIO::gutsOfCopy(const CoinLpIO& rhs)
     numberRows_ = rhs.numberRows_;
     numberColumns_ = rhs.numberColumns_;
     decimals_ = rhs.decimals_;
-    num_objectives_ = rhs.num_objectives_;
  
     if (rhs.rowlower_) {
        rowlower_ = reinterpret_cast<double*> (malloc(numberRows_ * sizeof(double)));
@@ -178,6 +183,12 @@ void CoinLpIO::gutsOfCopy(const CoinLpIO& rhs)
     if (rhs.integerType_) {
        integerType_ = reinterpret_cast<char*> (malloc (numberColumns_ * sizeof(char)));
        memcpy(integerType_, rhs.integerType_, numberColumns_ * sizeof(char));
+    }
+    numberSets_=rhs.numberSets_;
+    if (numberSets_) {
+      set_ = new CoinSet * [numberSets_];
+      for (int j=0;j<numberSets_;j++)
+	set_[j] = new CoinSet(*rhs.set_[j]);
     }
  
     free(fileName_);
@@ -305,6 +316,11 @@ CoinLpIO::freeAll() {
   }
   free(integerType_);
   integerType_ = NULL;
+  for (int j=0;j<numberSets_;j++)
+    delete set_[j];
+  delete [] set_;
+  set_ = NULL;
+  numberSets_=0;
   free(problemName_);
   problemName_ = NULL;
   free(fileName_);
@@ -871,6 +887,43 @@ void CoinLpIO::setLpDataRowAndColNames(char const * const * const rownames,
     }
   }
 } /* setLpDataColAndRowNames */
+  // Load in SOS stuff
+void 
+CoinLpIO::loadSOS(int numberSets,const CoinSet * sets)
+{
+  if (numberSets_) {
+    for (int i=0;i<numberSets_;i++)
+      delete set_[i];
+    delete [] set_;
+    set_ = NULL;
+    numberSets_=0;
+  }
+  if (numberSets) {
+    numberSets_=numberSets;
+    set_ = new CoinSet * [numberSets_];
+    for (int i=0;i<numberSets_;i++)
+      set_[i] = new CoinSet(sets[i]);
+  }
+}
+
+// Load in SOS stuff
+void 
+CoinLpIO::loadSOS(int numberSets,const CoinSet ** sets)
+{
+  if (numberSets_) {
+    for (int i=0;i<numberSets_;i++)
+      delete set_[i];
+    delete [] set_;
+    set_ = NULL;
+    numberSets_=0;
+  }
+  if (numberSets) {
+    numberSets_=numberSets;
+    set_ = new CoinSet * [numberSets_];
+    for (int i=0;i<numberSets_;i++)
+      set_[i] = new CoinSet(*sets[i]);
+  }
+}
 
 /************************************************************************/
 void
@@ -1175,6 +1228,54 @@ CoinLpIO::writeLp(FILE *fp, const bool useRowNames)
 
 #ifdef LPIO_DEBUG
    printf("CoinLpIO::writeLp(): Done with integers\n");
+#endif
+
+   if(set_ != NULL) {
+     fprintf(fp, "SOS\n");
+     double lp_eps = getEpsilon();
+     int decimals = getDecimals();
+     char form[15];
+     sprintf(form, "%%.%df", decimals);
+     for (int iSet=0;iSet<numberSets_;iSet++) {
+       cnt_print = 0;
+       const CoinSet * set = set_[iSet];
+       // no space as readLp gets marginally confused
+       fprintf(fp,"set%d:S%c::",iSet,'0'+set->setType());
+       const int * which = set->which();
+       const double * weights = set->weights();
+       int numberEntries = set->numberEntries();
+       for(j=0; j<numberEntries; j++) {
+	 int iColumn = which[j];
+	 fprintf(fp, " %s:", colNames[iColumn]);
+	 // modified out_coeff (no leading space)
+	 double v = weights[j];
+	 double frac = v - floor(v);
+	 
+	 if(frac < lp_eps) {
+	   fprintf(fp,"%.0f", floor(v));
+	 }
+	 else {
+	   if(frac > 1 - lp_eps) {
+	     fprintf(fp, "%.0f", floor(v+0.5));
+	   }
+	   else {
+	   fprintf(fp, form, v);
+	   }
+	 }
+	 cnt_print++;
+	 if(cnt_print % numberAcross == 0) {
+	   fprintf(fp, "\n");
+	 }
+       }
+       
+       if(cnt_print % numberAcross != 0) {
+	 fprintf(fp, "\n");
+       }
+     }
+   }
+
+#ifdef LPIO_DEBUG
+   printf("CoinLpIO::writeLp(): Done with SOS\n");
 #endif
 
    fprintf(fp, "End\n");
@@ -1484,7 +1585,10 @@ CoinLpIO::read_monom_obj(FILE *fp, double *coeff, char **name, int *cnt,
     return(0);
   }
 
-
+  if (*num_objectives == 0){
+    obj_starts[(*num_objectives)++] = *cnt;
+  }
+     
   read_st = is_subject_to(buff);
 
 #ifdef LPIO_DEBUG
@@ -1653,7 +1757,6 @@ CoinLpIO::realloc_row(char ***rowNames, int **start, double **rhs,
 void
 CoinLpIO::realloc_col(double **collow, double **colup, char **is_int,
 		      int *maxcol) const {
-  
   *maxcol += 100;
   *collow = reinterpret_cast<double *> (realloc ((*collow), (*maxcol+1) * sizeof(double)));
   *colup = reinterpret_cast<double *> (realloc ((*colup), (*maxcol+1) * sizeof(double)));
@@ -1745,8 +1848,18 @@ CoinLpIO::is_keyword(const char *buff) const {
     return(3);
   }
   
-  if((lbuff == 3) && (CoinStrNCaseCmp(buff, "end", 3) == 0)) {
+  if(((lbuff == 15) && (CoinStrNCaseCmp(buff, "semi-continuous", 15) == 0)) ||
+     ((lbuff == 4) && (CoinStrNCaseCmp(buff, "semi", 4) == 0)) ||
+     ((lbuff == 5) && (CoinStrNCaseCmp(buff, "semis", 5) == 0))) {
     return(4);
+  }
+  
+  if((lbuff == 3) && (CoinStrNCaseCmp(buff, "sos", 3) == 0)) {
+    return(5);
+  }
+  
+  if((lbuff == 3) && (CoinStrNCaseCmp(buff, "end", 3) == 0)) {
+    return(6);
   }
 
   return(0);
@@ -1797,15 +1910,22 @@ CoinLpIO::readLp(FILE* fp)
 
   int objsense, cnt_coeff = 0, cnt_row = 0, cnt_obj = 0;
   int num_objectives = 0;
-  char *objName[MAX_OBJECTIVES];
+  char *objName[MAX_OBJECTIVES] = {NULL, NULL};
   int obj_starts[MAX_OBJECTIVES+1];
-  char **colNames = reinterpret_cast<char **> (malloc ((maxcoeff+1) * sizeof(char *)));
-  double *coeff = reinterpret_cast<double *> (malloc ((maxcoeff+1) * sizeof(double)));
-  char **rowNames = reinterpret_cast<char **> (malloc ((maxrow+1) * sizeof(char *)));
-  int *start = reinterpret_cast<int *> (malloc ((maxrow+1) * sizeof(int)));
-  double *rhs = reinterpret_cast<double *> (malloc ((maxrow+1) * sizeof(double)));
-  double *rowlow = reinterpret_cast<double *> (malloc ((maxrow+1) * sizeof(double)));
-  double *rowup = reinterpret_cast<double *> (malloc ((maxrow+1) * sizeof(double)));
+  char **colNames = reinterpret_cast<char **> 
+     (malloc ((maxcoeff+1) * sizeof(char *)));
+  double *coeff = reinterpret_cast<double *> 
+     (malloc ((maxcoeff+1) * sizeof(double)));
+  char **rowNames = reinterpret_cast<char **> 
+     (malloc ((maxrow+MAX_OBJECTIVES) * sizeof(char *)));
+  int *start = reinterpret_cast<int *> 
+     (malloc ((maxrow+MAX_OBJECTIVES) * sizeof(int)));
+  double *rhs = reinterpret_cast<double *> 
+     (malloc ((maxrow+1) * sizeof(double)));
+  double *rowlow = reinterpret_cast<double *> 
+     (malloc ((maxrow+1) * sizeof(double)));
+  double *rowup = reinterpret_cast<double *> 
+     (malloc ((maxrow+1) * sizeof(double)));
 
   int i;
 
@@ -2115,8 +2235,183 @@ CoinLpIO::readLp(FILE* fp)
 	scan_next(buff, fp);
       }
       break;
-      
-    case 4: done = 1; break;
+
+    case 5: /* sos section */
+      { 
+	numberSets_ = 0; 
+	int maxSets = 10;
+	CoinSet **set = new CoinSet * [maxSets];
+	int maxEntries = 100;
+	double * weights = new double [maxEntries];
+	int * which = new int [maxEntries];
+	char printBuffer[512];
+	int numberBad=0;
+	scan_next(buff, fp);
+	while (true) {
+	  int numberEntries=0;
+	  int setType = -1;
+	  int goodLine=2;
+	  bool endLine=false;
+	  bool gotStart=false;
+	  while (!endLine) {
+	    if(is_keyword(buff) == 0) {
+	      // see if ::
+	      char * next = strstr(buff,"::");
+	      if (!gotStart) {
+		if (!next) {
+		  // OK first time - may be name of set
+		  if (goodLine==2) {
+		    int length=strlen(buff);
+		    if (buff[length-1]==':') {
+		      goodLine=1;
+		      scan_next(buff,fp); // try again
+		      continue;
+		    } else {
+		      goodLine=0;
+		    }
+		  } else {
+		    goodLine=0;
+		  }
+		} else {
+		  // check nothing or set name
+		  if (strchr(buff,':')<next||next==buff+2) {
+		    // be lazy and assume set name
+		    // get type
+		    next -= 2;
+		    if (next>=buff&&(!strncmp(next,"S1::",4)||!strncmp(next,"S2::",4))) {
+		      setType = next[1]-'0';
+		      gotStart=true;
+		    } else {
+		      // error
+		      goodLine=0;
+		    }
+		  } else {
+		    goodLine=0;
+		  }
+		}
+	      } else if (next) {
+		// end of set
+		endLine=true;
+	      }
+	    } else {
+	      endLine=true;
+	    }
+	    if (!goodLine) {
+	      endLine=true;
+	    }
+	    while (!endLine) {
+	      scan_next(buff, fp);
+	      if(is_keyword(buff) == 0 && !strstr(buff,"::")) {
+		// expect pair
+		char * start_str=buff;
+		char * next = strchr(start_str,':');
+		if (!next) {
+		  endLine=true;
+		  goodLine=0;
+		} else {
+		  *next='\0';
+		  int iColumn = columnIndex(start_str);
+		  *next=':';
+		  if (iColumn>=0) {
+		    int length=strlen(next+1);
+		    if (!length) {
+		      // assume user put in spaces
+		      scan_next(buff, fp);
+		      if(is_keyword(buff) != 0 || strstr(buff,"::")) {
+			goodLine=0;
+		      } else {
+			next=buff-1;
+		      }
+		    }
+		    double value = atof(next+1);
+		    if (numberEntries==maxEntries) {
+		      maxEntries = 2*maxEntries;
+		      double * tempD = new double[maxEntries];
+		      int * tempI = new int[maxEntries];
+		      memcpy(tempD,weights,numberEntries*sizeof(double));
+		      memcpy(tempI,which,numberEntries*sizeof(int));
+		      delete [] weights;
+		      weights = tempD;
+		      delete [] which;
+		      which = tempI;
+		    }
+		    weights[numberEntries]=value;
+		    which[numberEntries++]=iColumn;
+		  } else {
+		    // no match - assume start of next set
+		    if (!numberBad) {
+		      sprintf(printBuffer,"### CoinLpIO::readLp(): Variable %s not found or no weight", 
+			      buff);
+		      handler_->message(COIN_GENERAL_WARNING,messages_)<<printBuffer
+								       <<CoinMessageEol;
+		      sprintf(printBuffer,
+			      "Assuming next set name - consider no set names or use setnn:S1:: (no spaces)");
+		      handler_->message(COIN_GENERAL_WARNING,messages_)<<printBuffer
+								       <<CoinMessageEol;
+
+		    }
+		    numberBad++;
+		    endLine=true;
+		  }
+		}
+	      } else {
+		endLine=true;
+	      }
+	    }
+	    if (!goodLine) {
+	      // print bad line
+	      setType=3;
+	      sprintf(printBuffer,"### CoinLpIO::readLp(): bad SOS item", buff);
+	      handler_->message(COIN_GENERAL_WARNING,messages_)<<printBuffer
+							       <<CoinMessageEol;
+	    }
+	  }
+	  if (setType==1||setType==2) {
+	    if (!numberEntries) {
+	      // empty set - error
+	      sprintf(printBuffer,"### CoinLpIO::readLp(): set %d is empty", numberSets_);
+	      handler_->message(COIN_GENERAL_WARNING,messages_)<<printBuffer
+							       <<CoinMessageEol;
+	    } else {
+	      CoinSort_2(weights,weights+numberEntries,which);
+	      double last=weights[0];
+	      for (int i=1;i<numberEntries;i++) {
+		if (fabs(last-weights[i])<1.0e-12) {
+		  setType=3;
+		  break;
+		}
+	      }
+	      if (setType!=3) {
+		if (numberSets_==maxSets) {
+		  maxSets *= 2;
+		  CoinSet ** temp = new CoinSet * [maxSets];
+		  memcpy(temp,set,numberSets_*sizeof(CoinSet *));
+		  delete [] set;
+		  set = temp;
+		}
+		CoinSosSet * newSet = new CoinSosSet(numberEntries,which,weights,setType);
+		set[numberSets_++]=newSet;
+	      } else {
+		sprintf(printBuffer,"### CoinLpIO::readLp(): set %d has duplicate weights", 
+			numberSets_);
+		handler_->message(COIN_GENERAL_WARNING,messages_)<<printBuffer
+								 <<CoinMessageEol;
+	      }
+	    }
+	  }
+	  if(is_keyword(buff)) 
+	    break; // end
+	}
+	delete [] weights;
+	delete [] which;
+	if (numberSets_) {
+	  set_ = new CoinSet * [numberSets_];
+	  memcpy(set_,set,numberSets_*sizeof(CoinSet *));
+	}
+      }
+      break;
+
+    case 6: done = 1; break;
       
     default: 
       char str[8192];
@@ -2189,11 +2484,18 @@ CoinLpIO::readLp(FILE* fp)
 #ifdef LPIO_DEBUG
   matrix->dumpMatrix();  
 #endif
+  // save sets
+  CoinSet ** saveSet = set_;
+  int saveNumberSets = numberSets_;
+  set_ = NULL;
+  numberSets_ = 0;
 
   setLpDataWithoutRowAndColNames(*matrix, collow, colup,
 				 const_cast<const double **>(obj), 
 				 num_objectives, has_int ? is_int : 0, rowlow, rowup);
 
+  set_ = saveSet;
+  numberSets_ = saveNumberSets;
 
   for (int j = 0; j < num_objectives; j++){
      if(objName[j] == NULL) {
@@ -2485,8 +2787,10 @@ CoinLpIO::stopHash(int section)
 
   if(section == 0) {
      for (int j = 0; j < num_objectives_; j++){
-	free(objName_[j]);
-	objName_[j] = NULL;
+	if (objName_[j] != NULL){
+	   free(objName_[j]);
+	   objName_[j] = NULL;
+	}
      }
   }
 } /* stopHash */

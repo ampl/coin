@@ -23,7 +23,7 @@ bool isNumericStr( const char *str )
    const size_t l = strlen(str);
 
    for ( size_t i=0 ; i<l ; ++i )
-     if (!(isdigit(str[i])||(str[i]=='.')||(str[i]=='-')))
+     if (!(isdigit(str[i])||(str[i]=='.')||(str[i]=='-')||(str[i]=='e')))
          return false;
 
    return true;
@@ -125,7 +125,6 @@ int computeCompleteSolution( CbcModel * model,
    OsiSolverInterface *lp = model->solver()->clone();
    map< string, int > colIdx;
    assert( ((int)colNames.size()) == lp->getNumCols() );
-
    /* for fast search of column names */
    for ( int i=0 ; (i<(int)colNames.size()) ; ++i )
       colIdx[colNames[i]] = i;
@@ -135,6 +134,17 @@ int computeCompleteSolution( CbcModel * model,
    int notFound = 0;
    char colNotFound[256] = "";
    int nContinuousFixed = 0;
+#ifndef JUST_FIX_INTEGER
+#define JUST_FIX_INTEGER 0
+#endif
+#if JUST_FIX_INTEGER > 1
+   // all not mentioned are at zero
+   for ( int i=0 ; (i<lp->getNumCols()) ; ++i )
+     {
+       if (lp->isInteger(i))
+         lp->setColBounds( i, 0.0, 0.0 );
+     }
+#endif
    for ( int i=0 ; (i<(int)colValues.size()) ; ++i )
    {
       map< string, int >::const_iterator mIt = colIdx.find( colValues[i].first );
@@ -148,6 +158,10 @@ int computeCompleteSolution( CbcModel * model,
       {
          const int idx = mIt->second;
          double v = colValues[i].second;
+#if JUST_FIX_INTEGER
+         if (!lp->isInteger(idx))
+	   continue;
+#endif
          if (v<1e-8)
             v = 0.0;
          if (lp->isInteger(idx))  // just to avoid small
@@ -172,8 +186,12 @@ int computeCompleteSolution( CbcModel * model,
       model->messageHandler()->message(CBC_GENERAL, model->messages())
 	<< printLine << CoinMessageEol;
    }
-
+#if JUST_FIX_INTEGER
+   lp->setHintParam(OsiDoPresolveInInitial, true, OsiHintDo) ;
+#endif
+   lp->setDblParam(OsiDualObjectiveLimit,COIN_DBL_MAX);
    lp->initialSolve();
+   //lp->writeMps("fixed","mps");
    if (!lp->isProvenOptimal())
    {
       model->messageHandler()->message(CBC_GENERAL, model->messages())
@@ -262,14 +280,239 @@ int computeCompleteSolution( CbcModel * model,
       sprintf( printLine,"mipstart provided solution with cost %g", compObj);
       model->messageHandler()->message(CBC_GENERAL, model->messages())
 	<< printLine << CoinMessageEol;
+#if 0
+      {
+	int numberColumns=lp->getNumCols();
+	double largestInfeasibility = 0.0;
+	double primalTolerance ;
+	double offset;
+	lp->getDblParam(OsiObjOffset, offset);
+	lp->getDblParam(OsiPrimalTolerance, primalTolerance) ;
+	const double *objective = lp->getObjCoefficients() ;
+	const double * rowLower = lp->getRowLower() ;
+	const double * rowUpper = lp->getRowUpper() ;
+	const double * columnLower = lp->getColLower() ;
+	const double * columnUpper = lp->getColUpper() ;
+	int numberRows = lp->getNumRows() ;
+	double *rowActivity = new double[numberRows] ;
+	memset(rowActivity, 0, numberRows*sizeof(double)) ;
+	double *rowSum = new double[numberRows] ;
+	memset(rowSum, 0, numberRows*sizeof(double)) ;
+	const double * element = lp->getMatrixByCol()->getElements();
+	const int * row = lp->getMatrixByCol()->getIndices();
+	const CoinBigIndex * columnStart = lp->getMatrixByCol()->getVectorStarts();
+	const int * columnLength = lp->getMatrixByCol()->getVectorLengths();
+	const CoinPackedMatrix * rowCopy = lp->getMatrixByRow();
+	const int * column = rowCopy->getIndices();
+	const int * rowLength = rowCopy->getVectorLengths();
+	const CoinBigIndex * rowStart = rowCopy->getVectorStarts();
+	const double * elementByRow = rowCopy->getElements();
+	double objValue=-offset;
+	for (int iColumn = 0; iColumn < numberColumns; iColumn++) {
+	  double value = sol[iColumn];
+	  if (lp->isInteger(iColumn))
+	    assert (fabs(value-floor(value+0.5))<1.0e-6);
+	  objValue += value*objective[iColumn];
+	  if (value>columnUpper[iColumn]) {
+	    if (value-columnUpper[iColumn]>1.0e-8)
+	      printf("column %d has value %.12g above %.12g\n",iColumn,value,columnUpper[iColumn]);
+	    value=columnUpper[iColumn];
+	  } else if (value<columnLower[iColumn]) {
+	    if (value-columnLower[iColumn]<-1.0e-8)
+	      printf("column %d has value %.12g below %.12g\n",iColumn,value,columnLower[iColumn]);
+	    value=columnLower[iColumn];
+	  }
+	  if (value) {
+	    CoinBigIndex start = columnStart[iColumn];
+	    CoinBigIndex end = start + columnLength[iColumn];
+	    for (CoinBigIndex j = start; j < end; j++) {
+	      int iRow = row[j];
+	      if (fabs(value)<1.0e-6&&fabs(value*element[j])>1.0e-5)
+		printf("Column %d row %d value %.8g element %g %s\n",
+		       iColumn,iRow,value,element[j],lp->isInteger(iColumn) ? "integer" : "");
+	      rowActivity[iRow] += value * element[j];
+	      rowSum[iRow] += fabs(value * element[j]);
+	    }
+	  }
+	}
+	for (int i = 0 ; i < numberRows ; i++) {
+#if 0 //def CLP_INVESTIGATE
+	  double inf;
+	  inf = rowLower[i] - rowActivity[i];
+	  if (inf > primalTolerance)
+	    printf("Row %d inf %g sum %g %g <= %g <= %g\n",
+		   i, inf, rowSum[i], rowLower[i], rowActivity[i], rowUpper[i]);
+	  inf = rowActivity[i] - rowUpper[i];
+	  if (inf > primalTolerance)
+	    printf("Row %d inf %g sum %g %g <= %g <= %g\n",
+		   i, inf, rowSum[i], rowLower[i], rowActivity[i], rowUpper[i]);
+#endif
+	  double infeasibility = CoinMax(rowActivity[i]-rowUpper[i],
+					 rowLower[i]-rowActivity[i]);
+	  // but allow for errors
+	  double factor = CoinMax(1.0,rowSum[i]*1.0e-3);
+	  if (infeasibility>largestInfeasibility*factor) {
+	    largestInfeasibility = infeasibility/factor;
+	    printf("Cinf of %g on row %d sum %g scaled %g\n",
+		   infeasibility,i,rowSum[i],largestInfeasibility);
+	    if (infeasibility>1.0e10) {
+	      for (CoinBigIndex j=rowStart[i];
+		   j<rowStart[i]+rowLength[i];j++) {
+		printf("col %d element %g\n",
+		       column[j],elementByRow[j]);
+	      }
+	    }
+	  }
+	}
+	delete [] rowActivity ;
+	delete [] rowSum;
+	if (largestInfeasibility > 10.0*primalTolerance)
+	  printf("Clargest infeasibility is %g - obj %g\n", largestInfeasibility,objValue);
+	else
+	  printf("Cfeasible (%g) - obj %g\n", largestInfeasibility,objValue);
+      }
+#endif
       for ( int i=0 ; (i<lp->getNumCols()) ; ++i )
       {
+#if 0
          if (sol[i]<1e-8)
             sol[i] = 0.0;
          else
             if (lp->isInteger(i))
                sol[i] = floor( sol[i]+0.5 );
+#else
+	 if (lp->isInteger(i)) {
+	   //if (fabs(sol[i] - floor( sol[i]+0.5 ))>1.0e-8) 
+	   //printf("bad sol for %d - %.12g\n",i,sol[i]);
+	   sol[i] = floor( sol[i]+0.5 );
+	 }
+#endif
       }
+#if 0
+      {
+	int numberColumns=lp->getNumCols();
+	double largestInfeasibility = 0.0;
+	double primalTolerance ;
+	double offset;
+	lp->getDblParam(OsiObjOffset, offset);
+	lp->getDblParam(OsiPrimalTolerance, primalTolerance) ;
+	const double *objective = lp->getObjCoefficients() ;
+	const double * rowLower = lp->getRowLower() ;
+	const double * rowUpper = lp->getRowUpper() ;
+	const double * columnLower = lp->getColLower() ;
+	const double * columnUpper = lp->getColUpper() ;
+	int numberRows = lp->getNumRows() ;
+	double *rowActivity = new double[numberRows] ;
+	memset(rowActivity, 0, numberRows*sizeof(double)) ;
+	double *rowSum = new double[numberRows] ;
+	memset(rowSum, 0, numberRows*sizeof(double)) ;
+	const double * element = lp->getMatrixByCol()->getElements();
+	const int * row = lp->getMatrixByCol()->getIndices();
+	const CoinBigIndex * columnStart = lp->getMatrixByCol()->getVectorStarts();
+	const int * columnLength = lp->getMatrixByCol()->getVectorLengths();
+	const CoinPackedMatrix * rowCopy = lp->getMatrixByRow();
+	const int * column = rowCopy->getIndices();
+	const int * rowLength = rowCopy->getVectorLengths();
+	const CoinBigIndex * rowStart = rowCopy->getVectorStarts();
+	const double * elementByRow = rowCopy->getElements();
+	double objValue=-offset;
+	for (int iColumn = 0; iColumn < numberColumns; iColumn++) {
+	  double value = sol[iColumn];
+	  if (lp->isInteger(iColumn))
+	    assert (fabs(value-floor(value+0.5))<1.0e-6);
+	  objValue += value*objective[iColumn];
+	  if (value>columnUpper[iColumn]) {
+	    if (value-columnUpper[iColumn]>1.0e-8)
+	      printf("column %d has value %.12g above %.12g\n",iColumn,value,columnUpper[iColumn]);
+	    value=columnUpper[iColumn];
+	  } else if (value<columnLower[iColumn]) {
+	    if (value-columnLower[iColumn]<-1.0e-8)
+	      printf("column %d has value %.12g below %.12g\n",iColumn,value,columnLower[iColumn]);
+	    value=columnLower[iColumn];
+	  }
+	  if (value) {
+	    CoinBigIndex start = columnStart[iColumn];
+	    CoinBigIndex end = start + columnLength[iColumn];
+	    for (CoinBigIndex j = start; j < end; j++) {
+	      int iRow = row[j];
+	      rowActivity[iRow] += value * element[j];
+	      rowSum[iRow] += fabs(value * element[j]);
+	    }
+	  }
+	}
+	for (int i = 0 ; i < numberRows ; i++) {
+#if 0 //def CLP_INVESTIGATE
+	  double inf;
+	  inf = rowLower[i] - rowActivity[i];
+	  if (inf > primalTolerance)
+	    printf("Row %d inf %g sum %g %g <= %g <= %g\n",
+		   i, inf, rowSum[i], rowLower[i], rowActivity[i], rowUpper[i]);
+	  inf = rowActivity[i] - rowUpper[i];
+	  if (inf > primalTolerance)
+	    printf("Row %d inf %g sum %g %g <= %g <= %g\n",
+		   i, inf, rowSum[i], rowLower[i], rowActivity[i], rowUpper[i]);
+#endif
+	  double infeasibility = CoinMax(rowActivity[i]-rowUpper[i],
+					 rowLower[i]-rowActivity[i]);
+	  // but allow for errors
+	  double factor = CoinMax(1.0,rowSum[i]*1.0e-3);
+	  if (infeasibility>largestInfeasibility*factor) {
+	    largestInfeasibility = infeasibility/factor;
+	    printf("Dinf of %g on row %d sum %g scaled %g\n",
+		   infeasibility,i,rowSum[i],largestInfeasibility);
+	    if (infeasibility>1.0e10) {
+	      for (CoinBigIndex j=rowStart[i];
+		   j<rowStart[i]+rowLength[i];j++) {
+		printf("col %d element %g\n",
+		       column[j],elementByRow[j]);
+	      }
+	    }
+	  }
+	}
+	delete [] rowActivity ;
+	delete [] rowSum;
+	if (largestInfeasibility > 10.0*primalTolerance)
+	  printf("Dlargest infeasibility is %g - obj %g\n", largestInfeasibility,objValue);
+	else
+	  printf("Dfeasible (%g) - obj %g\n", largestInfeasibility,objValue);
+      }
+#endif
+#if JUST_FIX_INTEGER
+      const double * oldLower = model->solver()->getColLower();
+      const double * oldUpper = model->solver()->getColUpper();
+      const double * dj = lp->getReducedCost();
+      int nNaturalLB=0;
+      int nMaybeLB=0;
+      int nForcedLB=0;
+      int nNaturalUB=0;
+      int nMaybeUB=0;
+      int nForcedUB=0;
+      int nOther=0;
+      for ( int i=0 ; i<lp->getNumCols() ; ++i ) {
+	if (lp->isInteger(i)) {
+	  if (sol[i]==oldLower[i]) {
+	    if (dj[i]>1.0e-5)
+	      nNaturalLB++;
+	    else if (dj[i]<-1.0e-5)
+	      nForcedLB++;
+	    else
+	      nMaybeLB++;
+	  } else if (sol[i]==oldUpper[i]) {
+	    if (dj[i]<-1.0e-5)
+	      nNaturalUB++;
+	    else if (dj[i]>1.0e-5)
+	      nForcedUB++;
+	    else
+	      nMaybeUB++;
+	  } else {
+	    nOther++;
+	  }
+	}
+      }
+      printf("%d other, LB %d natural, %d neutral, %d forced, UB %d natural, %d neutral, %d forced\n",
+	     nOther,nNaturalLB,nMaybeLB,nForcedLB,
+	     nNaturalUB,nMaybeUB,nForcedUB=0);
+#endif
    }
 
 TERMINATE:

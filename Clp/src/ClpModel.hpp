@@ -1,4 +1,4 @@
-/* $Id: ClpModel.hpp 2047 2014-08-20 07:06:32Z forrest $ */
+/* $Id: ClpModel.hpp 2074 2014-12-10 09:43:54Z forrest $ */
 // Copyright (C) 2002, International Business Machines
 // Corporation and others.  All Rights Reserved.
 // This code is licensed under the terms of the Eclipse Public License (EPL).
@@ -420,7 +420,7 @@ public:
          7 - postSolve says not optimal
          8 - failed due to bad element check
          9 - status was 3 and stopped on time
-	 10 - status was 3 and can't use objective as lb
+	 10 - status was 3 but stopped as primal feasible
          100 up - translation of enum from ClpEventHandler
      */
      inline int secondaryStatus() const            {
@@ -1039,6 +1039,8 @@ public:
          524288 - Clp fast dual
          1048576 - don't need to finish dual (can return 3)
 	 2097152 - zero costs!
+	 4194304 - don't scale integer variables
+	 8388608 - Idiot when not really sure about it
          NOTE - many applications can call Clp but there may be some short cuts
                 which are taken which are not guaranteed safe from all applications.
                 Vetted applications will have a bit set and the code may test this

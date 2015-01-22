@@ -1,4 +1,4 @@
-/* $Id: CoinDenseFactorization.hpp 1416 2011-04-17 09:57:29Z stefan $ */
+/* $Id: CoinDenseFactorization.hpp 1759 2014-11-18 11:07:23Z forrest $ */
 // Copyright (C) 2008, International Business Machines
 // Corporation and others.  All Rights Reserved.
 // This code is licensed under the terms of the Eclipse Public License (EPL).
@@ -19,6 +19,9 @@
 #include "CoinTypes.hpp"
 #include "CoinIndexedVector.hpp"
 #include "CoinFactorization.hpp"
+#if COIN_FACTORIZATION_DENSE_CODE == 2
+#undef COIN_FACTORIZATION_DENSE_CODE
+#endif
 class CoinPackedMatrix;
 /// Abstract base class which also has some scalars so can be used from Dense or Simp
 class CoinOtherFactorization {

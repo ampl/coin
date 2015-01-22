@@ -1,4 +1,4 @@
-// $Id: OsiCbcSolverInterface.cpp 1902 2013-04-10 16:58:16Z stefan $
+// $Id: OsiCbcSolverInterface.cpp 2083 2014-09-28 10:31:40Z forrest $
 // Copyright (C) 2002, International Business Machines
 // Corporation and others.  All Rights Reserved.
 // This code is licensed under the terms of the Eclipse Public License (EPL).
@@ -121,21 +121,33 @@ OsiCbcSolverInterface::getStrParam(OsiStrParam key, std::string & value) const
 
 bool OsiCbcSolverInterface::isAbandoned() const
 {
-  return modelPtr_->solver()->isAbandoned();
+  if (modelPtr_->status()!=-1)
+    return modelPtr_->isAbandoned();
+  else
+    return modelPtr_->solver()->isAbandoned();
 }
 
 bool OsiCbcSolverInterface::isProvenOptimal() const
 {
-  return modelPtr_->solver()->isProvenOptimal();
+  if (modelPtr_->status()!=-1)
+    return modelPtr_->isProvenOptimal();
+  else
+    return modelPtr_->solver()->isProvenOptimal();
 }
 
 bool OsiCbcSolverInterface::isProvenPrimalInfeasible() const
 {
-  return modelPtr_->solver()->isProvenPrimalInfeasible();
+  if (modelPtr_->status()!=-1)
+    return modelPtr_->isProvenInfeasible();
+  else
+    return modelPtr_->solver()->isProvenPrimalInfeasible();
 }
 
 bool OsiCbcSolverInterface::isProvenDualInfeasible() const
 {
+  if (modelPtr_->status()!=-1)
+  return modelPtr_->isProvenDualInfeasible();
+  else
   return modelPtr_->solver()->isProvenDualInfeasible();
 }
 bool OsiCbcSolverInterface::isPrimalObjectiveLimitReached() const
@@ -150,7 +162,10 @@ bool OsiCbcSolverInterface::isDualObjectiveLimitReached() const
 
 bool OsiCbcSolverInterface::isIterationLimitReached() const
 {
-  return modelPtr_->solver()->isIterationLimitReached();
+  if (modelPtr_->status()!=-1)
+    return modelPtr_->isNodeLimitReached();
+  else
+    return modelPtr_->solver()->isIterationLimitReached();
 }
 
 //#############################################################################

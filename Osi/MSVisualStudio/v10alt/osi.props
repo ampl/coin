@@ -1,0 +1,36 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ImportGroup Label="PropertySheets">
+    <Import Project="$(CoinRoot)\CoinUtils\CoinUtils\MSVisualStudio\v10alt\coinutils.props" Condition=" '$(Have_CoinUtils_Props)' != 'yes' " />
+  </ImportGroup>
+  <PropertyGroup Label="UserMacros">
+    <Have_Osi_Props>yes</Have_Osi_Props>
+    <OsiIncludeDir>$(CoinRoot)\Osi\Osi\src\Osi</OsiIncludeDir>
+    <OsiCommonTestIncludeDir>$(CoinRoot)\Osi\Osi\src\OsiCommonTest</OsiCommonTestIncludeDir>
+  </PropertyGroup>
+  <PropertyGroup>
+    <_ProjectFileVersion>10.0.30319.1</_ProjectFileVersion>
+  </PropertyGroup>
+  <ItemDefinitionGroup>
+    <ClCompile>
+      <AdditionalIncludeDirectories>$(OsiIncludeDir);%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+    </ClCompile>
+    <Lib>
+      <AdditionalLibraryDirectories>%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+    </Lib>
+    <Link>
+      <AdditionalDependencies>libOsi.lib;%(AdditionalDependencies)</AdditionalDependencies>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemGroup>
+    <BuildMacro Include="Have_Osi_Props">
+      <Value>$(Have_Osi_Props)</Value>
+    </BuildMacro>
+    <BuildMacro Include="OsiIncludeDir">
+      <Value>$(OsiIncludeDir)</Value>
+    </BuildMacro>
+    <BuildMacro Include="OsiCommonTestIncludeDir">
+      <Value>$(OsiCommonTestIncludeDir)</Value>
+    </BuildMacro>
+  </ItemGroup>
+</Project>

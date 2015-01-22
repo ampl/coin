@@ -1,4 +1,4 @@
-// $Id: CbcNodeInfo.hpp 1902 2013-04-10 16:58:16Z stefan $
+// $Id: CbcNodeInfo.hpp 2048 2014-07-16 09:29:16Z forrest $
 // Copyright (C) 2002, International Business Machines
 // Corporation and others.  All Rights Reserved.
 // This code is licensed under the terms of the Eclipse Public License (EPL).
@@ -256,11 +256,13 @@ public:
         1 - bounds
         2 - cuts
         4 - basis!
+	8 - just marked
+	16 - symmetry branching worked
     */
     void deactivate(int mode = 3);
     /// Say if normal
     inline bool allActivated() const {
-        return (active_ == 7);
+        return ((active_&7) == 7);
     }
     /// Say if marked
     inline bool marked() const {
@@ -274,6 +276,12 @@ public:
     inline void unmark() {
         active_ &= ~8;
     }
+    /// Get symmetry value (true worked at this node)
+    inline bool symmetryWorked() const
+    { return (active_&16) !=0;}
+    /// Say symmetry worked at this node)
+    inline void setSymmetryWorked()
+    { active_ |= 16;}
 
     /// Branching object for the parent
     inline const OsiBranchingObject * parentBranch() const {

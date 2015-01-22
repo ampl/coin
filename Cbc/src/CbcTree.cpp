@@ -1,4 +1,4 @@
-/* $Id: CbcTree.cpp 2023 2014-03-25 12:59:22Z forrest $ */
+/* $Id: CbcTree.cpp 2097 2014-11-21 10:57:22Z forrest $ */
 // Copyright (C) 2004, International Business Machines
 // Corporation and others.  All Rights Reserved.
 // This code is licensed under the terms of the Eclipse Public License (EPL).
@@ -363,6 +363,9 @@ void
 CbcTree::push(CbcNode * x)
 {
     x->setNodeNumber(maximumNodeNumber_);
+    lastObjective_ = x->objectiveValue();
+    lastDepth_ = x->depth();
+    lastUnsatisfied_ = x->numberUnsatisfied();
     maximumNodeNumber_++;
 #   if CBC_DEBUG_HEAP > 2
     CbcNodeInfo *info = x->nodeInfo() ;
@@ -567,6 +570,8 @@ CbcTree::cleanTree(CbcModel * model, double cutoff, double & bestPossibleObjecti
         }
         if (value >= cutoff || !node->active()) {
             if (node) {
+	        if (cutoff<-1.0e30)
+		  node->nodeInfo()->deactivate(7);
                 nodeArray[--kDelete] = node;
                 depth[kDelete] = node->depth();
             }
@@ -616,24 +621,48 @@ CbcTree::cleanTree(CbcModel * model, double cutoff, double & bestPossibleObjecti
     */
     for (j = nNodes - 1; j >= kDelete; j--) {
         CbcNode * node = nodeArray[j];
-        CoinWarmStartBasis *lastws = model->getEmptyBasis() ;
+        CoinWarmStartBasis *lastws = (cutoff!=-COIN_DBL_MAX) ? model->getEmptyBasis() : NULL;
 
         model->addCuts1(node, lastws);
         // Decrement cut counts
         assert (node);
         //assert (node->nodeInfo());
         int numberLeft = (node->nodeInfo()) ? node->nodeInfo()->numberBranchesLeft() : 0;
-        int i;
-        for (i = 0; i < model->currentNumberCuts(); i++) {
+	if (cutoff != -COIN_DBL_MAX) {
+	  // normal
+	  for (int i = 0; i < model->currentNumberCuts(); i++) {
             // take off node
             CoinWarmStartBasis::Status status =
                 lastws->getArtifStatus(i + model->numberRowsAtContinuous());
             if (status != CoinWarmStartBasis::basic &&
                     model->addedCuts()[i]) {
-                if (!model->addedCuts()[i]->decrement(numberLeft))
+         	  if (!model->addedCuts()[i]->decrement(numberLeft))
                     delete model->addedCuts()[i];
             }
-        }
+	  }
+	} else {
+	  // quick
+	  for (int i = 0; i < model->currentNumberCuts(); i++) {
+            // take off node
+	    if (model->addedCuts()[i]) {
+	        if (model->parallelMode()!=1||true) {
+		  if (!model->addedCuts()[i]->decrement(numberLeft))
+                    delete model->addedCuts()[i];
+		}
+            }
+	  }
+	}
+#ifdef CBC_THREAD
+	if (model->parallelMode() > 0 && model->master()) {
+	  // delete reference to node
+	  int numberThreads = model->master()->numberThreads();
+	  for (int i=0;i<numberThreads;i++) {
+	    CbcThread * child = model->master()->child(i);
+	    if (child->createdNode()==node)
+	      child->setCreatedNode(NULL);
+	  }
+	}
+#endif
         // node should not have anything pointing to it
         if (node->nodeInfo())
             node->nodeInfo()->throwAway();
@@ -650,8 +679,8 @@ CbcTree::cleanTree(CbcModel * model, double cutoff, double & bestPossibleObjecti
       for (int i=0;i<numberThreads;i++) {
 	CbcThread * child = master->child(i);
 	if (child->node()) {
-	  // adjust
 	  double value = child->node()->objectiveValue();
+	  // adjust
 	  bestPossibleObjective = CoinMin(bestPossibleObjective, value);
 	}
       }
@@ -733,7 +762,7 @@ CbcTreeArray::push(CbcNode * x)
     if (lastNode_) {
         if (lastNode_->nodeInfo()->parent() == x->nodeInfo()) {
             // x is parent of lastNode_ so put x on heap
-            //#define CBCTREE_PRINT
+	  //#define CBCTREE_PRINT
 #ifdef CBCTREE_PRINT
             printf("pushX x %x (%x at depth %d n %d) is parent of lastNode_ %x (%x at depth %d n %d)\n",
                    x, x->nodeInfo(), x->depth(), x->nodeNumber(),
@@ -931,8 +960,8 @@ CbcTreeArray::getBestPossibleObjective()
       for (int i=0;i<numberThreads;i++) {
 	CbcThread * child = master->child(i);
 	if (child->node()) {
-	  // adjust
 	  double value = child->node()->objectiveValue();
+	  // adjust
 	  bestPossibleObjective = CoinMin(bestPossibleObjective, value);
 	}
       }
@@ -994,8 +1023,8 @@ CbcTreeArray::cleanTree(CbcModel * model, double cutoff, double & bestPossibleOb
       for (int i=0;i<numberThreads;i++) {
 	CbcThread * child = master->child(i);
 	if (child->node()) {
-	  // adjust
 	  double value = child->node()->objectiveValue();
+	  // adjust
 	  bestPossibleObjective = CoinMin(bestPossibleObjective, value);
 	}
       }
@@ -1312,8 +1341,8 @@ CbcTree::cleanTree(CbcModel * model, double cutoff, double & bestPossibleObjecti
       for (int i=0;i<numberThreads;i++) {
 	CbcThread * child = master->child(i);
 	if (child->node()) {
-	  // adjust
 	  double value = child->node()->objectiveValue();
+	  // adjust
 	  bestPossibleObjective = CoinMin(bestPossibleObjective, value);
 	}
       }

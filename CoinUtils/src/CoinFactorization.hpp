@@ -1,4 +1,4 @@
-/* $Id: CoinFactorization.hpp 1590 2013-04-10 16:48:33Z stefan $ */
+/* $Id: CoinFactorization.hpp 1767 2015-01-05 12:36:13Z forrest $ */
 // Copyright (C) 2002, International Business Machines
 // Corporation and others.  All Rights Reserved.
 // This code is licensed under the terms of the Eclipse Public License (EPL).
@@ -162,6 +162,10 @@ public:
   /// Returns address of permuteBack region
   inline int *permuteBack (  ) const {
     return permuteBack_.array();
+  }
+  /// Returns address of lastRow region
+  inline int *lastRow (  ) const {
+    return lastRow_.array();
   }
   /** Returns address of pivotColumnBack region (also used for permuting)
       Now uses firstCount to save memory allocation */
@@ -381,6 +385,103 @@ public:
   void replaceColumnU ( CoinIndexedVector * regionSparse,
 			CoinBigIndex * deleted,
 			int internalPivotRow);
+#ifdef ABC_USE_COIN_FACTORIZATION
+  /** returns empty fake vector carved out of existing
+      later - maybe use associated arrays */
+  CoinIndexedVector * fakeVector(CoinIndexedVector * vector,
+				 int already=0) const;
+  void deleteFakeVector(CoinIndexedVector * vector,
+			CoinIndexedVector * fakeVector) const;
+  /** Checks if can replace one Column to basis,
+      returns update alpha
+      Fills in region for use later
+      partial update already in U */
+  double checkReplacePart1 (  CoinIndexedVector * regionSparse,
+				     int pivotRow);
+  /** Checks if can replace one Column to basis,
+      returns update alpha
+      Fills in region for use later
+      partial update in vector */
+  double checkReplacePart1 (  CoinIndexedVector * regionSparse,
+				      CoinIndexedVector * partialUpdate,
+				     int pivotRow);
+  /** Checks if can replace one Column in basis,
+      returns 0=OK, 1=Probably OK, 2=singular, 3=no room, 5 max pivots */
+  int checkReplacePart2 ( int pivotRow,
+				  double btranAlpha, 
+				  double ftranAlpha, 
+				  double ftAlpha,
+				  double acceptablePivot = 1.0e-8);
+  /** Replaces one Column to basis,
+      partial update already in U */
+  void replaceColumnPart3 ( CoinIndexedVector * regionSparse,
+			    int pivotRow,
+			    double alpha );
+  /** Replaces one Column to basis,
+      partial update in vector */
+  void replaceColumnPart3 ( CoinIndexedVector * regionSparse,
+			    CoinIndexedVector * partialUpdate,
+			    int pivotRow,
+			    double alpha );
+  /** Updates one column (FTRAN) from regionSparse2
+      Tries to do FT update
+      number returned is negative if no room
+      regionSparse starts as zero and is zero at end.
+      Note - if regionSparse2 packed on input - will be packed on output
+      long regions
+  */
+  int updateColumnFT ( CoinIndexedVector & regionSparse);
+  int updateColumnFTPart1 ( CoinIndexedVector & regionSparse) ;
+  void updateColumnFTPart2 ( CoinIndexedVector & regionSparse) ;
+  /** Updates one column (FTRAN) - long region
+      Tries to do FT update
+      puts partial update in vector */
+  void updateColumnFT ( CoinIndexedVector & regionSparseFT,
+			CoinIndexedVector & partialUpdate,
+			int which);
+  /** Updates one column (FTRAN) long region */
+  int updateColumn ( CoinIndexedVector & regionSparse) const;
+  /** Updates one column (FTRAN) from regionFT
+      Tries to do FT update
+      number returned is negative if no room.
+      Also updates regionOther - long region*/
+  int updateTwoColumnsFT ( CoinIndexedVector & regionSparseFT,
+			   CoinIndexedVector & regionSparseOther);
+  /** Updates one column (BTRAN) - long region*/
+  int updateColumnTranspose ( CoinIndexedVector & regionSparse) const;
+  /** Updates one column (FTRAN) - long region */
+  void updateColumnCpu ( CoinIndexedVector & regionSparse,int whichCpu) const;
+  /** Updates one column (BTRAN) - long region */
+  void updateColumnTransposeCpu ( CoinIndexedVector & regionSparse,int whichCpu) const;
+  /** Updates one full column (FTRAN) - long region */
+  void updateFullColumn ( CoinIndexedVector & regionSparse) const;
+  /** Updates one full column (BTRAN) - long region */
+  void updateFullColumnTranspose ( CoinIndexedVector & regionSparse) const;
+  /** Updates one column for dual steepest edge weights (FTRAN) - long region */
+  void updateWeights ( CoinIndexedVector & regionSparse) const;
+  /// Returns true if wants tableauColumn in replaceColumn
+  inline bool wantsTableauColumn() const
+  {return false;}
+  /// Pivot tolerance
+  inline double minimumPivotTolerance (  ) const {
+    return pivotTolerance_ ;
+  }
+  inline void minimumPivotTolerance (  double value )
+  { pivotTolerance(value);}
+  /// Says parallel
+  inline void setParallelMode(int value)
+  { parallelMode_=value;}
+  /// Sets solve mode
+  inline void setSolveMode(int value)
+  { parallelMode_ &= 3;parallelMode_ |= (value<<2);}
+  /// Sets solve mode
+  inline int solveMode() const
+  { return parallelMode_ >> 2;}
+  /// Update partial Ftran by R update
+  void updatePartialUpdate(CoinIndexedVector & partialUpdate);
+  /// Makes a non-singular basis by replacing variables
+  void makeNonSingular(int *  COIN_RESTRICT sequence);
+#endif
   //@}
 
   /**@name various uses of factorization (return code number elements) 
@@ -467,12 +568,20 @@ public:
   /**@name used by ClpFactorization */
   /// See if worth going sparse
   void checkSparse();
-  /// For statistics 
+  /// For statistics
+#if 0 //def CLP_FACTORIZATION_INSTRUMENT
   inline bool collectStatistics() const
   { return collectStatistics_;}
   /// For statistics 
   inline void setCollectStatistics(bool onOff) const
   { collectStatistics_ = onOff;}
+#else
+  inline bool collectStatistics() const
+  { return true;}
+  /// For statistics 
+  inline void setCollectStatistics(bool onOff) const
+  { }
+#endif
   /// The real work of constructors etc 0 just scalars, 1 bit normal 
   void gutsOfDestructor(int type=1);
   /// 1 bit - tolerances etc, 2 more, 4 dummy arrays
@@ -1373,6 +1482,9 @@ protected:
   /// Dense area
   double  * denseArea_;
 
+  /// Dense area - actually used (for alignment etc)
+  double  * denseAreaAddress_;
+
   /// Dense permutation
   int * densePermute_;
 
@@ -1391,6 +1503,7 @@ protected:
   /// Number of compressions done
   CoinBigIndex numberCompressions_;
 
+public:
   /// Below are all to collect
   mutable double ftranCountInput_;
   mutable double ftranCountAfterL_;
@@ -1412,9 +1525,14 @@ protected:
   double btranAverageAfterU_;
   double btranAverageAfterR_;
   double btranAverageAfterL_;
+protected:
 
   /// For statistics 
+#if 0
   mutable bool collectStatistics_;
+#else
+#define collectStatistics_ 1
+#endif
 
   /// Below this use sparse technology - if 0 then no L row copy
   int sparseThreshold_;
@@ -1443,11 +1561,19 @@ protected:
       2 as 1 but give a bit extra if bigger needed
   */
   int persistenceFlag_;
+#ifdef ABC_USE_COIN_FACTORIZATION
+  /// Says if parallel
+  int parallelMode_;
+#endif
   //@}
 };
 // Dense coding
 #ifdef COIN_HAS_LAPACK
-#define DENSE_CODE 1
+#ifndef COIN_FACTORIZATION_DENSE_CODE
+#define COIN_FACTORIZATION_DENSE_CODE 1
+#endif
+#endif
+#ifdef COIN_FACTORIZATION_DENSE_CODE
 /* Type of Fortran integer translated into C */
 #ifndef ipfint
 //typedef ipfint FORTRAN_INTEGER_TYPE ;

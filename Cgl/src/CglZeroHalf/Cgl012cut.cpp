@@ -1,4 +1,4 @@
-// $Id: Cgl012cut.cpp 1123 2013-04-06 20:47:24Z stefan $
+// $Id: Cgl012cut.cpp 1222 2014-09-14 17:32:18Z forrest $
 // Copyright (C) 2010, International Business Machines
 // Corporation and others.  All Rights Reserved.
 // This code is licensed under the terms of the Eclipse Public License (EPL).
@@ -7,7 +7,7 @@
 #include "CoinTime.hpp"
 #include "Cgl012cut.hpp"
 #include "CglZeroHalf.hpp"
-int MAX_CUTS = 1000;
+static int MAX_CUTS = 10000000;
 //#define PRINT_TABU
 //#define PRINT_CUTS
 //#define PRINT_TIME

@@ -1,4 +1,4 @@
-/* $Id: AbcNonLinearCost.hpp 1910 2013-01-27 02:00:13Z stefan $ */
+/* $Id: AbcNonLinearCost.hpp 2024 2014-03-07 17:18:15Z forrest $ */
 // Copyright (C) 2002, International Business Machines
 // Corporation and others, Copyright (C) 2012, FasterCoin.  All Rights Reserved.
 // This code is licensed under the terms of the Eclipse Public License (EPL).
@@ -40,6 +40,7 @@ class CoinIndexedVector;
 #define CLP_FEASIBLE 1
 #define CLP_ABOVE_UPPER 2
 #define CLP_SAME 4
+#ifndef ClpNonLinearCost_H
 inline int originalStatus(unsigned char status)
 {
   return (status & 15);
@@ -67,6 +68,7 @@ inline void setSameStatus(unsigned char &status)
   status = static_cast<unsigned char>(status & ~(15 << 4));
   status = static_cast<unsigned char>(status | (CLP_SAME << 4));
 }
+#endif
 class AbcNonLinearCost  {
   
 public:

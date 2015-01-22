@@ -4,7 +4,7 @@
 
   This code is licensed under the terms of the Eclipse Public License (EPL).
 
-  $Id: CbcGenParam.hpp 1902 2013-04-10 16:58:16Z stefan $
+  $Id: CbcGenParam.hpp 1899 2013-04-09 18:12:08Z stefan $
 */
 /*
   This file is part of cbc-generic.
@@ -19,7 +19,7 @@
 */
 
 /*
-  $Id: CbcGenParam.hpp 1902 2013-04-10 16:58:16Z stefan $
+  $Id: CbcGenParam.hpp 1899 2013-04-09 18:12:08Z stefan $
 */
 
 class CbcGenCtlBlk ;

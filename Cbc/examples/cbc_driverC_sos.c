@@ -3,7 +3,7 @@
 
   This code is licensed under the terms of the Eclipse Public License (EPL).
 
-  $Id: cbc_driverC_sos.c 1902 2013-04-10 16:58:16Z stefan $
+  $Id: cbc_driverC_sos.c 1898 2013-04-09 18:06:04Z stefan $
 */
 
 /* This example shows the use of the "C" interface for CBC. */

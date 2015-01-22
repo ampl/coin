@@ -1,4 +1,4 @@
-// $Id: sample4.cpp 1902 2013-04-10 16:58:16Z stefan $
+// $Id: sample4.cpp 1900 2013-04-10 13:30:07Z forrest $
 // Copyright (C) 2004, International Business Machines
 // Corporation and others.  All Rights Reserved.
 // This code is licensed under the terms of the Eclipse Public License (EPL).

@@ -1,4 +1,4 @@
-// $Id: CglZeroHalf.hpp 1123 2013-04-06 20:47:24Z stefan $
+// $Id: CglZeroHalf.hpp 1122 2013-04-06 20:39:53Z stefan $
 // Copyright (C) 2010, International Business Machines
 // Corporation and others.  All Rights Reserved.
 // This code is licensed under the terms of the Eclipse Public License (EPL).

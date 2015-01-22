@@ -1,4 +1,4 @@
-/* $Id: Cbc_C_Interface.h 2059 2014-08-23 16:31:35Z tkr $ */
+/* $Id: Cbc_C_Interface.h 2091 2014-10-03 00:46:49Z mlubin $ */
 /*
   Copyright (C) 2004 International Business Machines Corporation and others.
   All Rights Reserved.
@@ -208,8 +208,7 @@ extern "C" {
     COINLIBAPI void COINLINKAGE
     Cbc_setInteger(Cbc_Model * model, int iColumn)
     ;
-    /** Add SOS constraints to the model using row-order matrix
-     * Unable to confirm that this function is working. */
+    /** Add SOS constraints to the model using row-order matrix */
     COINLIBAPI void  COINLINKAGE
     Cbc_addSOS(Cbc_Model * model, int numRows, const int * rowStarts,
                const int * colIndices, const double * weights, const int type)

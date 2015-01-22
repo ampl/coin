@@ -1,4 +1,4 @@
-/* $Id: CbcSolverAnalyze.cpp 1902 2013-04-10 16:58:16Z stefan $ */
+/* $Id: CbcSolverAnalyze.cpp 2071 2014-09-14 00:31:24Z unxusr $ */
 // Copyright (C) 2007, International Business Machines
 // Corporation and others.  All Rights Reserved.
 // This code is licensed under the terms of the Eclipse Public License (EPL).
@@ -282,7 +282,6 @@ int * analyze(OsiClpSolverInterface * solverMod, int & numberChanged,
         //else
         //  printf("\n");
         //}
-        delete [] ignore;
         //increment=0.0;
         if (!numberChanged) {
             delete [] changed;

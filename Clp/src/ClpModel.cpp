@@ -1,4 +1,4 @@
-/* $Id: ClpModel.cpp 2045 2014-08-13 15:05:38Z tkr $ */
+/* $Id: ClpModel.cpp 2063 2014-09-14 07:54:51Z forrest $ */
 // copyright (C) 2002, International Business Machines
 // Corporation and others.  All Rights Reserved.
 // This code is licensed under the terms of the Eclipse Public License (EPL).
@@ -1423,6 +1423,33 @@ ClpModel::deleteRows(int number, const int * which)
           return; // nothing to do
      whatsChanged_ &= ~(1 + 2 + 4 + 8 + 16 + 32); // all except columns changed
      int newSize = 0;
+#define CLP_TIDY_DELETE_ROWS
+#ifdef CLP_TIDY_DELETE_ROWS
+     if (status_) {
+		    // try and get right number of basic
+		    int nChange=0;
+		    unsigned char * rowStatus = status_+numberColumns_;
+		    for (int i=0;i<number;i++) {
+		      int iRow = which[i];
+		      if ((rowStatus[iRow]&7) !=1)
+			nChange++;
+		    }
+		    // take out slacks at bound
+		    for (int iRow=0;iRow<numberRows_;iRow++) {
+			if (!nChange)
+			  break;
+			if ((rowStatus[iRow]&7) ==1) {
+			  if (fabs(rowActivity_[iRow]-rowLower_[iRow])<1.0e-8) {
+			    rowStatus[iRow]=3;
+			    nChange--;
+			  } else if (fabs(rowActivity_[iRow]-rowUpper_[iRow])<1.0e-8) {
+			    rowStatus[iRow]=2;
+			    nChange--;
+			  }
+			}
+		      }
+     }
+#endif
      if (maximumRows_ < 0) {
           rowActivity_ = deleteDouble(rowActivity_, numberRows_,
                                       number, which, newSize);
@@ -1816,8 +1843,8 @@ ClpModel::addRows(int number, const double * rowLower,
           }
 #endif
           if (rowStarts) {
-	       // Make sure matrix has correct number of columns
-	       matrix_->getPackedMatrix()->reserve(numberColumns_, 0, true);
+               // Make sure matrix has correct number of columns
+               matrix_->getPackedMatrix()->reserve(numberColumns_, 0, true);
                matrix_->appendMatrix(number, 0, rowStarts, columns, elements);
           }
      }
@@ -2497,7 +2524,7 @@ ClpModel::addColumns(const CoinBuild & buildObject, bool tryPlusMinusOne, bool c
                     for (int i = 0; i < numberElements; i++) {
                          int iRow = rows[i];
                          if (checkDuplicates) {
-                              if (iRow >= numberRows_) {
+                              if (iRow < numberRows_) {
                                    if(which[iRow])
                                         numberErrors++;
                                    else
@@ -2595,38 +2622,23 @@ ClpModel::addColumns( CoinModel & modelObject, bool tryPlusMinusOne, bool checkD
                     tryPlusMinusOne = false;
                }
                assert (columnLower);
-               addColumns(numberColumns2, columnLower, columnUpper, objective, NULL, NULL, NULL);
 #ifndef SLIM_CLP
                if (!tryPlusMinusOne) {
 #endif
-		    /* addColumns just above extended matrix - to keep
-		       things clean - take off again.  I know it is a bit
-		       clumsy but won't break anything */
-		    {
-		      int * which = new int [numberColumns2];
-		      for (int i=0;i<numberColumns2;i++)
-			which[i]=i+numberColumns;
-		      matrix_->deleteCols(numberColumns2,which);
-		      delete [] which;
-		    }
                     CoinPackedMatrix matrix;
                     modelObject.createPackedMatrix(matrix, associated);
                     assert (!matrix.getExtraGap());
-                    if (matrix_->getNumCols()) {
-                         const int * row = matrix.getIndices();
-                         //const int * columnLength = matrix.getVectorLengths();
-                         const CoinBigIndex * columnStart = matrix.getVectorStarts();
-                         const double * element = matrix.getElements();
-                         // make sure matrix has enough rows
-                         matrix_->setDimensions(numberRows_, -1);
-                         numberErrors += matrix_->appendMatrix(numberColumns2, 1, columnStart, row, element,
-                                                               checkDuplicates ? numberRows_ : -1);
-                    } else {
-                         delete matrix_;
-                         matrix_ = new ClpPackedMatrix(matrix);
-                    }
+		    const int * row = matrix.getIndices();
+		    //const int * columnLength = matrix.getVectorLengths();
+		    const CoinBigIndex * columnStart = matrix.getVectorStarts();
+		    const double * element = matrix.getElements();
+		    // make sure matrix has enough rows
+		    matrix_->setDimensions(numberRows_, -1);
+		    addColumns(numberColumns2, columnLower, columnUpper, 
+			       objective, columnStart, row, element);
 #ifndef SLIM_CLP
                } else {
+                    addColumns(numberColumns2, columnLower, columnUpper, objective, NULL, NULL, NULL);
                     // create +-1 matrix
                     CoinBigIndex size = startPositive[numberColumns2];
                     int * indices = new int[size];

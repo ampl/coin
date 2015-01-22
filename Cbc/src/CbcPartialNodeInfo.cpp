@@ -1,4 +1,4 @@
-// $Id: CbcPartialNodeInfo.cpp 1902 2013-04-10 16:58:16Z stefan $
+// $Id: CbcPartialNodeInfo.cpp 1951 2013-08-02 14:26:23Z forrest $
 // Copyright (C) 2002, International Business Machines
 // Corporation and others.  All Rights Reserved.
 // This code is licensed under the terms of the Eclipse Public License (EPL).
@@ -128,7 +128,7 @@ void CbcPartialNodeInfo::applyToModel (CbcModel *model,
 
 {
     OsiSolverInterface *solver = model->solver();
-    if ((active_&4) != 0) {
+    if ((active_&4) != 0 && basis) {
         basis->applyDiff(basisDiff_) ;
 #ifdef CBC_CHECK_BASIS
         std::cout << "Basis (after applying " << this << ") " << std::endl ;

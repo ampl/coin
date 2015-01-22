@@ -4,7 +4,7 @@
 
   This code is licensed under the terms of the Eclipse Public License (EPL).
 
-  $Id: CbcGenBaB.cpp 1902 2013-04-10 16:58:16Z stefan $
+  $Id: CbcGenBaB.cpp 1899 2013-04-09 18:12:08Z stefan $
 */
 /*
   This file is part of cbc-generic.
@@ -37,7 +37,7 @@
 
 namespace {
 
-char svnid[] = "$Id: CbcGenBaB.cpp 1902 2013-04-10 16:58:16Z stefan $" ;
+char svnid[] = "$Id: CbcGenBaB.cpp 1899 2013-04-09 18:12:08Z stefan $" ;
 
 /*
   A hack to fix variables based on reduced cost prior to branch-and-cut. Note

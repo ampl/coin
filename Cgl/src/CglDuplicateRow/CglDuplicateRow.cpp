@@ -1,4 +1,4 @@
-// $Id: CglDuplicateRow.cpp 1200 2014-03-07 16:54:42Z forrest $
+// $Id: CglDuplicateRow.cpp 1234 2014-12-31 13:56:52Z forrest $
 // Copyright (C) 2004, International Business Machines
 // Corporation and others.  All Rights Reserved.
 // This code is licensed under the terms of the Eclipse Public License (EPL).
@@ -202,7 +202,7 @@ void CglDuplicateRow::generateCuts12(const OsiSolverInterface & si, OsiCuts & cs
 	  for (int j=last;j<i;j++) {
 	    int jColumn = which[j];
 	    // skip if already fixed
-	    if (!colUpper2[jColumn])
+	    if (!colUpper2[jColumn]||columnLower[jColumn])
 	      continue;
 	    int nGeJ=0;
 	    int nEqualJ=0;
@@ -223,7 +223,7 @@ void CglDuplicateRow::generateCuts12(const OsiSolverInterface & si, OsiCuts & cs
 	    for (int k=j+1;k<i;k++) {
 	      int kColumn = which[k];
 	      // skip if already fixed
-	      if (!colUpper2[kColumn])
+	      if (!colUpper2[kColumn]||columnLower[kColumn])
 		continue;
 	      int nK=columnLength[kColumn];
 	      double objValueK = objective[kColumn]*direction;
@@ -804,7 +804,7 @@ void CglDuplicateRow::generateCuts12(const OsiSolverInterface & si, OsiCuts & cs
 	    } else {
 	      // found
 #ifndef COIN_DEVELOP
-              if (logLevel_>1)
+	      if (logLevel_>1)
 #endif 
 		printf("***Make %d %d %d >=2 and take out rows %d %d %d\n",
 		       columnB1,column0,column1,
@@ -3040,11 +3040,15 @@ void CglDuplicateRow::generateCuts8(const OsiSolverInterface & si, OsiCuts & cs,
       }
     }
   }
+  delete[] whichP;
   int * dups = new int [2*numberCliques];
   int * fixed = new int[CoinMax(numberIntegers,numberCliques)];
   memset(fixed,0,numberIntegers*sizeof(int));
   outDupsEtc(numberIntegers, numberCliques, dups,
 	     cliqueStart, cliqueType, entry, fixed, printit ? 2 : 1);
+  delete[] cliqueStart;
+  delete[] entry;
+  delete[] cliqueType;
   int nFixed=0;
   CoinPackedVector ubs;
   for (int i=0;i<numberColumns;i++) {

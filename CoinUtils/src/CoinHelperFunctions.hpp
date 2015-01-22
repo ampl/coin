@@ -1,4 +1,4 @@
-/* $Id: CoinHelperFunctions.hpp 1678 2013-12-05 11:27:05Z forrest $ */
+/* $Id: CoinHelperFunctions.hpp 1679 2013-12-05 11:27:45Z forrest $ */
 // Copyright (C) 2000, International Business Machines
 // Corporation and others.  All Rights Reserved.
 // This code is licensed under the terms of the Eclipse Public License (EPL).

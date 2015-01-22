@@ -1,4 +1,4 @@
-/* $Id: CbcHeuristicLocal.hpp 1802 2012-11-21 09:38:56Z forrest $ */
+/* $Id: CbcHeuristicLocal.hpp 1943 2013-07-21 09:05:45Z forrest $ */
 // Copyright (C) 2002, International Business Machines
 // Corporation and others.  All Rights Reserved.
 // This code is licensed under the terms of the Eclipse Public License (EPL).
@@ -124,7 +124,9 @@ public:
     */
     virtual int solution(double & objectiveValue,
                          double * newSolution);
-
+    /// Set extra increment
+    inline void setIncrement(double value)
+    { increment_ = value;}
     /// Used array so we can set
     inline int * used() const {
         return used_;
@@ -132,9 +134,11 @@ public:
 
 protected:
     // Data
-    // Copy of Feasibility pump
+    /// Increment to use if no change
+    double increment_;
+    /// Copy of Feasibility pump
     CbcHeuristicFPump * feasibilityPump_;
-    // Number of solutions so we only do after new solution
+    /// Number of solutions so we only do after new solution
     int numberSolutions_;
     /// Whether a variable has been in a solution (also when)
     int * used_;

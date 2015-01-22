@@ -1,4 +1,4 @@
-/* $Id: AbcSimplexParallel.cpp 1910 2013-01-27 02:00:13Z stefan $ */
+/* $Id: AbcSimplexParallel.cpp 2070 2014-11-18 11:12:54Z forrest $ */
 // Copyright (C) 2002, International Business Machines
 // Corporation and others, Copyright (C) 2012, FasterCoin.  All Rights Reserved.
 // This code is licensed under the terms of the Eclipse Public License (EPL).
@@ -1635,12 +1635,12 @@ double parallelDual4(AbcSimplexDual * dual)
   assert (numberBlocks==matrix->numberRowBlocks());
 #if ABC_PARALLEL==1
   // redo so can pass info in with void *
-  CoinAbcThreadInfo * infoP = dual->threadInfoPointer();
+  CoinThreadInfo * infoP = dual->threadInfoPointer();
   int cpuMask=((1<<dual->parallelMode())-1);
   cpuMask += cpuMask<<5;
   dual->setStopStart(cpuMask);
 #endif
-  CoinAbcThreadInfo info[NUMBER_BLOCKS];
+  CoinThreadInfo info[NUMBER_BLOCKS];
   const int * starts;
   if (useRowCopy)
     starts=matrix->blockStart();

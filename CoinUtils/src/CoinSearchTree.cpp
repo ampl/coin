@@ -1,4 +1,4 @@
-/* $Id: CoinSearchTree.cpp 1590 2013-04-10 16:48:33Z stefan $ */
+/* $Id: CoinSearchTree.cpp 1589 2013-04-09 18:52:16Z stefan $ */
 // Copyright (C) 2006, International Business Machines
 // Corporation and others.  All Rights Reserved.
 // This code is licensed under the terms of the Eclipse Public License (EPL).

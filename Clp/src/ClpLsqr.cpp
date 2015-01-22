@@ -1,4 +1,4 @@
-/* $Id: ClpLsqr.cpp 1941 2013-04-10 16:52:27Z stefan $ */
+/* $Id: ClpLsqr.cpp 1940 2013-04-10 10:26:33Z stefan $ */
 // Copyright (C) 2003, International Business Machines
 // Corporation and others.  All Rights Reserved.
 // This code is licensed under the terms of the Eclipse Public License (EPL).

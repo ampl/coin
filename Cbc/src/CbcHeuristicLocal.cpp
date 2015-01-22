@@ -1,4 +1,4 @@
-/* $Id: CbcHeuristicLocal.cpp 1839 2013-01-16 18:41:25Z forrest $ */
+/* $Id: CbcHeuristicLocal.cpp 2105 2015-01-05 13:11:11Z forrest $ */
 // Copyright (C) 2002, International Business Machines
 // Corporation and others.  All Rights Reserved.
 // This code is licensed under the terms of the Eclipse Public License (EPL).
@@ -372,6 +372,10 @@ CbcHeuristicLocal::solution(double & solutionValue,
     numberSolutions_ = model_->getSolutionCount();
     if (nodeCount<lastRunDeep_+skip ) 
       return 0;
+#ifdef HEURISTIC_INFORM
+    printf("Entering heuristic %s - nRuns %d numCould %d when %d\n",
+	   heuristicName(),numRuns_,numCouldRun_,when_);
+#endif
     lastRunDeep_ = nodeCount;
     howOftenShallow_ = numberSolutions_;
 
@@ -548,7 +552,7 @@ CbcHeuristicLocal::solution(double & solutionValue,
 */
     // Switch off if may take too long
     if (model_->getNumCols() > 10000 && model_->getNumCols() >
-            10*model_->getNumRows())
+            10*model_->getNumRows()&&swap<10)
         tryHeuristic = false;
 /*
   Try the inc/dec heuristic?
@@ -561,8 +565,30 @@ CbcHeuristicLocal::solution(double & solutionValue,
         double bestChange = 0.0;
 	// maybe just do 1000
 	int maxIntegers = numberIntegers;
-	if (((swap/10) &1) != 0) {
-	  maxIntegers = CoinMin(1000,numberIntegers);
+	// stop if too many goes
+	int maxTries=COIN_INT_MAX;
+	// integerVariable may be randomized copy!
+	int * integerVariable = 
+	  CoinCopyOfArray(model_->integerVariable(),numberIntegers);
+	if (swap>9 && numberIntegers>500) {
+	  int type=swap/10;
+	  if (type==1) {
+	    // reduce
+	    maxIntegers = CoinMin(1000,numberIntegers);
+	  } else if (type==2) {
+	    // reduce even more
+	    maxTries=100000;
+	    maxIntegers = CoinMin(500,numberIntegers);
+	  } else if (type>2) {
+	    assert (type<10);
+	    int totals[7]={1000,500,100,50,50,50,50};
+	    maxIntegers=CoinMin(totals[type-3],numberIntegers);
+	    double * weight = new double[numberIntegers];
+	    for (int i=0;i<numberIntegers;i++) {
+	      weight[i]=model_->randomNumberGenerator()->randomDouble();
+	    }
+	    CoinSort_2(weight,weight+numberIntegers,integerVariable);
+	  }
 	}
 /*
   Outer loop to walk integer variables. Call the current variable x<i>. At the
@@ -617,6 +643,9 @@ CbcHeuristicLocal::solution(double & solutionValue,
 */
               // try down
                 for (k = i + 1; k < endInner; k++) {
+		    if (!maxTries)
+		      break;
+		    maxTries--;
                     if ((way[k]&1) != 0) {
                         // try down
                         if (-objectiveCoefficient - cost[k] < bestChange) {
@@ -707,6 +736,8 @@ CbcHeuristicLocal::solution(double & solutionValue,
                 }
                 // try up
                 for (k = i + 1; k < endInner; k++) {
+		    if (!maxTries)
+		      break;
                     if ((way[k]&1) != 0) {
                         // try down
                         if (objectiveCoefficient - cost[k] < bestChange) {
@@ -892,6 +923,8 @@ CbcHeuristicLocal::solution(double & solutionValue,
 					 numberBad, sumBad));
             }
         }
+	// This is just a copy!
+	delete [] integerVariable;
     }
 /*
   We're done. Clean up.
@@ -935,6 +968,7 @@ void CbcHeuristicLocal::setModel(CbcModel * model)
 CbcHeuristicProximity::CbcHeuristicProximity()
         : CbcHeuristic()
 {
+    increment_ = 0.01;
     feasibilityPump_ = NULL;
     numberSolutions_ = 0;
     used_ = NULL;
@@ -947,6 +981,7 @@ CbcHeuristicProximity::CbcHeuristicProximity()
 CbcHeuristicProximity::CbcHeuristicProximity(CbcModel & model)
         : CbcHeuristic(model)
 {
+    increment_ = 0.01;
     feasibilityPump_ = NULL;
     numberSolutions_ = 0;
     lastRunDeep_ = -1000000;
@@ -986,6 +1021,7 @@ CbcHeuristicProximity::CbcHeuristicProximity(const CbcHeuristicProximity & rhs)
   CbcHeuristic(rhs),
   numberSolutions_(rhs.numberSolutions_)
 {
+    increment_ = rhs.increment_;
     feasibilityPump_ = NULL;
     if (model_ && rhs.used_) {
         int numberColumns = model_->solver()->getNumCols();
@@ -1003,6 +1039,7 @@ CbcHeuristicProximity::operator=( const CbcHeuristicProximity & rhs)
 {
     if (this != &rhs) {
         CbcHeuristic::operator=(rhs);
+	increment_ = rhs.increment_;
         numberSolutions_ = rhs.numberSolutions_;
         delete [] used_;
         delete feasibilityPump_;
@@ -1094,8 +1131,9 @@ CbcHeuristicProximity::solution(double & solutionValue,
   }
   double cutoff=model_->getCutoff();
   assert (cutoff<1.0e20);
-  if (model_->getCutoffIncrement()<1.0e-4)
-    cutoff -= 0.01;
+  if (model_->getCutoffIncrement()<1.0e-4) {
+    cutoff -= increment_;
+  }
   double offset;
   newSolver->getDblParam(OsiObjOffset, offset);
   newSolver->setDblParam(OsiObjOffset, 0.0);
@@ -1184,6 +1222,11 @@ CbcHeuristicProximity::solution(double & solutionValue,
     sprintf(proxPrint,"Proximity search ran %d nodes (out of %d) - in new solution %d increased (%d), %d decreased (%d)",
 	    numberNodesDone_,numberNodes_,
 	    numberIncrease,sumIncrease,numberDecrease,sumDecrease);
+    if (!numberIncrease&&!numberDecrease) {
+      // somehow tolerances are such that we can slip through
+      // change for next time
+      increment_ += CoinMax(increment_,fabs(solutionValue+offset)*1.0e-10);
+    }
   } else {
     sprintf(proxPrint,"Proximity search ran %d nodes - no new solution",
 	    numberNodesDone_);
@@ -1281,7 +1324,7 @@ CbcHeuristicNaive::solution(double & solutionValue,
     // See if to do
     bool atRoot = model_->getNodeCount() == 0;
     int passNumber = model_->getCurrentPassNumber();
-    if (!when() || (when() == 1 && model_->phase() != 1) || !atRoot || passNumber != 1)
+    if (!when() || (when() == 1 && model_->phase() != 1) || !atRoot || passNumber > 1)
         return 0; // switched off
     // Don't do if it was this heuristic which found solution!
     if (this == model_->lastHeuristic())

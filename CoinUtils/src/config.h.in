@@ -1,5 +1,8 @@
 /* src/config.h.in.  Generated from configure.ac by autoheader.  */
 
+/* Define to 1 if cstdint is available for CoinUtils */
+#undef COINUTILS_HAS_CSTDINT
+
 /* Define to 1 if stdint.h is available for CoinUtils */
 #undef COINUTILS_HAS_STDINT_H
 

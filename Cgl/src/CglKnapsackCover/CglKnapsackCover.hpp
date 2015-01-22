@@ -1,4 +1,4 @@
-// $Id: CglKnapsackCover.hpp 1123 2013-04-06 20:47:24Z stefan $
+// $Id: CglKnapsackCover.hpp 1201 2014-03-07 17:24:04Z forrest $
 // Copyright (C) 2000, International Business Machines
 // Corporation and others.  All Rights Reserved.
 // This code is licensed under the terms of the Eclipse Public License (EPL).
@@ -226,7 +226,9 @@ void liftUpDownAndUncomplementAndAdd(
       double const *ww,
       double & z, 
       int * x);
-
+  /// For testing gub stuff
+  int gubifyCut(CoinPackedVector & cut);
+public:
   /** Creates cliques for use by probing.
       Only cliques >= minimumSize and < maximumSize created
       Can also try and extend cliques as a result of probing (root node).
@@ -234,6 +236,7 @@ void liftUpDownAndUncomplementAndAdd(
   */
   int createCliques( OsiSolverInterface & si, 
 		    int minimumSize=2, int maximumSize=100, bool extendCliques=false);
+private:
   /// Delete all clique information
   void deleteCliques();
   //@}
@@ -267,12 +270,12 @@ void liftUpDownAndUncomplementAndAdd(
   /// Clique type
   typedef struct {
     unsigned int equality:1; //  nonzero if clique is ==
-  } cliqueType;
-  cliqueType * cliqueType_;
+  } CliqueType;
+  CliqueType * cliqueType_;
   /// Start of each clique
   int * cliqueStart_;
   /// Entries for clique
-  cliqueEntry * cliqueEntry_;
+  CliqueEntry * cliqueEntry_;
   /** Start of oneFixes cliques for a column in matrix or -1 if not
       in any clique */
   int * oneFixStart_;
@@ -289,7 +292,7 @@ void liftUpDownAndUncomplementAndAdd(
       So first clique mentioned in row is always 0.  If no entries for row
       then no cliques.  If sequence > numberColumns then not in clique.
   */
-  //cliqueEntry * cliqueRow_;
+  //CliqueEntry * cliqueRow_;
   /// cliqueRow_ starts for each row
   //int * cliqueRowStart_;
   //@}

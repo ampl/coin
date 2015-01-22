@@ -35,7 +35,7 @@ CglStored::generateCuts(const OsiSolverInterface & si, OsiCuts & cs,
   }
   if (probingInfo_) {
     int number01 = probingInfo_->numberIntegers();
-    const cliqueEntry * entry = probingInfo_->fixEntries();
+    const CliqueEntry * entry = probingInfo_->fixEntries();
     const int * toZero = probingInfo_->toZero();
     const int * toOne = probingInfo_->toOne();
     const int * integerVariable = probingInfo_->integerVariable();

@@ -1,4 +1,4 @@
-/* $Id: CoinFactorization3.cpp 1373 2011-01-03 23:57:44Z lou $ */
+/* $Id: CoinFactorization3.cpp 1767 2015-01-05 12:36:13Z forrest $ */
 // Copyright (C) 2002, International Business Machines
 // Corporation and others.  All Rights Reserved.
 // This code is licensed under the terms of the Eclipse Public License (EPL).
@@ -16,9 +16,10 @@
 #include "CoinFactorization.hpp"
 #include "CoinIndexedVector.hpp"
 #include "CoinHelperFunctions.hpp"
+#include "CoinTime.hpp"
 #include <stdio.h>
 #include <iostream>
-#if DENSE_CODE==1 
+#if COIN_FACTORIZATION_DENSE_CODE==1 
 // using simple lapack interface
 extern "C" 
 {
@@ -28,11 +29,53 @@ extern "C"
                                cipfint * ipiv, double *B, cipfint *ldB, ipfint *info,
 			       int trans_len);
 }
+#elif COIN_FACTORIZATION_DENSE_CODE==2
+// C interface
+enum CBLAS_ORDER {CblasRowMajor=101, CblasColMajor=102};
+enum CBLAS_TRANSPOSE {CblasNoTrans=111, CblasTrans=112};
+extern "C" 
+{
+int clapack_dgetrs ( const enum CBLAS_ORDER Order, 
+		       const enum CBLAS_TRANSPOSE Trans, 
+		       const int N, const int NRHS,
+		       const double *A, const int lda, const int *ipiv, double *B, 
+		       const int ldb );
+}
 #endif
 // For semi-sparse
 #define BITS_PER_CHECK 8
 #define CHECK_SHIFT 3
 typedef unsigned char CoinCheckZero;
+#ifdef CLP_FACTORIZATION_INSTRUMENT
+extern double externalTimeStart;
+extern double timeInFactorize;
+extern double timeInUpdate;
+extern double timeInFactorizeFake;
+extern double timeInUpdateFake1;
+extern double timeInUpdateFake2;
+extern double timeInUpdateTranspose;
+extern double timeInUpdateFT;
+extern double timeInUpdateTwoFT;
+extern double timeInReplace;
+extern int numberUpdate;
+extern int numberUpdateTranspose;
+extern int numberUpdateFT;
+extern int numberUpdateTwoFT;
+extern int numberReplace;
+extern int currentLengthR;
+extern int currentLengthU;
+extern int currentTakeoutU;
+ extern double averageLengthR;
+ extern double averageLengthL;
+ extern double averageLengthU;
+ extern double scaledLengthDense;
+ extern double scaledLengthDenseSquared;
+ extern double scaledLengthL;
+ extern double scaledLengthR;
+ extern double scaledLengthU;
+extern int startLengthU;
+extern int endLengthU;
+#endif
 
 //:class CoinFactorization.  Deals with Factorization and Updates
 
@@ -45,6 +88,9 @@ int CoinFactorization::updateColumn ( CoinIndexedVector * regionSparse,
 				      bool noPermute) 
   const
 {
+#ifdef CLP_FACTORIZATION_INSTRUMENT
+  double startTimeX=CoinCpuTime();
+#endif
   //permute and move indices into index array
   int * COIN_RESTRICT regionIndex = regionSparse->getIndices (  );
   int numberNonZero;
@@ -111,6 +157,13 @@ int CoinFactorization::updateColumn ( CoinIndexedVector * regionSparse,
     // Do PFI after everything else
     updateColumnPFI(regionSparse);
   }
+#ifdef CLP_FACTORIZATION_INSTRUMENT
+  numberUpdate++;
+  timeInUpdate += CoinCpuTime()-startTimeX;
+  averageLengthR += lengthR_;
+  averageLengthU += lengthU_;
+  averageLengthL += lengthL_;
+#endif
   if (!noPermute) {
     permuteBack(regionSparse,regionSparse2);
     return regionSparse2->getNumElements (  );
@@ -143,14 +196,36 @@ CoinFactorization::permuteBack ( CoinIndexedVector * regionSparse,
       }
     }
   } else {
-    for (int j = 0; j < oldNumber; j ++ ) {
-      int iRow = regionIndex[j];
+    int j=0;
+    if ((oldNumber&1)!=0) {
+      int iRow = regionIndex[0];
+      j++;
       double value = region[iRow];
       region[iRow]=0.0;
       if (fabs(value)>zeroTolerance_) {
 	iRow = permuteBack[iRow];
 	outIndex[number++]=iRow;
 	out[iRow] = value;
+      }
+    }
+    for (; j < oldNumber; j +=2 ) {
+      int iRow0 = regionIndex[j];
+      int iRow1 = regionIndex[j+1];
+      double value0 = region[iRow0];
+      bool good0 = fabs(value0)>zeroTolerance_;
+      double value1 = region[iRow1];
+      bool good1 = fabs(value1)>zeroTolerance_;
+      region[iRow0]=0.0;
+      region[iRow1]=0.0;
+      if (good0) {
+	iRow0 = permuteBack[iRow0];
+	outIndex[number++]=iRow0;
+	out[iRow0] = value0;
+      }
+      if (good1) {
+	iRow1 = permuteBack[iRow1];
+	outIndex[number++]=iRow1;
+	out[iRow1] = value1;
       }
     }
   }
@@ -196,7 +271,7 @@ CoinFactorization::updateColumnL ( CoinIndexedVector * regionSparse,
       break;
     }
   }
-#ifdef DENSE_CODE
+#ifdef COIN_FACTORIZATION_DENSE_CODE
   if (numberDense_) {
     //take off list
     int lastSparse = numberRows_-numberDense_;
@@ -214,11 +289,17 @@ CoinFactorization::updateColumnL ( CoinIndexedVector * regionSparse,
       }
     }
     if (doDense) {
+#if COIN_FACTORIZATION_DENSE_CODE==1
       char trans = 'N';
       int ione=1;
       int info;
-      F77_FUNC(dgetrs,DGETRS)(&trans,&numberDense_,&ione,denseArea_,&numberDense_,
+      F77_FUNC(dgetrs,DGETRS)(&trans,&numberDense_,&ione,denseAreaAddress_,&numberDense_,
 			      densePermute_,region+lastSparse,&numberDense_,&info,1);
+#elif COIN_FACTORIZATION_DENSE_CODE==2
+      clapack_dgetrs ( CblasColMajor,CblasNoTrans,numberDense_,1,
+		       denseAreaAddress_,numberDense_,densePermute_,
+		       region+lastSparse,numberDense_);
+#endif
       for (int i=lastSparse;i<numberRows_;i++) {
 	double value = region[i];
 	if (value) {
@@ -251,7 +332,7 @@ CoinFactorization::updateColumnLDensish ( CoinIndexedVector * regionSparse ,
   const CoinFactorizationDouble * COIN_RESTRICT element = elementL_.array();
   int last = numberRows_;
   assert ( last == baseL_ + numberL_);
-#if DENSE_CODE==1
+#if COIN_FACTORIZATION_DENSE_CODE
   //can take out last bit of sparse L as empty
   last -= numberDense_;
 #endif
@@ -312,7 +393,7 @@ CoinFactorization::updateColumnLSparsish ( CoinIndexedVector * regionSparse,
   const CoinFactorizationDouble *element = elementL_.array();
   int last = numberRows_;
   assert ( last == baseL_ + numberL_);
-#if DENSE_CODE==1
+#if COIN_FACTORIZATION_DENSE_CODE
   //can take out last bit of sparse L as empty
   last -= numberDense_;
 #endif
@@ -540,6 +621,9 @@ CoinFactorization::updateTwoColumnsFT ( CoinIndexedVector * regionSparse1,
 					CoinIndexedVector * regionSparse3,
 					bool noPermuteRegion3)
 {
+#ifdef CLP_FACTORIZATION_INSTRUMENT
+  double startTimeX=CoinCpuTime();
+#endif
 #if 1
   //#ifdef NDEBUG
   //#undef NDEBUG
@@ -593,7 +677,11 @@ CoinFactorization::updateTwoColumnsFT ( CoinIndexedVector * regionSparse1,
   startColumnU[numberColumnsExtra_] = start;
   regionIndex = indexRowU_.array() + start;
 
+#ifndef ABC_USE_COIN_FACTORIZATION
   assert(regionSparse2->packedMode());
+#else
+  if(regionSparse2->packedMode()) {
+#endif
   for (int j = 0; j < numberNonZero; j ++ ) {
     int iRow = index[j];
     double value = array[j];
@@ -602,6 +690,19 @@ CoinFactorization::updateTwoColumnsFT ( CoinIndexedVector * regionSparse1,
     region[iRow] = value;
     regionIndex[j] = iRow;
   }
+#ifdef ABC_USE_COIN_FACTORIZATION
+  } else {
+    // not packed
+  for (int j = 0; j < numberNonZero; j ++ ) {
+    int iRow = index[j];
+    double value = array[iRow];
+    array[iRow]=0.0;
+    iRow = permute[iRow];
+    region[iRow] = value;
+    regionIndex[j] = iRow;
+  }
+  }
+#endif
   regionFT->setNumElements ( numberNonZero );
   if (collectStatistics_) {
     numberFtranCounts_+=2;
@@ -653,6 +754,21 @@ CoinFactorization::updateTwoColumnsFT ( CoinIndexedVector * regionSparse1,
 			     numberNonZeroUpdate,arrayUpdate,indexUpdate);
     regionFT->setNumElements ( numberNonZeroFT );
     regionUpdate->setNumElements ( numberNonZeroUpdate );
+    if (collectStatistics_) {
+      ftranCountAfterU_ += numberNonZeroFT + numberNonZeroUpdate;
+#ifdef CLP_FACTORIZATION_INSTRUMENT
+    scaledLengthDense += numberDense_*numberNonZeroFT;
+    scaledLengthDenseSquared += numberDense_*numberDense_*numberNonZeroFT;
+    scaledLengthL += lengthL_*numberNonZeroFT;
+    scaledLengthR += lengthR_*numberNonZeroFT;
+    scaledLengthU += lengthU_*numberNonZeroFT;
+    scaledLengthDense += numberDense_*numberNonZeroUpdate;
+    scaledLengthDenseSquared += numberDense_*numberDense_*numberNonZeroUpdate;
+    scaledLengthL += lengthL_*numberNonZeroUpdate;
+    scaledLengthR += lengthR_*numberNonZeroUpdate;
+    scaledLengthU += lengthU_*numberNonZeroUpdate;
+#endif
+    }
   } else {
     // sparse 
     updateColumnU ( regionFT, regionIndex);
@@ -713,6 +829,13 @@ CoinFactorization::updateTwoColumnsFT ( CoinIndexedVector * regionSparse1,
   updateColumn(regionSparse3,
 	       regionSparse3,
 	       noPermuteRegion3);
+#ifdef CLP_FACTORIZATION_INSTRUMENT
+  numberUpdateTwoFT++;
+  timeInUpdateTwoFT += CoinCpuTime()-startTimeX;
+  averageLengthR += 2*lengthR_;
+  averageLengthU += 2*lengthU_;
+averageLengthL += 2*lengthL_;
+#endif
   //printf("REGION2 %d els\n",regionSparse2->getNumElements());
   //regionSparse2->print();
   //printf("REGION3 %d els\n",regionSparse3->getNumElements());
@@ -830,6 +953,15 @@ CoinFactorization::updateTwoColumnsUDensish (
   numberNonZero1=numberNonZeroA;
   numberNonZero2=numberNonZeroB;
 }
+#ifdef COIN_FACTORIZATION_DIAGNOSE
+static int numberTimesX=0;
+static int numberSparseX=0;
+double sumNumberSparseX=0.0;
+static int numberSparsishX=0;
+double sumNumberSparsishX=0.0;
+static int numberDensishX=0;
+double sumNumberDensishX=0.0;
+#endif
 //  updateColumnU.  Updates part of column (FTRANU)
 void
 CoinFactorization::updateColumnU ( CoinIndexedVector * regionSparse,
@@ -857,6 +989,28 @@ CoinFactorization::updateColumnU ( CoinIndexedVector * regionSparse,
   } else {
     goSparse=0;
   }
+#ifdef COIN_FACTORIZATION_DIAGNOSE
+  numberTimesX++;
+  if (!goSparse) {
+    numberDensishX++;
+    sumNumberDensishX+=numberNonZero;
+  } else if (goSparse==1) {
+    numberSparsishX++;
+    sumNumberSparsishX+=numberNonZero;
+  } else {
+    numberSparseX++;
+    sumNumberSparseX+=numberNonZero;
+  }
+  if ((numberTimesX%1000)==0) {
+    double averageDensish=(numberDensishX) ? sumNumberDensishX/numberDensishX : 0.0;
+    double averageSparsish=(numberSparsishX) ? sumNumberSparsishX/numberSparsishX : 0.0;
+    double averageSparse=(numberSparseX) ? sumNumberSparseX/numberSparseX : 0.0;
+    printf("sparsity D,ish,S (%d,%g) , (%d,%g) , (%d,%g) - ftranFactor %g\n",
+	   numberDensishX,averageDensish,
+	   numberSparsishX,averageSparsish,
+	   numberSparseX,averageSparse,ftranAverageAfterU_);
+  }
+#endif
   switch (goSparse) {
   case 0: // densish
     {
@@ -873,8 +1027,17 @@ CoinFactorization::updateColumnU ( CoinIndexedVector * regionSparse,
     updateColumnUSparse(regionSparse,indexIn);
     break;
   }
-  if (collectStatistics_) 
+  if (collectStatistics_) {
     ftranCountAfterU_ += regionSparse->getNumElements (  );
+#ifdef CLP_FACTORIZATION_INSTRUMENT
+    int numberNonZero=regionSparse->getNumElements();
+    scaledLengthDense += numberDense_*numberNonZero;
+    scaledLengthDenseSquared += numberDense_*numberDense_*numberNonZero;
+    scaledLengthL += lengthL_*numberNonZero;
+    scaledLengthR += lengthR_*numberNonZero;
+    scaledLengthU += lengthU_*numberNonZero;
+#endif
+  }
 }
 #ifdef COIN_DEVELOP
 double ncall_DZ=0.0;
@@ -2021,6 +2184,9 @@ CoinFactorization::updateColumnRFT ( CoinIndexedVector * regionSparse,
 int CoinFactorization::updateColumnFT ( CoinIndexedVector * regionSparse,
 					CoinIndexedVector * regionSparse2)
 {
+#ifdef CLP_FACTORIZATION_INSTRUMENT
+  double startTimeX=CoinCpuTime();
+#endif
   //permute and move indices into index array
   int * COIN_RESTRICT regionIndex = regionSparse->getIndices (  );
   int numberNonZero = regionSparse2->getNumElements();
@@ -2118,6 +2284,13 @@ int CoinFactorization::updateColumnFT ( CoinIndexedVector * regionSparse,
     updateColumnPFI(regionSparse);
   }
   permuteBack(regionSparse,regionSparse2);
+#ifdef CLP_FACTORIZATION_INSTRUMENT
+  numberUpdateFT++;
+  timeInUpdateFT += CoinCpuTime()-startTimeX;
+  averageLengthR += lengthR_;
+  averageLengthU += lengthU_;
+  averageLengthL += lengthL_;
+#endif
   // will be negative if no room
   if ( doFT ) 
     return regionSparse2->getNumElements();

@@ -1,4 +1,4 @@
-/* $Id: CoinAbcBaseFactorization4.cpp 1910 2013-01-27 02:00:13Z stefan $ */
+/* $Id: CoinAbcBaseFactorization4.cpp 2078 2015-01-05 12:39:49Z forrest $ */
 // Copyright (C) 2002, International Business Machines
 // Corporation and others, Copyright (C) 2012, FasterCoin.  All Rights Reserved.
 // This code is licensed under the terms of the Eclipse Public License (EPL).
@@ -4365,8 +4365,10 @@ CoinAbcTypeFactorization::goSparse2 ( )
 #endif
     if (numberRows_<largeRowsSparse) {
       sparseThreshold_=CoinMin(numberRows_/mediumRowsDivider,mediumRowsMinCount);
+      sparseThreshold_=CoinMin(numberRows_/6,500);
     } else {
       sparseThreshold_=CoinMax(largeRowsCount,numberRows_>>3);
+      sparseThreshold_=500;
     }
 #if FACTORIZATION_STATISTICS
     ftranTwiddleFactor1_=ftranTwiddleFactor1X;
@@ -4585,6 +4587,9 @@ CoinAbcTypeFactorization::checkSparse()
       btranAverageAfterU_ = INITIAL_AVERAGE2;
       btranAverageAfterR_ = INITIAL_AVERAGE2;
       btranAverageAfterL_ = INITIAL_AVERAGE2;
+      btranFullCountAfterL_ = INITIAL_AVERAGE2;
+      btranFullCountAfterR_ = INITIAL_AVERAGE2;
+      btranFullCountAfterU_ = INITIAL_AVERAGE2;
     }
     ftranFullCountInput_= CoinMax(ftranFullCountInput_,1.0);
     ftranFullAverageAfterL_ = CoinMax(ftranFullCountAfterL_/ftranFullCountInput_,INITIAL_AVERAGE2);

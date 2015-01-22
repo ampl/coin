@@ -1865,6 +1865,113 @@ OsiSolverInterface::getBasics(int* ) const
   throw CoinError("Needs coding for this interface", "getBasics",
 		  "OsiSolverInterface");
 }
+/* Check two models against each other.  Return nonzero if different.
+   Ignore names if that set.
+   May modify both models by cleaning up
+*/
+int 
+OsiSolverInterface::differentModel(OsiSolverInterface & other, 
+				   bool /*ignoreNames*/)
+{
+  // set reasonable defaults
+  bool takeHint;
+  OsiHintStrength strength;
+  // Switch off printing if asked to
+  bool gotHint = (getHintParam(OsiDoReducePrint,takeHint,strength));
+  assert (gotHint);
+  bool printStuff=true;
+  if (strength!=OsiHintIgnore&&takeHint) 
+    printStuff=false;
+  int returnCode=0;
+  int numberRows = getNumRows();
+  int numberColumns = getNumCols();
+  int numberIntegers = getNumIntegers();
+  if (numberRows!=other.getNumRows()||numberColumns!=other.getNumCols()) {
+    if (printStuff)
+      printf("** Mismatch on size, this has %d rows, %d columns - other has %d rows, %d columns\n",
+             numberRows,numberColumns,other.getNumRows(),other.getNumCols());
+    return 1000;
+  }
+  if (numberIntegers!=other.getNumIntegers()) {
+    if (printStuff)
+      printf("** Mismatch on number of integers, this has %d - other has %d\n",
+             numberIntegers,other.getNumIntegers());
+    return 1001;
+  }
+  int numberErrors1=0;
+  int numberErrors2=0;
+  for (int i=0;i<numberColumns;i++) {
+    if (isInteger(i)) {
+      if (!other.isInteger(i))
+	numberErrors1++;
+    } else {
+      if (other.isInteger(i))
+	numberErrors2++;
+    }
+  }
+  if (numberErrors1||numberErrors2) {
+    if (printStuff)
+      printf("** Mismatch on integers, %d (this int, other not), %d (this not other int)\n",
+             numberErrors1,numberErrors2);
+    return 1002;
+  }
+  // Arrays
+  const double * rowLower = getRowLower();
+  const double * rowUpper = getRowUpper();
+  const double * columnLower = getColLower();
+  const double * columnUpper = getColUpper();
+  const double * objective = getObjCoefficients();
+  const double * rowLower2 = other.getRowLower();
+  const double * rowUpper2 = other.getRowUpper();
+  const double * columnLower2 = other.getColLower();
+  const double * columnUpper2 = other.getColUpper();
+  const double * objective2 = other.getObjCoefficients();
+  const CoinPackedMatrix * matrix = getMatrixByCol();
+  const CoinPackedMatrix * matrix2 = other.getMatrixByCol();
+  CoinRelFltEq tolerance;
+  int numberDifferentL = 0;
+  int numberDifferentU = 0;
+  for (int i=0;i<numberRows;i++) {
+    if (!tolerance(rowLower[i],rowLower2[i]))
+      numberDifferentL++;
+    if (!tolerance(rowUpper[i],rowUpper2[i]))
+      numberDifferentU++;
+  }
+  int n = numberDifferentL+numberDifferentU;
+  returnCode+=n;
+  if (n&&printStuff)
+    printf("Row differences , %d lower, %d upper\n",
+	   numberDifferentL,numberDifferentU);
+  numberDifferentL = 0;
+  numberDifferentU = 0;
+  int numberDifferentO = 0;
+  for (int i=0;i<numberColumns;i++) {
+    if (!tolerance(columnLower[i],columnLower2[i]))
+      numberDifferentL++;
+    if (!tolerance(columnUpper[i],columnUpper2[i]))
+      numberDifferentU++;
+    if (!tolerance(objective[i],objective2[i]))
+      numberDifferentO++;
+  }
+  n = numberDifferentL+numberDifferentU+numberDifferentO;
+  returnCode+=n;
+  if (n&&printStuff)
+    printf("Column differences , %d lower, %d upper, %d objective\n",
+	   numberDifferentL,numberDifferentU,numberDifferentO);
+  if (matrix->getNumElements()==other.getNumElements()) {
+    if (!matrix->isEquivalent(*matrix2,tolerance)) {
+      returnCode+=100;
+      if (printStuff)
+	printf("Two matrices are not same\n");
+    }
+  } else {
+    returnCode+=200;
+    if (printStuff)
+      printf("Two matrices are not same - %d elements and %d elements\n",
+	     matrix->getNumElements(),matrix2->getNumElements());
+  }
+  return returnCode;
+}
 #ifdef COIN_SNAPSHOT
 // Fill in a CoinSnapshot
 CoinSnapshot *

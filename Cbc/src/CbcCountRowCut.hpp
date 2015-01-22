@@ -1,4 +1,4 @@
-/* $Id: CbcCountRowCut.hpp 1839 2013-01-16 18:41:25Z forrest $ */
+/* $Id: CbcCountRowCut.hpp 2094 2014-11-18 11:15:36Z forrest $ */
 // Copyright (C) 2002, International Business Machines
 // Corporation and others.  All Rights Reserved.
 // This code is licensed under the terms of the Eclipse Public License (EPL).
@@ -124,7 +124,7 @@ private:
    b) allow half baked cuts
    The whichRow_ field in OsiRowCut2 is used for a type
    0 - normal 
-   1 - processed cut
+   1 - processed cut (conflict)
    2 - unprocessed cut i.e. dual ray computation
 */
 // for hashing
@@ -153,6 +153,8 @@ public:
   int addCutIfNotDuplicateWhenGreedy(const OsiRowCut & cut,int whichType=0);
   // Add in cuts as normal cuts (and delete)
   void addCuts(OsiCuts & cs);
+  // Truncate
+  void truncate(int numberAfter);
 private:
   OsiRowCut2 ** rowCut_;
   /// Hash table

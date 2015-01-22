@@ -1,4 +1,4 @@
-// $Id: CglMessage.cpp 1113 2013-04-06 13:28:20Z stefan $
+// $Id: CglMessage.cpp 1230 2014-11-18 11:10:45Z forrest $
 // Copyright (C) 2005, International Business Machines
 // Corporation and others.  All Rights Reserved.
 // This code is licensed under the terms of the Eclipse Public License (EPL).
@@ -20,7 +20,7 @@ static Cgl_message us_english[]=
   {CGL_FIXED,2,1,"%d variables fixed"},
   {CGL_PROCESS_STATS,3,1,"%d fixed, %d tightened bounds, %d strengthened rows, %d substitutions"},
   {CGL_SLACKS,8,1,"%d inequality constraints converted to equality constraints"},
-  {CGL_PROCESS_STATS2,4,1,"processed model has %d rows, %d columns (%d integer) and %d elements"},
+  {CGL_PROCESS_STATS2,4,1,"processed model has %d rows, %d columns (%d integer (%d of which binary)) and %d elements"},
   {CGL_PROCESS_SOS1,5,1,"%d SOS with %d members"},
   {CGL_PROCESS_SOS2,6,2,"%d SOS (%d members out of %d) with %d overlaps - too much overlap or too many others"},
   {CGL_UNBOUNDED,7,1,"Continuous relaxation is unbounded!"},

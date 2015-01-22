@@ -1,4 +1,4 @@
-/* $Id: CbcBranchDynamic.cpp 1573 2011-01-05 01:12:36Z lou $ */
+/* $Id: CbcBranchDynamic.cpp 2073 2014-09-14 07:53:50Z forrest $ */
 // Copyright (C) 2002, International Business Machines
 // Corporation and others.  All Rights Reserved.
 // This code is licensed under the terms of the Eclipse Public License (EPL).
@@ -61,10 +61,10 @@ typedef struct {
     char where_;
     char status_;
 } History;
-History * history = NULL;
-int numberHistory = 0;
-int maxHistory = 0;
-bool getHistoryStatistics_ = true;
+static History * history = NULL;
+static int numberHistory = 0;
+static int maxHistory = 0;
+static bool getHistoryStatistics_ = true;
 static void increaseHistory()
 {
     if (numberHistory == maxHistory) {

@@ -1,4 +1,4 @@
-/* $Id: testQP.cpp 1662 2011-01-04 17:52:40Z lou $ */
+/* $Id: testQP.cpp 2001 2013-11-30 13:13:58Z stefan $ */
 // Copyright (C) 2005, International Business Machines
 // Corporation and others.  All Rights Reserved.
 // This code is licensed under the terms of the Eclipse Public License (EPL).
@@ -24,14 +24,14 @@ int main(int argc, const char *argv[])
           CoinMpsIO  m;
 #if defined(SAMPLEDIR)
           int status = m.readMps(SAMPLEDIR "/share2qp", "mps");
-#else
-          fprintf(stderr, "Do not know where to find sample MPS files.\n");
-          exit(1);
-#endif
           if (status) {
                printf("errors on input\n");
                exit(77);
           }
+#else
+          fprintf(stderr, "Do not know where to find sample MPS files.\n");
+          exit(1);
+#endif
           ClpInterior model;
           model.loadProblem(*m.getMatrixByCol(), m.getColLower(), m.getColUpper(),
                             m.getObjCoefficients(),

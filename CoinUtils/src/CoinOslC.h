@@ -1,4 +1,4 @@
-/* $Id: CoinOslC.h 1585 2013-04-06 20:42:02Z stefan $ */
+/* $Id: CoinOslC.h 1582 2013-04-06 14:33:07Z stefan $ */
 #ifndef COIN_OSL_C_INCLUDE
 /*
   Copyright (C) 1987, 2009, International Business Machines Corporation

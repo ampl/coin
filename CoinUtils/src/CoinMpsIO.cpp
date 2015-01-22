@@ -1,4 +1,4 @@
-/* $Id: CoinMpsIO.cpp 1696 2014-05-03 08:32:40Z forrest $ */
+/* $Id: CoinMpsIO.cpp 1697 2014-05-03 08:33:21Z forrest $ */
 // Copyright (C) 2000, International Business Machines
 // Corporation and others.  All Rights Reserved.
 // This code is licensed under the terms of the Eclipse Public License (EPL).

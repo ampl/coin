@@ -1,4 +1,4 @@
-/* $Id: CbcOrClpParam.cpp 2011 2013-12-17 18:41:32Z forrest $ */
+/* $Id: CbcOrClpParam.cpp 2079 2015-01-05 13:11:35Z forrest $ */
 // Copyright (C) 2002, International Business Machines
 // Corporation and others.  All Rights Reserved.
 // This code is licensed under the terms of the Eclipse Public License (EPL).
@@ -10,6 +10,7 @@
 #include <string>
 #include <iostream>
 #include <cassert>
+
 #ifdef COIN_HAS_CBC
 #ifdef COIN_HAS_CLP
 #include "OsiClpSolverInterface.hpp"
@@ -21,10 +22,6 @@
 #ifdef COIN_HAS_CLP
 #include "ClpSimplex.hpp"
 #include "ClpFactorization.hpp"
-#endif
-#if COIN_INT_MAX==0
-#undef COIN_INT_MAX
-#define COIN_INT_MAX 2147483647
 #endif
 #ifdef COIN_HAS_READLINE
 #include <readline/readline.h>
@@ -53,6 +50,10 @@ static char coin_prompt[] = "Clp:";
 static bool doPrinting = true;
 std::string afterEquals = "";
 static char printArray[200];
+#if COIN_INT_MAX==0
+#undef COIN_INT_MAX
+#define COIN_INT_MAX 2147483647
+#endif
 void setCbcOrClpPrinting(bool yesNo)
 {
      doPrinting = yesNo;
@@ -82,7 +83,9 @@ CbcOrClpParam::CbcOrClpParam ()
        intValue_(-1),
        doubleValue_(-1.0),
        stringValue_(""),
-       whereUsed_(7)
+       whereUsed_(7),
+       fakeKeyWord_(-1),
+       fakeValue_(0)
 {
 }
 // Other constructors
@@ -102,7 +105,9 @@ CbcOrClpParam::CbcOrClpParam (std::string name, std::string help,
        intValue_(-1),
        doubleValue_(-1.0),
        stringValue_(""),
-       whereUsed_(7)
+       whereUsed_(7),
+       fakeKeyWord_(-1),
+       fakeValue_(0)
 {
      lowerDoubleValue_ = lower;
      upperDoubleValue_ = upper;
@@ -124,7 +129,9 @@ CbcOrClpParam::CbcOrClpParam (std::string name, std::string help,
        intValue_(-1),
        doubleValue_(-1.0),
        stringValue_(""),
-       whereUsed_(7)
+       whereUsed_(7),
+       fakeKeyWord_(-1),
+       fakeValue_(0)
 {
      gutsOfConstructor();
      lowerIntValue_ = lower;
@@ -150,7 +157,9 @@ CbcOrClpParam::CbcOrClpParam (std::string name, std::string help,
        intValue_(-1),
        doubleValue_(-1.0),
        stringValue_(""),
-       whereUsed_(whereUsed)
+       whereUsed_(whereUsed),
+       fakeKeyWord_(-1),
+       fakeValue_(0)
 {
      gutsOfConstructor();
      definedKeyWords_.push_back(firstValue);
@@ -173,7 +182,9 @@ CbcOrClpParam::CbcOrClpParam (std::string name, std::string help,
        display_(display),
        intValue_(-1),
        doubleValue_(-1.0),
-       stringValue_("")
+       stringValue_(""),
+       fakeKeyWord_(-1),
+       fakeValue_(0)
 {
      whereUsed_ = whereUsed;
      gutsOfConstructor();
@@ -202,6 +213,8 @@ CbcOrClpParam::CbcOrClpParam (const CbcOrClpParam & rhs)
      doubleValue_ = rhs.doubleValue_;
      stringValue_ = rhs.stringValue_;
      whereUsed_ = rhs.whereUsed_;
+     fakeKeyWord_ = rhs.fakeKeyWord_;
+     fakeValue_ = rhs.fakeValue_;
 }
 
 //-------------------------------------------------------------------
@@ -236,6 +249,8 @@ CbcOrClpParam::operator=(const CbcOrClpParam & rhs)
           doubleValue_ = rhs.doubleValue_;
           stringValue_ = rhs.stringValue_;
           whereUsed_ = rhs.whereUsed_;
+	  fakeKeyWord_ = rhs.fakeKeyWord_;
+	  fakeValue_ = rhs.fakeValue_;
      }
      return *this;
 }
@@ -252,6 +267,45 @@ CbcOrClpParam::gutsOfConstructor()
           name_ = name_.substr(0, shriekPos) + name_.substr(shriekPos + 1);
           lengthName_--;
      }
+}
+// Sets value of fake keyword to current size of keywords 
+void 
+CbcOrClpParam::setFakeKeyWord(int fakeValue)
+{
+  fakeKeyWord_ = static_cast<int>(definedKeyWords_.size());
+  assert (fakeKeyWord_>0);
+  fakeValue_ = fakeValue;
+  assert (fakeValue_>=0);
+}
+/* Returns current parameter option position
+   but if fake keyword returns fakeValue_
+*/
+int 
+CbcOrClpParam::currentOptionAsInteger (  ) const
+{
+  int fakeInteger;
+  return currentOptionAsInteger(fakeInteger);
+}
+/* Returns current parameter option position
+   but if fake keyword returns fakeValue_ and sets
+   fakeInteger to value
+*/
+int 
+CbcOrClpParam::currentOptionAsInteger ( int & fakeInteger ) const
+{
+  fakeInteger=-COIN_INT_MAX;
+  if (fakeKeyWord_<0) {
+    return currentKeyWord_;
+  } else if (currentKeyWord_>=0&&currentKeyWord_<fakeKeyWord_){
+    return currentKeyWord_;
+  } else {
+    // fake
+    if (currentKeyWord_<0)
+      fakeInteger = currentKeyWord_ + 1000;
+    else
+      fakeInteger = currentKeyWord_ - 1000;
+    return fakeValue_;
+  }
 }
 // Returns length of name for printing
 int
@@ -338,10 +392,38 @@ CbcOrClpParam::parameterOption ( std::string check ) const
                     whichItem++;
                }
           }
-          if (whichItem < numberItems)
+          if (whichItem < numberItems) {
                return whichItem;
-          else
-               return -1;
+          } else {
+	    if (fakeKeyWord_<=0)
+	      return -1;
+	    // allow plus or minus
+	    int n;
+	    if (check.substr(0,4)=="plus"||check.substr(0,4)=="PLUS") {
+	      n = 4;
+	    } else if (check.substr(0,5)=="minus"||check.substr(0,5)=="MINUS") {
+	      n = 5;
+	    } else {
+	      return -1;
+	    }
+	    int value = 0;
+	    std::string field=check.substr(n);
+	    if (field != "EOL") {
+	      const char * start = field.c_str();
+	      char * endPointer = NULL;
+	      // check valid
+	      value =  static_cast<int>(strtol(start, &endPointer, 10));
+	      if (*endPointer != '\0') {
+		return -1;
+	      }
+	      if (n==4) 
+		return value + 1000;
+	      else
+		return -value - 1000;
+	    } else {
+	      return -1;
+	    }
+	  }
      }
 }
 // Prints parameter options
@@ -764,7 +846,7 @@ CbcOrClpParam::intParameter (OsiSolverInterface * model) const
 int
 CbcOrClpParam::setDoubleParameter (CbcModel &model, double value)
 {
-     int returnCode;
+     int returnCode=0;
      setDoubleParameterWithMessage(model, value, returnCode);
      if (doPrinting && strlen(printArray))
           std::cout << printArray << std::endl;
@@ -881,6 +963,9 @@ CbcOrClpParam::setIntParameterWithMessage ( CbcModel & model, int value , int & 
                   value, name_.c_str(), lowerIntValue_, upperIntValue_);
           returnCode = 1;
      } else {
+          printArray[0] = '\0';
+	  if (value==intValue_)
+	    return printArray;
           int oldValue = intValue_;
           intValue_ = value;
           switch (type_) {
@@ -1020,13 +1105,50 @@ const char *
 CbcOrClpParam::setCurrentOptionWithMessage ( int value )
 {
      if (value != currentKeyWord_) {
-          sprintf(printArray, "Option for %s changed from %s to %s",
-                  name_.c_str(), definedKeyWords_[currentKeyWord_].c_str(),
-                  definedKeyWords_[value].c_str());
-
-          currentKeyWord_ = value;
+         char current[100];
+	 char newString[100];
+	 if (currentKeyWord_>=0&&(fakeKeyWord_<=0||currentKeyWord_<fakeKeyWord_)) 
+	   strcpy(current,definedKeyWords_[currentKeyWord_].c_str());
+	 else if (currentKeyWord_<0)
+	   sprintf(current,"minus%d",-currentKeyWord_-1000);
+	 else
+	   sprintf(current,"plus%d",currentKeyWord_-1000);
+	 if (value>=0&&(fakeKeyWord_<=0||value<fakeKeyWord_) )
+	   strcpy(newString,definedKeyWords_[value].c_str());
+	 else if (value<0)
+	   sprintf(newString,"minus%d",-value-1000);
+	 else
+	   sprintf(newString,"plus%d",value-1000);
+	 sprintf(printArray, "Option for %s changed from %s to %s",
+		 name_.c_str(), current, newString);
+	 currentKeyWord_ = value;
      } else {
           printArray[0] = '\0';
+     }
+     return printArray;
+}
+// Sets current parameter option using string with message
+const char *
+CbcOrClpParam::setCurrentOptionWithMessage ( const std::string value )
+{
+     int action = parameterOption(value);
+     char current[100];
+     printArray[0] = '\0';
+     if (action >= 0) {
+         if (action == currentKeyWord_)
+	   return NULL;
+	 if (currentKeyWord_>=0&&(fakeKeyWord_<=0||currentKeyWord_<fakeKeyWord_)) 
+	   strcpy(current,definedKeyWords_[currentKeyWord_].c_str());
+	 else if (currentKeyWord_<0)
+	   sprintf(current,"minus%d",-currentKeyWord_-1000);
+	 else
+	   sprintf(current,"plus%d",currentKeyWord_-1000);
+	 sprintf(printArray, "Option for %s changed from %s to %s",
+		 name_.c_str(), current, value.c_str());
+          currentKeyWord_ = action;
+     } else {
+	 sprintf(printArray, "Option for %s given illegal value %s",
+		 name_.c_str(), value.c_str());
      }
      return printArray;
 }
@@ -1041,6 +1163,22 @@ CbcOrClpParam::setIntValue ( int value )
           intValue_ = value;
      }
 }
+const char *
+CbcOrClpParam::setIntValueWithMessage ( int value )
+{
+     printArray[0] = '\0';
+     if (value < lowerIntValue_ || value > upperIntValue_) {
+          sprintf(printArray, "%d was provided for %s - valid range is %d to %d",
+	       value,name_.c_str(),lowerIntValue_,upperIntValue_);
+     } else {
+         if (value==intValue_)
+	   return NULL;
+          sprintf(printArray, "%s was changed from %d to %d",
+                  name_.c_str(), intValue_, value);
+          intValue_ = value;
+     }
+     return printArray;
+}
 void
 CbcOrClpParam::setDoubleValue ( double value )
 {
@@ -1051,6 +1189,22 @@ CbcOrClpParam::setDoubleValue ( double value )
      } else {
           doubleValue_ = value;
      }
+}
+const char *
+CbcOrClpParam::setDoubleValueWithMessage ( double value )
+{
+     printArray[0] = '\0';
+     if (value < lowerDoubleValue_ || value > upperDoubleValue_) {
+          sprintf(printArray, "%g was provided for %s - valid range is %g to %g",
+	       value,name_.c_str(),lowerDoubleValue_,upperDoubleValue_);
+     } else {
+         if (value==doubleValue_)
+	   return NULL;
+          sprintf(printArray, "%s was changed from %g to %g",
+                  name_.c_str(), doubleValue_, value);
+          doubleValue_ = value;
+     }
+     return printArray;
 }
 void
 CbcOrClpParam::setStringValue ( std::string value )
@@ -1364,6 +1518,7 @@ establishParams (int &numberParameters, CbcOrClpParam *const parameters)
      parameters[numberParameters-1].append("eight");
      parameters[numberParameters-1].append("on");
      parameters[numberParameters-1].append("decide");
+     parameters[numberParameters-1].setFakeKeyWord(10);
      parameters[numberParameters-1].setLonghelp
      (
           "Decide whether to use A Basic Optimization Code (Accelerated?) \
@@ -1547,6 +1702,9 @@ See branchAndCut for information on options."
      parameters[numberParameters-1].append("on");
      parameters[numberParameters-1].append("both");
      parameters[numberParameters-1].append("before");
+     parameters[numberParameters-1].append("onquick");
+     parameters[numberParameters-1].append("bothquick");
+     parameters[numberParameters-1].append("beforequick");
      parameters[numberParameters-1].setLonghelp
      (
           "This switches on a heuristic which does branch and cut on the problem given by just \
@@ -1571,6 +1729,9 @@ See Rounding for meaning of on,both,before"
           CbcOrClpParam("constraint!fromCutoff", "Whether to use cutoff as constraint",
                         "off", CBC_PARAM_STR_CUTOFF_CONSTRAINT);
      parameters[numberParameters-1].append("on");
+     parameters[numberParameters-1].append("variable");
+     parameters[numberParameters-1].append("forcevariable");
+     parameters[numberParameters-1].append("conflict");
      parameters[numberParameters-1].setLonghelp
      (
           "This adds the objective as a constraint with best solution as RHS"
@@ -1585,6 +1746,7 @@ See Rounding for meaning of on,both,before"
      parameters[numberParameters-1].append("length!?");
      parameters[numberParameters-1].append("singletons");
      parameters[numberParameters-1].append("nonzero");
+     parameters[numberParameters-1].append("general!Force?");
      parameters[numberParameters-1].setLonghelp
      (
           "This orders the variables in order of their absolute costs - with largest cost ones being branched on \
@@ -1626,10 +1788,18 @@ Cbc/examples/driver4.cpp."
      parameters[numberParameters-1].append("on");
      parameters[numberParameters-1].append("so!low_halim");
      parameters[numberParameters-1].append("lots");
-#ifdef ABC_INHERIT
+#ifdef CLP_INHERIT_MODE
      parameters[numberParameters-1].append("dual");
      parameters[numberParameters-1].append("dw");
      parameters[numberParameters-1].append("idiot");
+#else
+     parameters[numberParameters-1].append("idiot1");
+     parameters[numberParameters-1].append("idiot2");
+     parameters[numberParameters-1].append("idiot3");
+     parameters[numberParameters-1].append("idiot4");
+     parameters[numberParameters-1].append("idiot5");
+     parameters[numberParameters-1].append("idiot6");
+     parameters[numberParameters-1].append("idiot7");
 #endif
      parameters[numberParameters-1].setLonghelp
      (
@@ -1724,6 +1894,16 @@ re-run with debug set to 'debug.file'  The create case has same effect as saveSo
      );
 #endif
 #ifdef COIN_HAS_CLP
+     parameters[numberParameters++] =
+          CbcOrClpParam("decomp!ose", "Whether to try decomposition",
+                        -COIN_INT_MAX, COIN_INT_MAX, CLP_PARAM_INT_DECOMPOSE_BLOCKS, 1);
+     parameters[numberParameters-1].setLonghelp
+     (
+          "0 - off, 1 choose blocks >1 use as blocks \
+Dantzig Wolfe if primal, Benders if dual \
+- uses sprint pass for number of passes"
+     );
+     parameters[numberParameters-1].setIntValue(0);
 #if CLP_MULTIPLE_FACTORIZATIONS >0
      parameters[numberParameters++] =
           CbcOrClpParam("dense!Threshold", "Whether to use dense factorization",
@@ -1828,14 +2008,28 @@ You can also use the parameters 'maximize' or 'minimize'."
                         -1, 200000, CBC_PARAM_INT_DIVEOPT, 1);
      parameters[numberParameters-1].setLonghelp
      (
-          "If >2 && <8 then modify diving options - \
+          "If >2 && <20 then modify diving options - \
 	 \n\t3 only at root and if no solution,  \
 	 \n\t4 only at root and if this heuristic has not got solution, \
-	 \n\t5 only at depth <4, \
-	 \n\t6 decay, \
-	 \n\t7 run up to 2 times if solution found 4 otherwise."
+	 \n\t5 decay only if no solution, \
+	 \n\t6 if depth <3 or decay, \
+	 \n\t7 run up to 2 times if solution found 4 otherwise, \
+	 \n\t>10 All only at root (DivingC normal as value-10), \
+	 \n\t>20 All with value-20)."
      );
      parameters[numberParameters-1].setIntValue(-1);
+     parameters[numberParameters++] =
+          CbcOrClpParam("diveS!olves", "Diving solve option",
+                        -1, 200000, CBC_PARAM_INT_DIVEOPTSOLVES, 1);
+     parameters[numberParameters-1].setLonghelp
+     (
+          "If >0 then do up to this many solves.  Last digit is ignored \
+and used for extra options - \
+	 \n\t1-3 allow fixing of satisfied integers (but not at bound) \
+	 \n\t1 switch off above for that dive if goes infeasible \
+	 \n\t2 switch off above permanently if goes infeasible"
+     );
+     parameters[numberParameters-1].setIntValue(100);
      parameters[numberParameters++] =
           CbcOrClpParam("DivingS!ome", "Whether to try Diving heuristics",
                         "off", CBC_PARAM_STR_DIVINGS);
@@ -1955,6 +2149,18 @@ no dual infeasibility may exceed this value",
 to use a large tolerance e.g. 1.0e-4 and dual and then clean up problem using primal and the \
 correct tolerance (remembering to switch off presolve for this final short clean up phase)."
      );
+#ifdef COIN_HAS_CBC
+     parameters[numberParameters++] =
+          CbcOrClpParam("dw!Heuristic", "Whether to try DW heuristic",
+                        "off", CBC_PARAM_STR_DW);
+     parameters[numberParameters-1].append("on");
+     parameters[numberParameters-1].append("both");
+     parameters[numberParameters-1].append("before");
+     parameters[numberParameters-1].setLonghelp
+     (
+      "See Rounding for meaning of on,both,before"
+     );
+#endif
 #ifdef COIN_HAS_CLP
      parameters[numberParameters++] =
           CbcOrClpParam("either!Simplex", "Do dual or primal simplex algorithm",
@@ -2126,10 +2332,12 @@ before branch and bound - use with extreme caution!"
      parameters[numberParameters-1].append("ifmove");
      parameters[numberParameters-1].append("forceOn");
      parameters[numberParameters-1].append("onglobal");
+     parameters[numberParameters-1].setFakeKeyWord(3);
      parameters[numberParameters-1].setLonghelp
      (
           "This switches on flow cover cuts (either at root or in entire tree) \
-See branchAndCut for information on options."
+See branchAndCut for information on options. \
+Can also enter testing values by plusnn (==ifmove)"
      );
      parameters[numberParameters++] =
           CbcOrClpParam("force!Solution", "Whether to use given solution as crash for BAB",
@@ -2164,25 +2372,6 @@ of branch and bound are done on reduced problem.  Small problem has to be less t
 #endif
 #ifdef COIN_HAS_CBC
       parameters[numberParameters++] =
-          CbcOrClpParam("GMI!Cuts", "Whether to use alternative Gomory cuts",
-                        "off", CBC_PARAM_STR_GMICUTS);
-     parameters[numberParameters-1].append("on");
-     parameters[numberParameters-1].append("root");
-     parameters[numberParameters-1].append("ifmove");
-     parameters[numberParameters-1].append("forceOn");
-     parameters[numberParameters-1].append("endonly");
-     parameters[numberParameters-1].append("long");
-     parameters[numberParameters-1].append("longroot");
-     parameters[numberParameters-1].append("longifmove");
-     parameters[numberParameters-1].append("forceLongOn");
-     parameters[numberParameters-1].append("longendonly");
-     parameters[numberParameters-1].setLonghelp
-     (
-          "This switches on an alternative Gomory cut generator (either at root or in entire tree) \
-This version is by Giacomo Nannicini and may be more robust \
-See branchAndCut for information on options."
-     );
-     parameters[numberParameters++] =
           CbcOrClpParam("GMI!Cuts", "Whether to use alternative Gomory cuts",
                         "off", CBC_PARAM_STR_GMICUTS);
      parameters[numberParameters-1].append("on");
@@ -2376,7 +2565,7 @@ See branchAndCut for information on options."
                         "off", CBC_PARAM_STR_LAGOMORYCUTS);
      parameters[numberParameters-1].append("endonlyroot");
      parameters[numberParameters-1].append("endcleanroot");
-     parameters[numberParameters-1].append("endbothroot");
+     parameters[numberParameters-1].append("root");
      parameters[numberParameters-1].append("endonly");
      parameters[numberParameters-1].append("endclean");
      parameters[numberParameters-1].append("endboth");
@@ -2386,6 +2575,9 @@ See branchAndCut for information on options."
      parameters[numberParameters-1].append("onlyinstead");
      parameters[numberParameters-1].append("cleaninstead");
      parameters[numberParameters-1].append("bothinstead");
+     parameters[numberParameters-1].append("onlyaswellroot");
+     parameters[numberParameters-1].append("cleanaswellroot");
+     parameters[numberParameters-1].append("bothaswellroot");
      parameters[numberParameters-1].setLonghelp
      (
           "This is a gross simplification of 'A Relax-and-Cut Framework for Gomory's Mixed-Integer Cuts' \
@@ -2529,6 +2721,10 @@ You can also use the parameters 'direction minimize'."
      parameters[numberParameters++] =
           CbcOrClpParam("more!MipOptions", "More dubious options for mip",
                         -1, COIN_INT_MAX, CBC_PARAM_INT_MOREMIPOPTIONS, 0);
+     parameters[numberParameters++] =
+          CbcOrClpParam("more2!MipOptions", "More more dubious options for mip",
+                        -1, COIN_INT_MAX, CBC_PARAM_INT_MOREMOREMIPOPTIONS, 0);
+     parameters[numberParameters-1].setIntValue(0);
      parameters[numberParameters++] =
           CbcOrClpParam("mixed!IntegerRoundingCuts", "Whether to use Mixed Integer Rounding cuts",
                         "off", CBC_PARAM_STR_MIXEDCUTS);
@@ -2746,6 +2942,18 @@ This is a first try and will hopefully become more sophisticated."
      parameters[numberParameters-1].setDoubleValue(1.0);
 #endif
 #ifdef COIN_HAS_CBC
+#ifdef COIN_HAS_NTY
+     parameters[numberParameters++] =
+          CbcOrClpParam("Orbit!alBranching", "Whether to try orbital branching",
+                        "off", CBC_PARAM_STR_ORBITAL);
+     parameters[numberParameters-1].append("on");
+     parameters[numberParameters-1].append("strong");
+     parameters[numberParameters-1].append("force");
+     parameters[numberParameters-1].setLonghelp
+     (
+          "This switches on Orbital branching. \
+On just adds orbital, strong tries extra fixing in strong branching");
+#endif
      parameters[numberParameters++] =
           CbcOrClpParam("outDup!licates", "takes duplicate rows etc out of integer model",
                         CLP_PARAM_ACTION_OUTDUPROWS, 7, 0);
@@ -2813,7 +3021,7 @@ stop if drop small if less than 5000 columns, 20 otherwise"
                         -200, 100, CLP_PARAM_INT_PRESOLVEPASS, 1);
      parameters[numberParameters-1].setLonghelp
      (
-          "Normally Presolve does 5 passes but you may want to do less to make it\
+          "Normally Presolve does 10 passes but you may want to do less to make it\
  more lightweight or do more if improvements are still being made.  As Presolve will return\
  if nothing is being taken out, you should not normally need to use this fine tuning."
      );
@@ -3070,12 +3278,14 @@ but strong options do more probing"
      parameters[numberParameters-1].append("10");
      parameters[numberParameters-1].append("100");
      parameters[numberParameters-1].append("300");
+     // but allow numbers after this (returning 1)
+     parameters[numberParameters-1].setFakeKeyWord(1);
      parameters[numberParameters-1].setLonghelp
      (
           "This switches on a heuristic which looks for a solution close \
 to incumbent solution (Fischetti and Monaci). \
 See Rounding for meaning of on,both,before. \
-The ones at end have different maxNode settings (and are 'on'(on==30))."
+Can also set different maxNode settings by plusnnnn (and are 'on'(on==30))."
      );
      parameters[numberParameters++] =
           CbcOrClpParam("pumpC!utoff", "Fake cutoff for use in feasibility pump",
@@ -3163,8 +3373,19 @@ best less than this fraction of larger of two",
 of the objective value at the root node then the search will terminate.  See 'allowableGap' for a \
 way of using absolute value rather than fraction."
      );
+#endif
      parameters[numberParameters++] =
-          CbcOrClpParam("readS!tored", "Import stored cuts from file",
+          CbcOrClpParam("restoreS!olution", "reads solution from file",
+                        CLP_PARAM_ACTION_RESTORESOL);
+     parameters[numberParameters-1].setLonghelp
+     (
+          "This will read a binary solution file from the given file name.  It will use the default\
+ directory given by 'directory'.  A name of '$' will use the previous value for the name.  This\
+ is initialized to 'solution.file'.  This reads in a file from saveSolution"
+     );
+#ifdef COIN_HAS_CBC
+     parameters[numberParameters++] =
+          CbcOrClpParam("readSt!ored", "Import stored cuts from file",
                         CLP_PARAM_ACTION_STOREDFILE, 3, 0);
 #endif
 #ifdef COIN_HAS_CLP
@@ -3275,6 +3496,7 @@ See branchAndCut for information on options."
      parameters[numberParameters-1].append("10000");
      parameters[numberParameters-1].append("dj");
      parameters[numberParameters-1].append("djbefore");
+     parameters[numberParameters-1].append("usesolution");
      parameters[numberParameters-1].setLonghelp
      (
           "This switches on Relaxation enforced neighborhood Search. \
@@ -3383,7 +3605,7 @@ If name contains '_fix_read_' then does not write but reads and will fix all var
 #ifdef COIN_HAS_CLP
      parameters[numberParameters++] =
           CbcOrClpParam("slp!Value", "Number of slp passes before primal",
-                        -1, 50000, CLP_PARAM_INT_SLPVALUE, 1);
+                        -50000, 50000, CLP_PARAM_INT_SLPVALUE, 1);
      parameters[numberParameters-1].setLonghelp
      (
           "If you are solving a quadratic problem using primal then it may be helpful to do some \
@@ -3584,16 +3806,16 @@ trust the pseudo costs and do not do any more strong branching."
 #ifdef COIN_HAS_CBC
      parameters[numberParameters++] =
           CbcOrClpParam("tune!PreProcess", "Dubious tuning parameters",
-                        0, 20000000, CLP_PARAM_INT_PROCESSTUNE, 1);
+                        0, 2000000000, CLP_PARAM_INT_PROCESSTUNE, 1);
      parameters[numberParameters-1].setLonghelp
      (
-          "For making equality cliques this is minimumsize.  Also for adding \
-integer slacks.  May be used for more later \
-If <10000 that is what it does.  If <1000000 - numberPasses is (value/10000)-1 and tune is tune %10000. \
-If >= 1000000! - numberPasses is (value/1000000)-1 and tune is tune %1000000.  In this case if tune is now still >=10000 \
-numberPassesPerInnerLoop is changed from 10 to (tune-10000)-1 and tune becomes tune % 10000!!!!! - happy? - \
-so to keep normal limit on cliques of 5, do 3 major passes (include presolves) but only doing one tightening pass per major pass - \
-you would use 3010005 (I think)"
+	  "Format aabbcccc - \n If aa then this is number of major passes (i.e. with presolve) \n \
+If bb and bb>0 then this is number of minor passes (if unset or 0 then 10) \n \
+cccc is bit set \n 0 - 1 Heavy probing \n 1 - 2 Make variables integer if possible (if obj value)\n \
+2 - 4 As above but even if zero objective value\n \
+7 - 128 Try and create cliques\n 8 - 256 If all +1 try hard for dominated rows\n \
+10 - 1024 Use a larger feasibility tolerance in presolve\n \
+11 - 2048 Try probing before creating cliques"
      );
      parameters[numberParameters++] =
           CbcOrClpParam("two!MirCuts", "Whether to use Two phase Mixed Integer Rounding cuts",

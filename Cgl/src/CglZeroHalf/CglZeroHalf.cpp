@@ -1,4 +1,4 @@
-// $Id: CglZeroHalf.cpp 1123 2013-04-06 20:47:24Z stefan $
+// $Id: CglZeroHalf.cpp 1222 2014-09-14 17:32:18Z forrest $
 // Copyright (C) 2010, International Business Machines
 // Corporation and others.  All Rights Reserved.
 // This code is licensed under the terms of the Eclipse Public License (EPL).
@@ -155,7 +155,7 @@ CglCutGenerator(),
   msense_(NULL),
   flags_(0)
 {
-  // nothing to do here
+  cutInfo_=Cgl012Cut();
 }
 //-------------------------------------------------------------------
 // Copy constructor 
@@ -187,6 +187,8 @@ CglZeroHalf::CglZeroHalf (
     mrhs_ = CoinCopyOfArray(source.mrhs_,mr_);
     msense_ = CoinCopyOfArray(source.msense_,mr_);
   }
+  //cutInfo_ = Cgl012Cut(source.cutInfo_);
+  cutInfo_ = Cgl012Cut();
 }
 
 
@@ -235,7 +237,6 @@ CglZeroHalf::operator=(
     mc_ = rhs.mc_;
     mnz_ = rhs.mnz_;
     flags_ = rhs.flags_;
-    cutInfo_=Cgl012Cut();
     if (mr_) {
       mtbeg_ = CoinCopyOfArray(rhs.mtbeg_,mr_);
       mtcnt_ = CoinCopyOfArray(rhs.mtcnt_,mr_);
@@ -255,6 +256,8 @@ CglZeroHalf::operator=(
       mrhs_ = NULL;
       msense_ = NULL;
     }
+    //cutInfo_=Cgl012Cut(rhs.cutInfo_);
+    cutInfo_=Cgl012Cut();
   }
   return *this;
 }
@@ -330,7 +333,7 @@ CglZeroHalf::refreshSolver(OsiSolverInterface * solver)
 	break;
       } else {
 	double value = rowElements[j];
-	if (fabs(value-floor(value+0.5))>1.0e-30) {
+	if (fabs(value-floor(value+0.5))>1.0e-15) {
 	  // not integer coefficient
 	  good=false;
 	  break;
@@ -342,7 +345,7 @@ CglZeroHalf::refreshSolver(OsiSolverInterface * solver)
     int iType=1;
     double rhs=1.0e20;
     if (lo>-1.0e20) {
-      if (fabs(lo-floor(lo+0.5))>1.0e-12) {
+      if (fabs(lo-floor(lo+0.5))>1.0e-15) {
 	// not integer coefficient
 	good=false;
       }
@@ -370,6 +373,8 @@ CglZeroHalf::refreshSolver(OsiSolverInterface * solver)
       mnz_ += iType*n;
     }
   }
+  int saveMr=mr_;
+  int saveMnz=mnz_;
   if (mnz_) {
     mc_ = numberColumns;
     mtbeg_ = new int [mr_];
@@ -392,7 +397,7 @@ CglZeroHalf::refreshSolver(OsiSolverInterface * solver)
 	  break;
 	} else {
 	  double value = rowElements[j];
-	  if (fabs(value-floor(value+0.5))>1.0e-12) {
+	  if (fabs(value-floor(value+0.5))>1.0e-15) {
 	    // not integer coefficient
 	    good=false;
 	    break;
@@ -404,7 +409,7 @@ CglZeroHalf::refreshSolver(OsiSolverInterface * solver)
       int iType=1;
       double rhs=1.0e20;
       if (lo>-1.0e20) {
-	if (fabs(lo-floor(lo+0.5))>1.0e-30) {
+	if (fabs(lo-floor(lo+0.5))>1.0e-15) {
 	  // not integer coefficient
 	  good=false;
 	}
@@ -467,6 +472,8 @@ CglZeroHalf::refreshSolver(OsiSolverInterface * solver)
 	}
       }
     }
+    assert(saveMr==mr_);
+    assert(saveMnz==mnz_);
     cutInfo_.ilp_load(mr_,mc_,mnz_,mtbeg_,mtcnt_,mtind_,mtval_,
 	     vlb_,vub_,mrhs_,msense_);
     cutInfo_.alloc_parity_ilp(mr_,mc_,mnz_);

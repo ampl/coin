@@ -2,7 +2,7 @@
 # All Rights Reserved.
 # This file is distributed under the Eclipse Public License.
 
-## $Id: Makefile.am 1681 2013-12-14 23:52:56Z tkr $
+## $Id: Makefile.am 1775 2015-01-17 02:45:26Z tkr $
 
 # Author:  Andreas Waechter           IBM    2006-04-13
 
@@ -78,6 +78,7 @@ libCoinUtils_la_SOURCES = \
 	CoinPresolveTripleton.cpp CoinPresolveTripleton.hpp \
 	CoinPresolveUseless.cpp CoinPresolveUseless.hpp \
 	CoinPresolveZeros.cpp CoinPresolveZeros.hpp \
+	CoinRational.cpp CoinRational.hpp \
 	CoinSearchTree.cpp CoinSearchTree.hpp \
 	CoinShallowPackedVector.cpp CoinShallowPackedVector.hpp \
 	CoinSignal.hpp \

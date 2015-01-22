@@ -1,4 +1,4 @@
-/* $Id: CoinPresolveDupcol.cpp 1585 2013-04-06 20:42:02Z stefan $ */
+/* $Id: CoinPresolveDupcol.cpp 1699 2014-05-22 17:06:09Z forrest $ */
 // Copyright (C) 2002, International Business Machines
 // Corporation and others.  All Rights Reserved.
 // This code is licensed under the terms of the Eclipse Public License (EPL).
@@ -996,7 +996,7 @@ const CoinPresolveAction
 	CoinBigIndex k;
 	for (k=krs;k<kre;k++) {
 	  if (hcol[k] != hcol[k+ishift] ||
-	      rowels[k] != rowels[k+ishift]) {
+	      fabs(rowels[k]-rowels[k+ishift])>1.0e-14) {
 	    break;
 	  }
 	}

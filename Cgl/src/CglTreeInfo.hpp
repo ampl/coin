@@ -1,4 +1,4 @@
-// $Id: CglTreeInfo.hpp 1123 2013-04-06 20:47:24Z stefan $
+// $Id: CglTreeInfo.hpp 1201 2014-03-07 17:24:04Z forrest $
 // Copyright (C) 2000, International Business Machines
 // Corporation and others.  All Rights Reserved.
 // This code is licensed under the terms of the Eclipse Public License (EPL).
@@ -80,7 +80,7 @@ typedef struct {
   //unsigned int oneFixed:1; //  nonzero if variable to 1 fixes all
   //unsigned int sequence:31; //  variable (in matrix) (but also see cliqueRow_)
   unsigned int fixes;
-} cliqueEntry;
+} CliqueEntry;
 
 class CglTreeProbingInfo : public CglTreeInfo {
 public:
@@ -103,7 +103,9 @@ public:
   /// Destructor 
   virtual
     ~CglTreeProbingInfo ();
-  OsiSolverInterface * analyze(const OsiSolverInterface & si, int createSolver=0);
+  OsiSolverInterface * analyze(const OsiSolverInterface & si, int createSolver=0,
+			       int numberExtraCliques=0,const int * starts=NULL,
+			       const CliqueEntry * entries=NULL,const char * type=NULL);
   /** Take action if cut generator can fix a variable 
       (toValue -1 for down, +1 for up)
       Returns true if still room, false if not  */
@@ -121,7 +123,7 @@ public:
   void generateCuts(const OsiSolverInterface & si, OsiCuts & cs,
 		    const CglTreeInfo info) const;
   /// Entries for fixing variables
-  inline cliqueEntry * fixEntries()
+  inline CliqueEntry * fixEntries()
   { convert(); return fixEntry_;}
   /// Starts of integer variable going to zero
   inline int * toZero()
@@ -146,7 +148,7 @@ private:
   void convert();
 protected:
   /// Entries for fixing variables
-  cliqueEntry * fixEntry_;
+  CliqueEntry * fixEntry_;
   /// Starts of integer variable going to zero
   int * toZero_;
   /// Starts of integer variable going to one
@@ -166,13 +168,13 @@ protected:
   /// Number entries in fixingEntry_ (and fixEntry_) or -2 if correct style
   int numberEntries_;
 };
-inline int sequenceInCliqueEntry(const cliqueEntry & cEntry)
+inline int sequenceInCliqueEntry(const CliqueEntry & cEntry)
 { return cEntry.fixes&0x7fffffff;}
-inline void setSequenceInCliqueEntry(cliqueEntry & cEntry,int sequence)
+inline void setSequenceInCliqueEntry(CliqueEntry & cEntry,int sequence)
 { cEntry.fixes = sequence|(cEntry.fixes&0x80000000);}
-inline bool oneFixesInCliqueEntry(const cliqueEntry & cEntry)
+inline bool oneFixesInCliqueEntry(const CliqueEntry & cEntry)
 { return (cEntry.fixes&0x80000000)!=0;}
-inline void setOneFixesInCliqueEntry(cliqueEntry & cEntry,bool oneFixes)
+inline void setOneFixesInCliqueEntry(CliqueEntry & cEntry,bool oneFixes)
 { cEntry.fixes = (oneFixes ? 0x80000000 : 0)|(cEntry.fixes&0x7fffffff);}
 
 #endif

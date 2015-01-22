@@ -1,4 +1,4 @@
-/* $Id: ClpPdco.cpp 1941 2013-04-10 16:52:27Z stefan $ */
+/* $Id: ClpPdco.cpp 1972 2013-07-21 09:00:37Z forrest $ */
 // Copyright (C) 2003, International Business Machines
 // Corporation and others.  All Rights Reserved.
 // This code is licensed under the terms of the Eclipse Public License (EPL).
@@ -316,7 +316,7 @@ ClpPdco::pdco( ClpPdcoBase * stuff, Options &options, Info &info, Outfo &outfo)
      //bool useChol = (LSmethod == 1);
      //bool useQR   = (LSmethod == 2);
      bool direct  = (LSmethod <= 2 && ifexplicit);
-     char solver[6];
+     char solver[7];
      strcpy(solver, "  LSQR");
 
 

@@ -4,7 +4,7 @@
 //           Carnegie Mellon University, Pittsburgh, PA 15213
 // Date:     21/07/05
 //
-// $Id: CglLandPSimplex.hpp 1123 2013-04-06 20:47:24Z stefan $
+// $Id: CglLandPSimplex.hpp 1122 2013-04-06 20:39:53Z stefan $
 //
 // This code is licensed under the terms of the Eclipse Public License (EPL).
 //---------------------------------------------------------------------------

@@ -1,4 +1,4 @@
-/* $Id: CbcCutGenerator.cpp 1883 2013-04-06 13:33:15Z stefan $ */
+/* $Id: CbcCutGenerator.cpp 2105 2015-01-05 13:11:11Z forrest $ */
 // Copyright (C) 2003, International Business Machines
 // Corporation and others.  All Rights Reserved.
 // This code is licensed under the terms of the Eclipse Public License (EPL).
@@ -174,7 +174,9 @@ void
 CbcCutGenerator::refreshModel(CbcModel * model)
 {
     model_ = model;
-    generator_->refreshSolver(model_->solver());
+    // added test - helps if generator not thread safe
+    if (whenCutGenerator_!=-100)
+      generator_->refreshSolver(model_->solver());
 }
 /* Generate cuts for the model data contained in si.
    The generated cuts are inserted into and returned in the
@@ -616,8 +618,11 @@ CbcCutGenerator::generateCuts( OsiCuts & cs , int fullScan, OsiSolverInterface *
             for (k = numberRowCutsBefore; k < numberRowCutsAfter; k++) {
                 OsiRowCut * thisCut = cs.rowCutPtr(k) ;
 #ifdef CGL_DEBUG
-                if (debugger && debugger->onOptimalPath(*solver))
+                if (debugger && debugger->onOptimalPath(*solver)) {
                     assert(!debugger->invalidCut(*thisCut));
+                    if(debugger->invalidCut(*thisCut))
+		      abort();
+		}
 #endif
                 thisCut->mutableRow().setTestForDuplicateIndex(false);
             }

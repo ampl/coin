@@ -1,4 +1,4 @@
-/* $Id: CbcModel.hpp 2055 2014-08-09 16:05:41Z forrest $ */
+/* $Id: CbcModel.hpp 2094 2014-11-18 11:15:36Z forrest $ */
 // Copyright (C) 2002, International Business Machines
 // Corporation and others.  All Rights Reserved.
 // This code is licensed under the terms of the Eclipse Public License (EPL).
@@ -33,6 +33,7 @@ class OsiObject;
 class CbcThread;
 class CbcTree;
 class CbcStrategy;
+class CbcSymmetry;
 class CbcFeasibilityBase;
 class CbcStatistics;
 class CbcFullNodeInfo;
@@ -349,9 +350,9 @@ public:
     /// Make given rows (L or G) into global cuts and remove from lp
     void makeGlobalCuts(int numberRows, const int * which);
     /// Make given cut into a global cut
-    void makeGlobalCut(const OsiRowCut * cut);
+    int makeGlobalCut(const OsiRowCut * cut);
     /// Make given cut into a global cut
-    void makeGlobalCut(const OsiRowCut & cut);
+    int makeGlobalCut(const OsiRowCut & cut);
     /// Make given column cut into a global cut
     void makeGlobalCut(const OsiColCut * cut);
     /// Make given column cut into a global cut
@@ -512,6 +513,15 @@ public:
 
     void findIntegers(bool startAgain, int type = 0);
 
+#ifdef SWITCH_VARIABLES
+    /// Convert Dynamic to Switching 
+    int findSwitching();
+    /// Fix associated variables
+    int fixAssociated(OsiSolverInterface * solver,int cleanBasis);
+    /// Debug associated variables
+    int checkAssociated(const OsiSolverInterface * solver,
+			const double * solution, int printLevel);
+#endif
     //@}
 
     //---------------------------------------------------------------------------
@@ -757,6 +767,11 @@ public:
     inline int getCurrentPassNumber() const {
         return currentPassNumber_;
     }
+    /** Set current cut pass number in this round of cuts.
+        (1 is first pass) */
+    inline void setCurrentPassNumber(int value) {
+        currentPassNumber_ = value;
+    }
 
     /** Set the maximum number of candidates to be evaluated for strong
       branching.
@@ -922,6 +937,10 @@ public:
     /// Get how many Nodes were enumerated in complete fathoming B&B inside CLP
     inline int getExtraNodeCount() const {
        return numberExtraNodes_;
+    }
+    /// Get how many times complete fathoming B&B was done
+    inline int getFathomCount() const {
+       return numberFathoms_;
     }
     /** Final status of problem
         Some of these can be found out by is...... functions
@@ -1769,6 +1788,7 @@ public:
         20 bit (1048576) - waiting for sub model to return
 	22 bit (4194304) - do not initialize random seed in solver (user has)
 	23 bit (8388608) - leave solver_ with cuts
+	24 bit (16777216) - just get feasible if no cutoff
     */
     inline void setSpecialOptions(int value) {
         specialOptions_ = value;
@@ -1836,6 +1856,27 @@ public:
     /// Get more special options
     inline int moreSpecialOptions() const {
         return moreSpecialOptions_;
+    }
+    /** Set more more special options
+	0 bit (1) - find switching variables
+	1 bit (2) - using fake objective until solution
+	2 bit (4) - switching variables exist
+	3 bit (8) - skip most of setBestSolution checks
+	4 bit (16) - very lightweight preprocessing in smallB&B
+	5 bit (32) - event handler needs to be cloned when parallel
+	6 bit (64) - testing - use probing to make cliques
+	7/8 bit (128) - try orbital branching (if nauty)
+	9 bit (512) - branching on objective (later)
+	10 bit (1024) - branching on constraints (later)
+	11/12 bit 2048 - intermittent cuts
+	13/14 bit 8192 - go to bitter end in strong branching (first time)
+    */
+    inline void setMoreSpecialOptions2(int value) {
+        moreSpecialOptions2_ = value;
+    }
+    /// Get more special options2
+    inline int moreSpecialOptions2() const {
+        return moreSpecialOptions2_;
     }
     /// Set cutoff as constraint
     inline void setCutoffAsConstraint(bool yesNo) {
@@ -2161,9 +2202,8 @@ public:
       If it turns out that the node should really be fathomed by bound,
       addCuts() simply treats all the cuts as loose as it does the bookkeeping.
 
-      canFix true if extra information being passed
     */
-    int addCuts(CbcNode * node, CoinWarmStartBasis *&lastws, bool canFix);
+    int addCuts(CbcNode * node, CoinWarmStartBasis *&lastws);
 
     /** Traverse the tree from node to root and prep the model
 
@@ -2245,6 +2285,10 @@ public:
     inline CbcRowCuts * globalCuts() {
         return &globalCuts_;
     }
+    /// Get rid of global cuts
+    inline void zapGlobalCuts() {
+        globalCuts_ = CbcRowCuts();
+    }
     /// Copy and set a pointer to a row cut which will be added instead of normal branching.
     void setNextRowCut(const OsiRowCut & cut);
     /// Get a pointer to current node (be careful)
@@ -2275,6 +2319,11 @@ public:
     inline void setMaximumNumberIterations(int value) {
         maximumNumberIterations_ = value;
     }
+#ifdef COIN_HAS_NTY
+    /// Symmetry information
+    inline CbcSymmetry * symmetryInfo() const
+    { return symmetryInfo_;}  
+#endif
     /// Set depth for fast nodes
     inline void setFastNodeDepth(int value) {
         fastNodeDepth_ = value;
@@ -2291,9 +2340,16 @@ public:
     inline void setContinuousPriority(int value) {
         continuousPriority_ = value;
     }
-    inline void incrementExtra(int nodes, int iterations) {
+    inline void incrementExtra(int nodes, int iterations, int fathoms=1) {
         numberExtraNodes_ += nodes;
         numberExtraIterations_ += iterations;
+	numberFathoms_ += fathoms;
+    }
+    /// Zero extra
+    inline void zeroExtra() {
+        numberExtraNodes_ = 0;
+        numberExtraIterations_ = 0;
+	numberFathoms_ = 0;
     }
     /// Number of extra iterations
     inline int numberExtraIterations() const {
@@ -2339,6 +2395,15 @@ public:
     /// Redo walkback arrays
     void redoWalkBack();
     //@}
+    
+    void setMIPStart( const std::vector< std::pair< std::string, double > > &mips ) {
+       this->mipStart_ = mips;
+    }
+
+    const std::vector< std::pair< std::string, double > > &getMIPStart() {
+       return this->mipStart_;
+    }
+
 
 //---------------------------------------------------------------------------
 
@@ -2414,7 +2479,11 @@ private:
         currentSolution_ or solver-->getColSolution()
     */
     mutable const double * testSolution_;
-    /** Warm start object produced by heuristic or strong branching
+    /** MIPstart values
+      values for integer variables which will be converted to a complete integer initial feasible solution
+    */
+    std::vector< std::pair< std::string, double > > mipStart_;
+     /** Warm start object produced by heuristic or strong branching
 
         If get a valid integer solution outside branch and bound then it can take
         a reasonable time to solve LP which produces clean solution.  If this object has
@@ -2562,6 +2631,10 @@ private:
         17 bit (131072) - Perturbation switched off
         18 bit (262144) - donor CbcModel
         19 bit (524288) - recipient CbcModel
+        20 bit (1048576) - waiting for sub model to return
+	22 bit (4194304) - do not initialize random seed in solver (user has)
+	23 bit (8388608) - leave solver_ with cuts
+	24 bit (16777216) - just get feasible if no cutoff
     */
     int specialOptions_;
     /** More special options
@@ -2579,6 +2652,20 @@ private:
         21 bit (2097152) - Reduce sum of infeasibilities after cuts
     */
     int moreSpecialOptions_;
+    /** More more special options
+	0 bit (1) - find switching variables
+	1 bit (2) - using fake objective until solution
+	2 bit (4) - switching variables exist
+	3 bit (8) - skip most of setBestSolution checks
+	4 bit (16) - very lightweight preprocessing in smallB&B
+	5 bit (32) - event handler needs to be cloned when parallel
+	6 bit (64) - testing - use probing to make cliques
+	7/8 bit (128) - try orbital branching (if nauty)
+	9 bit (512) - branching on objective (later)
+	10 bit (1024) - branching on constraints (later)
+	11/12 bit 2048 - intermittent cuts
+    */
+    int moreSpecialOptions2_;
     /// User node comparison function
     CbcCompareBase * nodeCompare_;
     /// User feasibility function (see CbcFeasibleBase.hpp)
@@ -2682,7 +2769,10 @@ private:
 # else
     CbcEventHandler *eventHandler_ ;
 # endif
-
+#ifdef COIN_HAS_NTY
+  /// Symmetry information
+  CbcSymmetry * symmetryInfo_;
+#endif
     /// Total number of objects
     int numberObjects_;
 
@@ -2711,6 +2801,8 @@ private:
     int numberExtraIterations_;
     /// Number of extra nodes in fast lp
     int numberExtraNodes_;
+    /// Number of times fast lp entered
+    int numberFathoms_;
     /** Value of objective at continuous
         (Well actually after initial round of cuts)
     */
@@ -2824,6 +2916,8 @@ private:
         default is 0
     */
     int threadMode_;
+    /// Number of global cuts on entry to a node
+    int numberGlobalCutsIn_;
     /// Thread stuff for master
     CbcBaseModel * master_;
     /// Pointer to masterthread
