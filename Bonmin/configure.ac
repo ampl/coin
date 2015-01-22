@@ -2,7 +2,7 @@
 # All Rights Reserved.
 # This file is distributed under the Common Public License.
 
-## $Id: configure.ac 2094 2013-12-18 15:34:08Z stefan $
+## $Id: configure.ac 2103 2015-01-18 11:40:03Z stefan $
 
 # Author:  Andreas Waechter            IBM    2006-04-13
 
@@ -12,7 +12,7 @@
 
 AC_PREREQ(2.59)
 
-AC_INIT([Bonmin],[1.7.4],[bonmin@list.coin-or.org])
+AC_INIT([Bonmin],[1.7.5],[bonmin@list.coin-or.org])
 
 AC_COPYRIGHT([
 Copyright 2006, 2008 International Business Machines and others.
@@ -41,7 +41,7 @@ AC_CANONICAL_BUILD
 # the source root directory contains definition of where to find those
 # externals.  The following macro ensures that those externals are
 # retrieved by svn if they are not there yet.
-AC_COIN_PROJECTDIR_INIT(Bonmin,11:4:7)
+AC_COIN_PROJECTDIR_INIT(Bonmin,11:5:7)
 
 # Check if user wants to produce debugging code
 AC_COIN_DEBUG_COMPILE(Bonmin)
