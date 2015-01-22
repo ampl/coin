@@ -2,7 +2,7 @@
 // All Rights Reserved.
 // This code is published under the Eclipse Public License.
 //
-// $Id: IpDenseGenMatrix.hpp 1861 2010-12-21 21:34:47Z andreasw $
+// $Id: IpDenseGenMatrix.hpp 2516 2015-01-09 10:11:51Z stefan $
 //
 // Authors:  Andreas Waechter             IBM    2005-12-24
 
@@ -200,7 +200,7 @@ namespace Ipopt
     Factorization factorization_;
 
     /** Array for storing the pivot sequences if the matrix has been LU-factorized */
-    int* pivot_;
+    Index* pivot_;
   };
 
   /** This is the matrix space for DenseGenMatrix.

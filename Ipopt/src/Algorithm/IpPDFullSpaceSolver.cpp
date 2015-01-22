@@ -2,7 +2,7 @@
 // All Rights Reserved.
 // This code is published under the Eclipse Public License.
 //
-// $Id: IpPDFullSpaceSolver.cpp 2183 2013-03-30 21:08:18Z stefan $
+// $Id: IpPDFullSpaceSolver.cpp 2516 2015-01-09 10:11:51Z stefan $
 //
 // Authors:  Carl Laird, Andreas Waechter     IBM    2004-08-13
 
@@ -84,7 +84,7 @@ namespace Ipopt
     roptions->AddLowerBoundedNumberOption(
       "neg_curv_test_tol",
       "Tolerance for heuristic to ignore wrong inertia.",
-      0.0, true, 0.0,
+      0.0, false, 0.0,
       "If positive, incorrect inertia in the augmented system is ignored, and "
       "we test if the direction is a direction of positive curvature.  This "
       "tolerance determines when the direction is considered to be "

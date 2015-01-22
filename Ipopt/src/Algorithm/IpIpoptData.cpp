@@ -2,7 +2,7 @@
 // All Rights Reserved.
 // This code is published under the Eclipse Public License.
 //
-// $Id: IpIpoptData.cpp 2476 2014-04-08 09:41:07Z stefan $
+// $Id: IpIpoptData.cpp 2516 2015-01-09 10:11:51Z stefan $
 //
 // Authors:  Carl Laird, Andreas Waechter     IBM    2004-08-13
 
@@ -32,7 +32,7 @@ namespace Ipopt
       "Determines the convergence tolerance for the algorithm.  The "
       "algorithm terminates successfully, if the (scaled) NLP error "
       "becomes smaller than this value, and if the (absolute) criteria "
-      "according to \"dual_inf_tol\", \"primal_inf_tol\", and "
+      "according to \"dual_inf_tol\", \"constr_viol_tol\", and "
       "\"compl_inf_tol\" are met.  (This is epsilon_tol in Eqn. (6) in "
       "implementation paper).  See also \"acceptable_tol\" as a second "
       "termination criterion.  Note, some other algorithmic features also use "

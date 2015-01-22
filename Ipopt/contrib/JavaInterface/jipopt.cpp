@@ -3,7 +3,7 @@
  * All Rights Reserved.
  * This code is published under the Eclipse Public License.
  *
- * $Id: jipopt.cpp 2500 2014-08-16 15:31:35Z stefan $
+ * $Id: jipopt.cpp 2516 2015-01-09 10:11:51Z stefan $
  */
 
 #include <cassert>
@@ -534,7 +534,7 @@ bool Jipopt::get_list_of_nonlinear_variables(Index num_nonlin_vars,Index* pos_no
          }
          else
          {
-            jint* tmp = new int[num_nonlin_vars];
+            jint* tmp = new jint[num_nonlin_vars];
 
             env->GetIntArrayRegion(pos_nonlin_vars_j, 0, num_nonlin_vars, tmp);
             for( int i = 0; i < num_nonlin_vars; ++i )
