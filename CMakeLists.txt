@@ -785,7 +785,10 @@ if (BUILD_IPOPT AND EXISTS ${COIN_SOURCE_DIR}/Couenne)
     CouenneInterfaces CouenneHeuristics CouenneProblem CouenneStandardize
     CouenneExpression CouenneBranch CouenneConvex CouenneBoundTightening
     CouenneTwoImplied CouenneUtil CouenneDisjunctive CouenneCrossConv CouenneSdpCuts
-    bonmin lapack)
+    bonmin)
+  if (NOT WIN32)
+    target_link_libraries(Couenne lapack)
+  endif ()
 
   add_executable(couenne-executable Couenne/src/main/BonCouenne.cpp)
   set_target_properties(couenne-executable PROPERTIES
