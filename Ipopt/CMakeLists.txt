@@ -30,7 +30,6 @@ endif ()
 
 set(BLAS_LIBRARY_TYPE STATIC CACHE STRING
     "Type of a BLAS library to build (STATIC, SHARED or OBJECT).")
-set(BUILD_TESTING FALSE)
 add_subdirectory(../ThirdParty/lapack lapack)
 
 # Set F77_FUNC & F77_FUNC_ in cache as they are used in the parent project.

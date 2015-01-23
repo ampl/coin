@@ -56,9 +56,9 @@ endmacro()
 # --------------------------------------------------
 # Testing
 
-enable_testing()
-include(CTest)
-enable_testing()
+#enable_testing()
+#include(CTest)
+#enable_testing()
 # --------------------------------------------------
 
 # Organize output files.  On Windows this also keeps .dll files next
