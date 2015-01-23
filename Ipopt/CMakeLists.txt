@@ -21,8 +21,8 @@ if (NOT BUILD_SHARED_LIBS)
 endif ()
 
 if (CMAKE_GNUtoMS)
-  # Pull in additional symbols used in IpBlas.
-  foreach (sym ddot_ dnrm2_ dasum_ dsymv_ dsyrk_)
+  # Pull in additional symbols used in IpBlas and Couenne (dsyev_).
+  foreach (sym ddot_ dnrm2_ dasum_ dsymv_ dsyrk_ dsyev_)
     set(CMAKE_SHARED_LINKER_FLAGS
         "${CMAKE_SHARED_LINKER_FLAGS} -u ${sym} -u _${sym}")
   endforeach ()
