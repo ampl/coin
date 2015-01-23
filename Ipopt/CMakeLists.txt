@@ -109,7 +109,7 @@ add_library(ipoptfort ${mumps_src} ${LinearSolverLoader_src}
   src/Algorithm/LinearSolvers/IpMa28Partition.F)
 
 find_package(Threads)
-target_link_libraries(ipoptfort blas ${CMAKE_THREAD_LIBS_INIT})
+target_link_libraries(ipoptfort lapack blas ${CMAKE_THREAD_LIBS_INIT})
 
 find_library(DL_LIBRARY dl)
 if (DL_LIBRARY)
