@@ -1,8 +1,8 @@
 # Copyright (C) 2006, 2008 International Business Machines and others.
 # All Rights Reserved.
-# This file is distributed under the Common Public License.
+# This file is distributed under the Eclipse Public License.
 
-## $Id: Makefile.am 1767 2011-01-08 18:53:36Z stefan $
+## $Id: Makefile.am 2106 2015-01-20 10:33:55Z stefan $
 
 # Author:  Andreas Waechter           IBM    2006-04-13
 

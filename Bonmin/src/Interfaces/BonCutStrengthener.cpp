@@ -1,8 +1,8 @@
 // Copyright (C) 2007 International Business Machines and others.
 // All Rights Reserved.
-// This code is published under the Common Public License.
+// This code is published under the Eclipse Public License.
 //
-// $Id: BonCutStrengthener.cpp 1360 2008-11-07 18:26:18Z pbonami $
+// $Id: BonCutStrengthener.cpp 2106 2015-01-20 10:33:55Z stefan $
 //
 // Author:   Andreas Waechter                 IBM    2007-03-30
 

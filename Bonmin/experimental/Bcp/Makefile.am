@@ -1,8 +1,8 @@
 # Copyright (C) 2006, 2007 International Business Machines and others.
 # All Rights Reserved.
-# This file is distributed under the Common Public License.
+# This file is distributed under the Eclipse Public License.
 
-## $Id: Makefile.am 1852 2011-06-10 17:42:47Z stefan $
+## $Id: Makefile.am 2106 2015-01-20 10:33:55Z stefan $
 
 AUTOMAKE_OPTIONS = foreign
 

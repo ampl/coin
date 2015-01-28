@@ -1,8 +1,8 @@
 // Copyright (C) 2006 International Business Machines and others.
 // All Rights Reserved.
-// This code is published under the Common Public License.
+// This code is published under the Eclipse Public License.
 //
-// $Id: BonCurvatureEstimator.hpp 1758 2010-12-09 12:23:50Z pbonami $
+// $Id: BonCurvatureEstimator.hpp 2106 2015-01-20 10:33:55Z stefan $
 //
 // Author:   Andreas Waechter                 IBM    2006-10-11
 

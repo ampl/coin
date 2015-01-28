@@ -1,8 +1,8 @@
 # Copyright (C) 2006, 2008 International Business Machines.
 # All Rights Reserved.
-# This file is distributed under the Common Public License.
+# This file is distributed under the Eclipse Public License.
 
-## $Id: configure.ac 2103 2015-01-18 11:40:03Z stefan $
+## $Id: configure.ac 2113 2015-01-23 10:39:23Z stefan $
 
 # Author:  Andreas Waechter            IBM    2006-04-13
 
@@ -12,13 +12,13 @@
 
 AC_PREREQ(2.59)
 
-AC_INIT([Bonmin],[1.7.5],[bonmin@list.coin-or.org])
+AC_INIT([Bonmin],[1.8.0],[bonmin@list.coin-or.org])
 
 AC_COPYRIGHT([
 Copyright 2006, 2008 International Business Machines and others.
 All Rights Reserved.
 This file is part of the open source package BONMIN which is distributed
-under the Common Public License.])
+under the Eclipse Public License.])
 
 # List one file in the package so that the configure script can test
 # whether the package is actually there
@@ -41,7 +41,7 @@ AC_CANONICAL_BUILD
 # the source root directory contains definition of where to find those
 # externals.  The following macro ensures that those externals are
 # retrieved by svn if they are not there yet.
-AC_COIN_PROJECTDIR_INIT(Bonmin,11:5:7)
+AC_COIN_PROJECTDIR_INIT(Bonmin,12:0:8)
 
 # Check if user wants to produce debugging code
 AC_COIN_DEBUG_COMPILE(Bonmin)

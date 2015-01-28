@@ -1,8 +1,8 @@
 // (C) Copyright International Business Machines Corporation 2006
 // All Rights Reserved.
-// This code is published under the Common Public License.
+// This code is published under the Eclipse Public License.
 //
-// $Id: BonIpoptInteriorWarmStarter.hpp 1858 2011-06-18 20:13:40Z stefan $
+// $Id: BonIpoptInteriorWarmStarter.hpp 2106 2015-01-20 10:33:55Z stefan $
 //
 // Authors:  Andreas Waechter               IBM    2006-03-02
 
