@@ -2,7 +2,7 @@
 // All Rights Reserved.
 // This code is published under the Eclipse Public License.
 //
-// $Id: IpTripletToCSRConverter.cpp 2490 2014-05-26 16:40:51Z stefan $
+// $Id: IpTripletToCSRConverter.cpp 2487 2014-05-17 14:19:50Z stefan $
 //
 // Authors:  Carl Laird, Andreas Waechter     IBM    2005-03-13
 

@@ -11,7 +11,7 @@
 %%     Stefan Vigerske                        GAMS
 %%
 %%
-%% $Id: documentation.tex 2520 2015-01-18 07:45:21Z stefan $
+%% $Id: documentation.tex 2538 2015-01-23 08:24:28Z stefan $
 %%
 \documentclass[10pt]{article}
 \setlength{\textwidth}{6.3in}       % Text width
@@ -42,13 +42,13 @@
 \title{Introduction to \Ipopt:\\
 A tutorial for downloading, installing, and using \Ipopt}
 
-\author{Revision number of this document: $Revision: 2520 $}
+\author{Revision number of this document: $Revision: 2538 $}
 
 %\date{\today}
 \maketitle
 
 \begin{abstract}
-  This document is a guide to using \Ipopt 3.11.  It includes
+  This document is a guide to using \Ipopt 3.12.  It includes
   instructions on how to obtain and compile \Ipopt, a description of
   the interface, user options, etc., as well as a tutorial on how to
   solve a nonlinear optimization problem with \Ipopt.
@@ -302,7 +302,7 @@ There is also software that facilitates use of \Ipopt maintained by other people
 
   CasADi is a symbolic framework for automatic differentiation and
   numeric optimization and comes with \Ipopt, see
-  \url{https://github.com/casadi/casadi/wiki}.
+  \url{http://casadi.org}.
 
 \item CppAD (automatic differentiation)
 
@@ -488,7 +488,7 @@ directory in which you want to create a subdirectory {\tt Ipopt} with
 the \Ipopt source code.  Then follow the steps below:
 \begin{enumerate}
 \item{Download the code from the repository}\\
-{\tt \$ svn co https://projects.coin-or.org/svn/Ipopt/stable/3.11 CoinIpopt} \\
+{\tt \$ svn co https://projects.coin-or.org/svn/Ipopt/stable/3.12 CoinIpopt} \\
 Note: The {\tt \$} indicates the command line
 prompt, do not type {\tt \$}, only the text following it.
 \item Change into the root directory of the \Ipopt distribution\\
@@ -505,7 +505,7 @@ To use the tarball, follow the steps below:
 \item Download the desired tarball from
   \url{http://www.coin-or.org/download/source/Ipopt}, it has the form {\tt
     Ipopt-{\em x.y.z}.tgz}, where {\tt\em x.y.z} is the version
-  number, such as {\tt 3.11.0}.  There might also be daily snapshot
+  number, such as {\tt 3.12.0}.  There might also be daily snapshot
   from the stable branch.  The number of the latest official release
   can be found on the \Ipopt Trac page.
 \item Issue the following commands to unpack the archive file: \\
@@ -696,10 +696,9 @@ symbols inside the MUMPS code are renamed.
 \subsubsection{Obtaining the Linear Solver Pardiso}\label{sec:Pardiso}
 
 If you would like to compile \Ipopt with the Parallel Sparse Direct
-Linear Solver (Pardiso), you need to obtain
-the Pardiso library from \url{http://www.pardiso-project.org} for
-your operating system. (Alternatively, experimental support for
-Pardiso from Intel's MKL library is available.)
+Linear Solver (Pardiso), you need to obtain either Intel's MKL library
+or the Pardiso library from \url{http://www.pardiso-project.org} for
+your operating system.
 
 From \url{http://www.pardiso-project.org},
 you can obtain a limited time license of Pardiso for academic or
@@ -1601,20 +1600,13 @@ has been reported that the following configure flags should be used:
   specify the number of processors it should run on with the
   environment variable \verb|OMP_NUM_THREADS|, as described in the
   Pardiso manual.
-
-  Experimental:
+  
   If you want to compile \Ipopt with the Pardiso library that is included
-  in Intel MKL, you have to specify the MKL libs for the \verb|--with-pardiso|
-  configure flag and add \verb|-DHAVE_PARDISO_MKL -DHAVE_PARDISO_PARALLEL|
-  to the compiler flags, e.g.,
-  
-  \begin{verbatim}
---with-blas="-L${MKLDIR} -Wl,--start-group -lmkl_def -lmkl_lapack -lmkl_intel_lp64 \
-  -lmkl_intel_thread -lmkl_core -lippcoreem64t -Wl,--end-group -liomp5 -lpthread"
---with-pardiso="-L${MKLDIR} -Wl,--start-group -lmkl_def -lmkl_lapack -lmkl_intel_lp64 \
-  -lmkl_intel_thread -lmkl_core -lippcoreem64t -Wl,--end-group -liomp5 -lpthread"
-ADD_CXXFLAGS="-DHAVE_PARDISO_MKL -DHAVE_PARDISO_PARALLEL"\end{verbatim}
-  
+  in Intel MKL, it should be sufficient to ensure that MKL is used for
+  the linear algebra routines (Blas/Lapack). On some systems, configure
+  is able to find MKL automatically when looking for Blas. On other systems,
+  one has to specify the MKL libraries with the \verb|--with-blas| option.
+
 \item If you want to compile \Ipopt with the linear solver WSMP (see
   Section~\ref{sec:WSMP}), you need to specify the link flags for the
   library with the \verb|--with-wsmp| flag, including required

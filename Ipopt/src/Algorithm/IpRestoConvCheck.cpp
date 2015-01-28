@@ -2,7 +2,7 @@
 // All Rights Reserved.
 // This code is published under the Eclipse Public License.
 //
-// $Id: IpRestoConvCheck.cpp 1861 2010-12-21 21:34:47Z andreasw $
+// $Id: IpRestoConvCheck.cpp 2450 2013-12-16 09:28:37Z ghackebeil $
 //
 // Authors:  Carl Laird, Andreas Waechter     IBM    2004-08-13
 //
@@ -84,10 +84,15 @@ namespace Ipopt
     const CompoundVector* cx =
       static_cast<const CompoundVector*>(GetRawPtr(x));
     DBG_ASSERT(dynamic_cast<const CompoundVector*>(GetRawPtr(x)));
+    SmartPtr<const Vector> s = IpData().curr()->s();
+    const CompoundVector* cs =
+      static_cast<const CompoundVector*>(GetRawPtr(s));
+    DBG_ASSERT(dynamic_cast<const CompoundVector*>(GetRawPtr(s)));
+    DBG_ASSERT(cs->NComps() == 1);
 
     SmartPtr<IteratesVector> trial = orig_ip_data->curr()->MakeNewContainer();
     trial->Set_x(*cx->GetComp(0));
-    trial->Set_s(*IpData().curr()->s());
+    trial->Set_s(*cs->GetComp(0));
     orig_ip_data->set_trial(trial);
 
     if (call_intermediate_callback) {

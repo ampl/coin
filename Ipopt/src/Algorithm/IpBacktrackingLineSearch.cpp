@@ -2,7 +2,7 @@
 // All Rights Reserved.
 // This code is published under the Eclipse Public License.
 //
-// $Id: IpBacktrackingLineSearch.cpp 2461 2014-01-17 12:15:35Z stefan $
+// $Id: IpBacktrackingLineSearch.cpp 2460 2013-12-23 17:22:38Z stefan $
 //
 // Authors:  Carl Laird, Andreas Waechter     IBM    2004-08-13
 //           Andreas Waechter                 IBM    2005-10-13

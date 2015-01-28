@@ -2,7 +2,7 @@
 # All Rights Reserved.
 # This file is distributed under the Eclipse Public License.
 
-## $Id: configure.ac 2522 2015-01-18 08:06:43Z stefan $
+## $Id: configure.ac 2539 2015-01-23 08:33:47Z stefan $
 
 # Authors:  Carl Laird, Andreas Waechter     IBM    2004-08-13
 
@@ -12,7 +12,7 @@
 
 AC_PREREQ(2.59)
 
-AC_INIT([Ipopt],[3.11.10],[http://projects.coin-or.org/Ipopt/newticket])
+AC_INIT([Ipopt],[3.12.0],[http://projects.coin-or.org/Ipopt/newticket])
 
 AC_COPYRIGHT(
 [Copyright 2004, 2011 International Business Machines and others.
@@ -41,7 +41,7 @@ AC_CANONICAL_BUILD
 # the source root directory contains definition of where to find those
 # externals.  The following macro ensures that those externals are
 # retrieved by svn if they are not there yet.
-AC_COIN_PROJECTDIR_INIT(Ipopt,10:10:9)
+AC_COIN_PROJECTDIR_INIT(Ipopt,11:0:10)
 
 # Check if user wants to produce debugging code
 AC_COIN_DEBUG_COMPILE(Ipopt)
@@ -300,22 +300,22 @@ AC_ARG_WITH([pardiso],
 
 # Check whether MKL is being used
 have_mkl=no
-#SAVE_LIBS="$LIBS"
-#if test "$use_pardiso" = "no"; then
-#  LIBS="$LIBS $LAPACK_LIBS $BLAS_LIBS"
-#else
-#  LIBS="$use_pardiso $LIBS $LAPACK_LIBS $BLAS_LIBS"
-#fi
-#AC_MSG_CHECKING([whether MKL is being used])
-#AC_TRY_LINK([],[      call mkl_get_version_string()],
-#            [AC_MSG_RESULT(yes)
-#             have_mkl=yes],
-#            [AC_MSG_RESULT(no)])
+SAVE_LIBS="$LIBS"
+if test "$use_pardiso" = "no"; then
+  LIBS="$LIBS $LAPACK_LIBS $BLAS_LIBS"
+else
+  LIBS="$use_pardiso $LIBS $LAPACK_LIBS $BLAS_LIBS"
+fi
+AC_MSG_CHECKING([whether MKL is being used])
+AC_TRY_LINK([],[      call mkl_get_version_string()],
+            [AC_MSG_RESULT(yes)
+             have_mkl=yes],
+            [AC_MSG_RESULT(no)])
 # If using MKL, always enable Pardiso
-#if test "$have_mkl" = "yes" -a "$use_pardiso" = "no"; then
-#  use_pardiso=""
-#fi
-#LIBS="$SAVE_LIBS"
+if test "$have_mkl" = "yes" -a "$use_pardiso" = "no"; then
+  use_pardiso=""
+fi
+LIBS="$SAVE_LIBS"
 
 if test "$use_pardiso" != "no"; then
   SAVE_LIBS="$LIBS"

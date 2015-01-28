@@ -2,7 +2,7 @@
 // All Rights Reserved.
 // This code is published under the Eclipse Public License.
 //
-// $Id: IpRestoIterationOutput.hpp 2167 2013-03-08 11:15:38Z stefan $
+// $Id: IpRestoIterationOutput.hpp 2450 2013-12-16 09:28:37Z ghackebeil $
 //
 // Authors:  Carl Laird, Andreas Waechter       IBM    2004-09-27
 
@@ -26,7 +26,7 @@ namespace Ipopt
     //@{
     /** Constructor.  If resto_orig_iteration_output is not NULL, the
      *  output will be done twice per iteration, first for the
-     *  restoration phase problem, and secondyl using the functions
+     *  restoration phase problem, and secondly using the functions
      *  for the original NLP. */
     RestoIterationOutput(const SmartPtr<OrigIterationOutput>& resto_orig_iteration_output);
 

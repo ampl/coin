@@ -2,7 +2,7 @@
 // All Rights Reserved.
 // This code is published under the Eclipse Public License.
 //
-// $Id: IpAdaptiveMuUpdate.cpp 2386 2013-09-12 10:50:10Z stefan $
+// $Id: IpAdaptiveMuUpdate.cpp 2374 2013-09-05 13:49:25Z stefan $
 //
 // Authors:  Carl Laird, Andreas Waechter     IBM    2004-08-13
 

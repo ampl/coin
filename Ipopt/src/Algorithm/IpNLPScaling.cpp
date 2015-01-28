@@ -2,7 +2,7 @@
 // All Rights Reserved.
 // This code is published under the Eclipse Public License.
 //
-// $Id: IpNLPScaling.cpp 2442 2013-11-26 11:32:00Z stefan $
+// $Id: IpNLPScaling.cpp 2269 2013-05-05 11:32:40Z stefan $
 //
 // Authors:  Carl Laird, Andreas Waechter     IBM    2005-06-25
 

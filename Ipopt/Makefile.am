@@ -2,7 +2,7 @@
 # All Rights Reserved.
 # This file is distributed under the Eclipse Public License.
 
-## $Id: Makefile.am 2207 2013-04-13 15:46:45Z stefan $
+## $Id: Makefile.am 2538 2015-01-23 08:24:28Z stefan $
 
 # Authors:  Carl Laird, Andreas Waechter     IBM    2004-08-13
 
@@ -159,7 +159,7 @@ addlibsdir = $(DESTDIR)$(datadir)/coin/doc/Ipopt
 install-data-hook:
 	@$(mkdir_p) "$(addlibsdir)"
 if COIN_HAS_PKGCONFIG
-	PKG_CONFIG_PATH=@COIN_PKG_CONFIG_PATH@ \
+	PKG_CONFIG_PATH=@COIN_PKG_CONFIG_PATH@:$(DESTDIR)$(pkgconfiglibdir) \
 	$(PKG_CONFIG) --libs ipopt > $(addlibsdir)/ipopt_addlibs_cpp.txt
 else
 if COIN_CXX_IS_CL

@@ -2,7 +2,7 @@
 // All Rights Reserved.
 // This code is published under the Eclipse Public License.
 //
-// $Id: IpTSymLinearSolver.cpp 2500 2014-08-16 15:31:35Z stefan $
+// $Id: IpTSymLinearSolver.cpp 2494 2014-07-03 20:22:37Z ghackebeil $
 //
 // Authors:  Carl Laird, Andreas Waechter     IBM    2004-03-17
 

@@ -2,7 +2,7 @@
 # All Rights Reserved.
 # This file is distributed under the Eclipse Public License.
 
-## $Id: Makefile.am 2474 2014-04-08 09:22:14Z stefan $
+## $Id: Makefile.am 2468 2014-03-13 13:37:20Z stefan $
 
 # Authors:  Carl Laird, Andreas Waechter     IBM    2004-08-13
 
@@ -46,7 +46,8 @@ liblinalg_la_SOURCES = \
 	IpSymScaledMatrix.cpp IpSymScaledMatrix.hpp \
 	IpTransposeMatrix.cpp IpTransposeMatrix.hpp \
 	IpVector.cpp IpVector.hpp \
-	IpZeroMatrix.cpp IpZeroMatrix.hpp
+	IpZeroMatrix.cpp IpZeroMatrix.hpp \
+	IpZeroSymMatrix.cpp IpZeroSymMatrix.hpp
 
 liblinalg_la_LDFLAGS = $(LT_LDFLAGS)
 
@@ -79,7 +80,8 @@ ASTYLE_FILES = IpBlas.cppbak IpBlas.hppbak \
 	IpSymScaledMatrix.cppbak IpSymScaledMatrix.hppbak \
 	IpTransposeMatrix.cppbak IpTransposeMatrix.hppbak \
 	IpVector.cppbak IpVector.hppbak \
-	IpZeroMatrix.cppbak IpZeroMatrix.hppbak
+	IpZeroMatrix.cppbak IpZeroMatrix.hppbak \
+	IpZeroSymMatrix.cppbak IpZeroSymMatrix.hppbak
 
 ASTYLE = @ASTYLE@
 ASTYLEFLAGS = @ASTYLEFLAGS@

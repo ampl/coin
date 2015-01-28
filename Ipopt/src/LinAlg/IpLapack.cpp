@@ -2,7 +2,7 @@
 // All Rights Reserved.
 // This code is published under the Eclipse Public License.
 //
-// $Id: IpLapack.cpp 1861 2010-12-21 21:34:47Z andreasw $
+// $Id: IpLapack.cpp 2449 2013-12-16 00:25:42Z ghackebeil $
 //
 // Authors:  Andreas Waechter              IBM    2005-12-25
 
@@ -44,6 +44,11 @@ extern "C"
                                ipfint *nrhs, const double *A, ipfint *ldA,
                                ipfintarray *IPIV, double *B, ipfint *ldB,
                                ipfint *info, int trans_len);
+  
+  /** LAPACK Fortran subroutine DPPSV. */
+  void F77_FUNC(dppsv,DPPSV)(char *uplo, ipfint *n,
+                             ipfint *nrhs, const double *A,
+                             double *B, ipfint *ldB, ipfint *info);
 }
 
 namespace Ipopt
@@ -162,4 +167,24 @@ namespace Ipopt
 #endif
 
   }
+
+  /* Interface to FORTRAN routine DPPSV. */
+  void IpLapackDppsv(Index ndim, Index nrhs, const Number *a,
+                     Number *b, Index ldb, Index& info)
+  {
+#ifdef COIN_HAS_LAPACK
+    ipfint N=ndim, NRHS=nrhs, LDB=ldb, INFO;
+    char uplo = 'U';
+
+    F77_FUNC(dppsv,DPPSV)(&uplo, &N, &NRHS, a, b, &LDB, &INFO);
+
+    info = INFO;
+#else
+
+    std::string msg = "Ipopt has been compiled without LAPACK routine DPPSV, but options are chosen that require this dependency.  Abort.";
+    THROW_EXCEPTION(LAPACK_NOT_INCLUDED, msg);
+#endif
+
+  }
+
 }

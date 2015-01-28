@@ -2,7 +2,7 @@
 // All Rights Reserved.
 // This code is published under the Eclipse Public License.
 //
-// $Id: IpQualityFunctionMuOracle.cpp 2452 2013-12-18 13:59:16Z stefan $
+// $Id: IpQualityFunctionMuOracle.cpp 2445 2013-12-02 09:56:43Z stefan $
 //
 // Authors:  Carl Laird, Andreas Waechter            IBM    2004-11-12
 

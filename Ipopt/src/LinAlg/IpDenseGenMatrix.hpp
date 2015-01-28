@@ -2,7 +2,7 @@
 // All Rights Reserved.
 // This code is published under the Eclipse Public License.
 //
-// $Id: IpDenseGenMatrix.hpp 2516 2015-01-09 10:11:51Z stefan $
+// $Id: IpDenseGenMatrix.hpp 2509 2014-11-21 10:07:35Z stefan $
 //
 // Authors:  Andreas Waechter             IBM    2005-12-24
 

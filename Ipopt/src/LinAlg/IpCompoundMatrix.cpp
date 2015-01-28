@@ -2,7 +2,7 @@
 // All Rights Reserved.
 // This code is published under the Eclipse Public License.
 //
-// $Id: IpCompoundMatrix.cpp 2386 2013-09-12 10:50:10Z stefan $
+// $Id: IpCompoundMatrix.cpp 2379 2013-09-06 20:12:07Z ghackebeil $
 //
 // Authors:  Carl Laird, Andreas Waechter     IBM    2004-08-13
 

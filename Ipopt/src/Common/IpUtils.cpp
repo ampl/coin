@@ -2,7 +2,7 @@
 // All Rights Reserved.
 // This code is published under the Eclipse Public License.
 //
-// $Id: IpUtils.cpp 2500 2014-08-16 15:31:35Z stefan $
+// $Id: IpUtils.cpp 2496 2014-07-18 16:11:16Z stefan $
 //
 // Authors:  Carl Laird, Andreas Waechter    IBM       2005-08-12
 

@@ -3,7 +3,7 @@
  * All Rights Reserved.
  * This code is published under the Eclipse Public License.
  *
- * $Id: jipopt.cpp 2516 2015-01-09 10:11:51Z stefan $
+ * $Id: jipopt.cpp 2513 2014-12-19 13:20:51Z stefan $
  */
 
 #include <cassert>

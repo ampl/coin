@@ -2,7 +2,7 @@
 // All Rights Reserved.
 // This code is published under the Eclipse Public License.
 //
-// $Id: IpInexactAlgBuilder.cpp 2346 2013-07-01 13:03:35Z stefan $
+// $Id: IpInexactAlgBuilder.cpp 2338 2013-06-16 21:16:20Z stefan $
 //
 // Authors:  Andreas Waechter     IBM                  2008-09-05
 //            based on IpAlgBuilder.cpp (rev 1311)

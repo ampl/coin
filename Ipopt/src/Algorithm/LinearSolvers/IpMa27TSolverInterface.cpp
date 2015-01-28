@@ -2,7 +2,7 @@
 // All Rights Reserved.
 // This code is published under the Eclipse Public License.
 //
-// $Id: IpMa27TSolverInterface.cpp 2332 2013-06-14 14:05:12Z stefan $
+// $Id: IpMa27TSolverInterface.cpp 2330 2013-06-14 12:54:09Z stefan $
 //
 // Authors:  Carl Laird, Andreas Waechter     IBM    2005-03-17
 

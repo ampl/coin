@@ -2,7 +2,7 @@
 // All Rights Reserved.
 // This code is published under the Eclipse Public License.
 //
-// $Id: IpRestoIterationOutput.cpp 2167 2013-03-08 11:15:38Z stefan $
+// $Id: IpRestoIterationOutput.cpp 2450 2013-12-16 09:28:37Z ghackebeil $
 //
 // Authors:  Carl Laird, Andreas Waechter              IBM    2004-09-23
 
@@ -117,11 +117,15 @@ namespace Ipopt
     SmartPtr<const Vector> x = IpData().curr()->x();
     const CompoundVector* cx =
       static_cast<const CompoundVector*>(GetRawPtr(x));
-    DBG_ASSERT(cx);
+    DBG_ASSERT(dynamic_cast<const CompoundVector*>(GetRawPtr(x)));
+    SmartPtr<const Vector> s = IpData().curr()->s();
+    const CompoundVector* cs =
+      static_cast<const CompoundVector*>(GetRawPtr(s));
+    DBG_ASSERT(dynamic_cast<const CompoundVector*>(GetRawPtr(s)));
 
     SmartPtr<IteratesVector> trial = orig_ip_data->trial()->MakeNewContainer();
     trial->Set_x(*cx->GetComp(0));
-    trial->Set_s(*IpData().curr()->s());
+    trial->Set_s(*cs->GetComp(0));
     orig_ip_data->set_trial(trial);
 
     // Compute primal infeasibility

@@ -2,7 +2,7 @@
 // All Rights Reserved.
 // This code is published under the Eclipse Public License.
 //
-// $Id: IpInexactPDTerminationTester.cpp 2442 2013-11-26 11:32:00Z stefan $
+// $Id: IpInexactPDTerminationTester.cpp 2056 2011-10-21 03:32:19Z andreasw $
 //
 // Authors:  Andreas Waechter            IBM    2008-09-19
 

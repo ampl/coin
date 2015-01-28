@@ -2,7 +2,7 @@
 // All Rights Reserved.
 // This code is published under the Eclipse Public License.
 //
-// $Id: IpDenseVector.hpp 2161 2013-01-01 20:39:05Z stefan $
+// $Id: IpDenseVector.hpp 2269 2013-05-05 11:32:40Z stefan $
 //
 // Authors:  Carl Laird, Andreas Waechter     IBM    2004-08-13
 

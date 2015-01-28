@@ -2,7 +2,7 @@
 // All Rights Reserved.
 // This code is published under the Eclipse Public License.
 //
-// $Id: hs071_main.cpp 2400 2013-10-19 18:38:36Z stefan $
+// $Id: hs071_main.cpp 2398 2013-10-19 18:08:59Z stefan $
 //
 // Authors:  Carl Laird, Andreas Waechter     IBM    2005-08-10
 

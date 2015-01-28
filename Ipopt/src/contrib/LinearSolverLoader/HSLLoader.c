@@ -2,7 +2,7 @@
  All Rights Reserved.
  This code is published under the Eclipse Public License.
 
- $Id: HSLLoader.c 2332 2013-06-14 14:05:12Z stefan $
+ $Id: HSLLoader.c 2317 2013-06-01 13:16:07Z stefan $
 
  Author: Stefan Vigerske
 */

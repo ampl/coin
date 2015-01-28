@@ -2,7 +2,7 @@
 // All Rights Reserved.
 // This code is published under the Eclipse Public License.
 //
-// $Id: AmplTNLP.cpp 2478 2014-04-08 09:59:54Z stefan $
+// $Id: AmplTNLP.cpp 2477 2014-04-08 09:57:37Z stefan $
 //
 // Authors:  Carl Laird, Andreas Waechter     IBM    2004-08-13
 

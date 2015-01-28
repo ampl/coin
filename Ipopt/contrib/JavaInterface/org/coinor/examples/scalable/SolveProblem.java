@@ -3,7 +3,7 @@
  * All Rights Reserved.
  * This code is published under the Eclipse Public License.
  * 
- * $Id: SolveProblem.java 2276 2013-05-05 12:33:44Z stefan $
+ * $Id: SolveProblem.java 2265 2013-05-04 17:33:27Z stefan $
  */
 
 package org.coinor.examples.scalable;

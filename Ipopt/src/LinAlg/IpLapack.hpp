@@ -2,7 +2,7 @@
 // All Rights Reserved.
 // This code is published under the Eclipse Public License.
 //
-// $Id: IpLapack.hpp 1861 2010-12-21 21:34:47Z andreasw $
+// $Id: IpLapack.hpp 2449 2013-12-16 00:25:42Z ghackebeil $
 //
 // Authors:  Andreas Waechter              IBM    2005-12-25
 
@@ -43,6 +43,12 @@ namespace Ipopt
    *  given a LU factorization. */
   void IpLapackDgetrs(Index ndim, Index nrhs, const Number *a, Index lda,
                       Index* ipiv, Number *b, Index ldb);
+
+  /** Wrapper for LAPACK subroutine DPPSV.  Solves a symmetric positive
+   *  definite linear system in packed storage format (upper triangular).
+   *  info is the return value from the LAPACK routine. */
+  void IpLapackDppsv(Index ndim, Index nrhs, const Number *a,
+                     Number *b, Index ldb, Index& info);
 
 } // namespace Ipopt
 

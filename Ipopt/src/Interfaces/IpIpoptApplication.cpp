@@ -2,7 +2,7 @@
 // All Rights Reserved.
 // This code is published under the Eclipse Public License.
 //
-// $Id: IpIpoptApplication.cpp 2474 2014-04-08 09:22:14Z stefan $
+// $Id: IpIpoptApplication.cpp 2469 2014-03-31 14:30:02Z stefan $
 //
 // Authors:  Carl Laird, Andreas Waechter     IBM    2004-09-02
 

@@ -2,12 +2,12 @@
 // All Rights Reserved.
 // This code is published under the Eclipse Public License.
 //
-// $Id: IpIdentityMatrix.hpp 2269 2013-05-05 11:32:40Z stefan $
+// $Id: IpZeroSymMatrix.hpp 2269 2013-05-05 11:32:40Z stefan $
 //
 // Authors:  Carl Laird, Andreas Waechter     IBM    2004-08-13
 
-#ifndef __IPIDENTITYMATRIX_HPP__
-#define __IPIDENTITYMATRIX_HPP__
+#ifndef __IPZEROSYMMATRIX_HPP__
+#define __IPZEROSYMMATRIX_HPP__
 
 #include "IpUtils.hpp"
 #include "IpSymMatrix.hpp"
@@ -15,39 +15,22 @@
 namespace Ipopt
 {
 
-  /** Class for Matrices which are multiples of the identity matrix.
-   *
+  /** Class for Symmetric Matrices with only zero entries.
    */
-  class IdentityMatrix : public SymMatrix
+  class ZeroSymMatrix : public SymMatrix
   {
   public:
 
     /**@name Constructors / Destructors */
     //@{
 
-    /** Constructor, initializing with dimensions of the matrix
-     *  (true identity matrix).
+    /** Constructor, taking the corresponding matrix space.
      */
-    IdentityMatrix(const SymMatrixSpace* owner_space);
+    ZeroSymMatrix(const SymMatrixSpace* owner_space);
 
     /** Destructor */
-    ~IdentityMatrix();
+    ~ZeroSymMatrix();
     //@}
-
-    /** Method for setting the factor for the identity matrix. */
-    void SetFactor(Number factor)
-    {
-      factor_ = factor;
-    }
-
-    /** Method for getting the factor for the identity matrix. */
-    Number GetFactor() const
-    {
-      return factor_;
-    }
-
-    /** Method for obtaining the dimention of the matrix. */
-    Index Dim() const;
 
   protected:
     /**@name Methods overloaded from matrix */
@@ -55,14 +38,14 @@ namespace Ipopt
     virtual void MultVectorImpl(Number alpha, const Vector& x,
                                 Number beta, Vector& y) const;
 
-    virtual void AddMSinvZImpl(Number alpha, const Vector& S,
-                               const Vector& Z, Vector& X) const;
+    virtual void TransMultVectorImpl(Number alpha, const Vector& x,
+                                     Number beta, Vector& y) const;
 
-    /** Method for determining if all stored numbers are valid (i.e.,
-     *  no Inf or Nan). */
-    virtual bool HasValidNumbersImpl() const;
+    virtual void ComputeRowAMaxImpl(Vector& rows_norms, bool init) const
+      {}
 
-    virtual void ComputeRowAMaxImpl(Vector& rows_norms, bool init) const;
+    virtual void ComputeColAMaxImpl(Vector& cols_norms, bool init) const
+      {}
 
     virtual void PrintImpl(const Journalist& jnlst,
                            EJournalLevel level,
@@ -82,49 +65,53 @@ namespace Ipopt
      * they will not be implicitly created/called. */
     //@{
     /** Default Constructor */
-    IdentityMatrix();
+    ZeroSymMatrix();
 
     /** Copy Constructor */
-    IdentityMatrix(const IdentityMatrix&);
+    ZeroSymMatrix(const ZeroSymMatrix&);
 
     /** Overloaded Equals Operator */
-    void operator=(const IdentityMatrix&);
+    void operator=(const ZeroSymMatrix&);
     //@}
-
-    /** Scaling factor for this identity matrix */
-    Number factor_;
   };
 
-  /** This is the matrix space for IdentityMatrix. */
-  class IdentityMatrixSpace : public SymMatrixSpace
+  /** Class for matrix space for ZeroSymMatrix. */
+  class ZeroSymMatrixSpace : public SymMatrixSpace
   {
   public:
     /** @name Constructors / Destructors */
     //@{
-    /** Constructor, given the dimension of the matrix. */
-    IdentityMatrixSpace(Index dim)
+    /** Constructor, given the number of row and columns.
+     */
+    ZeroSymMatrixSpace(Index dim)
         :
         SymMatrixSpace(dim)
     {}
 
     /** Destructor */
-    virtual ~IdentityMatrixSpace()
+    virtual ~ZeroSymMatrixSpace()
     {}
     //@}
 
-    /** Overloaded MakeNew method for the SymMatrixSpace base class.
+    /** Overloaded MakeNew method for the MatrixSpace base class.
+     */
+    virtual Matrix* MakeNew() const
+    {
+      return MakeNewZeroSymMatrix();
+    }
+
+    /** Overloaded method from SymMatrixSpace base class
      */
     virtual SymMatrix* MakeNewSymMatrix() const
     {
-      return MakeNewIdentityMatrix();
+      return MakeNewZeroSymMatrix();
     }
 
     /** Method for creating a new matrix of this specific type. */
-    IdentityMatrix* MakeNewIdentityMatrix() const
+    ZeroSymMatrix* MakeNewZeroSymMatrix() const
     {
-      return new IdentityMatrix(this);
+      return new ZeroSymMatrix(this);
     }
-
   private:
     /**@name Default Compiler Generated Methods
      * (Hidden to avoid implicit creation/calling).
@@ -135,15 +122,14 @@ namespace Ipopt
      * they will not be implicitly created/called. */
     //@{
     /** Default Constructor */
-    IdentityMatrixSpace();
+    ZeroSymMatrixSpace();
 
     /** Copy Constructor */
-    IdentityMatrixSpace(const IdentityMatrixSpace&);
+    ZeroSymMatrixSpace(const ZeroSymMatrixSpace&);
 
     /** Overloaded Equals Operator */
-    void operator=(const IdentityMatrixSpace&);
+    void operator=(const ZeroSymMatrixSpace&);
     //@}
   };
-
 } // namespace Ipopt
 #endif
