@@ -28,9 +28,6 @@ if (CMAKE_GNUtoMS)
   endforeach ()
 endif ()
 
-set(BLAS_LIBRARY_TYPE STATIC CACHE STRING
-    "Type of a BLAS library to build (STATIC, SHARED or OBJECT).")
-
 # Set F77_FUNC & F77_FUNC_ in cache as they are used in the parent project.
 set(F77_FUNC "${FortranCInterface_GLOBAL_MACRO}" CACHE INTERNAL "")
 set(F77_FUNC_ "${FortranCInterface_GLOBAL__MACRO}" CACHE INTERNAL "")
