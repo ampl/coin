@@ -30,7 +30,6 @@ endif ()
 
 set(BLAS_LIBRARY_TYPE STATIC CACHE STRING
     "Type of a BLAS library to build (STATIC, SHARED or OBJECT).")
-add_subdirectory(../ThirdParty/lapack lapack)
 
 # Set F77_FUNC & F77_FUNC_ in cache as they are used in the parent project.
 set(F77_FUNC "${FortranCInterface_GLOBAL_MACRO}" CACHE INTERNAL "")
@@ -119,3 +118,6 @@ endif ()
 if (NOT CMAKE_GNUtoMS)
   add_ipopt_test(hs071_f SOURCE_DIR ${COIN_BINARY_DIR} hs071_f.f)
 endif ()
+
+set(BUILD_SHARED_LIBS False)
+add_subdirectory(../ThirdParty/lapack lapack)
