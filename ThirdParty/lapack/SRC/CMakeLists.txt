@@ -430,6 +430,6 @@ endif()
 
 list(REMOVE_DUPLICATES ALLOBJ)
 
-add_library(lapack STATIC ${ALLOBJ} ${ALLXOBJ})
+add_library(lapack ${ALLOBJ} ${ALLXOBJ})
 target_link_libraries(lapack ${BLAS_LIBRARIES} ${XBLAS_LIBRARY})
 lapack_install_library(lapack)
