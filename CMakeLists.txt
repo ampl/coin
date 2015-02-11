@@ -17,6 +17,8 @@ if (EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/${ASL_DIR}/CMakeLists.txt)
   include_directories($<TARGET_PROPERTY:asl,INTERFACE_INCLUDE_DIRECTORIES>)
 endif ()
 
+set(CMAKE_OSX_DEPLOYMENT_TARGET 10.7)
+
 project(COIN)
 
 # Replaces libraries in CMAKE_${lang}_IMPLICIT_LINK_LIBRARIES whose
