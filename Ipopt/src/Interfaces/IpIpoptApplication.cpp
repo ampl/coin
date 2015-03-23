@@ -2,7 +2,7 @@
 // All Rights Reserved.
 // This code is published under the Eclipse Public License.
 //
-// $Id: IpIpoptApplication.cpp 2469 2014-03-31 14:30:02Z stefan $
+// $Id: IpIpoptApplication.cpp 2551 2015-02-13 02:51:47Z stefan $
 //
 // Authors:  Carl Laird, Andreas Waechter     IBM    2004-09-02
 
@@ -1057,6 +1057,13 @@ namespace Ipopt
     catch (NO_FREE_VARIABLES_AND_INFEASIBLE& exc) {
       exc.ReportException(*jnlst_, J_MOREDETAILED);
       jnlst_->Printf(J_SUMMARY, J_MAIN, "\nEXIT: Problem has only fixed variables and constraints are infeasible.\n");
+      retValue = Infeasible_Problem_Detected;
+      status = LOCAL_INFEASIBILITY;
+      skip_finalize_solution_call = true; /* has already been called by TNLPAdapter (and we don't know the correct primal solution) */
+    }
+    catch (INCONSISTENT_BOUNDS& exc) {
+      exc.ReportException(*jnlst_, J_MOREDETAILED);
+      jnlst_->Printf(J_SUMMARY, J_MAIN, "\nEXIT: Problem has inconsistent variable bounds or constraint sides.\n");
       retValue = Infeasible_Problem_Detected;
       status = LOCAL_INFEASIBILITY;
       skip_finalize_solution_call = true; /* has already been called by TNLPAdapter (and we don't know the correct primal solution) */

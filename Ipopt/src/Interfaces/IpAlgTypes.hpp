@@ -2,7 +2,7 @@
 // All Rights Reserved.
 // This code is published under the Eclipse Public License.
 //
-// $Id: IpAlgTypes.hpp 1861 2010-12-21 21:34:47Z andreasw $
+// $Id: IpAlgTypes.hpp 2551 2015-02-13 02:51:47Z stefan $
 //
 // Authors:  Carl Laird, Andreas Waechter     IBM    2005-07-19
 
@@ -51,6 +51,7 @@ namespace Ipopt
   DECLARE_STD_EXCEPTION(INTERNAL_ABORT);
   DECLARE_STD_EXCEPTION(NO_FREE_VARIABLES_BUT_FEASIBLE);
   DECLARE_STD_EXCEPTION(NO_FREE_VARIABLES_AND_INFEASIBLE);
+  DECLARE_STD_EXCEPTION(INCONSISTENT_BOUNDS);
   /** Exception FAILED_INITIALIZATION for problem during
    *  initialization of a strategy object (or other problems).  This
    *  is thrown by a strategy object, if a problem arises during
