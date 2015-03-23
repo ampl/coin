@@ -2,7 +2,7 @@
 # All Rights Reserved.
 # This file is distributed under the Eclipse Public License.
 
-## $Id: Makefile.am 1023 2013-11-21 19:58:13Z stefan $
+## $Id: Makefile.am 1129 2015-03-11 11:49:22Z tkr $
 
 # Author: Pietro Belotti, on a template by Pierre Bonami
 
@@ -10,26 +10,13 @@ AUTOMAKE_OPTIONS = foreign
 
 # what is built at this level
 
-lib_LTLIBRARIES = libBonCouenne.la
-
-libBonCouenne_la_SOURCES = \
-	CouenneBab.cpp \
-	BonCouenneSetup.cpp \
-	SmartAslDestr.cpp
-
-if DEPENDENCY_LINKING
-libBonCouenne_la_LIBADD = $(COUENNELIB_LIBS) ../libCouenne.la
-endif
-
-libBonCouenne_la_LDFLAGS = $(LT_LDFLAGS)
-
 if COIN_HAS_ASL
   bin_PROGRAMS = couenne 
 endif
 
 couenne_SOURCES = BonCouenne.cpp
-couenne_LDADD         = libBonCouenne.la ../libCouenne.la ../readnl/libCouenneReadnl.la $(COUENNELIB_LIBS)         $(ASL_LIBS) 
-couenne_DEPENDENCIES  = libBonCouenne.la ../libCouenne.la ../readnl/libCouenneReadnl.la $(COUENNELIB_DEPENDENCIES) $(ASL_DEPENDENCIES)
+couenne_LDADD         = ../libCouenne.la ../readnl/libCouenneReadnl.la $(COUENNELIB_LIBS)         $(ASL_LIBS) 
+couenne_DEPENDENCIES  = ../libCouenne.la ../readnl/libCouenneReadnl.la $(COUENNELIB_DEPENDENCIES) $(ASL_DEPENDENCIES)
 
 # Here list all include flags, relative to this "srcdir" directory.  This
 # "cygpath" stuff is necessary to compile with native compilers on Windows

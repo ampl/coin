@@ -2,7 +2,7 @@
 # All Rights Reserved.
 # This file is distributed under the Eclipse Public License.
 
-## $Id: Makefile.am 1023 2013-11-21 19:58:13Z stefan $
+## $Id: Makefile.am 1113 2015-02-07 19:56:27Z tkr $
 
 # Author:  Andreas Waechter           IBM    2006-04-13
 
@@ -84,7 +84,7 @@ addlibsdir = $(DESTDIR)$(datadir)/coin/doc/Couenne
 install-data-hook:
 	@$(mkdir_p) "$(addlibsdir)"
 if COIN_HAS_PKGCONFIG
-	PKG_CONFIG_PATH=@COIN_PKG_CONFIG_PATH@ \
+	PKG_CONFIG_PATH=@COIN_PKG_CONFIG_PATH@:$(DESTDIR)$(pkgconfiglibdir) \
 	$(PKG_CONFIG) --libs couenne > $(addlibsdir)/couenne_addlibs.txt
 else
 if COIN_CXX_IS_CL

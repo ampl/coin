@@ -1,4 +1,4 @@
-// $Id: BonCouenneSetup.cpp 1084 2014-11-20 17:32:21Z pbelotti $
+// $Id: BonCouenneSetup.cpp 1121 2015-03-01 15:12:50Z pbelotti $
 //
 // (C) Copyright International Business Machines Corporation 2007
 // All Rights Reserved.
@@ -935,16 +935,16 @@ void CouenneSetup::registerAllOptions (Ipopt::SmartPtr <Bonmin::RegisteredOption
                                 "xpress-mp", "Use the commercial solver Xpress MP (license is needed)"
 				);
 
-#define addLevOption(optname,comment) roptions -> AddBoundedIntegerOption (optname, comment, -2, J_LAST_LEVEL-1, J_NONE, "")
+#define addLevOption(optname,comment,default) roptions -> AddBoundedIntegerOption (optname, comment, -2, J_LAST_LEVEL-1, default, "")
 
-  addLevOption ("output_level",                "Output level");
-  addLevOption ("branching_print_level",       "Output level for braching code in Couenne");
-  addLevOption ("boundtightening_print_level", "Output level for bound tightening code in Couenne");
-  addLevOption ("convexifying_print_level",    "Output level for convexifying code in Couenne");
-  addLevOption ("problem_print_level",         "Output level for problem manipulation code in Couenne");
-  addLevOption ("nlpheur_print_level",         "Output level for NLP heuristic in Couenne");
-  addLevOption ("disjcuts_print_level",        "Output level for disjunctive cuts in Couenne");
-  addLevOption ("reformulate_print_level",     "Output level for reformulating problems in Couenne");
+  addLevOption ("output_level",                "Output level",                                          J_WARNING);
+  addLevOption ("branching_print_level",       "Output level for braching code in Couenne",             J_NONE);
+  addLevOption ("boundtightening_print_level", "Output level for bound tightening code in Couenne",     J_NONE);
+  addLevOption ("convexifying_print_level",    "Output level for convexifying code in Couenne",         J_NONE);
+  addLevOption ("problem_print_level",         "Output level for problem manipulation code in Couenne", J_NONE);
+  addLevOption ("nlpheur_print_level",         "Output level for NLP heuristic in Couenne",             J_NONE);
+  addLevOption ("disjcuts_print_level",        "Output level for disjunctive cuts in Couenne",          J_NONE);
+  addLevOption ("reformulate_print_level",     "Output level for reformulating problems in Couenne",    J_NONE);
 
   roptions -> AddNumberOption
     ("feas_tolerance",

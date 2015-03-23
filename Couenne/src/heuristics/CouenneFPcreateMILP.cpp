@@ -1,4 +1,4 @@
-/* $Id: CouenneFPcreateMILP.cpp 1107 2015-01-23 00:10:01Z pbelotti $
+/* $Id: CouenneFPcreateMILP.cpp 1128 2015-03-10 15:05:11Z tkr $
  *
  * Name:    CouenneFPcreateMILP.cpp
  * Authors: Pietro Belotti
@@ -280,7 +280,7 @@ void ComputeSquareRoot (const CouenneFeasPump *fp,
   // Add distance part
   for (int i=0; i<n; ++i)
     if (fp -> Problem () -> Var (i) -> Multiplicity () > 0)
-      A [i * (n+1)] += fp -> multDistMILP () / sqrt ((double) n);
+       A [i * (n+1)] += fp -> multDistMILP () / sqrt (static_cast<double>(n));
 
   // Add gradient-parallel term to the hessian, (x_z - x_z_0)^2. This
   // amounts to setting the diagonal element to GRADIENT_WEIGHT. Don't
