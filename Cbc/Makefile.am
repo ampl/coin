@@ -2,7 +2,7 @@
 # All Rights Reserved.
 # This file is distributed under the Eclipse Public License.
 
-## $Id: Makefile.am 1990 2013-12-14 23:43:37Z tkr $
+## $Id: Makefile.am 2132 2015-02-07 19:56:19Z tkr $
 
 # Author:  Andreas Waechter           IBM    2006-04-13
 
@@ -136,7 +136,7 @@ addlibsdir = $(DESTDIR)$(datadir)/coin/doc/Cbc
 install-data-hook:
 	@$(mkdir_p) "$(addlibsdir)"
 if COIN_HAS_PKGCONFIG
-	PKG_CONFIG_PATH=@COIN_PKG_CONFIG_PATH@ \
+	PKG_CONFIG_PATH=@COIN_PKG_CONFIG_PATH@:$(DESTDIR)$(pkgconfiglibdir) \
 	$(PKG_CONFIG) --libs cbc > $(addlibsdir)/cbc_addlibs.txt
 else
 if COIN_CXX_IS_CL

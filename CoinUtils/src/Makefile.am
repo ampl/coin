@@ -2,7 +2,7 @@
 # All Rights Reserved.
 # This file is distributed under the Eclipse Public License.
 
-## $Id: Makefile.am 1775 2015-01-17 02:45:26Z tkr $
+## $Id: Makefile.am 1800 2015-02-08 23:53:00Z tkr $
 
 # Author:  Andreas Waechter           IBM    2006-04-13
 
@@ -161,6 +161,7 @@ includecoin_HEADERS = \
 	CoinPresolveTripleton.hpp \
 	CoinPresolveUseless.hpp \
 	CoinPresolveZeros.hpp \
+	CoinRational.hpp \
 	CoinSearchTree.hpp \
 	CoinShallowPackedVector.hpp \
 	CoinSignal.hpp \

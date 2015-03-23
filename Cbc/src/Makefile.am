@@ -2,7 +2,7 @@
 # All Rights Reserved.
 # This file is distributed under the Eclipse Public License.
 
-## $Id: Makefile.am 2048 2014-07-16 09:29:16Z forrest $
+## $Id: Makefile.am 2149 2015-03-01 16:51:28Z tkr $
 
 # Author:  Andreas Waechter           IBM    2006-04-13
 
@@ -251,6 +251,7 @@ includecoin_HEADERS = \
 	CbcNWay.hpp \
         CbcObject.hpp \
 	CbcObjectUpdateData.hpp \
+	CbcParam.hpp \
 	CbcPartialNodeInfo.hpp \
 	CbcSimpleInteger.hpp \
 	CbcSimpleIntegerDynamicPseudoCost.hpp \

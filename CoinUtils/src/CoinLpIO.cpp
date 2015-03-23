@@ -1,4 +1,4 @@
-/* $Id: CoinLpIO.cpp 1753 2014-10-27 03:36:08Z tkr $ */
+/* $Id: CoinLpIO.cpp 1791 2015-01-31 16:45:47Z tkr $ */
 // Last edit: 11/5/08
 //
 // Name:     CoinLpIO.cpp; Support for Lp files
@@ -2361,7 +2361,7 @@ CoinLpIO::readLp(FILE* fp)
 	    if (!goodLine) {
 	      // print bad line
 	      setType=3;
-	      sprintf(printBuffer,"### CoinLpIO::readLp(): bad SOS item", buff);
+	      sprintf(printBuffer,"### CoinLpIO::readLp(): bad SOS item %s", buff);
 	      handler_->message(COIN_GENERAL_WARNING,messages_)<<printBuffer
 							       <<CoinMessageEol;
 	    }

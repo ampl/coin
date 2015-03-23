@@ -1,4 +1,4 @@
-/* $Id: ClpSimplexDual.cpp 2078 2015-01-05 12:39:49Z forrest $ */
+/* $Id: ClpSimplexDual.cpp 2114 2015-02-10 12:12:46Z forrest $ */
 // Copyright (C) 2002, International Business Machines
 // Corporation and others.  All Rights Reserved.
 // This code is licensed under the terms of the Eclipse Public License (EPL).
@@ -134,9 +134,6 @@ extern int * nextDescendent;
 #ifndef CLP_INVESTIGATE
 #define NDEBUG_CLP
 #endif
-extern double minimumPrimalToleranceZZ;
-#define CLP_INFEAS_SAVE 5
-extern double averageInfeasZZ[CLP_INFEAS_SAVE];
 // dual
 
 /* *** Method
@@ -541,6 +538,13 @@ ClpSimplexDual::gutsOfDual(int ifValuesPass, double * & saveDuals, int initialSt
                     break;
                }
           }
+	  // If looks odd try other way
+	  if ((moreSpecialOptions_&256)==0 &&
+	      fabs(objectiveValue_)>1.0e20&&sumDualInfeasibilities_>1.0
+	      &&problemStatus_<0) {
+	    problemStatus_=10;
+	    break;
+	  }
           // Do iterations
           int returnCode = whileIterating(saveDuals, ifValuesPass);
 	  if (problemStatus_ == 1 && (progressFlag_&8) != 0 &&
@@ -596,7 +600,7 @@ ClpSimplexDual::dual(int ifValuesPass, int startFinishOptions)
      }
      if (alphaAccuracy_ != -1.0)
           alphaAccuracy_ = 1.0;
-     minimumPrimalToleranceZZ=primalTolerance();
+     minimumPrimalTolerance_=primalTolerance();
      int returnCode = startupSolve(ifValuesPass, saveDuals, startFinishOptions);
      // Save so can see if doing after primal
      int initialStatus = problemStatus_;
@@ -4348,7 +4352,7 @@ ClpSimplexDual::statusOfProblemInDual(int & lastCleaned, int type,
 	 printf("CCchanging tolerance\n");
 #endif
 	 primalTolerance_=1.0e-6;
-	 minimumPrimalToleranceZZ=primalTolerance_;
+	 minimumPrimalTolerance_=primalTolerance_;
 	 dblParam_[ClpPrimalTolerance]=1.0e-6;
 	 moreSpecialOptions_ |= 4194304;
        }

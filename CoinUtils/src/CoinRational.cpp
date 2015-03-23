@@ -4,6 +4,10 @@
 
 #include <algorithm>
 #include <cmath>
+#ifdef __clang__
+//labs() is in cstdlib with clang
+#include <cstdlib>
+#endif
 
 #include "CoinRational.hpp"
 

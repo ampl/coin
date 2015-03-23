@@ -2,7 +2,7 @@
 # All Rights Reserved.
 # This file is distributed under the Eclipse Public License.
 
-## $Id: Makefile.am 1600 2013-07-11 13:41:11Z tkr $
+## $Id: Makefile.am 1792 2015-02-07 00:02:10Z tkr $
 
 # Author:  Andreas Waechter           IBM    2006-04-13
 
@@ -71,7 +71,7 @@ addlibsdir = $(DESTDIR)$(datadir)/coin/doc/CoinUtils
 install-data-hook:
 	@$(mkdir_p) "$(addlibsdir)"
 if COIN_HAS_PKGCONFIG
-	PKG_CONFIG_PATH="@COIN_PKG_CONFIG_PATH@" \
+	PKG_CONFIG_PATH=@COIN_PKG_CONFIG_PATH@:$(DESTDIR)$(pkgconfiglibdir) \
 	"$(PKG_CONFIG)" --libs coinutils > $(addlibsdir)/coinutils_addlibs.txt
 else
 if COIN_CXX_IS_CL

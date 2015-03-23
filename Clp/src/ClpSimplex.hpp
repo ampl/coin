@@ -1,4 +1,4 @@
-/* $Id: ClpSimplex.hpp 2086 2015-01-15 08:55:27Z forrest $ */
+/* $Id: ClpSimplex.hpp 2114 2015-02-10 12:12:46Z forrest $ */
 // Copyright (C) 2002, International Business Machines
 // Corporation and others.  All Rights Reserved.
 // This code is licensed under the terms of the Eclipse Public License (EPL).
@@ -1557,6 +1557,11 @@ protected:
      double sumOfRelaxedPrimalInfeasibilities_;
      /// Acceptable pivot value just after factorization
      double acceptablePivot_;
+     /// Minimum primal tolerance
+     double minimumPrimalTolerance_;
+     /// Last few infeasibilities
+#define CLP_INFEAS_SAVE 5
+     double averageInfeasibility_[CLP_INFEAS_SAVE];
      /// Working copy of lower bounds (Owner of arrays below)
      double * lower_;
      /// Row lower bounds - working copy

@@ -19,7 +19,11 @@
 #include "CoinPackedVector.hpp"
 
 #include "CglMixedIntegerRounding2.hpp"
-
+//#define CGL_DEBUG2 2
+#if CGL_DEBUG2
+static int xxxxxx=0;
+static int yyyyyy=1687;
+#endif
 //-----------------------------------------------------------------------------
 // Generate Mixed Integer Rounding inequality
 //------------------------------------------------------------------- 
@@ -838,10 +842,31 @@ CglMixedIntegerRounding2::generateMirCuts(
 
 	// if a cut was found, insert it into cs
 	if (hasCut)  {
-#if CGL_DEBUG
-	  std::cout << "MIR cut generated " << std::endl;
+	  // look at cut to see if unstable
+	  const CoinPackedVector & row = cMirCut.row();
+	  int n=row.getNumElements();
+	  const double * elements = row.getElements();
+	  double largest = 0.0;
+	  double smallest = COIN_DBL_MAX;
+	  for (int i=0;i<n;i++) {
+	    double value = fabs(elements[i]);
+	    largest=CoinMax(largest,value);
+	    smallest=CoinMin(smallest,value);
+	  }
+	  if (largest>1.0e8*smallest||largest>1.0e7||smallest<1.0e-5) {
+#if CGL_DEBUG2
+	    printf("Unstable Mixed cut %g <= ",cMirCut.lb());
+	    const int * columns = row.getIndices();
+	    for (int i=0;i<n;i++) 
+	      printf("(%d,%g) ",columns[i],elements[i]);
+	    printf("<= %g\n",cMirCut.ub());
 #endif
-	  cs.insert(cMirCut);
+	  } else {
+#if CGL_DEBUG
+	    std::cout << "MIR cut generated " << std::endl;
+#endif
+	    cs.insert(cMirCut);
+	  }
 	}
 
       }
@@ -1080,7 +1105,14 @@ CglMixedIntegerRounding2::boundSubstitution(
       continue;
     }
 
-    if (fabs(coefCol) < EPSILON_) continue;
+    if (fabs(coefCol) < EPSILON_) {
+      // relax as far as possible
+      if (coefCol<0.0)
+	rhsMixedKnapsack -= coefCol*colUpperBound[indCol];
+      else
+	rhsMixedKnapsack -= coefCol*colLowerBound[indCol];
+      continue;
+    }
     // set the coefficients of the integer variables
     if ( (indCol < numCols_)  && (integerType_[indCol]) ) {
       // Copy the integer variable to the vector mixedKnapsack
@@ -1430,21 +1462,30 @@ CglMixedIntegerRounding2::cMirSeparation(
   double cutRHS = rhsBestCut;
   double violation = 0.0;
   double normCut = 0.0;
-  //double smallest=COIN_DBL_MAX;
+#if CGL_DEBUG2
+  double smallest=COIN_DBL_MAX;
+#endif
   double largest=0.0;
   // Also weaken by small coefficients
   for ( j = 0; j < cutLen; ++j) {
     int column = cutInd[j];
     double value = cutCoef[column];
-    //smallest=CoinMin(smallest,fabs(value));
+#if CGL_DEBUG2
+    smallest=CoinMin(smallest,fabs(value));
+    normCut += value * value;
+#endif
     largest=CoinMax(largest,fabs(value));
-    //normCut += value * value;
   }
-  //normCut=sqrt(normCut);
-  //printf("smallest %g largest %g norm %g\n",
-  //	 smallest,largest,normCut);
   double testValue=CoinMax(1.0e-6*largest,1.0e-12);
-  //normCut=0.0;
+#if CGL_DEBUG2
+  normCut=sqrt(normCut);
+  printf("smallest %g largest %g norm %g - %d elements - rhs %g - %d\n",
+  	 smallest,largest,normCut,cutLen,cutRHS,xxxxxx);
+  xxxxxx++;
+  if (xxxxxx==yyyyyy)
+    printf("trouble\n");
+  normCut=0.0;
+#endif
   int n=0;
   for ( j = 0; j < cutLen; ++j) {
     int column = cutInd[j];
@@ -1453,15 +1494,44 @@ CglMixedIntegerRounding2::cMirSeparation(
       violation += value * xlp[column];
       normCut += value * value;
       cutInd[n++]=column;
+#if CGL_DEBUG2
+      printf("taking %d %g\n",column,value);
+#endif
     } else if (value) {
       cutCoef[column]=0.0;
       // Weaken
       if (value>0.0) {
+#if CGL_DEBUG2
+	printf("not taking %d %g - lb %g - rhs -> %g\n",column,value,
+	       colLowerBound[column],
+	       cutRHS - value*colLowerBound[column]);
+#endif
         // Allow for at lower bound
-        cutRHS -= value*colLowerBound[column];
+	double modification = value*colLowerBound[column];
+	if (colLowerBound[column]>0.0) {
+#if CGL_DEBUG2
+	  printf("weakening modification from %g to zero\n",
+		 modification);
+#endif
+	  modification=0.0;
+	}
+        cutRHS -= modification;
       } else {
+#if CGL_DEBUG2
+	printf("not taking %d %g - ub %g - rhs -> %g\n",column,value,
+	       colUpperBound[column],
+	       cutRHS - value*colUpperBound[column]);
+#endif
         // Allow for at upper bound
-        cutRHS -= value*colUpperBound[column];
+	double modification = value*colUpperBound[column];
+	if (colUpperBound[column]<0.0) {
+#if CGL_DEBUG2
+	  printf("weakening modification from %g to zero\n",
+		 modification);
+#endif
+	  modification=0.0;
+	}
+        cutRHS -= modification;
       }
     }
   }

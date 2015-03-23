@@ -2,7 +2,7 @@
 # All Rights Reserved.
 # This file is distributed under the Eclipse Public License.
 #
-## $Id: coin.m4 3339 2015-01-18 08:58:03Z stefan $
+## $Id: coin.m4 3390 2015-01-30 22:22:05Z tkr $
 #
 # Author: Andreas Wachter    IBM      2006-04-14
 
@@ -1668,7 +1668,7 @@ AC_ARG_ENABLE([dependency-linking],
 if test "$dependency_linking" = auto; then
   # On Cygwin and AIX, building DLLs doesn't work
   dependency_linking=no
-  if test x"$enable_shared" = xyes; then
+  if test x"$coin_disable_shared" = xno; then
     case $build in
       *-cygwin* | *-mingw*)
         case "$CC" in

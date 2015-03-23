@@ -1,4 +1,4 @@
-/* $Id: CbcCountRowCut.cpp 2094 2014-11-18 11:15:36Z forrest $ */
+/* $Id: CbcCountRowCut.cpp 2124 2015-02-01 09:33:30Z forrest $ */
 // Copyright (C) 2002, International Business Machines
 // Corporation and others.  All Rights Reserved.
 // This code is licensed under the terms of the Eclipse Public License (EPL).
@@ -708,8 +708,8 @@ CbcRowCuts::addCutIfNotDuplicateWhenGreedy(const OsiRowCut & cut,int whichType)
       newCutPtr->setUb(newUb);
       newCutPtr->setRow(vector);
       rowCut_[numberCuts_++]=newCutPtr;
-      printf("addedGreedyGlobalCut of size %d to %x - cuts size %d\n",
-	     cut.row().getNumElements(),this,numberCuts_);
+      //printf("addedGreedyGlobalCut of size %d to %p - cuts size %d\n",
+      //     cut.row().getNumElements(),this,numberCuts_);
       return 0;
     } else {
       return 1;

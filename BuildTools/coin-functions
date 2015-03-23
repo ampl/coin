@@ -678,7 +678,8 @@ calcLibtoolCurrent ()
     cltc_verPat='s/'$cltc_majVer'\.\([0-9][0-9]*\).*/\1/'
     for cltc_ver in $cltc_majfilter ; do
       cltc_min=`echo $cltc_ver | sed -e $cltc_verPat`
-      if expr $cltc_min '<=' $cltc_minVer >/dev/null 2>&1 ; then
+      if test $cltc_min = $cltc_ver || \
+              expr $cltc_min '<=' $cltc_minVer >/dev/null 2>&1 ; then
 	cltc_minfilter="$cltc_minfilter $cltc_ver"
       fi
     done

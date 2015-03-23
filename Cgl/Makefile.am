@@ -2,7 +2,7 @@
 # All Rights Reserved.
 # This file is distributed under the Eclipse Public License.
 
-## $Id: Makefile.am 1051 2011-10-13 20:36:00Z stefan $
+## $Id: Makefile.am 1256 2015-02-07 19:56:21Z tkr $
 
 # Author:  Andreas Waechter           IBM    2006-04-13
 
@@ -74,7 +74,7 @@ addlibsdir = $(DESTDIR)$(datadir)/coin/doc/Cgl
 install-data-hook:
 	@$(mkdir_p) "$(addlibsdir)"
 if COIN_HAS_PKGCONFIG
-	PKG_CONFIG_PATH=@COIN_PKG_CONFIG_PATH@ \
+	PKG_CONFIG_PATH=@COIN_PKG_CONFIG_PATH@:$(DESTDIR)$(pkgconfiglibdir) \
 	$(PKG_CONFIG) --libs cgl > $(addlibsdir)/cgl_addlibs.txt
 else
 if COIN_CXX_IS_CL

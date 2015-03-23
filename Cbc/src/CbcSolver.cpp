@@ -1,4 +1,4 @@
-/* $Id: CbcSolver.cpp 2108 2015-01-12 14:26:29Z forrest $ */
+/* $Id: CbcSolver.cpp 2153 2015-03-05 15:14:44Z forrest $ */
 // Copyright (C) 2007, International Business Machines
 // Corporation and others.  All Rights Reserved.
 // This code is licensed under the terms of the Eclipse Public License (EPL).
@@ -1083,9 +1083,9 @@ int callCbc1(const char * input2, CbcModel & model,
              int callBack(CbcModel * currentSolver, int whereFrom),
 	     CbcSolverUsefulData & parameterData)
 {
-    char * input = CoinStrdup(input2);
+    char * input = CoinStrdup(input2 ? input2 : "") ;
     size_t length = strlen(input);
-    bool blank = input[0] == '0';
+    bool blank = input[0] == ' ';
     int n = blank ? 0 : 1;
     for (size_t i = 0; i < length; i++) {
         if (blank) {
@@ -4244,7 +4244,7 @@ int CbcMain1 (int argc, const char *argv[],
                                 if (preProcess == 2) {
                                     OsiClpSolverInterface * clpSolver2 = dynamic_cast< OsiClpSolverInterface*> (solver2);
                                     ClpSimplex * lpSolver = clpSolver2->getModelPtr();
-                                    lpSolver->writeMps("presolved.mps", 0, 1, lpSolver->optimizationDirection());
+                                    lpSolver->writeMps("presolved.mps", 2, 1, lpSolver->optimizationDirection());
                                     printf("Preprocessed model (minimization) on presolved.mps\n");
                                 }
                                 {
@@ -8215,12 +8215,16 @@ int CbcMain1 (int argc, const char *argv[],
                                         int nLine = 0;
 					iColumn = -1;
 					int lowestPriority=-COIN_INT_MAX;
-                                        while (iColumn>=0 || fgets(line, 1000, fp)) {
-                                            if (!strncmp(line, "ENDATA", 6))
+					bool needCard = true;
+                                        while (!needCard || fgets(line, 1000, fp)) {
+                                            if (!strncmp(line, "ENDATA", 6)||
+						!strncmp(line, "endata", 6))
                                                 break;
                                             nLine++;
-					    if (!useMasks)
+					    if (!useMasks) 
 					      iColumn = -1;
+					    else
+					      needCard=false;
                                             double up = 0.0;
                                             double down = 0.0;
                                             int pri = 0;
@@ -8282,8 +8286,10 @@ int CbcMain1 (int argc, const char *argv[],
 							  break;
 						      }
                                                     }
-                                                    if (iColumn == numberColumns)
+						    if (iColumn == numberColumns) {
                                                         iColumn = -1;
+							needCard = true;
+						    }
                                                     break;
                                                     // number
                                                 case 1:

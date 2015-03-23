@@ -9,9 +9,9 @@
 #include <cassert>
 #include <iostream>
 //#define CGL_DEBUG 1
-//#ifdef NDEBUG
+#ifdef NDEBUG
 //#undef NDEBUG
-//#endif
+#endif
 #include "CoinPragma.hpp"
 #include "CoinHelperFunctions.hpp"
 #include "CoinPackedVector.hpp"
@@ -833,14 +833,14 @@ CglGomory::generateCuts(
 	}
 	assert (nn==1);
 	array.clear();
-	work.checkClear();
+	//work.checkClear();
       }
 #endif
       array.clear();
       assert(intVar[iColumn]&&reducedValue<1.0-away&&reducedValue>away);
       {
 #ifdef CGL_DEBUG
-	cutVector.checkClear();
+	//cutVector.checkClear();
 #endif
 	// get row of tableau
 	double one =1.0;
@@ -1389,6 +1389,10 @@ CglGomory::generateCuts(
 	    bounds[1]=rhs;
 	    if (number>50&&numberNonInteger)
 	      bounds[1] = rhs+tolerance6+1.0e-8*fabs(rhs); // weaken
+	    // if close to integer - round up
+	    double nearest=floor(bounds[1]+0.5);
+	    if (bounds[1]<nearest&&bounds[1]>nearest-1.0e-4)
+	      bounds[1]=nearest;
 	    double test = CoinMin(largestFactor*largestFactorMultiplier_,
 				  relaxation);
 	    if (number>5&&numberNonInteger&&test>1.0e-20) {
@@ -1409,6 +1413,13 @@ CglGomory::generateCuts(
 	      rc.setRow(number,cutIndex,packed,false);
 	      rc.setLb(bounds[0]);
 	      rc.setUb(bounds[1]);   
+#ifdef CGL_DEBUG
+	      if (debugger) {
+		assert(!debugger->invalidCut(rc));
+		if(debugger->invalidCut(rc))
+		  abort();
+	      }
+#endif
 #if MORE_GOMORY_CUTS<2
 	      nTotalEls -= number;
 	      cs.insert(rc);

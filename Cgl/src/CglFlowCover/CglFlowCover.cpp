@@ -1,4 +1,4 @@
-// $Id: CglFlowCover.cpp 1217 2014-09-14 00:02:28Z unxusr $
+// $Id: CglFlowCover.cpp 1268 2015-02-28 18:41:50Z forrest $
 //-----------------------------------------------------------------------------
 // name:     Cgl Lifted Simple Generalized Flow Cover Cut Generator
 // author:   Yan Xu                email: yan.xu@sas.com
@@ -496,8 +496,18 @@ CglFlowCover::generateOneFlowCut( const OsiSolverInterface & si,
     if ( xlp[ind[i]] - floor(xlp[ind[i]]) > EPSILON_ && ceil(xlp[ind[i]]) - xlp[ind[i]] > EPSILON_ )
       break;
   }
+  if (i != rowLen) {
+    for (int j = 0; j < rowLen; ++j) {
+      if ( fabs(coef[j])<=EPSILON_) {
+	doLift = false;
+	break;
+      }
+    }
+  } else {
+    doLift = false;
+  }
 
-  if (i == rowLen)  {
+  if (!doLift)  {
     delete [] sign;
     delete [] up; 
     delete [] x;   
@@ -556,7 +566,7 @@ CglFlowCover::generateOneFlowCut( const OsiSolverInterface & si,
 
     if ( columnType[ind[i]]==1 ) {   // Binary variable
       value = coef[i];
-      if (value > EPSILON_)
+      if (value > 0.0)
 	sign[i] = CGLFLOW_COL_BINPOS;
       else {
 	sign[i] = CGLFLOW_COL_BINNEG;
@@ -568,7 +578,7 @@ CglFlowCover::generateOneFlowCut( const OsiSolverInterface & si,
     }
     else {   
       value = coef[i];
-      if (value > EPSILON_)
+      if (value > 0.0)
 	sign[i] = CGLFLOW_COL_CONTPOS;
       else {
 	sign[i] = CGLFLOW_COL_CONTNEG;

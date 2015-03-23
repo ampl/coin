@@ -1,4 +1,4 @@
-// $Id: CglKnapsackCover.cpp 1230 2014-11-18 11:10:45Z forrest $
+// $Id: CglKnapsackCover.cpp 1262 2015-02-16 10:04:28Z forrest $
 // Copyright (C) 2000, International Business Machines
 // Corporation and others.  All Rights Reserved.
 // This code is licensed under the terms of the Eclipse Public License (EPL).
@@ -279,7 +279,7 @@ void CglKnapsackCover::generateCuts(const OsiSolverInterface& si, OsiCuts& cs,
      rowIndex = toCheck[ii];
      if (rowIndex < 0 || rowIndex >= nRows)
 	continue;
-     if (vub[rowIndex]==-2)
+     if (vub[rowIndex]==-2) 
        continue;
      whichRow_=ii;
 
@@ -356,48 +356,62 @@ void CglKnapsackCover::generateCuts(const OsiSolverInterface& si, OsiCuts& cs,
           double thisCoefficient=thisElement[i];
           int replace = 0;
           if (vubRow[iColumn]>=0) {
-            iRow = vubRow[iColumn];
-            if (vub[iRow]==iColumn&&iRow!=rowIndex) {
-              vubCoefficient = vubValue[iRow];
+            int jRow = vubRow[iColumn];
+            if (vub[jRow]==iColumn&&jRow!=rowIndex) {
+              double vbCoefficient = vubValue[jRow];
               // break it out - may be able to do better
               if (dSign*thisCoefficient>0.0) {
                 // we want valid lower bound on continuous
-                if (effectiveLower[iRow]>-1.0e20&&vubCoefficient>0.0) 
+                if (effectiveLower[jRow]>-1.0e20&&vbCoefficient>0.0) {
                   replace=-1;
-                else if (effectiveUpper[iRow]<1.0e20&&vubCoefficient<0.0) 
+		  iRow=jRow;
+		  vubCoefficient = vbCoefficient;
+                } else if (effectiveUpper[jRow]<1.0e20&&vbCoefficient<0.0) {
                   replace=1;
-                // q assert (replace!=-1);
-                // q assert (replace!=1);
+		  iRow=jRow;
+		  vubCoefficient = vbCoefficient;
+		}
               } else {
                 // we want valid upper bound on continuous
-                if (effectiveLower[iRow]>-1.0e20&&vubCoefficient<0.0) 
+                if (effectiveLower[jRow]>-1.0e20&&vbCoefficient<0.0) {
                   replace=-1;
-                else if (effectiveUpper[iRow]<1.0e20&&vubCoefficient>0.0) 
+		  iRow=jRow;
+		  vubCoefficient = vbCoefficient;
+                } else if (effectiveUpper[jRow]<1.0e20&&vbCoefficient>0.0) { 
                   replace=1;
-                //assert (replace!=-1);
+		  iRow=jRow;
+		  vubCoefficient = vbCoefficient;
+		}
               }
             }
           }
           if (vlbRow[iColumn]>=0) {
-            iRow = vlbRow[iColumn];
-            if (vub[iRow]==iColumn&&iRow!=rowIndex) {
-              vubCoefficient = vlbValue[iRow];
+            int jRow = vlbRow[iColumn];
+            if (vub[jRow]==iColumn&&jRow!=rowIndex) {
+              double vbCoefficient = vlbValue[jRow];
               // break it out - may be able to do better
               if (dSign*thisCoefficient>0.0) {
                 // we want valid lower bound on continuous
-                if (effectiveLower[iRow]>-1.0e20&&vubCoefficient>0.0) 
+                if (effectiveLower[jRow]>-1.0e20&&vbCoefficient>0.0) {
                   replace=-1;
-                else if (effectiveUpper[iRow]<1.0e20&&vubCoefficient<0.0) 
+		  iRow=jRow;
+		  vubCoefficient = vbCoefficient;
+                } else if (effectiveUpper[jRow]<1.0e20&&vbCoefficient<0.0) { 
                   replace=1;
-                //assert (replace!=1);
+		  iRow=jRow;
+		  vubCoefficient = vbCoefficient;
+		}
               } else {
                 // we want valid upper bound on continuous
-                if (effectiveLower[iRow]>-1.0e20&&vubCoefficient<0.0) 
+                if (effectiveLower[jRow]>-1.0e20&&vbCoefficient<0.0) {
                   replace=-1;
-                else if (effectiveUpper[iRow]<1.0e20&&vubCoefficient>0.0) 
+		  iRow=jRow;
+		  vubCoefficient = vbCoefficient;
+                } else if (effectiveUpper[jRow]<1.0e20&&vbCoefficient>0.0) {
                   replace=1;
-                //q assert (replace!=-1);
-                //assert (replace!=1);
+		  iRow=jRow;
+		  vubCoefficient = vbCoefficient;
+		}
               }
             }
           }
@@ -912,7 +926,7 @@ CglKnapsackCover::deriveAKnapsack(
 
   // Fix to https://projects.coin-or.org/Cbc/ticket/30
   {
-    // On investiagtion looks as if it can happen without being a bug
+    // On investigation looks as if it can happen without being a bug
     if (numberElements==0) return 0;
   }
 

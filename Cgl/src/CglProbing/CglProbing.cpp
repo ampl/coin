@@ -1,4 +1,4 @@
-// $Id: CglProbing.cpp 1230 2014-11-18 11:10:45Z forrest $
+// $Id: CglProbing.cpp 1268 2015-02-28 18:41:50Z forrest $
 // Copyright (C) 2002, International Business Machines
 // Corporation and others.  All Rights Reserved.
 // This code is licensed under the terms of the Eclipse Public License (EPL).
@@ -4700,7 +4700,10 @@ int CglProbing::probe( const OsiSolverInterface & si,
                   // create cut
                   OsiRowCut rc;
                   rc.setLb(-COIN_DBL_MAX);
-                  rc.setUb(colUpper[icol]-down*boundChange);
+		  double newUb = colUpper[icol]-down*boundChange;
+		  if (!intVar[icol]&&newUb>1.0e3)
+		    newUb += 1.0e-7*newUb;
+                  rc.setUb(newUb);
                   index[0]=icol;
                   element[0]=1.0;
                   index[1]=j;
@@ -4726,7 +4729,10 @@ int CglProbing::probe( const OsiSolverInterface & si,
                      + boundChange*solMove-primalTolerance_)) {
                   // create cut
                   OsiRowCut rc;
-                  rc.setLb(colLower[icol]-down*boundChange);
+		  double newLb = colLower[icol]-down*boundChange;
+		  if (!intVar[icol]&&fabs(newLb)>1.0e3)
+		    newLb -= 1.0e-7*fabs(newLb);
+                  rc.setLb(newLb);
                   rc.setUb(COIN_DBL_MAX);
                   index[0]=icol;
                   element[0]=1.0;
@@ -5294,7 +5300,10 @@ int CglProbing::probe( const OsiSolverInterface & si,
                   // create cut
                   OsiRowCut rc;
                   rc.setLb(-COIN_DBL_MAX);
-                  rc.setUb(colUpper[icol]+up*boundChange);
+		  double newUb = colUpper[icol]+up*boundChange;
+		  if (!intVar[icol]&&newUb>1.0e3)
+		    newUb += 1.0e-7*newUb;
+                  rc.setUb(newUb);
                   index[0]=icol;
                   element[0]=1.0;
                   index[1]=j;
@@ -5320,7 +5329,10 @@ int CglProbing::probe( const OsiSolverInterface & si,
                      + boundChange*solMove-primalTolerance_)) {
                   // create cut
                   OsiRowCut rc;
-                  rc.setLb(colLower[icol]+up*boundChange);
+		  double newLb = colLower[icol]+up*boundChange;
+		  if (!intVar[icol]&&fabs(newLb)>1.0e3)
+		    newLb -= 1.0e-7*fabs(newLb);
+                  rc.setLb(newLb);
                   rc.setUb(COIN_DBL_MAX);
                   index[0]=icol;
                   element[0]=1.0;
@@ -6777,7 +6789,10 @@ int CglProbing::probeCliques( const OsiSolverInterface & si,
 		    // create cut
 		    OsiRowCut rc;
 		    rc.setLb(-COIN_DBL_MAX);
-		    rc.setUb(colUpper[icol]-down*boundChange);
+		    double newUb = colUpper[icol]-down*boundChange;
+		    if (!intVar[icol]&&newUb>1.0e3)
+		      newUb += 1.0e-7*newUb;
+		    rc.setUb(newUb);
 		    index[0]=icol;
 		    element[0]=1.0;
 		    index[1]=j;
@@ -6804,7 +6819,10 @@ int CglProbing::probeCliques( const OsiSolverInterface & si,
 		      + boundChange*solMove-primalTolerance_)) {
 		    // create cut
 		    OsiRowCut rc;
-		    rc.setLb(colLower[icol]-down*boundChange);
+		    double newLb = colLower[icol]-down*boundChange;
+		    if (!intVar[icol]&&fabs(newLb)>1.0e3)
+		      newLb -= 1.0e-7*fabs(newLb);
+		    rc.setLb(newLb);
 		    rc.setUb(COIN_DBL_MAX);
 		    index[0]=icol;
 		    element[0]=1.0;
@@ -7140,7 +7158,10 @@ int CglProbing::probeCliques( const OsiSolverInterface & si,
 		    // create cut
 		    OsiRowCut rc;
 		    rc.setLb(-COIN_DBL_MAX);
-		    rc.setUb(colUpper[icol]+up*boundChange);
+		    double newUb = colUpper[icol]+up*boundChange;
+		    if (!intVar[icol]&&newUb>1.0e3)
+		      newUb += 1.0e-7*newUb;
+		    rc.setUb(newUb);
 		    index[0]=icol;
 		    element[0]=1.0;
 		    index[1]=j;
@@ -7167,7 +7188,10 @@ int CglProbing::probeCliques( const OsiSolverInterface & si,
 		      + boundChange*solMove-primalTolerance_)) {
 		    // create cut
 		    OsiRowCut rc;
-		    rc.setLb(colLower[icol]+up*boundChange);
+		    double newLb = colLower[icol]+up*boundChange;
+		    if (!intVar[icol]&&fabs(newLb)>1.0e3)
+		      newLb -= 1.0e-7*fabs(newLb);
+		    rc.setLb(newLb);
 		    rc.setUb(COIN_DBL_MAX);
 		    index[0]=icol;
 		    element[0]=1.0;

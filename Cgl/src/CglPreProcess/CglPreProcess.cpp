@@ -1129,11 +1129,19 @@ CglPreProcess::preProcessNonDefault(OsiSolverInterface & model,
    bool rcdActive = true ;
    std::string modelName ;
    model.getStrParam(OsiProbName,modelName) ;
+   writeDebugMps(&model,"IPP:preProcessNonDefault",0) ;
    std::cout
      << "  Attempting to activate row cut debugger for "
      << modelName << " ... " ;
-   writeDebugMps(&model,"IPP:preProcessNonDefault",0) ;
-   model.activateRowCutDebugger(modelName.c_str()) ;
+   if (!appData_) {
+     model.activateRowCutDebugger(modelName.c_str()) ;
+   } else {
+     // see if passed in
+     double * solution = CoinCopyOfArray(reinterpret_cast<double *>(appData_),
+					 model.getNumCols());
+     model.activateRowCutDebugger(solution);
+     delete [] solution;
+   }
    if (model.getRowCutDebugger())
      std::cout << "on optimal path." << std::endl ;
    else if (model.getRowCutDebuggerAlways())
@@ -2420,7 +2428,16 @@ CglPreProcess::preProcessNonDefault(OsiSolverInterface & model,
       if (numberFixed)
 	printf("%d variables fixed on reduced cost\n",numberFixed);
 #endif
+#if CGL_WRITEMPS
+      const OsiRowCutDebugger *debugger = presolvedModel->getRowCutDebugger();
+      if (debugger) 
+	printf("Contains optimal before modified\n") ;
+#endif
       OsiSolverInterface * newModel = modified(presolvedModel,constraints,numberChanges,iPass-doInitialPresolve,numberModifiedPasses);
+#if CGL_WRITEMPS
+      if (debugger) 
+	assert(newModel->getRowCutDebugger());
+#endif
       returnModel=newModel;
       if (!newModel) {
         break;
@@ -2437,10 +2454,19 @@ CglPreProcess::preProcessNonDefault(OsiSolverInterface & model,
       }
     }
   }
+#if CGL_WRITEMPS
+  const OsiRowCutDebugger *debugger = returnModel->getRowCutDebugger();
+  if (debugger) 
+    printf("Contains optimal before tighten\n") ;
+#endif
   if (returnModel) {
     if (returnModel->getNumRows()) {
       // tighten bounds
       int infeas = tightenPrimalBounds(*returnModel);
+#if CGL_WRITEMPS
+      if (debugger) 
+	assert(returnModel->getRowCutDebugger());
+#endif
       if (infeas) {
         delete returnModel;
 	for (int iPass=0;iPass<numberSolvers_;iPass++) {
@@ -2669,9 +2695,17 @@ CglPreProcess::preProcessNonDefault(OsiSolverInterface & model,
     delete [] mark;
     delete [] sosRow;
   }
+#if CGL_WRITEMPS
+      if (debugger) 
+	assert(returnModel->getRowCutDebugger());
+#endif
   if (returnModel) {
     if (makeIntegers) 
       makeIntegers2(returnModel,makeIntegers);
+#if CGL_WRITEMPS
+      if (debugger) 
+	assert(returnModel->getRowCutDebugger());
+#endif
     numberIntegers=0;
     int numberBinary=0;
     int numberColumns=returnModel->getNumCols();
@@ -2687,6 +2721,10 @@ CglPreProcess::preProcessNonDefault(OsiSolverInterface & model,
       <<returnModel->getNumRows()<<numberColumns
       <<numberIntegers<<numberBinary<<returnModel->getNumElements()
       <<CoinMessageEol;
+#if CGL_WRITEMPS
+      if (debugger) 
+	assert(returnModel->getRowCutDebugger());
+#endif
     // If can make some cuts then do so
     if (rowType_) {
       int numberRows = returnModel->getNumRows();
@@ -2726,6 +2764,10 @@ CglPreProcess::preProcessNonDefault(OsiSolverInterface & model,
       }
     }
   }
+#if CGL_WRITEMPS
+      if (debugger) 
+	assert(returnModel->getRowCutDebugger());
+#endif
 #if 0
   if (returnModel) {
     int numberColumns = returnModel->getNumCols();
@@ -2881,6 +2923,11 @@ CglPreProcess::preProcessNonDefault(OsiSolverInterface & model,
     delete [] original;
     //exit(2);
   }
+#endif
+  writeDebugMps(returnModel,"returnModel",NULL);
+#if CGL_WRITEMPS
+      if (debugger) 
+	assert(returnModel->getRowCutDebugger());
 #endif
   return returnModel;
 }
@@ -3375,7 +3422,7 @@ CglPreProcess::tightenPrimalBounds(OsiSolverInterface & model,double factor)
  		    handler_->message(CGL_ELEMENTS_CHANGED2,messages_)
 		      <<iRow<<iColumn<<value<<newValue
 		      <<CoinMessageEol;
-#ifdef CGL_DEBUG
+#if CGL_WRITEMPS
                     const OsiRowCutDebugger * debugger = model.getRowCutDebugger();
                     if (debugger&&debugger->numberColumns()==numberColumns) {
                       const double * optimal = debugger->optimalSolution();
@@ -3621,6 +3668,13 @@ CglPreProcess::postProcess(OsiSolverInterface & modelIn
       model->setHintParam(OsiDoDualInInitial, true, OsiHintTry);
       model->initialSolve();
       numberIterationsPost_ += model->getIterationCount();
+      if (!model->isProvenOptimal()) {
+	// try without basis
+	CoinWarmStartBasis * basis = dynamic_cast<CoinWarmStartBasis *> (model->getEmptyWarmStart());
+	model->setWarmStart(basis);
+	delete basis;
+	model->initialSolve();
+      }
       if (!model->isProvenOptimal()) {
 #if CBC_USEFUL_PRINTING>1
 	  whichMps++;
@@ -4138,6 +4192,8 @@ CglPreProcess::modified(OsiSolverInterface * model,
       } else {
 	type=3;
       }
+      if (rowType_&&rowType_[iRow])
+	type=0; // not allowed if may be cut
       rowTypeAll[iRow]=type;
     }
     // clean model
@@ -4191,11 +4247,13 @@ CglPreProcess::modified(OsiSolverInterface * model,
 	for (CoinBigIndex j=columnStart[iColumn];
 	     j<columnStart[iColumn]+columnLength[iColumn];j++) {
 	  int iRow = row[j];
-	  if (!rowTypeAll[iRow])
-	    continue;
 	  markRow[iRow]=nMarkRow+1;
 	  backwardRow[iRow]=nMarkRow;
 	  bitMask[nMarkRow]=0;
+	  if (!rowTypeAll[iRow]) {
+	    // no good
+	    bitMask[nMarkRow] = 0xffffffff;
+	  }
 	  whichRow[nMarkRow++]=iRow;
 	}
 	for (CoinBigIndex j=columnStart[iColumn];
@@ -4206,10 +4264,12 @@ CglPreProcess::modified(OsiSolverInterface * model,
 	     k<rowStart[iRow]+rowLength[iRow];k++) {
 	      int kColumn = column[k];
 	      if (!marked[kColumn]) {
+		int iMask = backwardRow[iRow];
 		if (nMarked==MAX_LOOK_COLS) {
 		  // say row no good
-		  int iMask = backwardRow[iRow];
 		  bitMask[iMask] = 0xffffffff;
+		  continue;
+		} else if (bitMask[iMask] == 0xffffffff) {
 		  continue;
 		}
 		backwardColumn[kColumn]=nMarked;
