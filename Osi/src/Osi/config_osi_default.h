@@ -5,7 +5,7 @@
 /***************************************************************************/
 
 /* Version number of project */
-#define OSI_VERSION "0.107.3"
+#define OSI_VERSION "0.107.4"
 
 /* Major Version number of project */
 #define OSI_VERSION_MAJOR 0
@@ -14,4 +14,4 @@
 #define OSI_VERSION_MINOR 107
 
 /* Release Version number of project */
-#define OSI_VERSION_RELEASE 3
+#define OSI_VERSION_RELEASE 4
