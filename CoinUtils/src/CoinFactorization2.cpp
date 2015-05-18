@@ -1,4 +1,4 @@
-/* $Id: CoinFactorization2.cpp 1767 2015-01-05 12:36:13Z forrest $ */
+/* $Id: CoinFactorization2.cpp 1817 2015-03-22 16:43:28Z forrest $ */
 // Copyright (C) 2002, International Business Machines
 // Corporation and others.  All Rights Reserved.
 // This code is licensed under the terms of the Eclipse Public License (EPL).
@@ -606,7 +606,7 @@ int CoinFactorization::factorDense()
 			    &info);
     // need to check size of pivots
     if(info) {
-      printf("Dense singular\n");
+      //printf("Dense singular\n");
       status = -1;
     }
 #elif COIN_FACTORIZATION_DENSE_CODE==2

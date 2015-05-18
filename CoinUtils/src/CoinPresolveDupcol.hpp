@@ -1,4 +1,4 @@
-/* $Id: CoinPresolveDupcol.hpp 1550 2012-08-28 14:55:18Z forrest $ */
+/* $Id: CoinPresolveDupcol.hpp 1817 2015-03-22 16:43:28Z forrest $ */
 // Copyright (C) 2002, International Business Machines
 // Corporation and others.  All Rights Reserved.
 // This code is licensed under the terms of the Eclipse Public License (EPL).
@@ -96,6 +96,34 @@ class duprow_action : public CoinPresolveAction {
 
   duprow_action():CoinPresolveAction(NULL),nactions_(0),actions_(NULL) {}
   duprow_action(int nactions,
+		      const action *actions,
+		      const CoinPresolveAction *next) :
+    CoinPresolveAction(next),
+    nactions_(nactions), actions_(actions) {}
+
+ public:
+  const char *name() const;
+
+  static const CoinPresolveAction *presolve(CoinPresolveMatrix *prob,
+					 const CoinPresolveAction *next);
+
+  void postsolve(CoinPostsolveMatrix *prob) const;
+
+  //~duprow_action() { delete[]actions_; }
+};
+
+class duprow3_action : public CoinPresolveAction {
+  struct action {
+    int row;
+    double lbound;
+    double ubound;
+  };
+
+  const int nactions_;
+  const action *const actions_;
+
+  duprow3_action():CoinPresolveAction(NULL),nactions_(0),actions_(NULL) {}
+  duprow3_action(int nactions,
 		      const action *actions,
 		      const CoinPresolveAction *next) :
     CoinPresolveAction(next),
