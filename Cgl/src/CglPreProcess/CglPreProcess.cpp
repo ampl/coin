@@ -3479,6 +3479,8 @@ CglPreProcess::postProcess(OsiSolverInterface & modelIn
                         saveHint2,saveStrength2);
   OsiSolverInterface * clonedCopy=NULL;
   double saveObjectiveValue = modelIn.getObjValue();
+  // Make sure cutoff is ignored
+  modelIn.setDblParam(OsiDualObjectiveLimit,1.0e50);
   if (!modelIn.isProvenOptimal()) {
     CoinWarmStartBasis *slack =
       dynamic_cast<CoinWarmStartBasis *>(modelIn.getEmptyWarmStart()) ;
