@@ -1,4 +1,4 @@
-/* $Id: CbcHeuristic.cpp 2143 2015-02-24 15:15:08Z forrest $ */
+/* $Id: CbcHeuristic.cpp 2162 2015-03-13 18:35:57Z forrest $ */
 // Copyright (C) 2002, International Business Machines
 // Corporation and others.  All Rights Reserved.
 // This code is licensed under the terms of the Eclipse Public License (EPL).
@@ -2419,9 +2419,13 @@ CbcRounding::solution(double & solutionValue,
                 if (downImprovement > 0.0 && currentValue > lowerValue) {
                     way = -1.0;
                     improvement = downImprovement;
+		    if (isInteger&&currentValue<lowerValue+0.99)
+		      continue; // no good
                 } else if (upImprovement > 0.0 && currentValue < upperValue) {
                     way = 1.0;
                     improvement = upImprovement;
+		    if (isInteger&&currentValue>upperValue-0.99)
+		      continue; // no good
                 }
                 if (way) {
                     // can improve

@@ -1,4 +1,4 @@
-/* $Id: CbcNode.cpp 2103 2014-12-29 20:37:56Z tkr $ */
+/* $Id: CbcNode.cpp 2165 2015-03-17 08:58:35Z forrest $ */
 // Copyright (C) 2002, International Business Machines
 // Corporation and others.  All Rights Reserved.
 // This code is licensed under the terms of the Eclipse Public License (EPL).
@@ -2366,7 +2366,6 @@ int CbcNode::chooseDynamicBranch (CbcModel *model, CbcNode *lastNode,
                         }
                     }
                     delete [] rowActivity;
-                    delete [] solution;
                     if (!satisfied) {
 #ifdef CLP_INVESTIGATE
                         printf("%d free ok %d free off target %d fixed off target\n",
@@ -2393,6 +2392,7 @@ int CbcNode::chooseDynamicBranch (CbcModel *model, CbcNode *lastNode,
                             break;
                         }
                     }
+                    delete [] solution;
                 }
             } else if (iPass == 1) {
                 // looks like a solution - get paranoid
