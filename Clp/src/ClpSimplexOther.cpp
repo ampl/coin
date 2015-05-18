@@ -1,4 +1,4 @@
-/* $Id: ClpSimplexOther.cpp 2074 2014-12-10 09:43:54Z forrest $ */
+/* $Id: ClpSimplexOther.cpp 2128 2015-03-16 08:57:46Z forrest $ */
 // Copyright (C) 2004, International Business Machines
 // Corporation and others.  All Rights Reserved.
 // This code is licensed under the terms of the Eclipse Public License (EPL).
@@ -10040,7 +10040,7 @@ ClpSimplex::miniPostsolve(const ClpSimplex * presolvedModel, void * infoIn)
 	if (start+length==startNext) {
 	  // need more
 	  moveAround(numberColumns_,numberElementsOriginal,
-		     iColumn,length+(jRowLower<0||jRowUpper<0) ? 1 : 2,
+		     iColumn,length+((jRowLower<0||jRowUpper<0) ? 1 : 2),
 		     forward,backward,columnStartX,columnLengthX,
 		     rowX,elementX);
 	  start=columnStartX[iColumn];

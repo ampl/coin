@@ -2,7 +2,7 @@
 # All Rights Reserved.
 # This file is distributed under the Eclipse Public License.
 
-## $Id: Makefile.am 2107 2015-02-07 19:56:24Z tkr $
+## $Id: Makefile.am 2122 2015-03-09 15:16:55Z tkr $
 
 # Author:  Andreas Waechter           IBM    2006-04-13
 
@@ -120,7 +120,7 @@ pkgconfiglib_DATA += osi-clp.pc
 endif
 
 addlibsdir = $(DESTDIR)$(datadir)/coin/doc/Clp
-	
+
 install-data-hook:
 	@$(mkdir_p) "$(addlibsdir)"
 if COIN_HAS_PKGCONFIG
@@ -128,7 +128,7 @@ if COIN_HAS_PKGCONFIG
 	$(PKG_CONFIG) --libs clp > $(addlibsdir)/clp_addlibs.txt
 else
 if COIN_CXX_IS_CL
-	echo "-libpath:`$(CYGPATH_W) @abs_lib_dir@` libClp.lib @CLPLIB_LIBS_INSTALLED@" > $(addlibsdir)/clp_addlibs.txt
+	echo "-libpath:`$(CYGPATH_W) @abs_lib_dir@` libClpSolver.lib libClp.lib @CLPLIB_LIBS_INSTALLED@" > $(addlibsdir)/clp_addlibs.txt
 else
 	echo -L@abs_lib_dir@ -lClp @CLPLIB_LIBS_INSTALLED@ > $(addlibsdir)/clp_addlibs.txt
 endif

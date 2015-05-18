@@ -1,4 +1,4 @@
-/* $Id: ClpSimplex.cpp 2114 2015-02-10 12:12:46Z forrest $ */
+/* $Id: ClpSimplex.cpp 2134 2015-03-22 16:40:43Z forrest $ */
 // Copyright (C) 2002, International Business Machines
 // Corporation and others.  All Rights Reserved.
 // This code is licensed under the terms of the Eclipse Public License (EPL).
@@ -5614,7 +5614,7 @@ int ClpSimplex::dualDebug (int ifValuesPass , int startFinishOptions)
        problemStatus_ = 10; // clean up in primal as fake bounds
      }
      if ((moreSpecialOptions_&524288)!=0&&
-	 !nonLinearCost_->numberInfeasibilities()&&
+	 (!nonLinearCost_||!nonLinearCost_->numberInfeasibilities())&&
 	 fabs(dblParam_[ClpDualObjectiveLimit])>1.0e30) {
        problemStatus_=0;
      }

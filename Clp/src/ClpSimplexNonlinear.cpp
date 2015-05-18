@@ -1,4 +1,4 @@
-/* $Id: ClpSimplexNonlinear.cpp 2025 2014-03-19 12:49:55Z forrest $ */
+/* $Id: ClpSimplexNonlinear.cpp 2128 2015-03-16 08:57:46Z forrest $ */
 // Copyright (C) 2004, International Business Machines
 // Corporation and others.  All Rights Reserved.
 // This code is licensed under the terms of the Eclipse Public License (EPL).
@@ -1525,7 +1525,7 @@ ClpSimplexNonlinear::pivotColumn(CoinIndexedVector * longArray,
 #if MINTYPE==1
                     if (conjugate) {
                          double djNorm2 = djNorm;
-                         if (numberNonBasic && 0) {
+                         if (numberNonBasic && false) {
                               int iIndex;
                               djNorm2 = 0.0;
                               for (iIndex = 0; iIndex < numberNonBasic; iIndex++) {

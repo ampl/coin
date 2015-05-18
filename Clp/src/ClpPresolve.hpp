@@ -1,4 +1,4 @@
-/* $Id: ClpPresolve.hpp 2074 2014-12-10 09:43:54Z forrest $ */
+/* $Id: ClpPresolve.hpp 2134 2015-03-22 16:40:43Z forrest $ */
 // Copyright (C) 2002, International Business Machines
 // Corporation and others.  All Rights Reserved.
 // This code is licensed under the terms of the Eclipse Public License (EPL).
@@ -150,6 +150,14 @@ public:
      inline void setDoDuprow(bool doDuprow) {
           if (doDuprow) presolveActions_  &= ~256;
           else presolveActions_ |= 256;
+     }
+     /// Whether we want to do dependency part of presolve
+     inline bool doDependency() const {
+          return (presolveActions_ & 32768) != 0;
+     }
+     inline void setDoDependency(bool doDependency) {
+          if (doDependency) presolveActions_  |= 32768;
+          else presolveActions_ &= ~32768;
      }
      /// Whether we want to do singleton column part of presolve
      inline bool doSingletonColumn() const {

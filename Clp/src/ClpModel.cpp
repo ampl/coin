@@ -1,4 +1,4 @@
-/* $Id: ClpModel.cpp 2063 2014-09-14 07:54:51Z forrest $ */
+/* $Id: ClpModel.cpp 2131 2015-03-19 08:09:18Z forrest $ */
 // copyright (C) 2002, International Business Machines
 // Corporation and others.  All Rights Reserved.
 // This code is licensed under the terms of the Eclipse Public License (EPL).
@@ -3851,6 +3851,8 @@ ClpModel::writeMps(const char *filename,
      // Pass in array saying if each variable integer
      writer.copyInIntegerInformation(integerInformation());
      writer.setObjectiveOffset(objectiveOffset());
+     // set name
+     writer.setProblemName(problemName().c_str());
      delete [] objective;
      CoinPackedMatrix * quadratic = NULL;
 #ifndef SLIM_CLP
