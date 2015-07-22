@@ -283,10 +283,13 @@ function(add_coin_library path)
             target_link_libraries(${test} OsiCommonTests)
           endif ()
           if (test MATCHES "^Cgl-")
-            add_test(${test} bin/${test} Data/Sample Data/Netlib)
+            add_test(NAME ${test}
+              COMMAND ${CMAKE_CURRENT_BINARY_DIR}/bin/${test} Data/Sample Data/Netlib
+              WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR})
           else ()
-            add_test(${test}
-              bin/${test} -mpsDir=Data/Sample -netlibDir=Data/Netlib)
+            add_test(NAME ${test}
+              COMMAND ${CMAKE_CURRENT_BINARY_DIR}/bin/${test} -mpsDir=Data/Sample -netlibDir=Data/Netlib
+              WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR})
           endif ()
         endif ()
       endif ()
