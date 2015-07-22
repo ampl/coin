@@ -313,6 +313,11 @@ enum {
 #endif
 #endif
 
+#if _MSC_VER >= 1900
+#define _TIMESPEC_DEFINED
+#include <time.h>
+#endif
+
 #if !defined(HAVE_STRUCT_TIMESPEC)
 #define HAVE_STRUCT_TIMESPEC
 #if !defined(_TIMESPEC_DEFINED)
