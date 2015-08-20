@@ -564,11 +564,6 @@ add_definitions(-DHAVE_CONFIG_H)
 # Define FORTRAN_INTEGER_TYPE for Ipopt.
 set(FORTRAN_INTEGER_TYPE_C int)
 
-if (MSVC)
-  set(F77_FUNC "(name,NAME) name##_")
-  set(F77_FUNC_ "${F77_FUNC}")
-endif ()
-
 configure(CoinUtils src/config.h src/config_coinutils.h)
 configure(Osi src/Osi/config.h src/Osi/config_osi.h)
 configure(Clp src/config.h src/config_clp.h)
@@ -613,9 +608,10 @@ if (EXISTS ${COIN_SOURCE_DIR}/Ipopt)
       set(BUILD_IPOPT TRUE)
     endif ()
   else ()
+    set(BUILD_IPOPT TRUE)
     enable_language(Fortran OPTIONAL)
     if (CMAKE_Fortran_COMPILER)
-      set(BUILD_IPOPT TRUE)
+      set(BUILD_IPOPTFORT TRUE)
       # Discover and link with gfortran runtime library statically since
       # -static-libgfortran is not always available.
       if (NOT BUILD_SHARED_LIBS)
@@ -627,6 +623,11 @@ if (EXISTS ${COIN_SOURCE_DIR}/Ipopt)
       endif ()
     endif ()
   endif ()
+endif ()
+
+if (MSVC OR NOT BUILD_IPOPTFORT)
+  set(F77_FUNC "(name,NAME) name##_")
+  set(F77_FUNC_ "${F77_FUNC}")
 endif ()
 
 if (BUILD_IPOPT)
@@ -648,18 +649,21 @@ if (BUILD_IPOPT)
     Ipopt/src/contrib/LinearSolverLoader
     ThirdParty/Mumps/MUMPS/include ThirdParty/Mumps/MUMPS/libseq)
 
-  # FORTRAN_CMAKE_FLAGS is used to pass additional CMake arguments to
-  # Fortran subprojects.
-  include(CMakeAddFortranSubdirectory)
-  cmake_add_fortran_subdirectory(Ipopt
-    PROJECT IPOPTFORT
-    ARCHIVE_DIR Ipopt/lib
-    RUNTIME_DIR Ipopt/bin
-    LIBRARIES ipoptfort
-    CMAKE_COMMAND_LINE ${FORTRAN_CMAKE_FLAGS}
-    NO_EXTERNAL_INSTALL)
-  set(COIN_HAS_BLAS 1)
-  set(COIN_HAS_MUMPS 1)
+  if (BUILD_IPOPTFORT)
+    # FORTRAN_CMAKE_FLAGS is used to pass additional CMake arguments to
+    # Fortran subprojects.
+    include(CMakeAddFortranSubdirectory)
+    cmake_add_fortran_subdirectory(Ipopt
+      PROJECT IPOPTFORT
+      ARCHIVE_DIR Ipopt/lib
+      RUNTIME_DIR Ipopt/bin
+      LIBRARIES ipoptfort
+      CMAKE_COMMAND_LINE ${FORTRAN_CMAKE_FLAGS}
+      NO_EXTERNAL_INSTALL)
+    set(COIN_HAS_BLAS 1)
+    set(COIN_HAS_MUMPS 1)
+    set(IPOPTFORT ipoptfort)
+  endif ()
 
   # Adds a command to copy external library ${lib} to the binary directory.
   macro (add_copy_library_command lib)
@@ -683,7 +687,7 @@ if (BUILD_IPOPT)
   add_ipopt_library(linalg LinAlg)
   add_ipopt_library(tmatrices LinAlg/TMatrices)
   add_ipopt_library(ipopt Interfaces
-    ipoptalg linsolvers ipoptfort common cgpenalty linalg tmatrices)
+    ipoptalg linsolvers common cgpenalty linalg tmatrices ${IPOPTFORT})
 
   if (COIN_HAS_ASL)
     add_ipopt_library(ipoptamplinterface Apps/AmplSolver ${ASL_LIBRARIES})
