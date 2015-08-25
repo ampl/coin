@@ -500,10 +500,10 @@ set(GLPK_HAS_INTOPT 1)
 
 if (COIN_HAS_ASL)
   # Workaround for f90cache which accept only modified name for GNU fortran
-  # compilers in the form gfortran-4.x.
+  # compilers in the form gfortran-x[.y].
   string(REGEX MATCHALL "[^:]+" search_paths "$ENV{PATH}")
   foreach (search_path ${search_paths})
-    file(GLOB paths ${search_path}/gfortran-4.*)
+    file(GLOB paths ${search_path}/gfortran-5*)
     if (paths)
       list(GET paths 0 CMAKE_Fortran_COMPILER)
       message("Detected Fortran compiler: ${CMAKE_Fortran_COMPILER}")
