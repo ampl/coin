@@ -1,4 +1,4 @@
-/* $Id: CbcOrClpParam.cpp 2079 2015-01-05 13:11:35Z forrest $ */
+/* $Id: CbcOrClpParam.cpp 2175 2015-10-06 08:56:43Z forrest $ */
 // Copyright (C) 2002, International Business Machines
 // Corporation and others.  All Rights Reserved.
 // This code is licensed under the terms of the Eclipse Public License (EPL).
@@ -48,11 +48,14 @@ static char coin_prompt[] = "Clp:";
 #include "AbcCommon.hpp"
 #endif
 static bool doPrinting = true;
-std::string afterEquals = "";
+static std::string afterEquals = "";
 static char printArray[200];
 #if COIN_INT_MAX==0
 #undef COIN_INT_MAX
 #define COIN_INT_MAX 2147483647
+#endif
+#if FLUSH_PRINT_BUFFER > 2
+int coinFlushBufferFlag=0;
 #endif
 void setCbcOrClpPrinting(bool yesNo)
 {
@@ -1088,6 +1091,10 @@ CbcOrClpParam::setCurrentOption ( const std::string value )
      int action = parameterOption(value);
      if (action >= 0)
           currentKeyWord_ = action;
+#if FLUSH_PRINT_BUFFER > 2
+     if (name_=="bufferedMode")
+       coinFlushBufferFlag=action;
+#endif
 }
 // Sets current parameter option
 void
@@ -1098,6 +1105,10 @@ CbcOrClpParam::setCurrentOption ( int value , bool printIt)
                     << definedKeyWords_[currentKeyWord_] << " to "
                     << definedKeyWords_[value] << std::endl;
 
+#if FLUSH_PRINT_BUFFER > 2
+     if (name_=="bufferedMode")
+       coinFlushBufferFlag=value;
+#endif
      currentKeyWord_ = value;
 }
 // Sets current parameter option and returns printable string
@@ -1121,6 +1132,10 @@ CbcOrClpParam::setCurrentOptionWithMessage ( int value )
 	   sprintf(newString,"plus%d",value-1000);
 	 sprintf(printArray, "Option for %s changed from %s to %s",
 		 name_.c_str(), current, newString);
+#if FLUSH_PRINT_BUFFER > 2
+	 if (name_=="bufferedMode")
+	   coinFlushBufferFlag=value;
+#endif
 	 currentKeyWord_ = value;
      } else {
           printArray[0] = '\0';
@@ -1135,6 +1150,10 @@ CbcOrClpParam::setCurrentOptionWithMessage ( const std::string value )
      char current[100];
      printArray[0] = '\0';
      if (action >= 0) {
+#if FLUSH_PRINT_BUFFER > 2
+       if (name_=="bufferedMode")
+	 coinFlushBufferFlag=action;
+#endif
          if (action == currentKeyWord_)
 	   return NULL;
 	 if (currentKeyWord_>=0&&(fakeKeyWord_<=0||currentKeyWord_<fakeKeyWord_)) 
@@ -1647,6 +1666,17 @@ have more rounds of cuts - see passC!uts and passT!ree."
      parameters[numberParameters-1].append("on1");
      parameters[numberParameters-1].append("off2");
      parameters[numberParameters-1].append("on2");
+#if FLUSH_PRINT_BUFFER > 2
+     parameters[numberParameters++] =
+          CbcOrClpParam("buff!eredMode", "Whether to flush print buffer",
+                        "on", CLP_PARAM_STR_BUFFER_MODE);
+     parameters[numberParameters-1].append("off");
+     parameters[numberParameters-1].setLonghelp
+     (
+          "Default is on, off switches on unbuffered output"
+     );
+     parameters[numberParameters-1].setIntValue(0);
+#endif
      parameters[numberParameters++] =
           CbcOrClpParam("chol!esky", "Which cholesky algorithm",
                         "native", CLP_PARAM_STR_CHOLESKY, 7);

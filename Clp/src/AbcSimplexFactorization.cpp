@@ -1,4 +1,4 @@
-/* $Id: AbcSimplexFactorization.cpp 2078 2015-01-05 12:39:49Z forrest $ */
+/* $Id: AbcSimplexFactorization.cpp 2165 2015-09-06 09:00:21Z forrest $ */
 // Copyright (C) 2002, International Business Machines
 // Corporation and others, Copyright (C) 2012, FasterCoin.  All Rights Reserved.
 // This code is licensed under the terms of the Eclipse Public License (EPL).
@@ -416,7 +416,7 @@ AbcSimplexFactorization::factorize ( AbcSimplex * model,
   // allow dense
   int solveMode = coinAbcFactorization_->solveMode()&1;
   if (model->numberIterations()>model->baseIteration())
-    solveMode += 8;
+    solveMode |= 9;  // was +8 - this allows dense
   else
     solveMode = 1; // try dense
   if (valuesPass)

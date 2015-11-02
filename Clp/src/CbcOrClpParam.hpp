@@ -1,5 +1,5 @@
 
-/* $Id: CbcOrClpParam.hpp 2070 2014-11-18 11:12:54Z forrest $ */
+/* $Id: CbcOrClpParam.hpp 2175 2015-10-06 08:56:43Z forrest $ */
 // Copyright (C) 2002, International Business Machines
 // Corporation and others.  All Rights Reserved.
 // This code is licensed under the terms of the Eclipse Public License (EPL).
@@ -170,6 +170,7 @@ enum CbcOrClpParameterType
      CLP_PARAM_STR_ALLCOMMANDS,
      CLP_PARAM_STR_TIME_MODE,
      CLP_PARAM_STR_ABCWANTED,
+     CLP_PARAM_STR_BUFFER_MODE,
 
      CBC_PARAM_STR_NODESTRATEGY = 251,
      CBC_PARAM_STR_BRANCHSTRATEGY,

@@ -1,4 +1,4 @@
-/* $Id: AbcSimplexPrimal.cpp 2078 2015-01-05 12:39:49Z forrest $ */
+/* $Id: AbcSimplexPrimal.cpp 2165 2015-09-06 09:00:21Z forrest $ */
 // Copyright (C) 2002, International Business Machines
 // Corporation and others, Copyright (C) 2012, FasterCoin.  All Rights Reserved.
 // This code is licensed under the terms of the Eclipse Public License (EPL).
@@ -961,12 +961,12 @@ AbcSimplexPrimal::statusOfProblemInPrimal(int type)
 #endif
     if (ifValuesPass&&numberIterations_==baseIteration_) {
       double * save = new double[numberRows_];
-      for (int iRow = 0; iRow < numberRows_; iRow++) {
-	int iPivot = abcPivotVariable_[iRow];
-	save[iRow] = abcSolution_[iPivot];
-      }
       int numberOut = 1;
       while (numberOut) {
+	for (int iRow = 0; iRow < numberRows_; iRow++) {
+	  int iPivot = abcPivotVariable_[iRow];
+	  save[iRow] = abcSolution_[iPivot];
+	}
 	gutsOfPrimalSolution(2);
 	double badInfeasibility = abcNonLinearCost_->largestInfeasibility();
 	numberOut = 0;
@@ -989,7 +989,8 @@ AbcSimplexPrimal::statusOfProblemInPrimal(int type)
 	    save[iRow] = difference;
 	  }
 	  abcNonLinearCost_->checkInfeasibilities(primalTolerance_);
-	  printf("Largest infeasibility %g\n",abcNonLinearCost_->largestInfeasibility());
+	  if (handler_->logLevel()>1)
+	    printf("Largest infeasibility %g\n",abcNonLinearCost_->largestInfeasibility());
 	  int numberBasic = 0;
 	  for (int iRow = 0; iRow < numberRows_; iRow++) {
 	    int iPivot = abcPivotVariable_[iRow];
@@ -1035,7 +1036,10 @@ AbcSimplexPrimal::statusOfProblemInPrimal(int type)
 	  delete [] sort;
 	}
 	if (numberOut) {
+	  double savePivotTolerance = abcFactorization_->pivotTolerance();
+	  abcFactorization_->pivotTolerance(0.99);
 	  int factorStatus = internalFactorize(12);
+	  abcFactorization_->pivotTolerance(savePivotTolerance);
 	  assert (!factorStatus);
 	}
       }

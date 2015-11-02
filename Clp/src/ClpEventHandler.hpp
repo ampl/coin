@@ -1,4 +1,4 @@
-/* $Id: ClpEventHandler.hpp 1825 2011-11-20 16:02:57Z forrest $ */
+/* $Id: ClpEventHandler.hpp 2156 2015-08-07 14:51:42Z forrest $ */
 // Copyright (C) 2004, International Business Machines
 // Corporation and others.  All Rights Reserved.
 // This code is licensed under the terms of the Eclipse Public License (EPL).
@@ -67,6 +67,7 @@ public:
 	  modifyMatrixInMiniPresolve,
 	  moreMiniPresolve,
 	  modifyMatrixInMiniPostsolve,
+	  startOfCrossover, // in Idiot
 	  noTheta // At end (because no pivot)
      };
      /**@name Virtual method that the derived classes should provide.

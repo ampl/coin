@@ -1,4 +1,4 @@
-/* $Id: Idiot.hpp 2078 2015-01-05 12:39:49Z forrest $ */
+/* $Id: Idiot.hpp 2143 2015-05-20 15:49:17Z forrest $ */
 // Copyright (C) 2002, International Business Machines
 // Corporation and others.  All Rights Reserved.
 // This code is licensed under the terms of the Eclipse Public License (EPL).
@@ -290,7 +290,8 @@ private:
 		 32768 - experimental 1
 		 65536 - experimental 2
 		 131072 - experimental 3 
-		 262144 - just values pass etc */
+		 262144 - just values pass etc 
+		 524288 - don't treat structural slacks as slacks */
                  
      int lightWeight_; // 0 - normal, 1 lightweight
 };
