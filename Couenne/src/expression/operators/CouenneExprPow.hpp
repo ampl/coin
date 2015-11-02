@@ -1,4 +1,4 @@
-/* $Id: CouenneExprPow.hpp 940 2013-01-13 19:49:02Z pbelotti $
+/* $Id: CouenneExprPow.hpp 1182 2015-08-17 12:39:40Z stefan $
  *
  * Name:    CouenneExprPow.hpp
  * Author:  Pietro Belotti
@@ -48,9 +48,13 @@ class exprPow: public exprOp {
   expression *clone (Domain *d = NULL) const
   {return new exprPow (clonearglist (d), nargs_, issignpower_);}
 
+  /// print operator positioning
+  virtual enum pos printPos () const
+  {return issignpower_ ? PRE : INSIDE ;}
+
   /// print operator
   virtual std::string printOp () const
-  {return "^";}
+  {return issignpower_ ? "signpower" : "^";}
 
   /// function for the evaluation of the expression
   virtual CouNumber operator () ();

@@ -1,4 +1,4 @@
-/* $Id: BTPerfIndicatorConstr.cpp 1034 2013-12-15 18:05:05Z pbelotti $
+/* $Id: BTPerfIndicatorConstr.cpp 1146 2015-05-04 13:57:47Z stefan $
  *
  * Name:    CouenneBTPerfIndicatorConstr.cpp
  * Author:  Pietro Belotti
@@ -43,7 +43,7 @@ CouenneBTPerfIndicator::~CouenneBTPerfIndicator () {
       problem_)
 
     if (stats_)
-      printf ("Performance of %30s:\t %10gs, %8d runs. fix: %10g shrnk: %10g ubd: %10g 2ubd: %10g infeas: %10g\n", 
+      problem_->Jnlst()->Printf(Ipopt::J_ERROR, J_COUENNE, "Performance of %30s:\t %10gs, %8d runs. fix: %10g shrnk: %10g ubd: %10g 2ubd: %10g infeas: %10g\n", 
 	      name_.c_str (),
 	      totalTime_, 
 	      nRuns_,

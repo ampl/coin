@@ -1,4 +1,4 @@
-## $Id: configure.ac 1132 2015-03-11 16:11:29Z tkr $
+## $Id: configure.ac 1186 2015-09-22 23:27:20Z tkr $
 #
 # Copyright (C) 2006 International Business Machines.
 # All Rights Reserved.
@@ -13,7 +13,7 @@
 
 AC_PREREQ(2.59)
 
-AC_INIT([Couenne],[0.5.3],[couenne@list.coin-or.org])
+AC_INIT([Couenne],[0.5.6],[couenne@list.coin-or.org])
 
 AC_COPYRIGHT([
 Copyright 2006 Carnegie Mellon University, International Business Machines and others.
@@ -44,7 +44,7 @@ AC_COIN_F77_WRAPPERS
 AC_CANONICAL_BUILD
 
 # Initialization specifically for project main directories
-AC_COIN_PROJECTDIR_INIT(Couenne,5:3:4)
+AC_COIN_PROJECTDIR_INIT(Couenne,5:6:4)
 
 # Check if user wants to produce debugging code
 AC_COIN_DEBUG_COMPILE(Couenne)
@@ -113,6 +113,12 @@ AC_COIN_CHECK_CXX_CHEADER(float)
 AC_COIN_CHECK_CXX_CHEADER(ieeefp)
 AC_COIN_CHECK_CXX_CHEADER(stdint)
 
+#############################################################################
+#                  Check for doxygen                                        #
+#############################################################################
+
+AC_COIN_DOXYGEN(CoinUtils Osi Clp Cgl Cbc Ipopt Bonmin)
+
 ##############################################################################
 #                   Finishing up by writing all the output                   #
 ##############################################################################
@@ -139,7 +145,8 @@ AC_CONFIG_FILES([Makefile
                  src/Makefile
 		 test/grandTest.sh
 		 couenne.pc 
-		 couenne-uninstalled.pc])
+		 couenne-uninstalled.pc
+		 doxydoc/doxygen.conf])
 
 #                 src/cut/ellipcuts/Makefile
 

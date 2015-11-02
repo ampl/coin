@@ -1,4 +1,4 @@
-/* $Id: exprSum.cpp 490 2011-01-14 16:07:12Z pbelotti $
+/* $Id: exprSum.cpp 1147 2015-05-04 14:01:51Z stefan $
  *
  * Name:    exprSum.cpp
  * Author:  Pietro Belotti
@@ -83,7 +83,7 @@ expression *exprSum::simplify () {
   else return NULL;
   */
 
-  if (found_one && shrink_arglist (total, 0)) {
+  if (found_one && shrink_arglist (total, 0.)) {
     expression *ret = arglist_ [0];
     arglist_ [0] = NULL;
     return ret;

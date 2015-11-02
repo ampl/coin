@@ -1,4 +1,4 @@
-/* $Id: nl2e.cpp 864 2012-06-20 15:28:57Z pbelotti $
+/* $Id: nl2e.cpp 1159 2015-05-10 14:06:36Z pbelotti $
  *
  * Name:    nl2e.cpp
  * Author:  Pietro Belotti
@@ -73,11 +73,8 @@ expression *CouenneProblem::nl2e (expr *e, const ASL *asl) {
        new exprSum (new exprExp (nl2e (e -> L.e, asl)),
 		    new exprExp (new exprOpp (nl2e (e->L.e, asl)))));
 
-  case OP_tan: {
-    expression *arg;
-    arg = nl2e (e -> L.e, asl);
-    return new exprDiv (new exprSin (arg), new exprCos (new exprClone (arg)));
-  }
+  case OP_tan:
+    return new exprDiv (new exprSin (nl2e (e -> L.e, asl)), new exprCos (new exprClone (nl2e (e -> L.e, asl))));
   case OP_sqrt:    return new exprPow (nl2e (e -> L.e, asl), new exprConst (0.5));
   case OP_sinh:    return new exprMul (new exprConst (0.5),
 				       new exprSub (new exprExp (nl2e (e -> L.e, asl)),

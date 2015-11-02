@@ -1,4 +1,4 @@
-/* $Id: CouenneTNLP.cpp 901 2012-08-23 14:07:44Z pbelotti $
+/* $Id: CouenneTNLP.cpp 1147 2015-05-04 14:01:51Z stefan $
  *
  * Name:    CouenneTNLP.cpp
  * Authors: Pietro Belotti
@@ -598,14 +598,13 @@ void CouenneTNLP::setObjective (expression *newObj) {
 
   for (std::set <int>::iterator i = objDep.begin (); i != objDep. end (); ++i) {
 
-    expression
-      *gradcomp = newObj -> differentiate (*i),
-      *gsimp    = gradcomp -> simplify ();
+    expression *gradcomp = Simplified (newObj -> differentiate (*i));
+    //*gsimp    = gradcomp -> simplify ();
 
-    if (gsimp) {
-      delete gradcomp;
-      gradcomp = gsimp;
-    }
+    // if (gsimp) {
+    //   delete gradcomp;
+    //   gradcomp = gsimp;
+    // }
 
     gradcomp -> realign (problem_);
     gradient_ . push_back (std::pair <int, expression *> (*i, gradcomp));

@@ -1,4 +1,4 @@
-/* $Id: exprUnary.cpp 837 2012-02-12 21:11:47Z pbelotti $
+/* $Id: exprUnary.cpp 1157 2015-05-05 21:24:02Z stefan $
  *
  * Name:    exprUnary.cpp
  * Author:  Pietro Belotti
@@ -52,6 +52,7 @@ exprAux *exprUnary::standardize (CouenneProblem *p, bool addAux) {
   exprAux *subst;
 
   if ((subst = argument_ -> standardize (p))) {
+
     if ((subst -> Type () == AUX) ||
 	(subst -> Type () == VAR)) 
       argument_ = new exprClone (subst);

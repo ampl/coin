@@ -1,4 +1,4 @@
-/* $Id: CouenneExpression.hpp 490 2011-01-14 16:07:12Z pbelotti $
+/* $Id: CouenneExpression.hpp 1147 2015-05-04 14:01:51Z stefan $
  *
  * Name:    expression.hpp
  * Author:  Pietro Belotti
@@ -316,6 +316,18 @@ inline expression *getOriginal (expression *e) {
 
   if (e -> isaCopy ()) return getOriginal (e -> Copy ());
   else return e;
+}
+
+/// Macro to return already simplified expression without having to do
+/// the if part every time simplify () is called
+inline expression *Simplified (expression *complicated) {
+
+  expression *simpler = complicated -> simplify ();
+
+  if (simpler) {
+    delete complicated;
+    return simpler;
+  } else return complicated;
 }
 
 }

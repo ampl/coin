@@ -1,8 +1,8 @@
-/* $Id: CouenneExprMin.hpp 792 2012-01-24 17:24:15Z pbelotti $
+/* $Id: CouenneExprMin.hpp 1147 2015-05-04 14:01:51Z stefan $
  *
  * Name:    exprMin.hpp
  * Author:  Pietro Belotti
- * Purpose: definition of $\f(x_{\argmin_{i\in I} y_i})$ 
+ * Purpose: definition of $\f{\textrm{argmin}_{i\in I} y_i}$
  *
  * (C) Carnegie-Mellon University, 2006-09.
  * This file is licensed under the Eclipse Public License (EPL)

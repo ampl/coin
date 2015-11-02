@@ -1,4 +1,4 @@
-/* $Id: exprOp.cpp 837 2012-02-12 21:11:47Z pbelotti $
+/* $Id: exprOp.cpp 1147 2015-05-04 14:01:51Z stefan $
  *
  * Name:    exprOp.cpp
  * Author:  Pietro Belotti
@@ -143,12 +143,13 @@ exprAux *exprOp::standardize (CouenneProblem *p, bool addAux) {
 
   exprVar *subst;
 
-  for (int i = nargs_; i--;)
+  for (int i = 0; i < nargs_; ++i)
     if ((subst = arglist_ [i] -> standardize (p))) {
+
       if ((subst -> Type () == VAR) ||
 	  (subst -> Type () == AUX))
 	arglist_ [i]    = new exprClone (subst);
-      else arglist_ [i] = subst;
+      else arglist_ [i] = subst; // possibly a constant, should be nothing else
     }
   return NULL;
 }

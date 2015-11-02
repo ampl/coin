@@ -1,4 +1,4 @@
-// $Id: BonCouenneSetup.cpp 1121 2015-03-01 15:12:50Z pbelotti $
+// $Id: BonCouenneSetup.cpp 1177 2015-06-02 22:46:03Z pbelotti $
 //
 // (C) Copyright International Business Machines Corporation 2007
 // All Rights Reserved.
@@ -184,6 +184,8 @@ bool CouenneSetup::InitializeCouenne (char ** argv,
   addJournalist ("nlpheur_print_level",         J_NLPHEURISTIC);
   addJournalist ("disjcuts_print_level",        J_DISJCUTS);
   addJournalist ("reformulate_print_level",     J_REFORMULATE);
+
+  options_ -> SetIntegerValue ("print_level", 0);
 
   /* Initialize Couenne cut generator.*/
   //int ivalue, num_points;

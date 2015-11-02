@@ -1,4 +1,4 @@
-/* $Id: conv-exprPow-getBounds.cpp 940 2013-01-13 19:49:02Z pbelotti $ 
+/* $Id: conv-exprPow-getBounds.cpp 1184 2015-08-17 12:55:35Z stefan $ 
  *
  * Name:    conv-exprPow-getBounds.cpp
  * Author:  Pietro Belotti
@@ -64,7 +64,7 @@ void exprPow::getBounds (expression *&lb, expression *&ub) {
       ((fabs (expon) > COUENNE_EPS) &&
        (fabs (1/expon - (rndexp = COUENNE_round (1/expon))) < COUENNE_EPS));
 
-    if ((isInt || isInvInt) && (rndexp % 2 || issignpower_) && (rndexp > 0)) {
+    if (issignpower_ || ((isInt || isInvInt) && (rndexp % 2) && (rndexp > 0))) {
 
       // the exponent is integer (or inverse integer), odd or signpower and
       // positive, hence the function is monotone non decreasing

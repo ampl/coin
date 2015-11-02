@@ -2,7 +2,7 @@
 # All Rights Reserved.
 # This file is distributed under the Eclipse Public License.
 
-## $Id: Makefile.am 1113 2015-02-07 19:56:27Z tkr $
+## $Id: Makefile.am 1140 2015-03-21 04:59:57Z tkr $
 
 # Author:  Andreas Waechter           IBM    2006-04-13
 
@@ -60,7 +60,15 @@ test: all
 
 unitTest: test
 
-clean-local:
+# Doxygen documentation
+
+doxydoc:
+	doxygen doxydoc/doxygen.conf
+
+clean-doxydoc:
+	( cd doxydoc ; rm -rf html *.log *.tag )
+
+clean-local: clean-doxydoc
 	if test -r test/Makefile; then cd test; $(MAKE) clean; fi
 
 distclean-local:
@@ -70,7 +78,7 @@ install-exec-local: install-doc
 
 uninstall-local: uninstall-doc
 
-.PHONY: test unitTest
+.PHONY: test unitTest doxydoc
 
 ########################################################################
 #                  Installation of the addlibs file                    #
