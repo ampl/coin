@@ -2,7 +2,7 @@
 # All Rights Reserved.
 # This file is distributed under the Eclipse Public License.
 
-## $Id: configure.ac 2120 2015-02-13 07:20:26Z stefan $
+## $Id: configure.ac 2146 2015-09-22 21:49:41Z tkr $
 
 # Author:  Andreas Waechter            IBM    2006-04-13
 
@@ -12,7 +12,7 @@
 
 AC_PREREQ(2.59)
 
-AC_INIT([Bonmin],[1.8.1],[bonmin@list.coin-or.org])
+AC_INIT([Bonmin],[1.8.4],[bonmin@list.coin-or.org])
 
 AC_COPYRIGHT([
 Copyright 2006, 2008 International Business Machines and others.
@@ -41,7 +41,7 @@ AC_CANONICAL_BUILD
 # the source root directory contains definition of where to find those
 # externals.  The following macro ensures that those externals are
 # retrieved by svn if they are not there yet.
-AC_COIN_PROJECTDIR_INIT(Bonmin,12:1:8)
+AC_COIN_PROJECTDIR_INIT(Bonmin,12:4:8)
 
 # Check if user wants to produce debugging code
 AC_COIN_DEBUG_COMPILE(Bonmin)
@@ -161,6 +161,12 @@ AC_CONFIG_LINKS([test/MyBonmin.cpp:examples/CppExample/MyBonmin.cpp
                  test/MyTMINLP.cpp:examples/CppExample/MyTMINLP.cpp
                  test/MyTMINLP.hpp:examples/CppExample/MyTMINLP.hpp])
 
+#############################################################################
+#                  Check for doxygen                                        #
+#############################################################################
+
+AC_COIN_DOXYGEN(CoinUtils Osi Clp Cgl Cbc Ipopt)
+
 ##############################################################################
 #                   Finishing up by writing all the output                   #
 ##############################################################################
@@ -183,7 +189,8 @@ AC_CONFIG_FILES([Makefile
                  experimental/RobotBonmin/Makefile
                  test/Makefile
                  examples/CppExample/Makefile
-                 bonmin.pc bonmin-uninstalled.pc])
+                 bonmin.pc bonmin-uninstalled.pc
+		 doxydoc/doxygen.conf])
 
 if test $coin_has_asl = yes ; then
   AC_CONFIG_FILES([bonminamplinterface.pc:src/CbcBonmin/bonminamplinterface.pc.in
