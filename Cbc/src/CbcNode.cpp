@@ -1,4 +1,4 @@
-/* $Id: CbcNode.cpp 2165 2015-03-17 08:58:35Z forrest $ */
+/* $Id: CbcNode.cpp 2187 2015-05-05 13:04:34Z stefan $ */
 // Copyright (C) 2002, International Business Machines
 // Corporation and others.  All Rights Reserved.
 // This code is licensed under the terms of the Eclipse Public License (EPL).
@@ -2340,7 +2340,12 @@ int CbcNode::chooseDynamicBranch (CbcModel *model, CbcNode *lastNode,
                                 rowActivity[iRow] = COIN_DBL_MAX;
                             }
                         } else if (columnLower[i] < columnUpper[i]) {
-			    if (fabs(solution[i] - saveSolution[i]) > 
+			    double solutionValue = saveSolution[i];
+			    if (fabs(solution[i] - solutionValue) > 
+				integerTolerance && 
+				(solutionValue - columnLower[i]) > 
+				integerTolerance &&
+				(columnUpper[i] - solutionValue) > 
 				integerTolerance) {
                                 nFreeNon++;
                                 if (fabs(solution[i] - saveSolution[i]) > mostAway) {
@@ -2712,7 +2717,7 @@ int CbcNode::chooseDynamicBranch (CbcModel *model, CbcNode *lastNode,
                 if (numberStrongIterations > numberIterations + CoinMin(100, 10*numberRows) && depth_ >= 4 && numberNodes > 100) {
                     if (20*numberInfeasible + 4*numberFixed < numberNodes) {
                         // Say never do
-		        if (numberBeforeTrust == 5)
+		        if (numberBeforeTrust == 10)
 			  skipAll = -1;
                     }
                 }

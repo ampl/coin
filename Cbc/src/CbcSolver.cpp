@@ -1,4 +1,4 @@
-/* $Id: CbcSolver.cpp 2173 2015-03-23 09:38:22Z forrest $ */
+/* $Id: CbcSolver.cpp 2209 2015-07-28 13:26:48Z forrest $ */
 // Copyright (C) 2007, International Business Machines
 // Corporation and others.  All Rights Reserved.
 // This code is licensed under the terms of the Eclipse Public License (EPL).
@@ -5435,15 +5435,16 @@ int CbcMain1 (int argc, const char *argv[],
                                 const int * originalColumns = preProcess ? process.originalColumns() : NULL;
                                 //if (model.getMIPStart().size())
 				// mipStart = model.getMIPStart();
-				if (mipStart.size() && !mipStartBefore.size())
+				if (mipStart.size() && !mipStartBefore.size() && babModel_->getNumCols())
                                 {
                                    std::vector< std::string > colNames;
                                    if (preProcess)
                                    {
 				     std::vector< std::pair< std::string, double > > mipStart2;
+				     int numberOriginalColumns = model_.solver()->getNumCols();
 				     for ( int i=0 ; (i<babModel_->solver()->getNumCols()) ; ++i ) {
 				       int iColumn = babModel_->originalColumns()[i];
-				       if (iColumn>=0) {
+				       if (iColumn>=0 && iColumn < numberOriginalColumns) {
                                          colNames.push_back( model_.solver()->getColName( iColumn ) );
 					 babModel_->solver()->setColName(i,model_.solver()->getColName(iColumn));
 					 mipStart2.push_back(mipStart[iColumn]);
@@ -7072,7 +7073,7 @@ int CbcMain1 (int argc, const char *argv[],
                             } else {
                                 if (babModel_->isProvenOptimal()) {
                                     integerStatus = 0;
-                                } else {
+                                } else if (!babModel_->bestSolution()) {
                                     // infeasible
                                     integerStatus = 6;
 				    delete saveSolver;
@@ -7235,7 +7236,13 @@ int CbcMain1 (int argc, const char *argv[],
 					if (osiclp)
 					  osiclp->getModelPtr()->checkUnscaledSolution();
                                     }
-                                    assert (saveSolver->isProvenOptimal());
+
+                                    if (!saveSolver->isProvenOptimal()) {
+				      generalMessageHandler->message(CLP_GENERAL, generalMessages)
+					<< "Accuracy problem on post-processing - maybe try without pre-processing"
+					<< CoinMessageEol;
+				    }
+                                    //assert (saveSolver->isProvenOptimal());
 #ifndef CBC_OTHER_SOLVER
                                     // and original solver
                                     originalSolver->setDblParam(OsiDualObjectiveLimit, COIN_DBL_MAX);
@@ -8455,23 +8462,21 @@ int CbcMain1 (int argc, const char *argv[],
                             } else {
                                 fileName = directory + field;
                             }
-			    sprintf(generalPrint,"will open mipstart file %s.",fileName.c_str() );
-			    generalMessageHandler->message(CLP_GENERAL, generalMessages)
-			      << generalPrint
-			      << CoinMessageEol;
+                            sprintf(generalPrint,"opening mipstart file %s.",fileName.c_str() );
+                            generalMessageHandler->message(CLP_GENERAL, generalMessages) << generalPrint << CoinMessageEol;
                             double msObj;
                             readMIPStart( &model_, fileName.c_str(), mipStart, msObj );
-			    // copy to before preprocess if has .before.
-			    if (strstr(fileName.c_str(),".before.")) {
-			      mipStartBefore = mipStart;
-			      sprintf(generalPrint,"file %s will be used before preprocessing.",fileName.c_str() );
-			      generalMessageHandler->message(CLP_GENERAL, generalMessages)
-				<< generalPrint
-				<< CoinMessageEol;
-			    }
+                            // copy to before preprocess if has .before.
+                            if (strstr(fileName.c_str(),".before.")) {
+                                mipStartBefore = mipStart;
+                                sprintf(generalPrint,"file %s will be used before preprocessing.",fileName.c_str() );
+                                generalMessageHandler->message(CLP_GENERAL, generalMessages)
+                                    << generalPrint
+                                    << CoinMessageEol;
+                            }
                         } else {
-			  sprintf(generalPrint, "** Current model not valid");
-			  printGeneralMessage(model_,generalPrint);
+                            sprintf(generalPrint, "** Current model not valid");
+                            printGeneralMessage(model_,generalPrint);
                         }
                         break;
                     case CLP_PARAM_ACTION_DEBUG:

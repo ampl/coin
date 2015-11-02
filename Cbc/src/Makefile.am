@@ -2,7 +2,7 @@
 # All Rights Reserved.
 # This file is distributed under the Eclipse Public License.
 
-## $Id: Makefile.am 2149 2015-03-01 16:51:28Z tkr $
+## $Id: Makefile.am 2206 2015-07-07 20:44:40Z stefan $
 
 # Author:  Andreas Waechter           IBM    2006-04-13
 
@@ -118,6 +118,10 @@ libCbcSolver_la_LDFLAGS = $(LT_LDFLAGS)
 
 bin_PROGRAMS =
 AM_CPPFLAGS = $(COINDEPEND_CFLAGS) $(CLP_CFLAGS) $(CPX_CFLAGS) $(ASL_CFLAGS)
+
+if COIN_HAS_NTY
+AM_CPPFLAGS += -I$(NTYINCDIR)
+endif
 
 ########################################################################
 #                            cbc program                               #

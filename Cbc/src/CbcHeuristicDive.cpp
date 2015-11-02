@@ -1,4 +1,4 @@
-/* $Id: CbcHeuristicDive.cpp 2127 2015-02-02 11:31:05Z forrest $ */
+/* $Id: CbcHeuristicDive.cpp 2187 2015-05-05 13:04:34Z stefan $ */
 // Copyright (C) 2008, International Business Machines
 // Corporation and others.  All Rights Reserved.
 // This code is licensed under the terms of the Eclipse Public License (EPL).
@@ -73,7 +73,6 @@ CbcHeuristicDive::CbcHeuristicDive(CbcModel & model)
     whereFrom_ = 255 - 2 - 16 + 256;
     decayFactor_ = 1.0;
     smallObjective_ = 1.0e-10;
-    setPriorities();
 }
 
 // Destructor
@@ -233,6 +232,7 @@ CbcHeuristicDive::setPriorities()
   smallObjective_ = CoinMax(1.0e-10,1.0e-5*(smallObjective_/numberIntegers));
   if (gotPriorities || priority1>priority2) {
     priority_ = new PriorityType [numberIntegers];
+    int nInteger=0;
     for (int i = 0; i < numberObjects; i++) {
       OsiObject * object = model_->modifiableObject(i);
       const CbcSimpleInteger * thisOne = dynamic_cast <const CbcSimpleInteger *> (object);
@@ -240,15 +240,17 @@ CbcHeuristicDive::setPriorities()
 	continue; // Not integer
       int level=thisOne->priority()-priority2;
       assert (level<(1<<29));
-      priority_[i].priority=static_cast<unsigned int>(level);
+      assert (nInteger<numberIntegers);
+      priority_[nInteger].priority=static_cast<unsigned int>(level);
       int direction=0;
       if (thisOne->preferredWay()<0) 
 	direction=1;
       else if (thisOne->preferredWay()>0) 
 	direction=1|1;
 	// at present don't try other way is not used
-      priority_[i].direction=static_cast<unsigned char>(direction);
+      priority_[nInteger++].direction=static_cast<unsigned char>(direction);
     }
+    assert (nInteger==numberIntegers);
   }
 }
 

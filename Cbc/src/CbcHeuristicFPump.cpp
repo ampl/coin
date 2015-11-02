@@ -1,4 +1,4 @@
-/* $Id: CbcHeuristicFPump.cpp 2094 2014-11-18 11:15:36Z forrest $ */
+/* $Id: CbcHeuristicFPump.cpp 2186 2015-05-05 12:53:14Z stefan $ */
 // Copyright (C) 2004, International Business Machines
 // Corporation and others.  All Rights Reserved.
 // This code is licensed under the terms of the Eclipse Public License (EPL).
@@ -2138,7 +2138,7 @@ CbcHeuristicFPump::solution(double & solutionValue,
                         if (newSolver->isProvenOptimal()) {
                             double value = newSolver->getObjValue() * newSolver->getObjSense();
                             if (value < newSolutionValue) {
-                                //newSolver->writeMps("query","mps");
+			      //newSolver->writeMpsNative("query.mps", NULL, NULL, 2);
 #ifdef JJF_ZERO
                                 {
                                     double saveOffset;
@@ -2208,6 +2208,7 @@ CbcHeuristicFPump::solution(double & solutionValue,
                                 model_->messageHandler()->message(CBC_FPUMP1, model_->messages())
                                 << pumpPrint
                                 << CoinMessageEol;
+			        //newSolver->writeMpsNative("query2.mps", NULL, NULL, 2);
                                 newSolutionValue = value;
                                 memcpy(betterSolution, newSolver->getColSolution(), numberColumns*sizeof(double));
                                 gotSolution = true;

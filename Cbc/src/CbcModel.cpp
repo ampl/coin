@@ -1,4 +1,4 @@
-/* $Id: CbcModel.cpp 2165 2015-03-17 08:58:35Z forrest $ */
+/* $Id: CbcModel.cpp 2199 2015-06-04 17:10:17Z forrest $ */
 // Copyright (C) 2002, International Business Machines
 // Corporation and others.  All Rights Reserved.
 // This code is licensed under the terms of the Eclipse Public License (EPL).
@@ -1640,6 +1640,7 @@ void CbcModel::branchAndBound(int doStatistics)
     dblParam_[CbcSumChange] = 0.0;
     dblParam_[CbcLargestChange] = 0.0;
     intParam_[CbcNumberBranches] = 0;
+    double lastBestPossibleObjective=-COIN_DBL_MAX;
     // when to check for restart 
     int nextCheckRestart=50;
     // Force minimization !!!!
@@ -2448,7 +2449,8 @@ void CbcModel::branchAndBound(int doStatistics)
       the active subproblem. whichGenerator will be used to record the generator
       that produced a given cut.
     */
-    maximumWhich_ = 1000 ;
+#define INITIAL_MAXIMUM_WHICH 1000
+    maximumWhich_ = INITIAL_MAXIMUM_WHICH ;
     delete [] whichGenerator_;
     whichGenerator_ = new int[maximumWhich_] ;
     memset(whichGenerator_, 0, maximumWhich_*sizeof(int));
@@ -3611,6 +3613,7 @@ void CbcModel::branchAndBound(int doStatistics)
     if (feasible) {
       // mark all cuts as globally valid
       int numberCuts=cuts.sizeRowCuts();
+      resizeWhichGenerator(0,numberCuts);
       for (int i=0;i<numberCuts;i++) {
 	cuts.rowCutPtr(i)->setGloballyValid();
 	whichGenerator_[i]=20000+(whichGenerator_[i]%10000);
@@ -4650,8 +4653,13 @@ void CbcModel::branchAndBound(int doStatistics)
             }
 #endif
             if (!intParam_[CbcPrinting]) {
+	        // Parallel may not have any nodes
+  	        if (!nNodes) 
+		  bestPossibleObjective_ = lastBestPossibleObjective;
+		else
+		  lastBestPossibleObjective = bestPossibleObjective_;
                 messageHandler()->message(CBC_STATUS, messages())
-                << numberNodes_ << nNodes << bestObjective_ << bestPossibleObjective_
+		  << numberNodes_ << CoinMax(nNodes,1) << bestObjective_ << bestPossibleObjective_
                 << getCurrentSeconds()
                 << CoinMessageEol ;
             } else if (intParam_[CbcPrinting] == 1) {
@@ -5504,7 +5512,7 @@ CbcModel::CbcModel()
         maximumCutPasses_(10),
         preferredWay_(0),
         currentPassNumber_(0),
-        maximumWhich_(1000),
+        maximumWhich_(INITIAL_MAXIMUM_WHICH),
         maximumRows_(0),
 	randomSeed_(-1),
 	multipleRootTries_(0),
@@ -5674,7 +5682,7 @@ CbcModel::CbcModel(const OsiSolverInterface &rhs)
         maximumCutPasses_(10),
         preferredWay_(0),
         currentPassNumber_(0),
-        maximumWhich_(1000),
+        maximumWhich_(INITIAL_MAXIMUM_WHICH),
         maximumRows_(0),
 	randomSeed_(-1),
 	multipleRootTries_(0),
@@ -7087,7 +7095,11 @@ CbcModel::addHeuristic(CbcHeuristic * generator, const char *name,
     heuristic_[where] = generator->clone();
     if (name)
         heuristic_[where]->setHeuristicName(name) ;
+#ifndef SAME_HEURISTIC_SEED
     heuristic_[where]->setSeed(987654321 + where);
+#else
+    heuristic_[where]->setSeed(987654321);
+#endif
     numberHeuristics_++ ;
 }
 
@@ -7133,6 +7145,7 @@ bool CbcModel::addCuts1 (CbcNode * node, CoinWarmStartBasis *&lastws)
             redoWalkBack();
         }
     }
+    resizeWhichGenerator(currentNumberCuts_,currentNumberCuts);
     currentNumberCuts_ = currentNumberCuts;
     if (currentNumberCuts > maximumNumberCuts_) {
         maximumNumberCuts_ = currentNumberCuts;
@@ -7308,6 +7321,10 @@ int CbcModel::addCuts (CbcNode *node, CoinWarmStartBasis *&lastws)
             addCuts = new const OsiRowCut* [currentNumberCuts];
             cutsToDrop = new int[currentNumberCuts] ;
             assert (currentNumberCuts + numberRowsAtContinuous_ <= lastws->getNumArtificial());
+            assert (currentNumberCuts <= maximumWhich_); // we will read from whichGenerator_[0..currentNumberCuts-1] below, so should have all these entries
+            // the above assert fails in certain situations, which indicates a bug in the code below
+            // as a workaround, resize whichGenerator_ to make sure we can read all entries without an invalid read from valgrind (and subsequent crash somewhere, seems so)
+            resizeWhichGenerator(maximumWhich_, currentNumberCuts);
             for (i = 0; i < currentNumberCuts; i++) {
                 CoinWarmStartBasis::Status status =
                     lastws->getArtifStatus(i + numberRowsAtContinuous_);
@@ -7319,6 +7336,7 @@ int CbcModel::addCuts (CbcNode *node, CoinWarmStartBasis *&lastws)
                     printf("Using cut %d %x as row %d\n", i, addedCuts_[i],
                            numberRowsAtContinuous_ + numberToAdd);
 #	  endif
+		    assert (i<maximumWhich_);
 		    whichGenerator_[numberToAdd] = whichGenerator_[i];
                     addCuts[numberToAdd++] = addedCuts_[i];
 #if 1
@@ -7632,7 +7650,13 @@ void
 CbcModel::resizeWhichGenerator(int numberNow, int numberAfter)
 {
     if (numberAfter > maximumWhich_) {
-        maximumWhich_ = CoinMax(maximumWhich_ * 2 + 100, numberAfter) ;
+#define MAXIMUM_WHICH_INCREMENT 100
+#define MAXIMUM_WHICH_MULTIPLIER 2
+      //printf("maximumWhich from %d to %d (%d needed)\n",maximumWhich_,
+      //     CoinMax(maximumWhich_ * MAXIMUM_WHICH_MULTIPLIER + MAXIMUM_WHICH_INCREMENT, numberAfter),
+      //     numberAfter);
+        maximumWhich_ = CoinMax(maximumWhich_ * MAXIMUM_WHICH_MULTIPLIER + MAXIMUM_WHICH_INCREMENT, numberAfter) ;
+        //maximumWhich_ = numberAfter ;
         int * temp = new int[2*maximumWhich_] ;
         memcpy(temp, whichGenerator_, numberNow*sizeof(int)) ;
         delete [] whichGenerator_ ;
@@ -7847,6 +7871,13 @@ CbcModel::solveWithCuts (OsiCuts &cuts, int numberTries, CbcNode *node)
     if (problemFeasibility_->feasible(this, 0) < 0) {
         feasible = false; // pretend infeasible
     }
+    //#define CHECK_KNOWN_SOLUTION
+#ifdef CHECK_KNOWN_SOLUTION
+    if (onOptimalPath && (solver_->isDualObjectiveLimitReached()||
+			  !feasible)) {
+      printf("help 1\n");
+    }
+#endif
     /*
       NEW_UPDATE_OBJECT is defined to 0 when unthreaded (CBC_THREAD undefined), 2
       when threaded. No sign of 1 as of 071220.
@@ -8535,6 +8566,8 @@ CbcModel::solveWithCuts (OsiCuts &cuts, int numberTries, CbcNode *node)
 #endif
         int numberToAdd = theseCuts.sizeRowCuts() ;
         numberNewCuts_ = lastNumberCuts + numberToAdd ;
+	// resize whichGenerator
+	resizeWhichGenerator(lastNumberCuts,numberNewCuts_);
         /*
           Now actually add the row cuts and reoptimise.
 
@@ -8559,8 +8592,7 @@ CbcModel::solveWithCuts (OsiCuts &cuts, int numberTries, CbcNode *node)
         if (numberRowCuts > 0 || numberColumnCuts > 0) {
             if (numberToAdd > 0) {
                 int i ;
-		int * whichGenerator = whichGenerator_ -
-		  numberRowsAtContinuous_+solver_->getNumRows();
+		int * whichGenerator = whichGenerator_ + lastNumberCuts;
                 // Faster to add all at once
                 addCuts = new const OsiRowCut * [numberToAdd] ;
                 for (i = 0 ; i < numberToAdd ; i++) {
@@ -9219,6 +9251,12 @@ CbcModel::solveWithCuts (OsiCuts &cuts, int numberTries, CbcNode *node)
                 count[iGenerator]++ ;
         }
 	// add in any active cuts if at root node (for multiple solvers)
+#ifdef CHECK_KNOWN_SOLUTION
+    if (onOptimalPath && (solver_->isDualObjectiveLimitReached()||
+			  !feasible)) {
+      printf("help 2\n");
+    }
+#endif
 	if (!numberNodes_) {
 	  for (i = 0; i < numberCutGenerators_; i++) 
 	    count[i] += generator_[i]->numberCutsActive();
@@ -9620,6 +9658,12 @@ CbcModel::solveWithCuts (OsiCuts &cuts, int numberTries, CbcNode *node)
         delete basis;
     }
 #endif
+#ifdef CHECK_KNOWN_SOLUTION
+    if (onOptimalPath && (solver_->isDualObjectiveLimitReached()||
+			  !feasible)) {
+      printf("help\n");
+    }
+#endif
 #ifdef CBC_DEBUG
     if (onOptimalPath && !solver_->isDualObjectiveLimitReached())
         assert(feasible) ;
@@ -9978,6 +10022,14 @@ CbcModel::takeOffCuts (OsiCuts &newCuts,
     int *newCutIndices = new int[numberNewCuts_] ;
     const CoinWarmStartBasis* ws ;
     CoinWarmStartBasis::Status status ;
+    //#define COIN_HAS_CLP_KEEP_STATUS
+#ifdef COIN_HAS_CLP_KEEP_STATUS
+    int problemStatus=-1;
+    OsiClpSolverInterface * clpSolver
+      = dynamic_cast<OsiClpSolverInterface *> (solver_);
+    if (clpSolver)
+      problemStatus=clpSolver->getModelPtr()->status();
+#endif
     bool needPurge = true ;
     /*
       The outer loop allows repetition of purge in the event that reoptimisation
@@ -10131,6 +10183,11 @@ CbcModel::takeOffCuts (OsiCuts &newCuts,
         }
     }
     
+#ifdef COIN_HAS_CLP_KEEP_STATUS
+    // need to check further that only zero duals dropped
+    if (clpSolver) // status may have got to -1
+      clpSolver->getModelPtr()->setProblemStatus(problemStatus);
+#endif
     /*
       Clean up and return.
     */
@@ -13952,7 +14009,6 @@ CbcModel::makeGlobalCut(const OsiRowCut & cut)
 void
 CbcModel::makeGlobalCut(const OsiColCut * cut)
 {
-  abort(); // need to think about top of tree
   const double * lower;
   const double * upper;
   if (topOfTree_) {
@@ -14314,7 +14370,28 @@ CbcModel::resolve(OsiSolverInterface * solver)
                 clpSolver->setSpecialOptions(save2 | 2048);
             }
         }
+#ifdef CHECK_KNOWN_SOLUTION
+	bool onOptimalPath = false;
+	if ((specialOptions_&1) != 0) {
+	  const OsiRowCutDebugger *debugger = solver_->getRowCutDebugger() ;
+	  if (debugger) {
+	    onOptimalPath = true;
+	    printf("On optimal path before resolve\n") ;
+	  }
+	}
+#endif
         clpSolver->resolve();
+#ifdef CHECK_KNOWN_SOLUTION
+	if ((specialOptions_&1) != 0&&onOptimalPath) {
+	  const OsiRowCutDebugger *debugger = solver_->getRowCutDebugger() ;
+	  if (debugger) {
+	    printf("On optimal path after resolve\n") ;
+	  } else {
+	    solver_->writeMpsNative("badSolve.mps", NULL, NULL, 2);
+	    printf("NOT on optimal path after resolve\n") ;
+	  }
+	}
+#endif
         if (!numberNodes_) {
             double error = CoinMax(clpSimplex->largestDualError(),
                                    clpSimplex->largestPrimalError());
@@ -17853,7 +17930,7 @@ CbcModel::integerPresolveThisModel(OsiSolverInterface * originalSolver,
                 }
                 delete [] newSolution;
                 // Space for type of cuts
-                maximumWhich_ = 1000;
+                maximumWhich_ = INITIAL_MAXIMUM_WHICH;
                 delete [] whichGenerator_ ;
                 whichGenerator_ = new int[maximumWhich_];
                 // save number of rows
@@ -18426,7 +18503,7 @@ CbcModel::strengthenedModel()
       the active subproblem. whichGenerator will be used to record the generator
       that produced a given cut.
     */
-    maximumWhich_ = 1000 ;
+    maximumWhich_ = INITIAL_MAXIMUM_WHICH ;
     delete [] whichGenerator_ ;
     whichGenerator_ = new int[maximumWhich_] ;
     maximumNumberCuts_ = 0 ;
