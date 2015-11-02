@@ -1488,7 +1488,7 @@ CglGomoryUnitTest(
     double lpRelaxAfter=siP->getObjValue(); 
     std::cout<<"LP value with cuts: "<<lpRelaxAfter<<std::endl;
     //assert( eq(lpRelaxAfter, 2592.1908295194507) );
-    assert( lpRelaxAfter> 2550.0 );
+    assert( lpRelaxAfter> 2545.0 );
     assert( lpRelaxBefore < lpRelaxAfter );
     assert(lpRelaxAfter < 3089.1);
     

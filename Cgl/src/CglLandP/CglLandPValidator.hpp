@@ -4,7 +4,7 @@
 //           Carnegie Mellon University, Pittsburgh, PA 15213
 // Date:     11/22/05
 //
-// $Id: CglLandPValidator.hpp 1122 2013-04-06 20:39:53Z stefan $
+// $Id: CglLandPValidator.hpp 1302 2015-08-14 15:48:32Z stefan $
 //
 // This code is licensed under the terms of the Eclipse Public License (EPL).
 //---------------------------------------------------------------------------
@@ -93,11 +93,11 @@ public:
     }
     /** @} */
 
-    const std::string& failureString(RejectionsReasons code) const
+    const char* failureString(RejectionsReasons code) const
     {
         return rejections_[static_cast<int> (code)];
     }
-    const std::string& failureString(int code) const
+    const char* failureString(int code) const
     {
         return rejections_[ code];
     }
@@ -110,7 +110,6 @@ public:
         return numRejected_[ code];
     }
 private:
-    static void fillRejectionReasons();
     /** max percentage of given formulation fillIn should be accepted for cut fillin.*/
     double maxFillIn_;
     /** max ratio between smallest and biggest coefficient */
@@ -122,7 +121,7 @@ private:
     /** Scale of right-hand-side.*/
     double rhsScale_;
     /** Strings explaining reason for rejections */
-    static std::vector<std::string> rejections_;
+    static const char* rejections_[DummyEnd];
     /** Number of cut rejected for each of the reasons.*/
     std::vector<int> numRejected_;
 };

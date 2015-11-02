@@ -1,4 +1,4 @@
-// $Id: CglProbing.cpp 1268 2015-02-28 18:41:50Z forrest $
+// $Id: CglProbing.cpp 1294 2015-05-05 16:45:29Z forrest $
 // Copyright (C) 2002, International Business Machines
 // Corporation and others.  All Rights Reserved.
 // This code is licensed under the terms of the Eclipse Public License (EPL).
@@ -1866,7 +1866,7 @@ int CglProbing::gutsOfGenerateCuts(const OsiSolverInterface & si,
 	if (info->strengthenRow&&!info->pass&&(rowLower[i]<-1.0e20||rowUpper[i]>1.0e20)) {
 	  int nPlus=0;
 	  int nMinus=0;
-	  for (CoinBigIndex j=rowStart[i];j<rowStart[i+1];j++) {
+	  for (CoinBigIndex j=rowStart[i];j<rowStart[i]+rowLength[i];j++) {
 	    int jColumn=column[j];
 	    if (intVar[jColumn]&&colLower[jColumn]==0.0&&colUpper[jColumn]==1.0) {
 	      double value=elements[j];
@@ -1884,7 +1884,7 @@ int CglProbing::gutsOfGenerateCuts(const OsiSolverInterface & si,
 	  double effectiveness=0.0;
 	  if (nPlus==1&&rowUpper[i]>0.0&&rowUpper[i]<1.0e10) {
 	    // can make element smaller
-	    for (CoinBigIndex j=rowStart[i];j<rowStart[i+1];j++) {
+	    for (CoinBigIndex j=rowStart[i];j<rowStart[i]+rowLength[i];j++) {
 	      double value=elements[j];
 	      if (value>0.0) {
 		elements[j] -= rowUpper[i];
@@ -1896,7 +1896,7 @@ int CglProbing::gutsOfGenerateCuts(const OsiSolverInterface & si,
 	    rowUpper[i]=0.0;
 	  } else if (nMinus==1&&rowLower[i]<0.0&&rowLower[i]>-1.0e10) {
 	    // can make element smaller in magnitude
-	    for (CoinBigIndex j=rowStart[i];j<rowStart[i+1];j++) {
+	    for (CoinBigIndex j=rowStart[i];j<rowStart[i]+rowLength[i];j++) {
 	      double value=elements[j];
 	      if (value<0.0) {
 		elements[j] -= rowLower[i];
@@ -2920,6 +2920,29 @@ int CglProbing::gutsOfGenerateCuts(const OsiSolverInterface & si,
       cs.rowCutPtr(i)->setGloballyValid();
   }
   return ninfeas;
+}
+// Choose tighter bounds
+static void cleanBounds(int way,int & nFix,int * index,double * element)
+{
+  CoinSort_2(index,index+nFix,element);
+  int last=-1;
+  int n=0;
+  for (int i=0;i<nFix;i++) {
+    if (index[i]>last) {
+      index[n]=index[i];
+      element[n++]=element[i];
+      last=index[i];
+    } else if (way>0) {
+      // tighter ub
+      if (element[n-1]>element[i]) 
+	element[n-1]=element[i];
+    } else {
+      // tighter lb
+      if (element[n-1]<element[i]) 
+	element[n-1]=element[i];
+    }
+  }
+  nFix=n;
 }
 // Does probing and adding cuts
 int CglProbing::probe( const OsiSolverInterface & si, 
@@ -4622,6 +4645,7 @@ int CglProbing::probe( const OsiSolverInterface & si,
           }
           if (nFix) {
             nTot=nFix;
+	    cleanBounds(1,nFix,index,element);
             cc.setUbs(nFix,index,element);
             nFix=0;
           }
@@ -4641,6 +4665,7 @@ int CglProbing::probe( const OsiSolverInterface & si,
           }
           if (nFix) {
             nTot+=nFix;
+	    cleanBounds(-1,nFix,index,element);
             cc.setLbs(nFix,index,element);
           }
           // could tighten continuous as well
@@ -5206,6 +5231,7 @@ int CglProbing::probe( const OsiSolverInterface & si,
               }
               if (nFix) {
                 nTot=nFix;
+		cleanBounds(-1,nFix,index,element);
                 cc.setLbs(nFix,index,element);
                 nFix=0;
               }
@@ -5266,6 +5292,7 @@ int CglProbing::probe( const OsiSolverInterface & si,
               }
               if (nFix) {
                 nTot+=nFix;
+		cleanBounds(1,nFix,index,element);
                 cc.setUbs(nFix,index,element);
               }
               // could tighten continuous as well
@@ -6679,6 +6706,7 @@ int CglProbing::probeCliques( const OsiSolverInterface & si,
 	      }
 	      if (nFix) {
 		nTot=nFix;
+		cleanBounds(1,nFix,index,element);
 		cc.setUbs(nFix,index,element);
 		nFix=0;
 	      }
@@ -6698,6 +6726,7 @@ int CglProbing::probeCliques( const OsiSolverInterface & si,
 	      }
 	      if (nFix) {
 		nTot+=nFix;
+		cleanBounds(-1,nFix,index,element);
 		cc.setLbs(nFix,index,element);
 	      }
 	      // could tighten continuous as well
@@ -7070,6 +7099,7 @@ int CglProbing::probeCliques( const OsiSolverInterface & si,
 		  }
 		  if (nFix) {
 		    nTot=nFix;
+		    cleanBounds(-1,nFix,index,element);
 		    cc.setLbs(nFix,index,element);
 		    nFix=0;
 		  }
@@ -7092,6 +7122,7 @@ int CglProbing::probeCliques( const OsiSolverInterface & si,
 		  }
 		  if (nFix) {
 		    nTot+=nFix;
+		    cleanBounds(1,nFix,index,element);
 		    cc.setUbs(nFix,index,element);
 		  }
 		  // could tighten continuous as well
@@ -8214,6 +8245,7 @@ CglProbing::probeSlacks( const OsiSolverInterface & si,
             }
             if (nFix) {
               nTot=nFix;
+	      cleanBounds(1,nFix,index,element);
               cc.setUbs(nFix,index,element);
               nFix=0;
             }
@@ -8233,6 +8265,7 @@ CglProbing::probeSlacks( const OsiSolverInterface & si,
             }
             if (nFix) {
               nTot+=nFix;
+	      cleanBounds(-1,nFix,index,element);
               cc.setLbs(nFix,index,element);
             }
             // could tighten continuous as well
@@ -8478,6 +8511,7 @@ CglProbing::probeSlacks( const OsiSolverInterface & si,
                 }
                 if (nFix) {
                   nTot=nFix;
+		  cleanBounds(-1,nFix,index,element);
                   cc.setLbs(nFix,index,element);
                   nFix=0;
                 }
@@ -8500,6 +8534,7 @@ CglProbing::probeSlacks( const OsiSolverInterface & si,
                 }
                 if (nFix) {
                   nTot+=nFix;
+		  cleanBounds(1,nFix,index,element);
                   cc.setUbs(nFix,index,element);
                 }
                 // could tighten continuous as well

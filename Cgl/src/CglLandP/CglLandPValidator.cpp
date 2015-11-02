@@ -4,7 +4,7 @@
 //           Carnegie Mellon University, Pittsburgh, PA 15213
 // Date:     11/22/05
 //
-// $Id: CglLandPValidator.cpp 1122 2013-04-06 20:39:53Z stefan $
+// $Id: CglLandPValidator.cpp 1302 2015-08-14 15:48:32Z stefan $
 //
 // This code is licensed under the terms of the Eclipse Public License (EPL).
 //---------------------------------------------------------------------------
@@ -23,8 +23,16 @@
 
 namespace LAP
 {
-std::vector<std::string> Validator::rejections_;
 
+const char* Validator::rejections_[DummyEnd] =
+{
+   "Cut was accepted.",
+   "Violation of the cut is too small.",
+   "There is a small coefficient we can not get rid off.",
+   "Dynamic of coefficient is too important.",
+   "Cut is too dense.",
+   "Cleaned cut is empty."
+};
 
 /** Clean an OsiCut
 \return 1 if min violation is too small
@@ -304,24 +312,6 @@ Validator::Validator(double maxFillIn,
         scale_(scale),
         rhsScale_(rhsScale),
         numRejected_(DummyEnd,0)
-{
-    fillRejectionReasons();
-}
-
-
-void
-Validator::fillRejectionReasons()
-{
-    if (rejections_.size() == 0)
-    {
-        rejections_.resize(DummyEnd) ;
-        rejections_[NoneAccepted] = "Cut was accepted";
-        rejections_[SmallViolation] = "Violation of the cut is too small ";
-        rejections_[SmallCoefficient] = "There is a small coefficient we can not get rid off.";
-        rejections_[BigDynamic] = "Dynamic of coefficinet is too important. ";
-        rejections_[DenseCut] = "Cut is too dense.";
-        rejections_[EmptyCut] = "Cleaned cut is empty";
-    }
-}
+{ }
 
 } /* Ends namespace LAP.*/

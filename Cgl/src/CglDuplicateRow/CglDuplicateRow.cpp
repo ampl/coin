@@ -1,4 +1,4 @@
-// $Id: CglDuplicateRow.cpp 1234 2014-12-31 13:56:52Z forrest $
+// $Id: CglDuplicateRow.cpp 1287 2015-04-15 15:02:39Z forrest $
 // Copyright (C) 2004, International Business Machines
 // Corporation and others.  All Rights Reserved.
 // This code is licensed under the terms of the Eclipse Public License (EPL).
@@ -38,7 +38,7 @@ void CglDuplicateRow::generateCuts(const OsiSolverInterface & si, OsiCuts & cs,
     return;
   }
   if ((mode_&3)!=0) {
-    generateCuts12(si,cs,info);
+    // bug generateCuts12(si,cs,info);
   } else if ((mode_&4)!=0) {
     generateCuts4(si,cs,info);
   } else {
