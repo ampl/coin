@@ -2,7 +2,7 @@
 // All Rights Reserved.
 // This code is published under the Eclipse Public License.
 //
-// $Id: IpPDFullSpaceSolver.hpp 1861 2010-12-21 21:34:47Z andreasw $
+// $Id: IpPDFullSpaceSolver.hpp 2594 2015-08-09 14:31:05Z stefan $
 //
 // Authors:  Carl Laird, Andreas Waechter     IBM    2004-08-13
 
@@ -112,6 +112,9 @@ namespace Ipopt
     Number residual_improvement_factor_;
     /** Tolernace for heuristic to ignore wrong inertia */
     Number neg_curv_test_tol_;
+    /** Do curvature test with primal regularization */
+    bool neg_curv_test_reg_;
+	
     //@}
 
     /** Internal function for a single backsolve (which will be used

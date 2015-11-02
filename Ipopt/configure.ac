@@ -2,7 +2,7 @@
 # All Rights Reserved.
 # This file is distributed under the Eclipse Public License.
 
-## $Id: configure.ac 2552 2015-02-13 06:47:34Z stefan $
+## $Id: configure.ac 2595 2015-08-09 22:10:23Z stefan $
 
 # Authors:  Carl Laird, Andreas Waechter     IBM    2004-08-13
 
@@ -12,7 +12,7 @@
 
 AC_PREREQ(2.59)
 
-AC_INIT([Ipopt],[3.12.1],[http://projects.coin-or.org/Ipopt/newticket])
+AC_INIT([Ipopt],[3.12.4],[http://projects.coin-or.org/Ipopt/newticket])
 
 AC_COPYRIGHT(
 [Copyright 2004, 2011 International Business Machines and others.
@@ -41,7 +41,7 @@ AC_CANONICAL_BUILD
 # the source root directory contains definition of where to find those
 # externals.  The following macro ensures that those externals are
 # retrieved by svn if they are not there yet.
-AC_COIN_PROJECTDIR_INIT(Ipopt,11:1:10)
+AC_COIN_PROJECTDIR_INIT(Ipopt,11:4:10)
 
 # Check if user wants to produce debugging code
 AC_COIN_DEBUG_COMPILE(Ipopt)
@@ -748,7 +748,7 @@ AC_CHECK_LIB(dl,[dlopen],[
   IPOPTLIB_LIBS_INSTALLED="$IPOPTLIB_LIBS_INSTALLED -ldl"
  ],[])
 
-case $build in
+case $host in
   *-cygwin* |  *-mingw*)
      AC_DEFINE([SHAREDLIBEXT], ["dll"], [Set to extension for shared libraries in quotes.])
      # Take -pedantic-errors out of CFLAGS
@@ -853,6 +853,9 @@ AC_COIN_VPATH_LINK(tutorial/CodingExercise/Matlab/3-solution/TutorialMatlab.m)
 AC_COIN_VPATH_LINK(contrib/sIPOPT/examples/parametric_cpp/parametric_driver.cpp)
 AC_COIN_VPATH_LINK(contrib/sIPOPT/examples/parametric_cpp/parametricTNLP.cpp)
 AC_COIN_VPATH_LINK(contrib/sIPOPT/examples/parametric_cpp/parametricTNLP.hpp)
+AC_COIN_VPATH_LINK(contrib/sIPOPT/examples/parametric_dsdp_cpp/parametric_dsdp_driver.cpp)
+AC_COIN_VPATH_LINK(contrib/sIPOPT/examples/parametric_dsdp_cpp/parametricTNLP.cpp)
+AC_COIN_VPATH_LINK(contrib/sIPOPT/examples/parametric_dsdp_cpp/parametricTNLP.hpp)
 AC_COIN_VPATH_LINK(contrib/sIPOPT/examples/redhess_cpp/MySensTNLP.cpp)
 AC_COIN_VPATH_LINK(contrib/sIPOPT/examples/redhess_cpp/MySensTNLP.hpp)
 AC_COIN_VPATH_LINK(contrib/sIPOPT/examples/redhess_cpp/redhess_cpp.cpp)
@@ -903,6 +906,7 @@ AC_CONFIG_FILES([Makefile
 		 contrib/sIPOPT/Makefile
 		 contrib/sIPOPT/AmplSolver/Makefile
 		 contrib/sIPOPT/examples/parametric_cpp/Makefile
+		 contrib/sIPOPT/examples/parametric_dsdp_cpp/Makefile	
 		 contrib/sIPOPT/examples/redhess_cpp/Makefile
 		 contrib/sIPOPT/src/Makefile
 		 ipopt.pc ipopt-uninstalled.pc

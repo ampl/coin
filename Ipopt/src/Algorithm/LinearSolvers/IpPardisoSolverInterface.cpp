@@ -2,7 +2,7 @@
 // All Rights Reserved.
 // This code is published under the Eclipse Public License.
 //
-// $Id: IpPardisoSolverInterface.cpp 2489 2014-05-26 16:39:14Z stefan $
+// $Id: IpPardisoSolverInterface.cpp 2594 2015-08-09 14:31:05Z stefan $
 //
 // Authors:  Carl Laird, Andreas Waechter     IBM    2005-03-17
 //
@@ -10,8 +10,7 @@
 //                  - changed options, added PHASE_ flag
 
 /* some useful links:
- * MKL Pardiso API: http://software.intel.com/sites/products/documentation/hpc/mkl/mklman/GUID-431916D5-B76D-48A1-ABB5-1A0613FDC0FA.htm
- * MKL Pardiso IPARM: http://software.intel.com/sites/products/documentation/doclib/mkl_sa/11/mklman/GUID-264E311E-ACED-4D56-AC31-E9D3B11D1CBF.htm
+ * MKL documentation: https://software.intel.com/en-us/intel-mkl/documentation
  * API differences MKL vs Basel PARDISO: http://software.intel.com/en-us/articles/summary-of-api-differences-between-intel-mkl-pardiso-and-university-of-basel-pardiso-400
  */
 
@@ -398,6 +397,7 @@ namespace Ipopt
 #endif
 
     // Call Pardiso's initialization routine
+    memset(PT_, 0, 64); // needs to be initialized to 0 according to MKL Pardiso docu
     IPARM_[0] = 0;  // Tell it to fill IPARM with default values(?)
 
 #if ! defined(HAVE_PARDISO_OLDINTERFACE) && ! defined(HAVE_PARDISO_MKL)

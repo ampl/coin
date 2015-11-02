@@ -2,7 +2,7 @@
 // All Rights Reserved.
 // This code is published under the Eclipse Public License.
 //
-// $Id: IpRestoIpoptNLP.hpp 2450 2013-12-16 09:28:37Z ghackebeil $
+// $Id: IpRestoIpoptNLP.hpp 2594 2015-08-09 14:31:05Z stefan $
 //
 // Authors:  Carl Laird, Andreas Waechter     IBM    2004-08-13
 
@@ -187,6 +187,11 @@ namespace Ipopt
     virtual SmartPtr<const SymMatrixSpace> HessianMatrixSpace() const
     {
       return GetRawPtr(h_space_);
+    }
+    
+    virtual SmartPtr<const VectorSpace> x_space() const
+    {
+      return GetRawPtr(x_space_);
     }
     //@}
 

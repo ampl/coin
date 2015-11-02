@@ -2,7 +2,7 @@
 // All Rights Reserved.
 // This code is published under the Eclipse Public License.
 //
-// $Id: IpIpoptAlg.cpp 2399 2013-10-19 18:18:04Z stefan $
+// $Id: IpIpoptAlg.cpp 2594 2015-08-09 14:31:05Z stefan $
 //
 // Authors:  Carl Laird, Andreas Waechter     IBM    2004-08-13
 
@@ -262,7 +262,7 @@ namespace Ipopt
     }
 
     if (!isResto) {
-      Jnlst().Printf(J_ITERSUMMARY, J_MAIN, "This is Ipopt version "IPOPT_VERSION", running with linear solver %s.\n", linear_solver_.c_str());
+      Jnlst().Printf(J_ITERSUMMARY, J_MAIN, "This is Ipopt version " IPOPT_VERSION ", running with linear solver %s.\n", linear_solver_.c_str());
 
 #ifndef IPOPT_NOMUMPSNOTE
       if( linear_solver_ == "mumps" )

@@ -2,7 +2,7 @@
 // All Rights Reserved.
 // This code is published under the Eclipse Public License.
 //
-// $Id: IpIpoptNLP.hpp 2269 2013-05-05 11:32:40Z stefan $
+// $Id: IpIpoptNLP.hpp 2594 2015-08-09 14:31:05Z stefan $
 //
 // Authors:  Carl Laird, Andreas Waechter     IBM    2004-08-13
 
@@ -128,6 +128,9 @@ namespace Ipopt
 
     /** Permutation matrix (d_U_ -> d */
     virtual SmartPtr<const Matrix> Pd_U() const = 0;
+
+    /** x_space */
+    virtual SmartPtr<const VectorSpace> x_space() const = 0;
 
     /** Accessor method to obtain the MatrixSpace for the Hessian
      *  matrix (or it's approximation) */

@@ -2,7 +2,7 @@
 // All Rights Reserved.
 // This code is published under the Eclipse Public License.
 //
-// $Id: IpUtils.cpp 2496 2014-07-18 16:11:16Z stefan $
+// $Id: IpUtils.cpp 2594 2015-08-09 14:31:05Z stefan $
 //
 // Authors:  Carl Laird, Andreas Waechter    IBM       2005-08-12
 
@@ -176,7 +176,7 @@ namespace Ipopt
     return Number(std::rand())/Number(RAND_MAX);
 #  else
     /* this is a workaround for gcc 4.8.3, for which the test for rand() that our old configure sets up does not work */
-#   if defined(__GNUC__) && __GNUC__ == 4 && __GNUC_MINOR__ == 8 && __GNUC_PATCHLEVEL__ == 3
+#   if defined(__GNUC__) && __GNUC__ == 4 && __GNUC_MINOR__ == 8 && __GNUC_PATCHLEVEL__ >= 2
       return Number(rand())/Number(RAND_MAX);
 #   else
 #    error "don't have function for random number generator"
@@ -197,7 +197,7 @@ namespace Ipopt
 #  ifdef HAVE_STD__RAND
     std::srand(1);
 #  else
-#   if defined(__GNUC__) && __GNUC__ == 4 && __GNUC_MINOR__ == 8 && __GNUC_PATCHLEVEL__ == 3
+#   if defined(__GNUC__) && __GNUC__ == 4 && __GNUC_MINOR__ == 8 && __GNUC_PATCHLEVEL__ >= 2
     srand(1);
 #   else
 #    error "don't have function for random number generator"
