@@ -2,7 +2,7 @@
 # All Rights Reserved.
 # This file is distributed under the Eclipse Public License.
 #
-## $Id: coin.m4 3390 2015-01-30 22:22:05Z tkr $
+## $Id: coin.m4 3519 2015-07-26 14:56:11Z stefan $
 #
 # Author: Andreas Wachter    IBM      2006-04-14
 
@@ -532,7 +532,7 @@ if test x"$MPICXX" = x; then :; else
   CXX="$MPICXX"
 fi
 
-# correct the LD variable in a build with MS or intel compiler
+# correct the LD variable in a build with MS or Intel-windows compiler
 case "$CXX" in
   clang* ) ;;
   cl* | */cl* | CL* | */CL* | icl* | */icl* | ICL* | */ICL*)
@@ -1129,10 +1129,14 @@ if test x"$MPIF77" = x; then :; else
 fi
 
 # correct the LD variable if we use the intel fortran compiler in windows
-case "$F77" in
-  ifort* | */ifort* | IFORT* | */IFORT*)
-    LD=link
-    ;;
+case $build in
+  *-cygwin* | *-mingw*)
+    case "$F77" in
+      ifort* | */ifort* | IFORT* | */IFORT*)
+        LD=link
+      ;;
+    esac
+  ;;
 esac
 
 AC_LANG_POP([Fortran 77])
@@ -2915,6 +2919,7 @@ AC_MSG_NOTICE([configuring doxygen documentation options])
 # Check to see if doxygen is available.
 
 AC_CHECK_PROG([coin_have_doxygen],[doxygen],[yes],[no])
+AC_CHECK_PROG([coin_have_latex],[latex],[yes],[no])
 
 # Look for the dot tool from the graphviz package, unless the user has
 # disabled it.
@@ -2936,6 +2941,8 @@ fi
 
 AC_SUBST([coin_doxy_tagname],[doxydoc/${PACKAGE}_doxy.tag])
 AC_SUBST([coin_doxy_logname],[doxydoc/${PACKAGE}_doxy.log])
+AM_CONDITIONAL(COIN_HAS_DOXYGEN, [test $coin_have_doxygen = yes])
+AM_CONDITIONAL(COIN_HAS_LATEX, [test $coin_have_latex = yes])
 
 # Process the list of project names and massage them into possible doxygen
 # doc'n directories. Prefer 1) classic external, source processed using
@@ -2955,30 +2962,26 @@ for proj in $tmp ; do
   AC_MSG_CHECKING([for doxygen doc'n for $proj ])
   doxytag=${lc_proj}_doxy.tag
   doxyfound=no
-  for chkProj in $coin_subdirs ; do
-    if test "$chkProj" = "$proj" ; then
-      # proj will be configured, hence doxydoc present in build tree
-      doxysrcdir="${srcdir}/${proj}"
-      # AC_MSG_NOTICE([Considering $doxysrcdir (base)])
-      if test -d "$doxysrcdir" ; then
-	# with a doxydoc directory?
-	doxydir="$doxysrcdir/doxydoc"
-	# AC_MSG_NOTICE([Considering $doxydir (base)])
-	# AC_MSG_NOTICE([Subdirs: $coin_subdirs)])
-	if test -d "$doxydir" ; then
-	  # use tag file; don't process source
-	  eval doxydir="`pwd`/${proj}/doxydoc"
-	  coin_doxy_tagfiles="$coin_doxy_tagfiles $doxydir/$doxytag=$doxydir/html"
-	  AC_MSG_RESULT([$doxydir (tag)])
-	  coin_doxy_excludes="$coin_doxy_excludes */${proj}"
-	else
-	  # will process the source -- nothing further to be done here
-	  AC_MSG_RESULT([$doxysrcdir (src)])
-	fi
-	doxyfound=yes
-      fi
+  # proj will be configured, hence doxydoc present in build tree
+  doxysrcdir="${srcdir}/../${proj}"
+  # AC_MSG_NOTICE([Considering $doxysrcdir (base)])
+  if test -d "$doxysrcdir" ; then
+    # with a doxydoc directory?
+    doxydir="$doxysrcdir/doxydoc"
+    # AC_MSG_NOTICE([Considering $doxydir (base)])
+    # AC_MSG_NOTICE([Subdirs: $coin_subdirs)])
+    if test -d "$doxydir" ; then
+      # use tag file; don't process source
+      doxydir="../${proj}/doxydoc"
+      coin_doxy_tagfiles="$coin_doxy_tagfiles $doxydir/$doxytag=../../$doxydir/html"
+      AC_MSG_RESULT([$doxydir (tag)])
+      coin_doxy_excludes="$coin_doxy_excludes */${proj}"
+    else
+      # will process the source -- nothing further to be done here
+      AC_MSG_RESULT([$doxysrcdir (src)])
     fi
-  done
+    doxyfound=yes
+  fi
   # Not built, fall back to installed tag file
   if test $doxyfound = no ; then
     eval doxydir="${datadir}/coin/doc/${proj}/doxydoc"

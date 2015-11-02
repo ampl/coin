@@ -2,7 +2,7 @@
 # All Rights Reserved.
 # This file is distributed under the Eclipse Public License.
 
-## $Id: Makemain.inc 2107 2011-02-20 20:07:36Z stefan $
+## $Id: Makemain.inc 3482 2015-03-26 03:06:39Z tkr $
 
 # Author:  Andreas Waechter           IBM    2006-04-13
 
@@ -10,15 +10,106 @@
 #                    Documentation installation                        #
 ########################################################################
 
-DocFiles =  README AUTHORS LICENSE
+DocFiles =  README AUTHORS LICENSE 
 DocInstallDir = $(datadir)/coin/doc/$(PACKAGE_NAME)
 
-install-doc: $(DocFiles)
+COIN_HAS_DOXYGEN = @COIN_HAS_DOXYGEN_TRUE@TRUE
+COIN_HAS_LATEX = @COIN_HAS_LATEX_TRUE@TRUE
+
+doxygen-docs: 
+	if test "$(COIN_HAS_DOXYGEN)" = TRUE; then \
+	  if test -d "doxydoc/"; then \
+	    doxygen doxydoc/doxygen.conf;\
+	  fi;\
+	fi
+
+pdf-doxygen-docs: doxygen-docs
+	if test "$(COIN_HAS_DOXYGEN)" = TRUE; then \
+	  if test -d "doxydoc/latex"; then \
+       	    if test "$(COIN_HAS_LATEX)" = TRUE; then \
+	      cd doxydoc/latex;\
+	      $(MAKE) pdf;\
+	      cd -;\
+	    fi;\
+	  fi;\
+	fi
+
+clean-doxygen-docs:
+	if test -d "doxydoc/"; then \
+	  cd doxydoc ;\
+	  rm -rf html latex *.log *.tag;\
+	fi
+
+install-doxygen-docs: doxygen-docs
+	if test "$(COIN_HAS_DOXYGEN)" = TRUE; then \
+	  if test -d "doxydoc/"; then \
+	    test -d "$(DESTDIR)$(DocInstallDir)/doxydoc" || $(mkdir_p) "$(DESTDIR)$(DocInstallDir)/doxydoc"; \
+	    $(INSTALL_DATA) @coin_doxy_tagname@ "$(DESTDIR)$(DocInstallDir)/@coin_doxy_tagname@";\
+	    if test -f "doxydoc/latex/refman.pdf"; then \
+	      $(INSTALL_DATA) doxydoc/latex/refman.pdf "$(DESTDIR)$(DocInstallDir)";\
+	    fi;\
+	    if test -d "doxydoc/html"; then \
+	      test -d "$(DESTDIR)$(DocInstallDir)/doxydoc/search/" || $(mkdir_p) "$(DESTDIR)$(DocInstallDir)/doxydoc/search/"; \
+	      $(INSTALL_DATA) doxydoc/html/*.* "$(DESTDIR)$(DocInstallDir)/doxydoc";\
+	      $(INSTALL_DATA) doxydoc/html/search/*.* "$(DESTDIR)$(DocInstallDir)/doxydoc/search";\
+            fi;\
+          fi;\
+        fi
+
+uninstall-doxygen-docs:
+	if test -d "$(DESTDIR)$(DocInstallDir)/doxydoc/"; then \
+	  rm -rf "$(DESTDIR)$(DocInstallDir)/doxydoc/"; \
+	fi
+	if test -f "$(DESTDIR)$(DocInstallDir)/refman.pdf"; then \
+	  rm -f "$(DESTDIR)$(DocInstallDir)/refman.pdf"; \
+	fi
+
+all-doxygen-docs:
+	for dir in $(subdirs) ; do \
+	  do_project=true;\
+	  for proj in $(COIN_SKIP_DOXYGEN); do\
+	    if test $$dir = $$proj; then\
+	      do_project=false;\
+	    fi;\
+	  done;\
+	  if test -r $$dir/doxydoc & $$do_project = true; then \
+	    (cd $$dir ; $(MAKE) doxygen-docs) \
+	  fi ; \
+	done ; 
+
+clean-all-doxygen-docs:
+	for dir in $(subdirs) ; do \
+	  if test -r $$dir/doxydoc ; then \
+	    (cd $$dir ; $(MAKE) clean-doxygen-docs) \
+	  fi ; \
+	done ; 
+
+install-all-doxygen-docs: all-doxygen-docs
+	for dir in $(subdirs) ; do \
+	  do_project=true;\
+	  for proj in $(COIN_SKIP_DOXYGEN); do\
+	    if test $$dir = $$proj; then\
+	      do_project=false;\
+	    fi;\
+	  done;\
+	  if test -r $$dir/doxydoc & $$do_project = true; then \
+	    (cd $$dir ; $(MAKE) install-doxygen-docs) \
+	  fi ; \
+	done ; 
+
+uninstall-all-doxygen-docs:
+	for dir in $(subdirs) ; do \
+	  if test -r $$dir/doxydoc ; then \
+	    (cd $$dir ; $(MAKE) uninstall-doxygen-docs) \
+	  fi ; \
+	done ; 
+
+install-doc: $(DocFiles) 
 	test -z "$(DocInstallDir)" || $(mkdir_p) "$(DESTDIR)$(DocInstallDir)"
 	for file in $(DocFiles); do \
 	  if test -f "$$file"; then dir=; else dir="$(srcdir)/"; fi; \
 	  if test -f "$$dir$$file"; then $(INSTALL_DATA) "$$dir$$file" "$(DESTDIR)$(DocInstallDir)/$$file"; fi; \
-	done
+	done 
 
 uninstall-doc:
 	for file in $(DocFiles); do \

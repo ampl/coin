@@ -389,7 +389,7 @@ bestStable ()
   fi
   bstb_filter=
   for bstb_ver in $bstb_rawls ; do
-    if  expr "$bstb_ver" : $bstb_verPat >/dev/null 2>&1 ; then
+    if  expr "$bstb_ver" : "$bstb_verPat" >/dev/null 2>&1 ; then
       bstb_filter="$bstb_filter $bstb_ver"
     fi
   done
@@ -410,11 +410,11 @@ bestStable ()
         bstb_projPat='.*'$bstb_proj'/.*'
         # echo "Pattern: $bstb_projPat"
         for bstb_ver in $bstb_filter ; do
-	  if  expr "$bstb_ver" : $bstb_verPat >/dev/null 2>&1 ; then
+	  if  expr "$bstb_ver" : "$bstb_verPat" >/dev/null 2>&1 ; then
 	    # echo "  url: $bstb_listURL/$bstb_ver"
 	    bstb_svnls2="`svn list $bstb_listURL/$bstb_ver`"
 	    # echo "  result: $bstb_svnls2"
-	    if expr "$bstb_svnls2" : $bstb_projPat >/dev/null 2>&1 ; then
+	    if expr "$bstb_svnls2" : "$bstb_projPat" >/dev/null 2>&1 ; then
 	      bstb_best=$bstb_ver
 	      # echo "  best: $bstb_best"
 	      break
@@ -488,7 +488,7 @@ bestRelease ()
   # echo "Version pattern: $bstb_verPat"
   bstb_filter=
   for bstb_ver in $bstb_rawls ; do
-    if  expr "$bstb_ver" : $bstb_verPat >/dev/null 2>&1 ; then
+    if  expr "$bstb_ver" : "$bstb_verPat" >/dev/null 2>&1 ; then
       bstb_filter="$bstb_filter $bstb_ver"
     fi
   done
@@ -509,11 +509,11 @@ bestRelease ()
         bstb_projPat='.*'$bstb_proj'/.*'
         # echo "Pattern: $bstb_projPat"
         for bstb_ver in $bstb_filter ; do
-	  if  expr "$bstb_ver" : $bstb_verPat >/dev/null 2>&1 ; then
+	  if  expr "$bstb_ver" : "$bstb_verPat" >/dev/null 2>&1 ; then
 	    # echo "  url: $bstb_listURL/$bstb_ver"
 	    bstb_svnls2="`svn list $bstb_listURL/$bstb_ver`"
 	    # echo "  result: $bstb_svnls2"
-	    if expr "$bstb_svnls2" : $bstb_projPat >/dev/null 2>&1 ; then
+	    if expr "$bstb_svnls2" : "$bstb_projPat" >/dev/null 2>&1 ; then
 	      bstb_best=$bstb_ver
 	      # echo "  best: $bstb_best"
 	      break
@@ -580,7 +580,7 @@ calcLibtoolAge ()
     fi
     cltc_majfilter=
     for cltc_ver in $cltc_rawls ; do
-      if  expr "$cltc_ver" : $cltc_verPat >/dev/null 2>&1 ; then
+      if  expr "$cltc_ver" : "$cltc_verPat" >/dev/null 2>&1 ; then
 	cltc_majfilter="$cltc_majfilter $cltc_ver"
       fi
     done
@@ -652,7 +652,7 @@ calcLibtoolCurrent ()
 
     cltc_stdfilter=
     for cltc_ver in $cltc_rawls ; do
-      if  expr "$cltc_ver" : $cltc_verPat >/dev/null 2>&1 ; then
+      if  expr "$cltc_ver" : "$cltc_verPat" >/dev/null 2>&1 ; then
 	cltc_stdfilter="$cltc_stdfilter $cltc_ver"
       fi
     done
