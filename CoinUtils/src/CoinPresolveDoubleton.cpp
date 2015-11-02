@@ -1,4 +1,4 @@
-/* $Id: CoinPresolveDoubleton.cpp 1580 2013-03-19 13:00:14Z forrest $ */
+/* $Id: CoinPresolveDoubleton.cpp 1844 2015-09-29 13:37:03Z forrest $ */
 // Copyright (C) 2002, International Business Machines
 // Corporation and others.  All Rights Reserved.
 // This code is licensed under the terms of the Eclipse Public License (EPL).
@@ -613,6 +613,10 @@ const CoinPresolveAction
 	  << "  x(" << tgtcolx << ") lb " << clo[tgtcolx] << " --> " << lo2
 	  << ", ub " << cup[tgtcolx] << " --> " << up2 << std::endl ;
 #       endif
+	if (integerType[tgtcolx]) {
+	  lo2 = ceil(lo2-1.0e-7);
+	  up2 = floor(up2+1.0e-7);
+	}
 	clo[tgtcolx] = lo2 ;
 	cup[tgtcolx] = up2 ;
 /*

@@ -5,7 +5,7 @@
 /***************************************************************************/
 
 /* Version number of project */
-#define COINUTILS_VERSION "2.10.6"
+#define COINUTILS_VERSION "2.10.11"
 
 /* Major Version number of project */
 #define COINUTILS_VERSION_MAJOR 2
@@ -14,7 +14,7 @@
 #define COINUTILS_VERSION_MINOR 10
 
 /* Release Version number of project */
-#define COINUTILS_VERSION_RELEASE 6
+#define COINUTILS_VERSION_RELEASE 11
 
 /*
   Define to 64bit integer types. Note that MS does not provide __uint64.

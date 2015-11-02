@@ -1,4 +1,4 @@
-/* $Id: CoinPresolveDual.cpp 1699 2014-05-22 17:06:09Z forrest $ */
+/* $Id: CoinPresolveDual.cpp 1834 2015-07-09 09:25:00Z forrest $ */
 // Copyright (C) 2002, International Business Machines
 // Corporation and others.  All Rights Reserved.
 // This code is licensed under the terms of the Eclipse Public License (EPL).
@@ -9,7 +9,7 @@
 #include "CoinPresolveMatrix.hpp"
 #include "CoinPresolveFixed.hpp"
 #include "CoinPresolveDual.hpp"
-#include "CoinMessage.hpp"
+#include "CoinMessage.hpp" 
 #include "CoinHelperFunctions.hpp"
 #include "CoinFloatEqual.hpp"
 
@@ -1513,7 +1513,7 @@ const CoinPresolveAction
 	  }
 	}
       }
-      if (canFixThis>0) 
+      if (canFixThis) 
 	canFix[makeEqCnt++] = i ;
     }
   }
