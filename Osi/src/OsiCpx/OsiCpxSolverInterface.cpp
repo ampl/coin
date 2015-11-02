@@ -3238,6 +3238,13 @@ CPXLPptr OsiCpxSolverInterface::getMutableLpPtr() const
   return lp_;
 }
 
+//------------------------------------------------------------------- 
+CPXENVptr OsiCpxSolverInterface::getMutableEnvironmentPtr() const
+{
+  assert( env_ != NULL ); 
+  return env_;
+}
+
 //-------------------------------------------------------------------
 
 void OsiCpxSolverInterface::gutsOfCopy( const OsiCpxSolverInterface & source )

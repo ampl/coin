@@ -74,7 +74,7 @@ public:
     class const_iterator {
       friend class OsiCuts;
 	public:
-	  typedef std::bidirectional_iterator_tag iterator_category;
+	  typedef std::forward_iterator_tag iterator_category;
 	  typedef OsiCut* value_type;
 	  typedef size_t difference_type;
 	  typedef OsiCut ** pointer;

@@ -9,7 +9,7 @@
 //-----------------------------------------------------------------------------
 // Copyright (C) 2002, Tobias Pfender, International Business Machines
 // Corporation and others.  All Rights Reserved.
-// Last edit: $Id: OsiSpxSolverInterface.cpp 1967 2014-06-12 16:02:12Z stefan $
+// Last edit: $Id: OsiSpxSolverInterface.cpp 2019 2015-06-11 08:50:04Z stefan $
 
 #include "CoinPragma.hpp"
 
@@ -1588,7 +1588,13 @@ void OsiSpxSolverInterface::writeMps( const char * filename,
 //-------------------------------------------------------------------
 OsiSpxSolverInterface::OsiSpxSolverInterface ()
   : OsiSolverInterface(),
+#if SOPLEX_VERSION >= 220
+    spxout_(new soplex::SPxOut),
+    soplex_(new soplex::SoPlex(*spxout_, soplex::SPxSolver::ENTER, soplex::SPxSolver::COLUMN)), // default is primal simplex algorithm
+#else
+    spxout_(NULL),
     soplex_(new soplex::SoPlex(soplex::SPxSolver::ENTER, soplex::SPxSolver::COLUMN)), // default is primal simplex algorithm
+#endif
     spxintvars_(new soplex::DIdxSet()),
     hotStartCStat_(NULL),
     hotStartCStatSize_(0),
@@ -1606,10 +1612,18 @@ OsiSpxSolverInterface::OsiSpxSolverInterface ()
     matrixByRow_(NULL),
     matrixByCol_(NULL)
 {
+#if SOPLEX_VERSION >= 220
+#ifndef NDEBUG
+  spxout_->setVerbosity(soplex::SPxOut::INFO1);
+#else
+  spxout_->setVerbosity(soplex::SPxOut::DEBUG);
+#endif
+#else
 #ifndef NDEBUG
   soplex::Param::setVerbose( 3 );
 #else
   soplex::Param::setVerbose( 2 );
+#endif
 #endif
 
   // SoPlex default objective sense is maximization, thus we explicitly set it to minimization
@@ -1659,6 +1673,16 @@ OsiSpxSolverInterface::OsiSpxSolverInterface( const OsiSpxSolverInterface & sour
 OsiSpxSolverInterface::~OsiSpxSolverInterface ()
 {
   freeAllMemory();
+}
+
+//-------------------------------------------------------------------
+// SPX specific public interfaces
+//-------------------------------------------------------------------
+
+soplex::SoPlex* OsiSpxSolverInterface::getLpPtr( int keepCached )
+{
+  freeCachedData( keepCached );
+  return soplex_;
 }
 
 //----------------------------------------------------------------
@@ -1773,5 +1797,8 @@ void OsiSpxSolverInterface::freeAllMemory()
   hotStartRStat_     = NULL;
   hotStartRStatSize_ = 0;
   delete soplex_;
+#if SOPLEX_VERSION >= 220
+  delete spxout_;
+#endif
   delete spxintvars_;
 }
