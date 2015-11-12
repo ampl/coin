@@ -6,6 +6,16 @@
 cmake_minimum_required(VERSION 2.8)
 project(IPOPTFORT C)
 
+# Remove sh.exe from the path as it breaks MinGW makefile generation.
+find_program(SH_PROGRAM sh PATHS ENV PATH NO_DEFAULT_PATH)
+if (SH_PROGRAM)
+  get_filename_component(path ${SH_PROGRAM} DIRECTORY)
+  string(REPLACE "/" "\\" path ${path})
+  string(REPLACE "${path}" "" path "$ENV{PATH}")
+  set(ENV{PATH} "${path}")
+  message("PATH: $ENV{PATH}")
+endif ()
+
 enable_language(Fortran)
 include(FortranCInterface)
 
