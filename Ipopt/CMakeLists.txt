@@ -4,7 +4,6 @@
 # MinGW gfortran on Windows while the rest is built with Visual C++.
 
 cmake_minimum_required(VERSION 2.8)
-project(IPOPTFORT C)
 
 # Remove sh.exe from the path as it breaks MinGW makefile generation.
 find_program(SH_PROGRAM sh PATHS ENV PATH NO_DEFAULT_PATH)
@@ -15,6 +14,8 @@ if (SH_PROGRAM)
   set(ENV{PATH} "${path}")
   message("PATH: $ENV{PATH}")
 endif ()
+
+project(IPOPTFORT C)
 
 enable_language(Fortran)
 include(FortranCInterface)
