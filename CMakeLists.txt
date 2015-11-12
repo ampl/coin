@@ -595,6 +595,16 @@ endfunction()
 if (EXISTS ${COIN_SOURCE_DIR}/Ipopt)
   set(BUILD_IPOPT TRUE)
   if (MSVC)
+    # Remove sh.exe from the path as it breaks MinGW makefile generation.
+    find_program(SH_PROGRAM sh PATHS ENV PATH NO_DEFAULT_PATH)
+    if (SH_PROGRAM)
+      get_filename_component(path ${SH_PROGRAM} DIRECTORY)
+      string(REPLACE "/" "\\" path ${path})
+      string(REPLACE "${path}" "" path "$ENV{PATH}")
+      set(ENV{PATH} "${path}")
+      message("PATH: $ENV{PATH}")
+    endif ()
+
     # Look up gfortran in the MinGW directory. This sets the MINGW_GFORTRAN
     # cache entry if gfortran is found and should be done before including
     # CMakeAddFortranSubdirectory.
