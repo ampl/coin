@@ -1,11 +1,8 @@
 *.a
 *.err
-*.out
 /bin
 CMakeFiles
 cmake_install.cmake
-config_*.h
-config.h
 CPackConfig.cmake
 CPackSourceConfig.cmake
 CTestTestfile.cmake
