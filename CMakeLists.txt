@@ -571,7 +571,7 @@ configure(Cgl src/config.h src/config_cgl.h)
 configure(Cbc src/config.h src/config_cbc.h)
 
 function(add_ipopt_library name path)
-  add_coin_library(Ipopt/src/${path} NAME ${name} ${ARGN})
+  add_coin_library(Ipopt/Ipopt/src/${path} NAME ${name} ${ARGN})
   set_target_properties(${name} PROPERTIES COMPILE_DEFINITIONS IPOPT_BUILD)
 endfunction()
 
@@ -584,7 +584,7 @@ function(add_ipopt_test name)
   endif ()
   set(sources )
   foreach (arg ${add_ipopt_test_UNPARSED_ARGUMENTS})
-    set(sources ${sources} ${source_dir}/Ipopt/examples/${name}/${arg})
+    set(sources ${sources} ${source_dir}/Ipopt/Ipopt/examples/${name}/${arg})
   endforeach ()
   add_executable(${name} ${sources})
   target_link_libraries(${name} ipopt)
@@ -634,7 +634,7 @@ if (BUILD_IPOPT)
   set(HAVE_LINEARSOLVERLOADER 1)
   set(BUILD_LINEARSOLVERLOADER 1)
   set(BUILD_PARDISOLOADER 1)
-  
+
   check_symbol_exists(drand48 stdlib.h HAVE_DRAND48)
   check_symbol_exists(rand stdlib.h HAVE_RAND)
   check_symbol_exists(std::rand cstdlib HAVE_STD__RAND)
@@ -642,11 +642,11 @@ if (BUILD_IPOPT)
   check_symbol_exists(_snprintf stdio.h HAVE__SNPRINTF)
   check_symbol_exists(va_copy stdarg.h HAVE_VA_COPY)
   check_symbol_exists(vsnprintf "stdio.h;stdarg.h" HAVE_VSNPRINTF)
-  
+
   string(SUBSTRING ${CMAKE_SHARED_LIBRARY_SUFFIX} 1 -1 SHAREDLIBEXT)
 
   include_directories(
-    Ipopt/src/contrib/LinearSolverLoader
+    Ipopt/Ipopt/src/contrib/LinearSolverLoader
     ThirdParty/Mumps/MUMPS/include ThirdParty/Mumps/MUMPS/libseq)
 
   if (BUILD_IPOPTFORT)
@@ -693,7 +693,7 @@ if (BUILD_IPOPT)
     add_ipopt_library(ipoptamplinterface Apps/AmplSolver ${ASL_LIBRARIES})
     target_link_libraries(ipopt ipoptamplinterface)
     add_executable(ipopt-executable
-      Ipopt/src/Apps/AmplSolver/ampl_ipopt.cpp ${IPOPT_EXTERNAL_LIBS})
+      Ipopt/Ipopt/src/Apps/AmplSolver/ampl_ipopt.cpp ${IPOPT_EXTERNAL_LIBS})
     target_link_libraries(ipopt-executable ipopt)
     set_target_properties(ipopt-executable PROPERTIES
       COMPILE_DEFINITIONS IPOPT_BUILD OUTPUT_NAME ipopt IMPORT_PREFIX imp)
@@ -709,19 +709,19 @@ if (BUILD_IPOPT)
   else ()
     set(BIT64FCOMMENT C)
   endif ()
-  configure_file(Ipopt/examples/hs071_f/hs071_f.f.in Ipopt/examples/hs071_f/hs071_f.f @ONLY)
+  configure_file(Ipopt/Ipopt/examples/hs071_f/hs071_f.f.in Ipopt/Ipopt/examples/hs071_f/hs071_f.f @ONLY)
   set(srcdir ${CMAKE_CURRENT_SOURCE_DIR})
-  configure_file(Ipopt/test/run_unitTests.in Ipopt/test/run_unitTests @ONLY)
+  configure_file(Ipopt/Ipopt/test/run_unitTests.in Ipopt/Ipopt/test/run_unitTests @ONLY)
 
   add_ipopt_test(hs071_cpp hs071_main.cpp hs071_nlp.cpp hs071_nlp.hpp)
   add_ipopt_test(hs071_c hs071_c.c)
   if (NOT WIN32)
     add_test(NAME Ipopt-unitTest
       WORKING_DIRECTORY ${COIN_BINARY_DIR}/bin
-      COMMAND sh ../Ipopt/test/run_unitTests)
+      COMMAND sh ../Ipopt/Ipopt/test/run_unitTests)
   endif ()
 
-  configure(Ipopt src/Common/config.h src/Common/config_ipopt.h)
+  configure(Ipopt Ipopt/src/Common/config.h Ipopt/src/Common/config_ipopt.h)
 endif()
 
 function(add_coin_test name dir lib)
