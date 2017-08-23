@@ -700,7 +700,7 @@ if (BUILD_IPOPT)
 
     if (NOT WIN32)
       add_test(NAME Ipopt-amplTest
-        COMMAND sh -c "bin/ipopt Ipopt/test/mytoy.nl | grep 'EXIT: Optimal Solution Found.'")
+        COMMAND sh -c "bin/ipopt Ipopt/Ipopt/test/mytoy.nl | grep 'EXIT: Optimal Solution Found.'")
     endif ()
   endif ()
 
