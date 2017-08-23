@@ -14,11 +14,11 @@
 
 @SET_MAKE@
 
-# Copyright (C) 2004, 2008 International Business Machines and others.
+# Copyright (C) 2006 International Business Machines and others.
 # All Rights Reserved.
 # This file is distributed under the Eclipse Public License.
 
-# Authors:  Carl Laird, Andreas Waechter     IBM    2004-08-13
+# Author:  Andreas Waechter           IBM    2006-04-13
 
 # Copyright (C) 2006, 2007 International Business Machines and others.
 # All Rights Reserved.
@@ -29,7 +29,6 @@
 ########################################################################
 #                    Documentation installation                        #
 ########################################################################
-
 srcdir = @srcdir@
 top_srcdir = @top_srcdir@
 VPATH = @srcdir@
@@ -52,54 +51,13 @@ PRE_UNINSTALL = :
 POST_UNINSTALL = :
 build_triplet = @build@
 host_triplet = @host@
-@BUILD_LINEARSOLVERLOADER_TRUE@am__append_1 = src/contrib/LinearSolverLoader
-@ALWAYS_FALSE@am__append_2 = test
 DIST_COMMON = README $(am__configure_deps) \
 	$(srcdir)/BuildTools/Makemain.inc $(srcdir)/Makefile.am \
-	$(srcdir)/Makefile.in $(srcdir)/ipopt-uninstalled.pc.in \
-	$(srcdir)/ipopt.pc.in $(top_srcdir)/configure \
-	$(top_srcdir)/contrib/JavaInterface/Makefile.in \
-	$(top_srcdir)/contrib/MatlabInterface/examples/startup.m.in \
-	$(top_srcdir)/contrib/MatlabInterface/src/Makefile.in \
-	$(top_srcdir)/contrib/RInterface/src/Makevars.in \
-	$(top_srcdir)/contrib/sIPOPT/AmplSolver/Makefile.in \
-	$(top_srcdir)/contrib/sIPOPT/Makefile.in \
-	$(top_srcdir)/contrib/sIPOPT/examples/parametric_cpp/Makefile.in \
-	$(top_srcdir)/contrib/sIPOPT/examples/parametric_dsdp_cpp/Makefile.in \
-	$(top_srcdir)/contrib/sIPOPT/examples/redhess_cpp/Makefile.in \
-	$(top_srcdir)/doxydoc/doxygen.conf.in \
-	$(top_srcdir)/examples/Cpp_example/Makefile.in \
-	$(top_srcdir)/examples/ScalableProblems/Makefile.in \
-	$(top_srcdir)/examples/ScalableProblems/config.h.in \
-	$(top_srcdir)/examples/hs071_c/Makefile.in \
-	$(top_srcdir)/examples/hs071_c/hs071_c.c \
-	$(top_srcdir)/examples/hs071_cpp/Makefile.in \
-	$(top_srcdir)/examples/hs071_cpp/hs071_main.cpp \
-	$(top_srcdir)/examples/hs071_cpp/hs071_nlp.cpp \
-	$(top_srcdir)/examples/hs071_cpp/hs071_nlp.hpp \
-	$(top_srcdir)/examples/hs071_f/Makefile.in \
-	$(top_srcdir)/examples/hs071_f/hs071_f.f.in \
-	$(top_srcdir)/src/Apps/AmplSolver/ipoptamplinterface-uninstalled.pc.in \
-	$(top_srcdir)/src/Apps/AmplSolver/ipoptamplinterface.pc.in \
-	$(top_srcdir)/tutorial/CodingExercise/C/1-skeleton/Makefile.in \
-	$(top_srcdir)/tutorial/CodingExercise/C/2-mistake/Makefile.in \
-	$(top_srcdir)/tutorial/CodingExercise/C/3-solution/Makefile.in \
-	$(top_srcdir)/tutorial/CodingExercise/Cpp/1-skeleton/Makefile.in \
-	$(top_srcdir)/tutorial/CodingExercise/Cpp/2-mistake/Makefile.in \
-	$(top_srcdir)/tutorial/CodingExercise/Cpp/3-solution/Makefile.in \
-	$(top_srcdir)/tutorial/CodingExercise/Fortran/1-skeleton/Makefile.in \
-	$(top_srcdir)/tutorial/CodingExercise/Fortran/1-skeleton/TutorialFortran.f.in \
-	$(top_srcdir)/tutorial/CodingExercise/Fortran/2-mistake/Makefile.in \
-	$(top_srcdir)/tutorial/CodingExercise/Fortran/2-mistake/TutorialFortran.f.in \
-	$(top_srcdir)/tutorial/CodingExercise/Fortran/3-solution/Makefile.in \
-	$(top_srcdir)/tutorial/CodingExercise/Fortran/3-solution/TutorialFortran.f.in \
-	$(top_srcdir)/tutorial/CodingExercise/Matlab/1-skeleton/startup.m.in \
-	$(top_srcdir)/tutorial/CodingExercise/Matlab/2-mistake/startup.m.in \
-	$(top_srcdir)/tutorial/CodingExercise/Matlab/3-solution/startup.m.in \
-	AUTHORS INSTALL config.guess config.sub depcomp install-sh \
-	ltmain.sh missing
-@HAVE_EXTERNALS_TRUE@am__append_3 = Dependencies
-@HAVE_EXTERNALS_TRUE@am__append_4 = .Dependencies-stamp
+	$(srcdir)/Makefile.in $(top_srcdir)/configure \
+	$(top_srcdir)/doxydoc/doxygen.conf.in ChangeLog INSTALL \
+	config.guess config.sub depcomp install-sh ltmain.sh missing
+@HAVE_EXTERNALS_TRUE@am__append_1 = Dependencies
+@HAVE_EXTERNALS_TRUE@am__append_2 = .Dependencies-stamp
 subdir = .
 ACLOCAL_M4 = $(top_srcdir)/aclocal.m4
 am__aclocal_m4_deps = $(top_srcdir)/acinclude.m4 \
@@ -109,39 +67,7 @@ am__configure_deps = $(am__aclocal_m4_deps) $(CONFIGURE_DEPENDENCIES) \
 am__CONFIG_DISTCLEAN_FILES = config.status config.cache config.log \
  configure.lineno configure.status.lineno
 mkinstalldirs = $(install_sh) -d
-CONFIG_HEADER = $(top_builddir)/src/Common/config.h \
-	$(top_builddir)/src/Common/config_ipopt.h \
-	$(top_builddir)/examples/ScalableProblems/config.h
-CONFIG_CLEAN_FILES = examples/hs071_f/Makefile \
-	examples/hs071_f/hs071_f.f examples/Cpp_example/Makefile \
-	examples/hs071_cpp/Makefile examples/hs071_c/Makefile \
-	examples/ScalableProblems/Makefile \
-	tutorial/CodingExercise/C/1-skeleton/Makefile \
-	tutorial/CodingExercise/C/2-mistake/Makefile \
-	tutorial/CodingExercise/C/3-solution/Makefile \
-	tutorial/CodingExercise/Cpp/1-skeleton/Makefile \
-	tutorial/CodingExercise/Cpp/2-mistake/Makefile \
-	tutorial/CodingExercise/Cpp/3-solution/Makefile \
-	tutorial/CodingExercise/Matlab/1-skeleton/startup.m \
-	tutorial/CodingExercise/Matlab/2-mistake/startup.m \
-	tutorial/CodingExercise/Matlab/3-solution/startup.m \
-	tutorial/CodingExercise/Fortran/1-skeleton/TutorialFortran.f \
-	tutorial/CodingExercise/Fortran/2-mistake/TutorialFortran.f \
-	tutorial/CodingExercise/Fortran/3-solution/TutorialFortran.f \
-	tutorial/CodingExercise/Fortran/1-skeleton/Makefile \
-	tutorial/CodingExercise/Fortran/2-mistake/Makefile \
-	tutorial/CodingExercise/Fortran/3-solution/Makefile \
-	contrib/MatlabInterface/src/Makefile \
-	contrib/MatlabInterface/examples/startup.m \
-	contrib/JavaInterface/Makefile contrib/sIPOPT/Makefile \
-	contrib/sIPOPT/AmplSolver/Makefile \
-	contrib/sIPOPT/examples/parametric_cpp/Makefile \
-	contrib/sIPOPT/examples/parametric_dsdp_cpp/Makefile \
-	contrib/sIPOPT/examples/redhess_cpp/Makefile ipopt.pc \
-	ipopt-uninstalled.pc doxydoc/doxygen.conf \
-	contrib/RInterface/src/Makevars.win \
-	contrib/RInterface/src/Makevars ipoptamplinterface.pc \
-	ipoptamplinterface-uninstalled.pc
+CONFIG_CLEAN_FILES = doxydoc/doxygen.conf
 SOURCES =
 DIST_SOURCES =
 RECURSIVE_TARGETS = all-recursive check-recursive dvi-recursive \
@@ -150,20 +76,9 @@ RECURSIVE_TARGETS = all-recursive check-recursive dvi-recursive \
 	install-recursive installcheck-recursive installdirs-recursive \
 	pdf-recursive ps-recursive uninstall-info-recursive \
 	uninstall-recursive
-am__vpath_adj_setup = srcdirstrip=`echo "$(srcdir)" | sed 's|.|.|g'`;
-am__vpath_adj = case $$p in \
-    $(srcdir)/*) f=`echo "$$p" | sed "s|^$$srcdirstrip/||"`;; \
-    *) f=$$p;; \
-  esac;
-am__strip_dir = `echo $$p | sed -e 's|^.*/||'`;
-am__installdirs = "$(DESTDIR)$(pkgconfiglibdir)"
-pkgconfiglibDATA_INSTALL = $(INSTALL_DATA)
-DATA = $(pkgconfiglib_DATA)
 ETAGS = etags
 CTAGS = ctags
-DIST_SUBDIRS = src/Common src/LinAlg src/Algorithm \
-	src/contrib/CGPenalty src/contrib/LinearSolverLoader \
-	src/Interfaces src/Apps test
+DIST_SUBDIRS = $(SUBDIRS)
 DISTFILES = $(DIST_COMMON) $(DIST_SOURCES) $(TEXINFOS) $(EXTRA_DIST)
 distdir = $(PACKAGE)-$(VERSION)
 top_distdir = $(distdir)
@@ -180,46 +95,16 @@ ACLOCAL = @ACLOCAL@
 ADD_CFLAGS = @ADD_CFLAGS@
 ADD_CXXFLAGS = @ADD_CXXFLAGS@
 ADD_FFLAGS = @ADD_FFLAGS@
-AIX_FIX_COMPILER_BUG_FALSE = @AIX_FIX_COMPILER_BUG_FALSE@
-AIX_FIX_COMPILER_BUG_TRUE = @AIX_FIX_COMPILER_BUG_TRUE@
-ALWAYS_FALSE_FALSE = @ALWAYS_FALSE_FALSE@
-ALWAYS_FALSE_TRUE = @ALWAYS_FALSE_TRUE@
 AMDEP_FALSE = @AMDEP_FALSE@
 AMDEP_TRUE = @AMDEP_TRUE@
 AMTAR = @AMTAR@
 AR = @AR@
-ASL_CFLAGS = @ASL_CFLAGS@
-ASL_CFLAGS_INSTALLED = @ASL_CFLAGS_INSTALLED@
-ASL_DATA = @ASL_DATA@
-ASL_DATA_INSTALLED = @ASL_DATA_INSTALLED@
-ASL_DEPENDENCIES = @ASL_DEPENDENCIES@
-ASL_LIBS = @ASL_LIBS@
-ASL_LIBS_INSTALLED = @ASL_LIBS_INSTALLED@
-ASTYLE = @ASTYLE@
-ASTYLEFLAGS = @ASTYLEFLAGS@
 AUTOCONF = @AUTOCONF@
 AUTOHEADER = @AUTOHEADER@
 AUTOMAKE = @AUTOMAKE@
 AUX_DIR = @AUX_DIR@
 AWK = @AWK@
-BIT32FCOMMENT = @BIT32FCOMMENT@
-BIT64FCOMMENT = @BIT64FCOMMENT@
-BITS_PER_POINTER = @BITS_PER_POINTER@
-BLAS_CFLAGS = @BLAS_CFLAGS@
-BLAS_CFLAGS_INSTALLED = @BLAS_CFLAGS_INSTALLED@
-BLAS_DATA = @BLAS_DATA@
-BLAS_DATA_INSTALLED = @BLAS_DATA_INSTALLED@
-BLAS_DEPENDENCIES = @BLAS_DEPENDENCIES@
-BLAS_LIBS = @BLAS_LIBS@
-BLAS_LIBS_INSTALLED = @BLAS_LIBS_INSTALLED@
-BLUEGENEEXTRA = @BLUEGENEEXTRA@
 BUILDTOOLSDIR = @BUILDTOOLSDIR@
-BUILD_INEXACT_FALSE = @BUILD_INEXACT_FALSE@
-BUILD_INEXACT_TRUE = @BUILD_INEXACT_TRUE@
-BUILD_LINEARSOLVERLOADER_FALSE = @BUILD_LINEARSOLVERLOADER_FALSE@
-BUILD_LINEARSOLVERLOADER_TRUE = @BUILD_LINEARSOLVERLOADER_TRUE@
-BUILD_PARDISOLOADER_FALSE = @BUILD_PARDISOLOADER_FALSE@
-BUILD_PARDISOLOADER_TRUE = @BUILD_PARDISOLOADER_TRUE@
 CC = @CC@
 CCDEPMODE = @CCDEPMODE@
 CDEFS = @CDEFS@
@@ -228,33 +113,18 @@ COIN_CC_IS_CL_FALSE = @COIN_CC_IS_CL_FALSE@
 COIN_CC_IS_CL_TRUE = @COIN_CC_IS_CL_TRUE@
 COIN_CXX_IS_CL_FALSE = @COIN_CXX_IS_CL_FALSE@
 COIN_CXX_IS_CL_TRUE = @COIN_CXX_IS_CL_TRUE@
-COIN_HAS_ASL_FALSE = @COIN_HAS_ASL_FALSE@
-COIN_HAS_ASL_TRUE = @COIN_HAS_ASL_TRUE@
-COIN_HAS_BLAS_FALSE = @COIN_HAS_BLAS_FALSE@
-COIN_HAS_BLAS_TRUE = @COIN_HAS_BLAS_TRUE@
 COIN_HAS_DOXYGEN_FALSE = @COIN_HAS_DOXYGEN_FALSE@
 COIN_HAS_DOXYGEN_TRUE = @COIN_HAS_DOXYGEN_TRUE@
-COIN_HAS_HSL_FALSE = @COIN_HAS_HSL_FALSE@
-COIN_HAS_HSL_TRUE = @COIN_HAS_HSL_TRUE@
-COIN_HAS_LAPACK_FALSE = @COIN_HAS_LAPACK_FALSE@
-COIN_HAS_LAPACK_TRUE = @COIN_HAS_LAPACK_TRUE@
 COIN_HAS_LATEX_FALSE = @COIN_HAS_LATEX_FALSE@
 COIN_HAS_LATEX_TRUE = @COIN_HAS_LATEX_TRUE@
-COIN_HAS_MUMPS_FALSE = @COIN_HAS_MUMPS_FALSE@
-COIN_HAS_MUMPS_TRUE = @COIN_HAS_MUMPS_TRUE@
-COIN_HAS_PKGCONFIG_FALSE = @COIN_HAS_PKGCONFIG_FALSE@
-COIN_HAS_PKGCONFIG_TRUE = @COIN_HAS_PKGCONFIG_TRUE@
-COIN_PKG_CONFIG_PATH = @COIN_PKG_CONFIG_PATH@
-COIN_PKG_CONFIG_PATH_UNINSTALLED = @COIN_PKG_CONFIG_PATH_UNINSTALLED@
+COIN_SKIP_PROJECTS = @COIN_SKIP_PROJECTS@
 CPP = @CPP@
 CPPFLAGS = @CPPFLAGS@
 CXX = @CXX@
-CXXAR = @CXXAR@
 CXXCPP = @CXXCPP@
 CXXDEFS = @CXXDEFS@
 CXXDEPMODE = @CXXDEPMODE@
 CXXFLAGS = @CXXFLAGS@
-CXXLIBS = @CXXLIBS@
 CYGPATH_W = @CYGPATH_W@
 DBG_CFLAGS = @DBG_CFLAGS@
 DBG_CXXFLAGS = @DBG_CXXFLAGS@
@@ -271,52 +141,12 @@ EGREP = @EGREP@
 EXEEXT = @EXEEXT@
 F77 = @F77@
 FFLAGS = @FFLAGS@
-FLIBS = @FLIBS@
-FRAMEWORK_VECLIB = @FRAMEWORK_VECLIB@
 HAVE_EXTERNALS_FALSE = @HAVE_EXTERNALS_FALSE@
 HAVE_EXTERNALS_TRUE = @HAVE_EXTERNALS_TRUE@
-HAVE_MA28_FALSE = @HAVE_MA28_FALSE@
-HAVE_MA28_TRUE = @HAVE_MA28_TRUE@
-HAVE_PARDISO_FALSE = @HAVE_PARDISO_FALSE@
-HAVE_PARDISO_TRUE = @HAVE_PARDISO_TRUE@
-HAVE_WSMP_FALSE = @HAVE_WSMP_FALSE@
-HAVE_WSMP_TRUE = @HAVE_WSMP_TRUE@
-HSL_CFLAGS = @HSL_CFLAGS@
-HSL_CFLAGS_INSTALLED = @HSL_CFLAGS_INSTALLED@
-HSL_DATA = @HSL_DATA@
-HSL_DATA_INSTALLED = @HSL_DATA_INSTALLED@
-HSL_DEPENDENCIES = @HSL_DEPENDENCIES@
-HSL_LIBS = @HSL_LIBS@
-HSL_LIBS_INSTALLED = @HSL_LIBS_INSTALLED@
 INSTALL_DATA = @INSTALL_DATA@
 INSTALL_PROGRAM = @INSTALL_PROGRAM@
 INSTALL_SCRIPT = @INSTALL_SCRIPT@
 INSTALL_STRIP_PROGRAM = @INSTALL_STRIP_PROGRAM@
-IPALLLIBS = @IPALLLIBS@
-IPOPTAMPLINTERFACELIB_CFLAGS = @IPOPTAMPLINTERFACELIB_CFLAGS@
-IPOPTAMPLINTERFACELIB_CFLAGS_INSTALLED = @IPOPTAMPLINTERFACELIB_CFLAGS_INSTALLED@
-IPOPTAMPLINTERFACELIB_DEPENDENCIES = @IPOPTAMPLINTERFACELIB_DEPENDENCIES@
-IPOPTAMPLINTERFACELIB_LIBS = @IPOPTAMPLINTERFACELIB_LIBS@
-IPOPTAMPLINTERFACELIB_LIBS_INSTALLED = @IPOPTAMPLINTERFACELIB_LIBS_INSTALLED@
-IPOPTAMPLINTERFACELIB_PCLIBS = @IPOPTAMPLINTERFACELIB_PCLIBS@
-IPOPTAMPLINTERFACELIB_PCREQUIRES = @IPOPTAMPLINTERFACELIB_PCREQUIRES@
-IPOPTLIB_CFLAGS = @IPOPTLIB_CFLAGS@
-IPOPTLIB_CFLAGS_INSTALLED = @IPOPTLIB_CFLAGS_INSTALLED@
-IPOPTLIB_DEPENDENCIES = @IPOPTLIB_DEPENDENCIES@
-IPOPTLIB_LIBS = @IPOPTLIB_LIBS@
-IPOPTLIB_LIBS_INSTALLED = @IPOPTLIB_LIBS_INSTALLED@
-IPOPTLIB_PCLIBS = @IPOPTLIB_PCLIBS@
-IPOPTLIB_PCREQUIRES = @IPOPTLIB_PCREQUIRES@
-IPOPT_SVN_REV = @IPOPT_SVN_REV@
-JAVA_HOME = @JAVA_HOME@
-JIPOPTDLL = @JIPOPTDLL@
-LAPACK_CFLAGS = @LAPACK_CFLAGS@
-LAPACK_CFLAGS_INSTALLED = @LAPACK_CFLAGS_INSTALLED@
-LAPACK_DATA = @LAPACK_DATA@
-LAPACK_DATA_INSTALLED = @LAPACK_DATA_INSTALLED@
-LAPACK_DEPENDENCIES = @LAPACK_DEPENDENCIES@
-LAPACK_LIBS = @LAPACK_LIBS@
-LAPACK_LIBS_INSTALLED = @LAPACK_LIBS_INSTALLED@
 LDFLAGS = @LDFLAGS@
 LIBEXT = @LIBEXT@
 LIBOBJS = @LIBOBJS@
@@ -330,24 +160,9 @@ MAINT = @MAINT@
 MAINTAINER_MODE_FALSE = @MAINTAINER_MODE_FALSE@
 MAINTAINER_MODE_TRUE = @MAINTAINER_MODE_TRUE@
 MAKEINFO = @MAKEINFO@
-MATLAB_CYGPATH_W = @MATLAB_CYGPATH_W@
-MATLAB_HOME = @MATLAB_HOME@
-MEXSUFFIX = @MEXSUFFIX@
-MEX_STATIC_FALSE = @MEX_STATIC_FALSE@
-MEX_STATIC_TRUE = @MEX_STATIC_TRUE@
-MEX_WINDOWS_FALSE = @MEX_WINDOWS_FALSE@
-MEX_WINDOWS_TRUE = @MEX_WINDOWS_TRUE@
 MPICC = @MPICC@
 MPICXX = @MPICXX@
 MPIF77 = @MPIF77@
-MUMPS_CFLAGS = @MUMPS_CFLAGS@
-MUMPS_CFLAGS_INSTALLED = @MUMPS_CFLAGS_INSTALLED@
-MUMPS_DATA = @MUMPS_DATA@
-MUMPS_DATA_INSTALLED = @MUMPS_DATA_INSTALLED@
-MUMPS_DEPENDENCIES = @MUMPS_DEPENDENCIES@
-MUMPS_LIBS = @MUMPS_LIBS@
-MUMPS_LIBS_INSTALLED = @MUMPS_LIBS_INSTALLED@
-MWMA57PATH = @MWMA57PATH@
 OBJEXT = @OBJEXT@
 OPT_CFLAGS = @OPT_CFLAGS@
 OPT_CXXFLAGS = @OPT_CXXFLAGS@
@@ -359,11 +174,9 @@ PACKAGE_STRING = @PACKAGE_STRING@
 PACKAGE_TARNAME = @PACKAGE_TARNAME@
 PACKAGE_VERSION = @PACKAGE_VERSION@
 PATH_SEPARATOR = @PATH_SEPARATOR@
-PKG_CONFIG = @PKG_CONFIG@
 RANLIB = @RANLIB@
 RPATH_FLAGS = @RPATH_FLAGS@
 SET_MAKE = @SET_MAKE@
-SHARED_FLAGS = @SHARED_FLAGS@
 SHELL = @SHELL@
 STRIP = @STRIP@
 VERSION = @VERSION@
@@ -377,7 +190,6 @@ ac_ct_AR = @ac_ct_AR@
 ac_ct_CC = @ac_ct_CC@
 ac_ct_CXX = @ac_ct_CXX@
 ac_ct_F77 = @ac_ct_F77@
-ac_ct_PKG_CONFIG = @ac_ct_PKG_CONFIG@
 ac_ct_RANLIB = @ac_ct_RANLIB@
 ac_ct_STRIP = @ac_ct_STRIP@
 ac_cxx_preproc_warn_flag = @ac_cxx_preproc_warn_flag@
@@ -408,7 +220,6 @@ exec_prefix = @exec_prefix@
 have_autoconf = @have_autoconf@
 have_automake = @have_automake@
 have_svn = @have_svn@
-have_svnversion = @have_svnversion@
 host = @host@
 host_alias = @host_alias@
 host_cpu = @host_cpu@
@@ -428,88 +239,27 @@ program_transform_name = @program_transform_name@
 sbindir = @sbindir@
 sharedstatedir = @sharedstatedir@
 sol_cc_compiler = @sol_cc_compiler@
+subdirs = @subdirs@
 sysconfdir = @sysconfdir@
 target_alias = @target_alias@
 AUTOMAKE_OPTIONS = foreign
-SUBDIRS = src/Common src/LinAlg src/Algorithm src/contrib/CGPenalty \
-	$(am__append_1) src/Interfaces src/Apps $(am__append_2)
-EXTRA_DIST = examples/Cpp_example/cpp_example.cpp \
-	examples/Cpp_example/Makefile.in \
-	examples/Cpp_example/MyNLP.cpp examples/Cpp_example/MyNLP.hpp \
-	examples/hs071_f/Makefile.in examples/hs071_f/hs071_f.f.in \
-	examples/hs071_c/Makefile.in examples/hs071_c/hs071_c.c \
-	examples/hs071_cpp/Makefile.in \
-	examples/hs071_cpp/hs071_main.cpp \
-	examples/hs071_cpp/hs071_nlp.cpp \
-	examples/hs071_cpp/hs071_nlp.hpp \
-	examples/ScalableProblems/LuksanVlcek1.cpp \
-	examples/ScalableProblems/LuksanVlcek1.hpp \
-	examples/ScalableProblems/LuksanVlcek2.cpp \
-	examples/ScalableProblems/LuksanVlcek2.hpp \
-	examples/ScalableProblems/LuksanVlcek3.cpp \
-	examples/ScalableProblems/LuksanVlcek3.hpp \
-	examples/ScalableProblems/LuksanVlcek4.cpp \
-	examples/ScalableProblems/LuksanVlcek4.hpp \
-	examples/ScalableProblems/LuksanVlcek5.cpp \
-	examples/ScalableProblems/LuksanVlcek5.hpp \
-	examples/ScalableProblems/LuksanVlcek6.cpp \
-	examples/ScalableProblems/LuksanVlcek6.hpp \
-	examples/ScalableProblems/LuksanVlcek7.cpp \
-	examples/ScalableProblems/LuksanVlcek7.hpp \
-	examples/ScalableProblems/Makefile.in \
-	examples/ScalableProblems/MittelmannBndryCntrlDiri.cpp \
-	examples/ScalableProblems/MittelmannBndryCntrlDiri.hpp \
-	examples/ScalableProblems/MittelmannBndryCntrlNeum.cpp \
-	examples/ScalableProblems/MittelmannBndryCntrlNeum.hpp \
-	examples/ScalableProblems/MittelmannDistCntrlDiri.cpp \
-	examples/ScalableProblems/MittelmannDistCntrlDiri.hpp \
-	examples/ScalableProblems/MittelmannDistCntrlNeumA.cpp \
-	examples/ScalableProblems/MittelmannDistCntrlNeumA.hpp \
-	examples/ScalableProblems/MittelmannDistCntrlNeumB.cpp \
-	examples/ScalableProblems/MittelmannDistCntrlNeumB.hpp \
-	examples/ScalableProblems/MittelmannParaCntrl.hpp \
-	examples/ScalableProblems/README \
-	examples/ScalableProblems/RegisteredTNLP.cpp \
-	examples/ScalableProblems/RegisteredTNLP.hpp \
-	examples/ScalableProblems/solve_problem.cpp README INSTALL \
-	LICENSE AUTHORS doc/documentation.bbl doc/documentation.tex \
-	doc/documentation.pdf doc/options.tex test/run_unitTests.in \
-	test/mytoy.nl Windows/VisualStudio_dotNET/README \
-	Windows/VisualStudio_dotNET/CppExample/CppExample.vcproj \
-	Windows/VisualStudio_dotNET/hs071_cpp/hs071_cpp.vcproj \
-	Windows/VisualStudio_dotNET/hs071_c/hs071_c.vcproj \
-	Windows/VisualStudio_dotNET/hs071_f/hs071_f.vfproj \
-	Windows/VisualStudio_dotNET/hs071_f/hs071_f.f \
-	Windows/VisualStudio_dotNET/FortranLinAlg/FortranLinAlg.vfproj \
-	Windows/VisualStudio_dotNET/Ipopt/Ipopt.sln \
-	Windows/VisualStudio_dotNET/Ipopt/Ipopt.vcproj \
-	Windows/VisualStudio_dotNET/ScalableProblems/ScalableProblems.vcproj \
-	$(am__append_3)
+EXTRA_DIST = doxydoc/doxygen.conf $(am__append_1)
 
-# Stuff to clean up from "make test"
-DISTCLEANFILES = examples/Cpp_example/cpp_example@EXEEXT@ \
-	examples/Cpp_example/cpp_example.@OBJEXT@ \
-	examples/Cpp_example/MyNLP.@OBJEXT@ \
-	examples/hs071_cpp/hs071_cpp@EXEEXT@ \
-	examples/hs071_cpp/hs071_main.@OBJEXT@ \
-	examples/hs071_cpp/hs071_nlp.@OBJEXT@ \
-	examples/hs071_cpp/ipopt.out examples/hs071_c/hs071_c@EXEEXT@ \
-	examples/hs071_c/hs071_c.@OBJEXT@ examples/hs071_c/ipopt.out \
-	examples/hs071_f/hs071_f@EXEEXT@ \
-	examples/hs071_f/hs071_f.@OBJEXT@ examples/hs071_f/IPOPT.OUT \
-	examples/ScalableProblems/*.@OBJEXT@ \
-	examples/ScalableProblems/solve_problem@EXEEXT@ \
-	examples/ScalableProblems/solution.txt \
-	tutorial/CodingExercise/*/*/*.@OBJEXT@ \
-	tutorial/CodingExercise/C/*/TutorialC@EXEEXT@ \
-	tutorial/CodingExercise/Cpp/*/TutorialCpp@EXEEXT@ \
-	tutorial/CodingExercise/Fortran/*/TutorialFortran@EXEEXT@ \
-	$(am__append_4) $(VPATH_DISTCLEANFILES)
-tmpdir = tmpdir
-libipopt = libipopt.a
-pkgconfiglibdir = $(libdir)/pkgconfig
-pkgconfiglib_DATA = ipopt.pc
-addlibsdir = $(DESTDIR)$(datadir)/coin/doc/Ipopt
+########################################################################
+#                          Subdirectories                              #
+########################################################################
+
+# subdirs is set by configure as the list of all subdirectories to recurse
+# into
+SUBDIRS = $(subdirs)
+
+########################################################################
+#                         Maintainer Stuff                             #
+########################################################################
+
+# Files that are generated and should be cleaned with make distclean
+DISTCLEANFILES = coin_subdirs.txt $(am__append_2) \
+	$(VPATH_DISTCLEANFILES)
 DocFiles = README AUTHORS LICENSE 
 DocInstallDir = $(datadir)/coin/doc/$(PACKAGE_NAME)
 COIN_HAS_DOXYGEN = @COIN_HAS_DOXYGEN_TRUE@TRUE
@@ -550,94 +300,7 @@ $(top_srcdir)/configure: @MAINTAINER_MODE_TRUE@ $(am__configure_deps)
 	cd $(srcdir) && $(AUTOCONF)
 $(ACLOCAL_M4): @MAINTAINER_MODE_TRUE@ $(am__aclocal_m4_deps)
 	cd $(srcdir) && $(ACLOCAL) $(ACLOCAL_AMFLAGS)
-
-examples/ScalableProblems/config.h: examples/ScalableProblems/stamp-h3
-	@if test ! -f $@; then \
-	  rm -f examples/ScalableProblems/stamp-h3; \
-	  $(MAKE) examples/ScalableProblems/stamp-h3; \
-	else :; fi
-
-examples/ScalableProblems/stamp-h3: $(top_srcdir)/examples/ScalableProblems/config.h.in $(top_builddir)/config.status
-	@rm -f examples/ScalableProblems/stamp-h3
-	cd $(top_builddir) && $(SHELL) ./config.status examples/ScalableProblems/config.h
-$(top_srcdir)/examples/ScalableProblems/config.h.in: @MAINTAINER_MODE_TRUE@ $(am__configure_deps) 
-	cd $(top_srcdir) && $(AUTOHEADER)
-	rm -f examples/ScalableProblems/stamp-h3
-	touch $@
-
-distclean-hdr:
-	-rm -f examples/ScalableProblems/config.h examples/ScalableProblems/stamp-h3
-examples/hs071_f/Makefile: $(top_builddir)/config.status $(top_srcdir)/examples/hs071_f/Makefile.in
-	cd $(top_builddir) && $(SHELL) ./config.status $@
-examples/hs071_f/hs071_f.f: $(top_builddir)/config.status $(top_srcdir)/examples/hs071_f/hs071_f.f.in
-	cd $(top_builddir) && $(SHELL) ./config.status $@
-examples/Cpp_example/Makefile: $(top_builddir)/config.status $(top_srcdir)/examples/Cpp_example/Makefile.in
-	cd $(top_builddir) && $(SHELL) ./config.status $@
-examples/hs071_cpp/Makefile: $(top_builddir)/config.status $(top_srcdir)/examples/hs071_cpp/Makefile.in
-	cd $(top_builddir) && $(SHELL) ./config.status $@
-examples/hs071_c/Makefile: $(top_builddir)/config.status $(top_srcdir)/examples/hs071_c/Makefile.in
-	cd $(top_builddir) && $(SHELL) ./config.status $@
-examples/ScalableProblems/Makefile: $(top_builddir)/config.status $(top_srcdir)/examples/ScalableProblems/Makefile.in
-	cd $(top_builddir) && $(SHELL) ./config.status $@
-tutorial/CodingExercise/C/1-skeleton/Makefile: $(top_builddir)/config.status $(top_srcdir)/tutorial/CodingExercise/C/1-skeleton/Makefile.in
-	cd $(top_builddir) && $(SHELL) ./config.status $@
-tutorial/CodingExercise/C/2-mistake/Makefile: $(top_builddir)/config.status $(top_srcdir)/tutorial/CodingExercise/C/2-mistake/Makefile.in
-	cd $(top_builddir) && $(SHELL) ./config.status $@
-tutorial/CodingExercise/C/3-solution/Makefile: $(top_builddir)/config.status $(top_srcdir)/tutorial/CodingExercise/C/3-solution/Makefile.in
-	cd $(top_builddir) && $(SHELL) ./config.status $@
-tutorial/CodingExercise/Cpp/1-skeleton/Makefile: $(top_builddir)/config.status $(top_srcdir)/tutorial/CodingExercise/Cpp/1-skeleton/Makefile.in
-	cd $(top_builddir) && $(SHELL) ./config.status $@
-tutorial/CodingExercise/Cpp/2-mistake/Makefile: $(top_builddir)/config.status $(top_srcdir)/tutorial/CodingExercise/Cpp/2-mistake/Makefile.in
-	cd $(top_builddir) && $(SHELL) ./config.status $@
-tutorial/CodingExercise/Cpp/3-solution/Makefile: $(top_builddir)/config.status $(top_srcdir)/tutorial/CodingExercise/Cpp/3-solution/Makefile.in
-	cd $(top_builddir) && $(SHELL) ./config.status $@
-tutorial/CodingExercise/Matlab/1-skeleton/startup.m: $(top_builddir)/config.status $(top_srcdir)/tutorial/CodingExercise/Matlab/1-skeleton/startup.m.in
-	cd $(top_builddir) && $(SHELL) ./config.status $@
-tutorial/CodingExercise/Matlab/2-mistake/startup.m: $(top_builddir)/config.status $(top_srcdir)/tutorial/CodingExercise/Matlab/2-mistake/startup.m.in
-	cd $(top_builddir) && $(SHELL) ./config.status $@
-tutorial/CodingExercise/Matlab/3-solution/startup.m: $(top_builddir)/config.status $(top_srcdir)/tutorial/CodingExercise/Matlab/3-solution/startup.m.in
-	cd $(top_builddir) && $(SHELL) ./config.status $@
-tutorial/CodingExercise/Fortran/1-skeleton/TutorialFortran.f: $(top_builddir)/config.status $(top_srcdir)/tutorial/CodingExercise/Fortran/1-skeleton/TutorialFortran.f.in
-	cd $(top_builddir) && $(SHELL) ./config.status $@
-tutorial/CodingExercise/Fortran/2-mistake/TutorialFortran.f: $(top_builddir)/config.status $(top_srcdir)/tutorial/CodingExercise/Fortran/2-mistake/TutorialFortran.f.in
-	cd $(top_builddir) && $(SHELL) ./config.status $@
-tutorial/CodingExercise/Fortran/3-solution/TutorialFortran.f: $(top_builddir)/config.status $(top_srcdir)/tutorial/CodingExercise/Fortran/3-solution/TutorialFortran.f.in
-	cd $(top_builddir) && $(SHELL) ./config.status $@
-tutorial/CodingExercise/Fortran/1-skeleton/Makefile: $(top_builddir)/config.status $(top_srcdir)/tutorial/CodingExercise/Fortran/1-skeleton/Makefile.in
-	cd $(top_builddir) && $(SHELL) ./config.status $@
-tutorial/CodingExercise/Fortran/2-mistake/Makefile: $(top_builddir)/config.status $(top_srcdir)/tutorial/CodingExercise/Fortran/2-mistake/Makefile.in
-	cd $(top_builddir) && $(SHELL) ./config.status $@
-tutorial/CodingExercise/Fortran/3-solution/Makefile: $(top_builddir)/config.status $(top_srcdir)/tutorial/CodingExercise/Fortran/3-solution/Makefile.in
-	cd $(top_builddir) && $(SHELL) ./config.status $@
-contrib/MatlabInterface/src/Makefile: $(top_builddir)/config.status $(top_srcdir)/contrib/MatlabInterface/src/Makefile.in
-	cd $(top_builddir) && $(SHELL) ./config.status $@
-contrib/MatlabInterface/examples/startup.m: $(top_builddir)/config.status $(top_srcdir)/contrib/MatlabInterface/examples/startup.m.in
-	cd $(top_builddir) && $(SHELL) ./config.status $@
-contrib/JavaInterface/Makefile: $(top_builddir)/config.status $(top_srcdir)/contrib/JavaInterface/Makefile.in
-	cd $(top_builddir) && $(SHELL) ./config.status $@
-contrib/sIPOPT/Makefile: $(top_builddir)/config.status $(top_srcdir)/contrib/sIPOPT/Makefile.in
-	cd $(top_builddir) && $(SHELL) ./config.status $@
-contrib/sIPOPT/AmplSolver/Makefile: $(top_builddir)/config.status $(top_srcdir)/contrib/sIPOPT/AmplSolver/Makefile.in
-	cd $(top_builddir) && $(SHELL) ./config.status $@
-contrib/sIPOPT/examples/parametric_cpp/Makefile: $(top_builddir)/config.status $(top_srcdir)/contrib/sIPOPT/examples/parametric_cpp/Makefile.in
-	cd $(top_builddir) && $(SHELL) ./config.status $@
-contrib/sIPOPT/examples/parametric_dsdp_cpp/Makefile: $(top_builddir)/config.status $(top_srcdir)/contrib/sIPOPT/examples/parametric_dsdp_cpp/Makefile.in
-	cd $(top_builddir) && $(SHELL) ./config.status $@
-contrib/sIPOPT/examples/redhess_cpp/Makefile: $(top_builddir)/config.status $(top_srcdir)/contrib/sIPOPT/examples/redhess_cpp/Makefile.in
-	cd $(top_builddir) && $(SHELL) ./config.status $@
-ipopt.pc: $(top_builddir)/config.status $(srcdir)/ipopt.pc.in
-	cd $(top_builddir) && $(SHELL) ./config.status $@
-ipopt-uninstalled.pc: $(top_builddir)/config.status $(srcdir)/ipopt-uninstalled.pc.in
-	cd $(top_builddir) && $(SHELL) ./config.status $@
 doxydoc/doxygen.conf: $(top_builddir)/config.status $(top_srcdir)/doxydoc/doxygen.conf.in
-	cd $(top_builddir) && $(SHELL) ./config.status $@
-contrib/RInterface/src/Makevars.win: $(top_builddir)/config.status $(top_srcdir)/contrib/RInterface/src/Makevars.in
-	cd $(top_builddir) && $(SHELL) ./config.status $@
-contrib/RInterface/src/Makevars: $(top_builddir)/config.status $(top_srcdir)/contrib/RInterface/src/Makevars.in
-	cd $(top_builddir) && $(SHELL) ./config.status $@
-ipoptamplinterface.pc: $(top_builddir)/config.status $(top_srcdir)/src/Apps/AmplSolver/ipoptamplinterface.pc.in
-	cd $(top_builddir) && $(SHELL) ./config.status $@
-ipoptamplinterface-uninstalled.pc: $(top_builddir)/config.status $(top_srcdir)/src/Apps/AmplSolver/ipoptamplinterface-uninstalled.pc.in
 	cd $(top_builddir) && $(SHELL) ./config.status $@
 
 mostlyclean-libtool:
@@ -649,23 +312,6 @@ clean-libtool:
 distclean-libtool:
 	-rm -f libtool
 uninstall-info-am:
-install-pkgconfiglibDATA: $(pkgconfiglib_DATA)
-	@$(NORMAL_INSTALL)
-	test -z "$(pkgconfiglibdir)" || $(mkdir_p) "$(DESTDIR)$(pkgconfiglibdir)"
-	@list='$(pkgconfiglib_DATA)'; for p in $$list; do \
-	  if test -f "$$p"; then d=; else d="$(srcdir)/"; fi; \
-	  f=$(am__strip_dir) \
-	  echo " $(pkgconfiglibDATA_INSTALL) '$$d$$p' '$(DESTDIR)$(pkgconfiglibdir)/$$f'"; \
-	  $(pkgconfiglibDATA_INSTALL) "$$d$$p" "$(DESTDIR)$(pkgconfiglibdir)/$$f"; \
-	done
-
-uninstall-pkgconfiglibDATA:
-	@$(NORMAL_UNINSTALL)
-	@list='$(pkgconfiglib_DATA)'; for p in $$list; do \
-	  f=$(am__strip_dir) \
-	  echo " rm -f '$(DESTDIR)$(pkgconfiglibdir)/$$f'"; \
-	  rm -f "$(DESTDIR)$(pkgconfiglibdir)/$$f"; \
-	done
 
 # This directory's subdirectories are mostly independent; you can cd
 # into them and run `make' without going through this Makefile.
@@ -802,7 +448,7 @@ distclean-tags:
 distdir: $(DISTFILES)
 	$(am__remove_distdir)
 	mkdir $(distdir)
-	$(mkdir_p) $(distdir)/. $(distdir)/BuildTools $(distdir)/Windows/VisualStudio_dotNET $(distdir)/Windows/VisualStudio_dotNET/CppExample $(distdir)/Windows/VisualStudio_dotNET/FortranLinAlg $(distdir)/Windows/VisualStudio_dotNET/Ipopt $(distdir)/Windows/VisualStudio_dotNET/ScalableProblems $(distdir)/Windows/VisualStudio_dotNET/hs071_c $(distdir)/Windows/VisualStudio_dotNET/hs071_cpp $(distdir)/Windows/VisualStudio_dotNET/hs071_f $(distdir)/contrib/JavaInterface $(distdir)/contrib/MatlabInterface/examples $(distdir)/contrib/MatlabInterface/src $(distdir)/contrib/RInterface/src $(distdir)/contrib/sIPOPT $(distdir)/contrib/sIPOPT/AmplSolver $(distdir)/contrib/sIPOPT/examples/parametric_cpp $(distdir)/contrib/sIPOPT/examples/parametric_dsdp_cpp $(distdir)/contrib/sIPOPT/examples/redhess_cpp $(distdir)/doc $(distdir)/doxydoc $(distdir)/examples/Cpp_example $(distdir)/examples/ScalableProblems $(distdir)/examples/hs071_c $(distdir)/examples/hs071_cpp $(distdir)/examples/hs071_f $(distdir)/src/Apps/AmplSolver $(distdir)/test $(distdir)/tutorial/CodingExercise/C/1-skeleton $(distdir)/tutorial/CodingExercise/C/2-mistake $(distdir)/tutorial/CodingExercise/C/3-solution $(distdir)/tutorial/CodingExercise/Cpp/1-skeleton $(distdir)/tutorial/CodingExercise/Cpp/2-mistake $(distdir)/tutorial/CodingExercise/Cpp/3-solution $(distdir)/tutorial/CodingExercise/Fortran/1-skeleton $(distdir)/tutorial/CodingExercise/Fortran/2-mistake $(distdir)/tutorial/CodingExercise/Fortran/3-solution $(distdir)/tutorial/CodingExercise/Matlab/1-skeleton $(distdir)/tutorial/CodingExercise/Matlab/2-mistake $(distdir)/tutorial/CodingExercise/Matlab/3-solution
+	$(mkdir_p) $(distdir)/BuildTools $(distdir)/doxydoc
 	@srcdirstrip=`echo "$(srcdir)" | sed 's|.|.|g'`; \
 	topsrcdirstrip=`echo "$(top_srcdir)" | sed 's|.|.|g'`; \
 	list='$(DISTFILES)'; for file in $$list; do \
@@ -943,12 +589,9 @@ distcleancheck: distclean
 	       exit 1; } >&2
 check-am: all-am
 check: check-recursive
-all-am: Makefile $(DATA)
+all-am: Makefile
 installdirs: installdirs-recursive
 installdirs-am:
-	for dir in "$(DESTDIR)$(pkgconfiglibdir)"; do \
-	  test -z "$$dir" || $(mkdir_p) "$$dir"; \
-	done
 install: install-recursive
 install-exec: install-exec-recursive
 install-data: install-data-recursive
@@ -981,8 +624,8 @@ clean-am: clean-generic clean-libtool clean-local mostlyclean-am
 distclean: distclean-recursive
 	-rm -f $(am__CONFIG_DISTCLEAN_FILES)
 	-rm -f Makefile
-distclean-am: clean-am distclean-generic distclean-hdr \
-	distclean-libtool distclean-tags
+distclean-am: clean-am distclean-generic distclean-libtool \
+	distclean-tags
 
 dvi: dvi-recursive
 
@@ -994,9 +637,7 @@ info: info-recursive
 
 info-am:
 
-install-data-am: install-pkgconfiglibDATA
-	@$(NORMAL_INSTALL)
-	$(MAKE) $(AM_MAKEFLAGS) install-data-hook
+install-data-am:
 
 install-exec-am: install-exec-local
 
@@ -1024,10 +665,7 @@ ps: ps-recursive
 
 ps-am:
 
-uninstall-am: uninstall-info-am uninstall-local \
-	uninstall-pkgconfiglibDATA
-	@$(NORMAL_INSTALL)
-	$(MAKE) $(AM_MAKEFLAGS) uninstall-hook
+uninstall-am: uninstall-info-am uninstall-local
 
 uninstall-info: uninstall-info-recursive
 
@@ -1035,75 +673,63 @@ uninstall-info: uninstall-info-recursive
 	check-am clean clean-generic clean-libtool clean-local \
 	clean-recursive ctags ctags-recursive dist dist-all dist-bzip2 \
 	dist-gzip dist-shar dist-tarZ dist-zip distcheck distclean \
-	distclean-generic distclean-hdr distclean-libtool \
-	distclean-recursive distclean-tags distcleancheck distdir \
-	distuninstallcheck dvi dvi-am html html-am info info-am \
-	install install-am install-data install-data-am \
-	install-data-hook install-exec install-exec-am \
+	distclean-generic distclean-libtool distclean-recursive \
+	distclean-tags distcleancheck distdir distuninstallcheck dvi \
+	dvi-am html html-am info info-am install install-am \
+	install-data install-data-am install-exec install-exec-am \
 	install-exec-local install-info install-info-am install-man \
-	install-pkgconfiglibDATA install-strip installcheck \
-	installcheck-am installdirs installdirs-am maintainer-clean \
-	maintainer-clean-generic maintainer-clean-recursive \
-	mostlyclean mostlyclean-generic mostlyclean-libtool \
-	mostlyclean-recursive pdf pdf-am ps ps-am tags tags-recursive \
-	uninstall uninstall-am uninstall-hook uninstall-info-am \
-	uninstall-local uninstall-pkgconfiglibDATA
+	install-strip installcheck installcheck-am installdirs \
+	installdirs-am maintainer-clean maintainer-clean-generic \
+	maintainer-clean-recursive mostlyclean mostlyclean-generic \
+	mostlyclean-libtool mostlyclean-recursive pdf pdf-am ps ps-am \
+	tags tags-recursive uninstall uninstall-am uninstall-info-am \
+	uninstall-local
 
 
-.PHONY: cuter test unitTest astyle doxydoc
+########################################################################
+#                           Extra Targets                              #
+########################################################################
 
-cuter: install
-	cd src/Apps/CUTErInterface; $(MAKE) cuter
+test: all
+	cd Ipopt; $(MAKE) test
 
-test: unitTest
+unitTest: test
 
-unitTest: all
-	cd test; $(MAKE) test
+tests: all
+	for dir in $(subdirs); do \
+	  if test -r $$dir/test/Makefile; then \
+	    (cd $$dir; $(MAKE) test) \
+	  fi; \
+	done
 
-doxydoc :
+unitTests: tests
+
+doxydoc:
 	doxygen doxydoc/doxygen.conf
 
-clean-doxydoc:
+clean-doxydoc :
 	cd doxydoc && rm -rf html *.log *.tag
 
-install-exec-local: install-doc
+install-doxydoc : doxydoc
+	$(mkdir_p) $(DocInstallDir)/doxydoc
+	cp -R doxydoc/html doxydoc/ipopt_doxy.tag $(DocInstallDir)/doxydoc
 
-uninstall-local: uninstall-doc
+uninstall-doxydoc:
+	if test -e $(DocInstallDir)/doxydoc ; then rm -rf $(DocInstallDir)/doxydoc ; fi
 
-clean-local : clean-doxydoc
+cuter:
+	cd Ipopt; $(MAKE) cuter
 
-astyle:
-	cd src/Algorithm; $(MAKE) astyle
-	cd src/Algorithm/LinearSolvers; $(MAKE) astyle
-	cd src/Algorithm/Inexact; $(MAKE) astyle
-	cd src/contrib/CGPenalty; $(MAKE) astyle
-	cd src/Apps/AmplSolver; $(MAKE) astyle
-	cd src/Common; $(MAKE) astyle
-	cd src/LinAlg; $(MAKE) astyle
-	cd src/LinAlg/TMatrices; $(MAKE) astyle
-	cd src/Interfaces; $(MAKE) astyle
+.PHONY: test unitTest tests unitTests doxydoc cuter
 
-# setup addlibs files
-# the addlibs_cpp file is created by running pkg-config on the installed ipopt.pc, if pkg-config available,
-#   or by using variables setup in configure
-# the addlibs_c file is created by adding @CXXLIBS@ to the content of the addlibs_cpp file
-# the addlibs_f file is creating by taking the content of the addlibs_cpp file and removing the FLIBS
-#   since pkg-config may have reordered the flags from FLIBS, we take them out one by one
-install-data-hook:
-	@$(mkdir_p) "$(addlibsdir)"
-@COIN_HAS_PKGCONFIG_TRUE@	PKG_CONFIG_PATH=@COIN_PKG_CONFIG_PATH@:$(DESTDIR)$(pkgconfiglibdir) \
-@COIN_HAS_PKGCONFIG_TRUE@	$(PKG_CONFIG) --libs ipopt > $(addlibsdir)/ipopt_addlibs_cpp.txt
-@COIN_CXX_IS_CL_TRUE@@COIN_HAS_PKGCONFIG_FALSE@	echo "-libpath:`$(CYGPATH_W) @abs_lib_dir@` libipopt.lib @IPOPTLIB_LIBS_INSTALLED@" > $(addlibsdir)/ipopt_addlibs_cpp.txt
-@COIN_CXX_IS_CL_FALSE@@COIN_HAS_PKGCONFIG_FALSE@	echo "-L@abs_lib_dir@ -lipopt @IPOPTLIB_LIBS_INSTALLED@" > $(addlibsdir)/ipopt_addlibs_cpp.txt
-	addlibs=`cat $(addlibsdir)/ipopt_addlibs_cpp.txt` ; \
-	echo "$$addlibs @CXXLIBS@" > $(addlibsdir)/ipopt_addlibs_c.txt ; \
-	for i in @FLIBS@ coin_dummy ; do \
-		addlibs=`echo -n " $$addlibs " | sed -e "s! $$i ! !g"` ; \
-	done ; \
-	echo "$$addlibs @CXXLIBS@" > $(addlibsdir)/ipopt_addlibs_f.txt
-
-uninstall-hook:
-	rm -f $(addlibsdir)/ipopt_addlibs_{cpp,c,f}.txt
+clean-local: clean-doxydoc
+uninstall-local: uninstall-doxydoc
+install-exec-local:
+	@if test -e doxydoc/html ; then \
+	  $(MAKE) install-doxydoc ; \
+	else \
+	  echo "Run make install-doxydoc to generate and install Doxygen documentation." ; \
+	fi
 
 doxygen-docs: 
 	if test "$(COIN_HAS_DOXYGEN)" = TRUE; then \
