@@ -302,7 +302,7 @@ EXTRACT_ALL            = YES
 # If the EXTRACT_PRIVATE tag is set to YES all private members of a class
 # will be included in the documentation.
 
-EXTRACT_PRIVATE        = NO
+EXTRACT_PRIVATE        = YES
 
 # If the EXTRACT_STATIC tag is set to YES all static members of a file
 # will be included in the documentation.
@@ -328,7 +328,7 @@ EXTRACT_LOCAL_METHODS  = NO
 # name of the file that contains the anonymous namespace. By default
 # anonymous namespace are hidden.
 
-EXTRACT_ANON_NSPACES   = NO
+EXTRACT_ANON_NSPACES   = YES
 
 # If the HIDE_UNDOC_MEMBERS tag is set to YES, Doxygen will hide all
 # undocumented members of documented classes, files or namespaces.
@@ -563,12 +563,14 @@ WARN_LOGFILE           = @coin_doxy_logname@
 # configuration options related to the input files
 #---------------------------------------------------------------------------
 
-# The INPUT tag can be used to specify the files and/or directories that contain
-# documented source files. You may enter file names like "myfile.cpp" or
-# directories like "/usr/src/myproject". Separate the files or directories
-# with spaces.
+# The INPUT tag can be used to specify the files and/or directories that
+# contain documented source files. You may enter file names like "myfile.cpp"
+# or directories like "/usr/src/myproject". Separate the files or directories
+# with spaces. For COIN, the default is the package base to suck in all
+# source directories present in the package. Externals will be processed
+# if present.
 
-INPUT                  = @abs_top_srcdir@/src
+INPUT                  = @abs_top_srcdir@
 
 # This tag can be used to specify the character encoding of the source files
 # that doxygen parses. Internally doxygen uses the UTF-8 encoding, which is
@@ -612,7 +614,7 @@ EXCLUDE_SYMLINKS       = NO
 # against the file with absolute path, so to exclude all test directories
 # for example use the pattern */test/*
 
-EXCLUDE_PATTERNS       = */.svn*
+EXCLUDE_PATTERNS       = */.svn* @coin_doxy_excludes@
 
 # The EXCLUDE_SYMBOLS tag can be used to specify one or more symbol names
 # (namespaces, classes, functions, etc.) that should be excluded from the
@@ -984,7 +986,7 @@ SEARCHENGINE           = YES
 # If the GENERATE_LATEX tag is set to YES (the default) Doxygen will
 # generate Latex output.
 
-GENERATE_LATEX         = YES
+GENERATE_LATEX         = NO
 
 # The LATEX_OUTPUT tag is used to specify where the LaTeX docs will be put.
 # If a relative path is entered the value of OUTPUT_DIRECTORY will be
