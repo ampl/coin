@@ -1,0 +1,12 @@
+prefix=@prefix@
+exec_prefix=@exec_prefix@
+libdir=@libdir@
+includedir=@includedir@/coin/ThirdParty
+
+Name: SCIP
+Description: Solving Constraint Integer Programs
+URL: https://projects.coin-or.org/BuildTools
+Version: @PACKAGE_VERSION@
+Libs: -L${libdir} -lcoinscip -lcoinsciplpis @SCIPLIB_PCLIBS@
+Cflags: -I${includedir}
+Requires: @SCIPLIB_PCREQUIRES@

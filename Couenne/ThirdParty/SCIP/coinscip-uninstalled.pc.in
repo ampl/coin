@@ -1,0 +1,10 @@
+prefix=@prefix@
+libdir=@ABSBUILDDIR@
+
+Name: SCIP
+Description: Solving Constraint Integer Programs
+URL: https://projects.coin-or.org/BuildTools
+Version: @PACKAGE_VERSION@
+Libs: ${libdir}/libcoinscip.la ${libdir}/libcoinsciplpis.la @SCIPLIB_PCLIBS@
+Cflags: -I@abs_source_dir@ -I@abs_source_dir@/scip/src
+Requires: @SCIPLIB_PCREQUIRES@

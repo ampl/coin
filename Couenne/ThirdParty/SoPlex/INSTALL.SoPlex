@@ -1,0 +1,18 @@
+Installation of SoPlex subroutines within COIN-OR.
+
+**********************************************************************
+Note: It is YOUR RESPONSIBILITY to ensure that you are entitled to
+      download and use this third party package.
+      Read the SoPlex licence terms at http://soplex.zib.de/#license
+**********************************************************************
+
+If you agree with the SoPlex licence terms, then you may download SoPlex at
+
+http://soplex.zib.de
+
+and unpack it in this directory:
+
+gunzip soplex-2.0.0.tgz
+tar xf soplex-2.0.0.tar
+
+Then you need to rename the directory soplex-2.0.0 to soplex.

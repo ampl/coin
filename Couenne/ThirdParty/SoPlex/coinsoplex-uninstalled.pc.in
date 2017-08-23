@@ -1,0 +1,9 @@
+prefix=@prefix@
+libdir=@ABSBUILDDIR@
+
+Name: SoPlex
+Description: Sequential object-oriented Simplex
+URL: https://projects.coin-or.org/BuildTools
+Version: @PACKAGE_VERSION@
+Libs: ${libdir}/libcoinsoplex.la @SOPLEX_PCLIBS@
+Cflags: -I@abs_source_dir@/soplex/src @SOPLEX_CFLAGS@
