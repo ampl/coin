@@ -14,7 +14,7 @@
 
 @SET_MAKE@
 
-# Copyright (C) 2006, 2008 International Business Machines and others.
+# Copyright (C) 2006 International Business Machines and others.
 # All Rights Reserved.
 # This file is distributed under the Eclipse Public License.
 
@@ -29,7 +29,6 @@
 ########################################################################
 #                    Documentation installation                        #
 ########################################################################
-
 srcdir = @srcdir@
 top_srcdir = @top_srcdir@
 VPATH = @srcdir@
@@ -52,28 +51,13 @@ PRE_UNINSTALL = :
 POST_UNINSTALL = :
 build_triplet = @build@
 host_triplet = @host@
-
-# We don't want to compile the test subdirectory, unless the test target is
-# specified.  But we need to list it as subdirectory to make sure that it is
-# included in the tarball
-@ALWAYS_FALSE@am__append_1 = test
-@COIN_HAS_ASL_TRUE@am__append_2 = bonminamplinterface.pc
 DIST_COMMON = README $(am__configure_deps) \
 	$(srcdir)/BuildTools/Makemain.inc $(srcdir)/Makefile.am \
-	$(srcdir)/Makefile.in $(srcdir)/bonmin-uninstalled.pc.in \
-	$(srcdir)/bonmin.pc.in $(top_srcdir)/configure \
-	$(top_srcdir)/doxydoc/doxygen.conf.in \
-	$(top_srcdir)/examples/CppExample/Makefile.in \
-	$(top_srcdir)/examples/CppExample/MyBonmin.cpp \
-	$(top_srcdir)/examples/CppExample/MyTMINLP.cpp \
-	$(top_srcdir)/examples/CppExample/MyTMINLP.hpp \
-	$(top_srcdir)/examples/OptionDocGen/Makefile.in \
-	$(top_srcdir)/src/CbcBonmin/bonminamplinterface-uninstalled.pc.in \
-	$(top_srcdir)/src/CbcBonmin/bonminamplinterface.pc.in AUTHORS \
-	INSTALL config.guess config.sub depcomp install-sh ltmain.sh \
-	missing
-@HAVE_EXTERNALS_TRUE@am__append_3 = Dependencies
-@HAVE_EXTERNALS_TRUE@am__append_4 = .Dependencies-stamp
+	$(srcdir)/Makefile.in $(top_srcdir)/configure \
+	$(top_srcdir)/doxydoc/doxygen.conf.in INSTALL config.guess \
+	config.sub depcomp install-sh ltmain.sh missing
+@HAVE_EXTERNALS_TRUE@am__append_1 = Dependencies
+@HAVE_EXTERNALS_TRUE@am__append_2 = .Dependencies-stamp
 subdir = .
 ACLOCAL_M4 = $(top_srcdir)/aclocal.m4
 am__aclocal_m4_deps = $(top_srcdir)/acinclude.m4 \
@@ -83,12 +67,7 @@ am__configure_deps = $(am__aclocal_m4_deps) $(CONFIGURE_DEPENDENCIES) \
 am__CONFIG_DISTCLEAN_FILES = config.status config.cache config.log \
  configure.lineno configure.status.lineno
 mkinstalldirs = $(install_sh) -d
-CONFIG_HEADER = $(top_builddir)/src/Interfaces/config.h \
-	$(top_builddir)/src/Interfaces/config_bonmin.h
-CONFIG_CLEAN_FILES = examples/OptionDocGen/Makefile \
-	examples/CppExample/Makefile bonmin.pc bonmin-uninstalled.pc \
-	doxydoc/doxygen.conf bonminamplinterface.pc \
-	bonminamplinterface-uninstalled.pc
+CONFIG_CLEAN_FILES = doxydoc/doxygen.conf
 SOURCES =
 DIST_SOURCES =
 RECURSIVE_TARGETS = all-recursive check-recursive dvi-recursive \
@@ -97,19 +76,9 @@ RECURSIVE_TARGETS = all-recursive check-recursive dvi-recursive \
 	install-recursive installcheck-recursive installdirs-recursive \
 	pdf-recursive ps-recursive uninstall-info-recursive \
 	uninstall-recursive
-am__vpath_adj_setup = srcdirstrip=`echo "$(srcdir)" | sed 's|.|.|g'`;
-am__vpath_adj = case $$p in \
-    $(srcdir)/*) f=`echo "$$p" | sed "s|^$$srcdirstrip/||"`;; \
-    *) f=$$p;; \
-  esac;
-am__strip_dir = `echo $$p | sed -e 's|^.*/||'`;
-am__installdirs = "$(DESTDIR)$(pkgconfiglibdir)"
-pkgconfiglibDATA_INSTALL = $(INSTALL_DATA)
-DATA = $(pkgconfiglib_DATA)
 ETAGS = etags
 CTAGS = ctags
-DIST_SUBDIRS = src/Interfaces src/Algorithms src/CbcBonmin src/Apps \
-	test
+DIST_SUBDIRS = $(SUBDIRS)
 DISTFILES = $(DIST_COMMON) $(DIST_SOURCES) $(TEXINFOS) $(EXTRA_DIST)
 distdir = $(PACKAGE)-$(VERSION)
 top_distdir = $(distdir)
@@ -126,79 +95,27 @@ ACLOCAL = @ACLOCAL@
 ADD_CFLAGS = @ADD_CFLAGS@
 ADD_CXXFLAGS = @ADD_CXXFLAGS@
 ADD_FFLAGS = @ADD_FFLAGS@
-ALWAYS_FALSE_FALSE = @ALWAYS_FALSE_FALSE@
-ALWAYS_FALSE_TRUE = @ALWAYS_FALSE_TRUE@
 AMDEP_FALSE = @AMDEP_FALSE@
 AMDEP_TRUE = @AMDEP_TRUE@
 AMTAR = @AMTAR@
 AR = @AR@
-ASL_CFLAGS = @ASL_CFLAGS@
-ASL_CFLAGS_INSTALLED = @ASL_CFLAGS_INSTALLED@
-ASL_DATA = @ASL_DATA@
-ASL_DATA_INSTALLED = @ASL_DATA_INSTALLED@
-ASL_DEPENDENCIES = @ASL_DEPENDENCIES@
-ASL_LIBS = @ASL_LIBS@
-ASL_LIBS_INSTALLED = @ASL_LIBS_INSTALLED@
-ASTYLE = @ASTYLE@
-ASTYLEFLAGS = @ASTYLEFLAGS@
 AUTOCONF = @AUTOCONF@
 AUTOHEADER = @AUTOHEADER@
 AUTOMAKE = @AUTOMAKE@
 AUX_DIR = @AUX_DIR@
 AWK = @AWK@
-BONMINAMPLINTERFACELIB_CFLAGS = @BONMINAMPLINTERFACELIB_CFLAGS@
-BONMINAMPLINTERFACELIB_CFLAGS_INSTALLED = @BONMINAMPLINTERFACELIB_CFLAGS_INSTALLED@
-BONMINAMPLINTERFACELIB_DEPENDENCIES = @BONMINAMPLINTERFACELIB_DEPENDENCIES@
-BONMINAMPLINTERFACELIB_LIBS = @BONMINAMPLINTERFACELIB_LIBS@
-BONMINAMPLINTERFACELIB_LIBS_INSTALLED = @BONMINAMPLINTERFACELIB_LIBS_INSTALLED@
-BONMINAMPLINTERFACELIB_PCLIBS = @BONMINAMPLINTERFACELIB_PCLIBS@
-BONMINAMPLINTERFACELIB_PCREQUIRES = @BONMINAMPLINTERFACELIB_PCREQUIRES@
-BONMINLIB_CFLAGS = @BONMINLIB_CFLAGS@
-BONMINLIB_CFLAGS_INSTALLED = @BONMINLIB_CFLAGS_INSTALLED@
-BONMINLIB_DEPENDENCIES = @BONMINLIB_DEPENDENCIES@
-BONMINLIB_LIBS = @BONMINLIB_LIBS@
-BONMINLIB_LIBS_INSTALLED = @BONMINLIB_LIBS_INSTALLED@
-BONMINLIB_PCLIBS = @BONMINLIB_PCLIBS@
-BONMINLIB_PCREQUIRES = @BONMINLIB_PCREQUIRES@
-BONMIN_SVN_REV = @BONMIN_SVN_REV@
 BUILDTOOLSDIR = @BUILDTOOLSDIR@
 CC = @CC@
 CCDEPMODE = @CCDEPMODE@
 CDEFS = @CDEFS@
 CFLAGS = @CFLAGS@
-COINDEPEND_CFLAGS = @COINDEPEND_CFLAGS@
-COINDEPEND_CFLAGS_INSTALLED = @COINDEPEND_CFLAGS_INSTALLED@
-COINDEPEND_DATA = @COINDEPEND_DATA@
-COINDEPEND_DATA_INSTALLED = @COINDEPEND_DATA_INSTALLED@
-COINDEPEND_DEPENDENCIES = @COINDEPEND_DEPENDENCIES@
-COINDEPEND_LIBS = @COINDEPEND_LIBS@
-COINDEPEND_LIBS_INSTALLED = @COINDEPEND_LIBS_INSTALLED@
 COIN_CC_IS_CL_FALSE = @COIN_CC_IS_CL_FALSE@
 COIN_CC_IS_CL_TRUE = @COIN_CC_IS_CL_TRUE@
 COIN_CXX_IS_CL_FALSE = @COIN_CXX_IS_CL_FALSE@
 COIN_CXX_IS_CL_TRUE = @COIN_CXX_IS_CL_TRUE@
-COIN_HAS_ASL_FALSE = @COIN_HAS_ASL_FALSE@
-COIN_HAS_ASL_TRUE = @COIN_HAS_ASL_TRUE@
-COIN_HAS_COINDEPEND_FALSE = @COIN_HAS_COINDEPEND_FALSE@
-COIN_HAS_COINDEPEND_TRUE = @COIN_HAS_COINDEPEND_TRUE@
-COIN_HAS_CPX_FALSE = @COIN_HAS_CPX_FALSE@
-COIN_HAS_CPX_TRUE = @COIN_HAS_CPX_TRUE@
-COIN_HAS_DOXYGEN_FALSE = @COIN_HAS_DOXYGEN_FALSE@
-COIN_HAS_DOXYGEN_TRUE = @COIN_HAS_DOXYGEN_TRUE@
-COIN_HAS_FILTERSQP_FALSE = @COIN_HAS_FILTERSQP_FALSE@
-COIN_HAS_FILTERSQP_TRUE = @COIN_HAS_FILTERSQP_TRUE@
-COIN_HAS_LATEX_FALSE = @COIN_HAS_LATEX_FALSE@
-COIN_HAS_LATEX_TRUE = @COIN_HAS_LATEX_TRUE@
-COIN_HAS_OSICPX_FALSE = @COIN_HAS_OSICPX_FALSE@
-COIN_HAS_OSICPX_TRUE = @COIN_HAS_OSICPX_TRUE@
-COIN_HAS_PKGCONFIG_FALSE = @COIN_HAS_PKGCONFIG_FALSE@
-COIN_HAS_PKGCONFIG_TRUE = @COIN_HAS_PKGCONFIG_TRUE@
-COIN_PKG_CONFIG_PATH = @COIN_PKG_CONFIG_PATH@
-COIN_PKG_CONFIG_PATH_UNINSTALLED = @COIN_PKG_CONFIG_PATH_UNINSTALLED@
+COIN_SKIP_PROJECTS = @COIN_SKIP_PROJECTS@
 CPP = @CPP@
 CPPFLAGS = @CPPFLAGS@
-CPXINCDIR = @CPXINCDIR@
-CPXLIB = @CPXLIB@
 CXX = @CXX@
 CXXCPP = @CXXCPP@
 CXXDEFS = @CXXDEFS@
@@ -220,14 +137,6 @@ EGREP = @EGREP@
 EXEEXT = @EXEEXT@
 F77 = @F77@
 FFLAGS = @FFLAGS@
-FILTERSQP_CFLAGS = @FILTERSQP_CFLAGS@
-FILTERSQP_CFLAGS_INSTALLED = @FILTERSQP_CFLAGS_INSTALLED@
-FILTERSQP_DATA = @FILTERSQP_DATA@
-FILTERSQP_DATA_INSTALLED = @FILTERSQP_DATA_INSTALLED@
-FILTERSQP_DEPENDENCIES = @FILTERSQP_DEPENDENCIES@
-FILTERSQP_LIBS = @FILTERSQP_LIBS@
-FILTERSQP_LIBS_INSTALLED = @FILTERSQP_LIBS_INSTALLED@
-FLIBS = @FLIBS@
 HAVE_EXTERNALS_FALSE = @HAVE_EXTERNALS_FALSE@
 HAVE_EXTERNALS_TRUE = @HAVE_EXTERNALS_TRUE@
 INSTALL_DATA = @INSTALL_DATA@
@@ -254,13 +163,6 @@ OBJEXT = @OBJEXT@
 OPT_CFLAGS = @OPT_CFLAGS@
 OPT_CXXFLAGS = @OPT_CXXFLAGS@
 OPT_FFLAGS = @OPT_FFLAGS@
-OSICPX_CFLAGS = @OSICPX_CFLAGS@
-OSICPX_CFLAGS_INSTALLED = @OSICPX_CFLAGS_INSTALLED@
-OSICPX_DATA = @OSICPX_DATA@
-OSICPX_DATA_INSTALLED = @OSICPX_DATA_INSTALLED@
-OSICPX_DEPENDENCIES = @OSICPX_DEPENDENCIES@
-OSICPX_LIBS = @OSICPX_LIBS@
-OSICPX_LIBS_INSTALLED = @OSICPX_LIBS_INSTALLED@
 PACKAGE = @PACKAGE@
 PACKAGE_BUGREPORT = @PACKAGE_BUGREPORT@
 PACKAGE_NAME = @PACKAGE_NAME@
@@ -268,7 +170,6 @@ PACKAGE_STRING = @PACKAGE_STRING@
 PACKAGE_TARNAME = @PACKAGE_TARNAME@
 PACKAGE_VERSION = @PACKAGE_VERSION@
 PATH_SEPARATOR = @PATH_SEPARATOR@
-PKG_CONFIG = @PKG_CONFIG@
 RANLIB = @RANLIB@
 RPATH_FLAGS = @RPATH_FLAGS@
 SET_MAKE = @SET_MAKE@
@@ -285,7 +186,6 @@ ac_ct_AR = @ac_ct_AR@
 ac_ct_CC = @ac_ct_CC@
 ac_ct_CXX = @ac_ct_CXX@
 ac_ct_F77 = @ac_ct_F77@
-ac_ct_PKG_CONFIG = @ac_ct_PKG_CONFIG@
 ac_ct_RANLIB = @ac_ct_RANLIB@
 ac_ct_STRIP = @ac_ct_STRIP@
 ac_cxx_preproc_warn_flag = @ac_cxx_preproc_warn_flag@
@@ -304,19 +204,11 @@ build_alias = @build_alias@
 build_cpu = @build_cpu@
 build_os = @build_os@
 build_vendor = @build_vendor@
-coin_doxy_excludes = @coin_doxy_excludes@
-coin_doxy_logname = @coin_doxy_logname@
-coin_doxy_tagfiles = @coin_doxy_tagfiles@
-coin_doxy_tagname = @coin_doxy_tagname@
-coin_doxy_usedot = @coin_doxy_usedot@
-coin_have_doxygen = @coin_have_doxygen@
-coin_have_latex = @coin_have_latex@
 datadir = @datadir@
 exec_prefix = @exec_prefix@
 have_autoconf = @have_autoconf@
 have_automake = @have_automake@
 have_svn = @have_svn@
-have_svnversion = @have_svnversion@
 host = @host@
 host_alias = @host_alias@
 host_cpu = @host_cpu@
@@ -336,44 +228,27 @@ program_transform_name = @program_transform_name@
 sbindir = @sbindir@
 sharedstatedir = @sharedstatedir@
 sol_cc_compiler = @sol_cc_compiler@
+subdirs = @subdirs@
 sysconfdir = @sysconfdir@
 target_alias = @target_alias@
 AUTOMAKE_OPTIONS = foreign
+EXTRA_DIST = doxydoc/doxygen.conf $(am__append_1)
 
 ########################################################################
 #                          Subdirectories                              #
 ########################################################################
 
-# Here list all subdirectories into which to recurse
-SUBDIRS = src/Interfaces src/Algorithms src/CbcBonmin src/Apps \
-	$(am__append_1)
-
-########################################################################
-#             Additional files to be included in tarball               #
-########################################################################
-
-# Here we need include all files that are not mentioned in other Makefiles
-EXTRA_DIST = doc/Bonmin_ReferenceManual.hpp \
-	doc/Bonm-Min_UsersManual.pdf doc/Bonm-Min_UsersManual.tex \
-	doc/BOUM_Intro.tex doc/options.tex test/InterfaceTest.cpp \
-	test/CppExample/MyTMINLP.hpp test/CppExample/MyTMINLP.cpp \
-	test/CppExample/MyBonmin.cpp test/mytoy.nl $(am__append_3)
-
-########################################################################
-#                  Installation of the .pc file                        #
-########################################################################
-pkgconfiglibdir = $(libdir)/pkgconfig
-pkgconfiglib_DATA = bonmin.pc $(am__append_2)
+# subdirs is set by configure as the list of all subdirectories to recurse
+# into
+SUBDIRS = $(subdirs)
 
 ########################################################################
 #                         Maintainer Stuff                             #
 ########################################################################
 
 # Files that are generated and should be cleaned with make distclean
-DISTCLEANFILES = Test/*.$(OBJEXT) Test/unitTest$(EXEEXT) \
-	Test/CppExample/*.$(OBJEXT) \
-	Test/CppExample/CppExample$(EXEEXT) Test/testtoy.nl \
-	$(am__append_4) $(VPATH_DISTCLEANFILES)
+DISTCLEANFILES = coin_subdirs.txt $(am__append_2) \
+	$(VPATH_DISTCLEANFILES)
 DocFiles = README AUTHORS LICENSE 
 DocInstallDir = $(datadir)/coin/doc/$(PACKAGE_NAME)
 COIN_HAS_DOXYGEN = @COIN_HAS_DOXYGEN_TRUE@TRUE
@@ -414,19 +289,7 @@ $(top_srcdir)/configure: @MAINTAINER_MODE_TRUE@ $(am__configure_deps)
 	cd $(srcdir) && $(AUTOCONF)
 $(ACLOCAL_M4): @MAINTAINER_MODE_TRUE@ $(am__aclocal_m4_deps)
 	cd $(srcdir) && $(ACLOCAL) $(ACLOCAL_AMFLAGS)
-examples/OptionDocGen/Makefile: $(top_builddir)/config.status $(top_srcdir)/examples/OptionDocGen/Makefile.in
-	cd $(top_builddir) && $(SHELL) ./config.status $@
-examples/CppExample/Makefile: $(top_builddir)/config.status $(top_srcdir)/examples/CppExample/Makefile.in
-	cd $(top_builddir) && $(SHELL) ./config.status $@
-bonmin.pc: $(top_builddir)/config.status $(srcdir)/bonmin.pc.in
-	cd $(top_builddir) && $(SHELL) ./config.status $@
-bonmin-uninstalled.pc: $(top_builddir)/config.status $(srcdir)/bonmin-uninstalled.pc.in
-	cd $(top_builddir) && $(SHELL) ./config.status $@
 doxydoc/doxygen.conf: $(top_builddir)/config.status $(top_srcdir)/doxydoc/doxygen.conf.in
-	cd $(top_builddir) && $(SHELL) ./config.status $@
-bonminamplinterface.pc: $(top_builddir)/config.status $(top_srcdir)/src/CbcBonmin/bonminamplinterface.pc.in
-	cd $(top_builddir) && $(SHELL) ./config.status $@
-bonminamplinterface-uninstalled.pc: $(top_builddir)/config.status $(top_srcdir)/src/CbcBonmin/bonminamplinterface-uninstalled.pc.in
 	cd $(top_builddir) && $(SHELL) ./config.status $@
 
 mostlyclean-libtool:
@@ -438,23 +301,6 @@ clean-libtool:
 distclean-libtool:
 	-rm -f libtool
 uninstall-info-am:
-install-pkgconfiglibDATA: $(pkgconfiglib_DATA)
-	@$(NORMAL_INSTALL)
-	test -z "$(pkgconfiglibdir)" || $(mkdir_p) "$(DESTDIR)$(pkgconfiglibdir)"
-	@list='$(pkgconfiglib_DATA)'; for p in $$list; do \
-	  if test -f "$$p"; then d=; else d="$(srcdir)/"; fi; \
-	  f=$(am__strip_dir) \
-	  echo " $(pkgconfiglibDATA_INSTALL) '$$d$$p' '$(DESTDIR)$(pkgconfiglibdir)/$$f'"; \
-	  $(pkgconfiglibDATA_INSTALL) "$$d$$p" "$(DESTDIR)$(pkgconfiglibdir)/$$f"; \
-	done
-
-uninstall-pkgconfiglibDATA:
-	@$(NORMAL_UNINSTALL)
-	@list='$(pkgconfiglib_DATA)'; for p in $$list; do \
-	  f=$(am__strip_dir) \
-	  echo " rm -f '$(DESTDIR)$(pkgconfiglibdir)/$$f'"; \
-	  rm -f "$(DESTDIR)$(pkgconfiglibdir)/$$f"; \
-	done
 
 # This directory's subdirectories are mostly independent; you can cd
 # into them and run `make' without going through this Makefile.
@@ -591,7 +437,7 @@ distclean-tags:
 distdir: $(DISTFILES)
 	$(am__remove_distdir)
 	mkdir $(distdir)
-	$(mkdir_p) $(distdir)/. $(distdir)/BuildTools $(distdir)/doc $(distdir)/doxydoc $(distdir)/examples/CppExample $(distdir)/examples/OptionDocGen $(distdir)/src/CbcBonmin $(distdir)/test $(distdir)/test/CppExample
+	$(mkdir_p) $(distdir)/BuildTools $(distdir)/doxydoc
 	@srcdirstrip=`echo "$(srcdir)" | sed 's|.|.|g'`; \
 	topsrcdirstrip=`echo "$(top_srcdir)" | sed 's|.|.|g'`; \
 	list='$(DISTFILES)'; for file in $$list; do \
@@ -732,12 +578,9 @@ distcleancheck: distclean
 	       exit 1; } >&2
 check-am: all-am
 check: check-recursive
-all-am: Makefile $(DATA)
+all-am: Makefile
 installdirs: installdirs-recursive
 installdirs-am:
-	for dir in "$(DESTDIR)$(pkgconfiglibdir)"; do \
-	  test -z "$$dir" || $(mkdir_p) "$$dir"; \
-	done
 install: install-recursive
 install-exec: install-exec-recursive
 install-data: install-data-recursive
@@ -765,13 +608,13 @@ maintainer-clean-generic:
 	@echo "it deletes files that may require special tools to rebuild."
 clean: clean-recursive
 
-clean-am: clean-generic clean-libtool clean-local mostlyclean-am
+clean-am: clean-generic clean-libtool mostlyclean-am
 
 distclean: distclean-recursive
 	-rm -f $(am__CONFIG_DISTCLEAN_FILES)
 	-rm -f Makefile
 distclean-am: clean-am distclean-generic distclean-libtool \
-	distclean-local distclean-tags
+	distclean-tags
 
 dvi: dvi-recursive
 
@@ -783,9 +626,9 @@ info: info-recursive
 
 info-am:
 
-install-data-am: install-pkgconfiglibDATA
+install-data-am:
 
-install-exec-am: install-exec-local
+install-exec-am:
 
 install-info: install-info-recursive
 
@@ -811,77 +654,48 @@ ps: ps-recursive
 
 ps-am:
 
-uninstall-am: uninstall-info-am uninstall-local \
-	uninstall-pkgconfiglibDATA
+uninstall-am: uninstall-info-am
 
 uninstall-info: uninstall-info-recursive
 
 .PHONY: $(RECURSIVE_TARGETS) CTAGS GTAGS all all-am am--refresh check \
-	check-am clean clean-generic clean-libtool clean-local \
-	clean-recursive ctags ctags-recursive dist dist-all dist-bzip2 \
-	dist-gzip dist-shar dist-tarZ dist-zip distcheck distclean \
-	distclean-generic distclean-libtool distclean-local \
-	distclean-recursive distclean-tags distcleancheck distdir \
-	distuninstallcheck dvi dvi-am html html-am info info-am \
-	install install-am install-data install-data-am install-exec \
-	install-exec-am install-exec-local install-info \
-	install-info-am install-man install-pkgconfiglibDATA \
-	install-strip installcheck installcheck-am installdirs \
-	installdirs-am maintainer-clean maintainer-clean-generic \
+	check-am clean clean-generic clean-libtool clean-recursive \
+	ctags ctags-recursive dist dist-all dist-bzip2 dist-gzip \
+	dist-shar dist-tarZ dist-zip distcheck distclean \
+	distclean-generic distclean-libtool distclean-recursive \
+	distclean-tags distcleancheck distdir distuninstallcheck dvi \
+	dvi-am html html-am info info-am install install-am \
+	install-data install-data-am install-exec install-exec-am \
+	install-info install-info-am install-man install-strip \
+	installcheck installcheck-am installdirs installdirs-am \
+	maintainer-clean maintainer-clean-generic \
 	maintainer-clean-recursive mostlyclean mostlyclean-generic \
 	mostlyclean-libtool mostlyclean-recursive pdf pdf-am ps ps-am \
-	tags tags-recursive uninstall uninstall-am uninstall-info-am \
-	uninstall-local uninstall-pkgconfiglibDATA
+	tags tags-recursive uninstall uninstall-am uninstall-info-am
 
 
 ########################################################################
 #                           Extra Targets                              #
 ########################################################################
 
-.PHONY: doc test unitTest userman astyle nodeSolver doxydoc
+test: all
+	cd Bonmin; $(MAKE) test
 
-test: unitTest
+unitTest: test
 
-unitTest: all
-	cd test; $(MAKE) test
+tests: all
+	for dir in $(subdirs); do \
+	  if test -r $$dir/test/Makefile; then \
+	    (cd $$dir; $(MAKE) test) \
+	  fi; \
+	done
 
-nodeSolver: all
-	cd src/Apps; $(MAKE) nodeSolver
-
-doc:	userman
-
-userman: $(top_srcdir)/doc/BONMIN_UsersManual.tex
-	cd $(top_srcdir)/doc && pdflatex BONMIN_UsersManual.tex
-
-# Doxygen documentation
+unitTests: tests
 
 doxydoc:
 	doxygen doxydoc/doxygen.conf
 
-clean-doxydoc:
-	( cd doxydoc ; rm -rf html *.log *.tag )
-
-clean-local: clean-doxydoc
-	if test -r test/Makefile; then cd test; $(MAKE) clean; fi
-
-distclean-local:
-	if test -r test/Makefile; then cd test; $(MAKE) distclean; fi
-
-install-exec-local: install-doc
-
-uninstall-local: uninstall-doc
-
-astyle:
-	cd src/Algorithms; $(MAKE) astyle
-	cd src/Algorithms/Ampl; $(MAKE) astyle
-	cd src/Algorithms/Branching; $(MAKE) astyle
-	cd src/Algorithms/OaGenerators; $(MAKE) astyle
-	cd src/Apps; $(MAKE) astyle
-	cd src/CbcBonmin; $(MAKE) astyle
-	cd src/Interfaces; $(MAKE) astyle
-	cd src/Interfaces/Ampl; $(MAKE) astyle
-	cd src/Interfaces/Filter; $(MAKE) astyle
-	cd src/Interfaces/Ipopt; $(MAKE) astyle
+.PHONY: test unitTest tests unitTests doxydoc
 
 doxygen-docs: 
 	if test "$(COIN_HAS_DOXYGEN)" = TRUE; then \
