@@ -525,50 +525,50 @@ endif ()
 
 enable_testing()
 
-include_directories(BuildTools/headers)
+include_directories(Cbc/BuildTools/headers)
 
-add_coin_library(CoinUtils ${COINUTILS_LIBS})
-add_coin_library(Clp CoinUtils)
-add_coin_library(Clp/src/OsiClp Osi Clp)
-add_coin_library(Osi/src/Osi CoinUtils)
-add_coin_library(Osi/src/OsiCommonTest
+add_coin_library(Cbc/CoinUtils ${COINUTILS_LIBS})
+add_coin_library(Cbc/Clp CoinUtils)
+add_coin_library(Cbc/Clp/src/OsiClp Osi Clp)
+add_coin_library(Cbc/Osi/src/Osi CoinUtils)
+add_coin_library(Cbc/Osi/src/OsiCommonTest
   NAME OsiCommonTests TEST_PATH Osi/test Osi OsiClp)
 
 foreach (name AllDifferent Clique DuplicateRow FlowCover GMI Gomory
               KnapsackCover LandP LiftAndProject MixedIntegerRounding
               MixedIntegerRounding2 OddHole PreProcess Probing RedSplit
               RedSplit2 ResidualCapacity SimpleRounding Twomir ZeroHalf)
-  add_coin_library(Cgl/src/Cgl${name})
+  add_coin_library(Cbc/Cgl/src/Cgl${name})
   set(CGL_LIBS ${CGL_LIBS} Cgl${name})
   set_target_properties(Cgl${name} PROPERTIES COMPILE_DEFINITIONS CGL_BUILD)
 endforeach ()
-add_coin_library(Cgl ${CGL_LIBS} OsiClp Osi)
+add_coin_library(Cbc/Cgl ${CGL_LIBS} OsiClp Osi)
 
-add_coin_library(Cbc Cgl OsiClp ${CBC_PTHREADS_LIB})
-add_coin_library(Cbc/src/OsiCbc Osi Cbc)
+add_coin_library(Cbc/Cbc Cgl OsiClp ${CBC_PTHREADS_LIB})
+add_coin_library(Cbc/Cbc/src/OsiCbc Osi Cbc)
 target_link_libraries(Cbc-osiUnitTest OsiCbc)
 target_link_libraries(Cbc-gamsTest CbcSolver)
 target_link_libraries(Cbc-CInterfaceTest CbcSolver)
 
-add_coin_library(Cbc NAME CbcSolver NOTESTS Cbc Cgl ${ASL_LIBRARIES})
+add_coin_library(Cbc/Cbc NAME CbcSolver NOTESTS Cbc Cgl ${ASL_LIBRARIES})
 set_target_properties(CbcSolver PROPERTIES COMPILE_DEFINITIONS CBC_BUILD)
 
-add_executable(cbc-executable Cbc/src/CoinSolve.cpp)
+add_executable(cbc-executable Cbc/Cbc/src/CoinSolve.cpp)
 set_target_properties(cbc-executable
   PROPERTIES OUTPUT_NAME cbc IMPORT_PREFIX imp)
 target_link_libraries(cbc-executable CbcSolver)
-add_test(Cbc-unitTest bin/cbc -dirSample Data/Sample -unitTest)
+add_test(Cbc-unitTest bin/cbc -dirSample Cbc/Data/Sample -unitTest)
 
 add_definitions(-DHAVE_CONFIG_H)
 
 # Define FORTRAN_INTEGER_TYPE for Ipopt.
 set(FORTRAN_INTEGER_TYPE_C int)
 
-configure(CoinUtils src/config.h src/config_coinutils.h)
-configure(Osi src/Osi/config.h src/Osi/config_osi.h)
-configure(Clp src/config.h src/config_clp.h)
-configure(Cgl src/config.h src/config_cgl.h)
-configure(Cbc src/config.h src/config_cbc.h)
+configure(Cbc/CoinUtils src/config.h src/config_coinutils.h)
+configure(Cbc/Osi src/Osi/config.h src/Osi/config_osi.h)
+configure(Cbc/Clp src/config.h src/config_clp.h)
+configure(Cbc/Cgl src/config.h src/config_cgl.h)
+configure(Cbc/Cbc src/config.h src/config_cbc.h)
 
 function(add_ipopt_library name path)
   add_coin_library(Ipopt/Ipopt/src/${path} NAME ${name} ${ARGN})

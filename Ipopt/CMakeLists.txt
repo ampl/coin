@@ -59,7 +59,7 @@ if (WIN32)
 endif ()
 
 include_directories(
-  ../BuildTools/headers Ipopt/src/Common
+  ../Cbc/BuildTools/headers Ipopt/src/Common
   ../ThirdParty/Mumps/MUMPS/include
   ../ThirdParty/Mumps/MUMPS/libseq
   ../ThirdParty/Mumps/MUMPS/src
