@@ -736,34 +736,34 @@ function(add_coin_test name dir lib)
 endfunction()
 
 if (BUILD_IPOPT AND EXISTS ${COIN_SOURCE_DIR}/Bonmin)
-  add_coin_library(Bonmin/src/Algorithms/Branching NAME bonbranching)
-  add_coin_library(Bonmin/src/Algorithms/QuadCuts NAME bonquadcuts)
-  add_coin_library(Bonmin/src/Algorithms/OaGenerators NAME bonoagenerators)
-  add_coin_library(Bonmin/src/Algorithms NAME bonalgorithms)
-  add_coin_library(Bonmin/src/Interfaces/Ipopt NAME ipoptinterface)
-  add_coin_library(Bonmin/src/Interfaces NAME bonmininterfaces)
-  add_coin_library(Bonmin/src/CbcBonmin/Heuristics NAME bonheuristics)
+  add_coin_library(Bonmin/Bonmin/src/Algorithms/Branching NAME bonbranching)
+  add_coin_library(Bonmin/Bonmin/src/Algorithms/QuadCuts NAME bonquadcuts)
+  add_coin_library(Bonmin/Bonmin/src/Algorithms/OaGenerators NAME bonoagenerators)
+  add_coin_library(Bonmin/Bonmin/src/Algorithms NAME bonalgorithms)
+  add_coin_library(Bonmin/Bonmin/src/Interfaces/Ipopt NAME ipoptinterface)
+  add_coin_library(Bonmin/Bonmin/src/Interfaces NAME bonmininterfaces)
+  add_coin_library(Bonmin/Bonmin/src/CbcBonmin/Heuristics NAME bonheuristics)
   if (COIN_HAS_ASL)
-    add_coin_library(Bonmin/src/Algorithms/Ampl NAME bonamplsetup)
-    add_coin_library(Bonmin/src/Interfaces/Ampl NAME bonamplinterface)
+    add_coin_library(Bonmin/Bonmin/src/Algorithms/Ampl NAME bonamplsetup)
+    add_coin_library(Bonmin/Bonmin/src/Interfaces/Ampl NAME bonamplinterface)
     add_dependencies(bonamplinterface ${ASL_LIBRARIES})
     set(BONMIN_DEPS bonamplsetup bonamplinterface ${ASL_LIBRARIES})
 
-    add_executable(bonmin-executable Bonmin/src/Apps/BonMin.cpp)
+    add_executable(bonmin-executable Bonmin/Bonmin/src/Apps/BonMin.cpp)
     set_target_properties(bonmin-executable PROPERTIES
       COMPILE_DEFINITIONS BONMIN_BUILD OUTPUT_NAME bonmin IMPORT_PREFIX imp)
     target_link_libraries(bonmin-executable bonmin)
   endif ()
-  add_coin_library(Bonmin/src/CbcBonmin NAME bonmin
+  add_coin_library(Bonmin/Bonmin/src/CbcBonmin NAME bonmin
     bonalgorithms bonbranching bonquadcuts bonoagenerators
     bonmininterfaces ipoptinterface ipopt bonheuristics CbcSolver ${BONMIN_DEPS})
-  target_include_directories(bonmin PUBLIC Bonmin/src/Interfaces/Ampl)
+  target_include_directories(bonmin PUBLIC Bonmin/Bonmin/src/Interfaces/Ampl)
 
-  add_coin_test(Bonmin-unitTest Bonmin/test bonmin InterfaceTest.cpp)
-  add_coin_test(Bonmin-CppExample Bonmin/examples/CppExample
+  add_coin_test(Bonmin-unitTest Bonmin/Bonmin/test bonmin InterfaceTest.cpp)
+  add_coin_test(Bonmin-CppExample Bonmin/Bonmin/examples/CppExample
     bonmin MyBonmin.cpp MyTMINLP.cpp MyTMINLP.hpp)
 
-  configure(Bonmin src/Interfaces/config.h src/Interfaces/config_bonmin.h)
+  configure(Bonmin Bonmin/src/Interfaces/config.h Bonmin/src/Interfaces/config_bonmin.h)
 endif ()
 
 function(add_couenne_library name path)
