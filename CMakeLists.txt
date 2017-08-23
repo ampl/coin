@@ -767,17 +767,17 @@ if (BUILD_IPOPT AND EXISTS ${COIN_SOURCE_DIR}/Bonmin)
 endif ()
 
 function(add_couenne_library name path)
-  add_coin_library(Couenne/src/${path} NAME ${name})
+  add_coin_library(Couenne/Couenne/src/${path} NAME ${name})
   set_target_properties(${name} PROPERTIES COMPILE_DEFINITIONS COUENNE_BUILD)
 endfunction()
 
 if (BUILD_IPOPT AND EXISTS ${COIN_SOURCE_DIR}/Couenne)
   include_directories(
-    Couenne/src Couenne/src/main
-    Couenne/src/expression/operators
-    Couenne/src/expression/operators/bounds
-    Couenne/src/expression/partial
-    Couenne/src/problem/depGraph)
+    Couenne/Couenne/src Couenne/Couenne/src/main
+    Couenne/Couenne/src/expression/operators
+    Couenne/Couenne/src/expression/operators/bounds
+    Couenne/Couenne/src/expression/partial
+    Couenne/Couenne/src/problem/depGraph)
   add_couenne_library(CouenneUtil util)
   add_couenne_library(CouenneExpression expression)
   add_couenne_library(CouenneStandardize standardize)
@@ -798,7 +798,7 @@ if (BUILD_IPOPT AND EXISTS ${COIN_SOURCE_DIR}/Couenne)
   endif ()
 
   set(DEPENDENCY_LINKING 1)
-  add_coin_library(Couenne/src NAME Couenne
+  add_coin_library(Couenne/Couenne/src NAME Couenne
     CouenneInterfaces CouenneHeuristics CouenneProblem CouenneStandardize
     CouenneExpression CouenneBranch CouenneConvex CouenneBoundTightening
     CouenneTwoImplied CouenneUtil CouenneDisjunctive CouenneCrossConv CouenneSdpCuts
@@ -807,19 +807,19 @@ if (BUILD_IPOPT AND EXISTS ${COIN_SOURCE_DIR}/Couenne)
     target_link_libraries(Couenne lapack)
   endif ()
 
-  add_executable(couenne-executable Couenne/src/main/BonCouenne.cpp)
+  add_executable(couenne-executable Couenne/Couenne/src/main/BonCouenne.cpp)
   set_target_properties(couenne-executable PROPERTIES
     COMPILE_DEFINITIONS COUENNE_BUILD OUTPUT_NAME couenne IMPORT_PREFIX imp)
   target_link_libraries(couenne-executable Couenne)
 
   set(srcdir ${CMAKE_CURRENT_SOURCE_DIR}/Couenne/test)
-  configure_file(Couenne/test/grandTest.sh.in Couenne/test/grandTest.sh @ONLY)
+  configure_file(Couenne/Couenne/test/grandTest.sh.in Couenne/Couenne/test/grandTest.sh @ONLY)
   add_test(NAME Couenne-grandTest
     COMMAND ${CMAKE_COMMAND} -P ${CMAKE_CURRENT_SOURCE_DIR}/Couenne/test.cmake
             $<TARGET_FILE:couenne-executable>
     WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/Couenne)
 
-  configure(Couenne src/config.h src/config_couenne.h)
+  configure(Couenne Couenne/src/config.h Couenne/src/config_couenne.h)
 endif ()
 
 # Fix paths to libstdc++ on OS X.
