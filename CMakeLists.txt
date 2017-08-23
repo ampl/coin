@@ -295,11 +295,11 @@ function(add_coin_library path)
           endif ()
           if (test MATCHES "^Cgl-")
             add_test(NAME ${test}
-              COMMAND ${CMAKE_CURRENT_BINARY_DIR}/bin/${test} Data/Sample Data/Netlib
+              COMMAND ${CMAKE_CURRENT_BINARY_DIR}/bin/${test} Cbc/Data/Sample Cbc/Data/Netlib
               WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR})
           else ()
             add_test(NAME ${test}
-              COMMAND ${CMAKE_CURRENT_BINARY_DIR}/bin/${test} -mpsDir=Data/Sample -netlibDir=Data/Netlib
+              COMMAND ${CMAKE_CURRENT_BINARY_DIR}/bin/${test} -mpsDir=Cbc/Data/Sample -netlibDir=Cbc/Data/Netlib
               WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR})
           endif ()
         endif ()
