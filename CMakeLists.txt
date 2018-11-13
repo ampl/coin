@@ -1,5 +1,6 @@
 # CMake build script for COIN-OR projects.
 # Author: Victor Zverovich
+# This file is published under the Eclipse Public License (EPL).
 
 cmake_minimum_required(VERSION 2.8.7.20120206)
 cmake_policy(VERSION ${CMAKE_MINIMUM_REQUIRED_VERSION})

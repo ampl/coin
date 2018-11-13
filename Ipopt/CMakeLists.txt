@@ -2,6 +2,7 @@
 # It is separate from the main build script to be able to use
 # cmake_add_fortran_subdirectory and build Fortran part with a
 # MinGW gfortran on Windows while the rest is built with Visual C++.
+# This file is published under the Eclipse Public License (EPL).
 
 cmake_minimum_required(VERSION 2.8)
 
