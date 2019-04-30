@@ -29,7 +29,7 @@ set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${IPOPTFORT_BINARY_DIR}/lib)
 # Link the gfortran runtime statically if possible.
 if (NOT BUILD_SHARED_LIBS OR CMAKE_GNUtoMS)
   set(CMAKE_SHARED_LINKER_FLAGS
-      "${CMAKE_SHARED_LINKER_FLAGS} -static-libgfortran -static-libgcc")
+      "${CMAKE_SHARED_LINKER_FLAGS} -static-libgfortran")
 endif ()
 
 if (CMAKE_GNUtoMS)

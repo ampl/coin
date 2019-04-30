@@ -9,7 +9,7 @@
  */
 
 #include "asl.h"
-
+#undef strtod
 #include "nlp.h"
 #include "getstub.h"
 #include "opcode.hd"
