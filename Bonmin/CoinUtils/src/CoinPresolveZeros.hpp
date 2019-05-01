@@ -1,4 +1,4 @@
-/* $Id: CoinPresolveZeros.hpp 1498 2011-11-02 15:25:35Z mjs $ */
+/* $Id: CoinPresolveZeros.hpp 2083 2019-01-06 19:38:09Z unxusr $ */
 // Copyright (C) 2002, International Business Machines
 // Corporation and others.  All Rights Reserved.
 // This code is licensed under the terms of the Eclipse Public License (EPL).
@@ -11,7 +11,7 @@
   Drop/reintroduce explicit zeros.
 */
 
-#define	DROP_ZERO	8
+#define DROP_ZERO 8
 
 /*! \brief Tracking information for an explicit zero coefficient
 
@@ -35,26 +35,31 @@ class drop_zero_coefficients_action : public CoinPresolveAction {
   const dropped_zero *const zeros_;
 
   drop_zero_coefficients_action(int nzeros,
-				const dropped_zero *zeros,
-				const CoinPresolveAction *next) :
-    CoinPresolveAction(next),
-    nzeros_(nzeros), zeros_(zeros)
-{}
+    const dropped_zero *zeros,
+    const CoinPresolveAction *next)
+    : CoinPresolveAction(next)
+    , nzeros_(nzeros)
+    , zeros_(zeros)
+  {
+  }
 
- public:
+public:
   const char *name() const { return ("drop_zero_coefficients_action"); }
 
   static const CoinPresolveAction *presolve(CoinPresolveMatrix *prob,
-					 int *checkcols,
-					 int ncheckcols,
-					 const CoinPresolveAction *next);
+    int *checkcols,
+    int ncheckcols,
+    const CoinPresolveAction *next);
 
   void postsolve(CoinPostsolveMatrix *prob) const;
 
-  virtual ~drop_zero_coefficients_action() { deleteAction(zeros_,dropped_zero*); }
+  virtual ~drop_zero_coefficients_action() { deleteAction(zeros_, dropped_zero *); }
 };
 
 const CoinPresolveAction *drop_zero_coefficients(CoinPresolveMatrix *prob,
-					      const CoinPresolveAction *next);
+  const CoinPresolveAction *next);
 
 #endif
+
+/* vi: softtabstop=2 shiftwidth=2 expandtab tabstop=2
+*/

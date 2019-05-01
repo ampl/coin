@@ -1,4 +1,4 @@
-// $Id: CglCliqueHelper.cpp 1330 2016-01-26 19:35:16Z forrest $
+// $Id: CglCliqueHelper.cpp 1388 2017-11-09 17:43:51Z forrest $
 // Copyright (C) 2000, International Business Machines
 // Corporation and others.  All Rights Reserved.
 // This code is licensed under the terms of the Eclipse Public License (EPL).
@@ -293,7 +293,7 @@ CglClique::createFractionalGraph()
       nodes[i].nbrs = all_nbr + old_total;
    }
 
-   fgraph.density = static_cast<double> (total_deg) / (sp_numcols * (sp_numcols-1));
+   // not used fgraph.density = static_cast<double> (total_deg) / (sp_numcols * (sp_numcols-1));
 
    /*========================================================================*
      Compute the min and max degree.

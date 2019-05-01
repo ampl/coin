@@ -1,4 +1,4 @@
-/* $Id: addRows.cpp 1935 2013-04-08 19:16:07Z stefan $ */
+/* $Id: addRows.cpp 2278 2017-10-02 09:51:14Z forrest $ */
 // Copyright (C) 2004, International Business Machines
 // Corporation and others.  All Rights Reserved.
 // This code is licensed under the terms of the Eclipse Public License (EPL).
@@ -15,6 +15,7 @@
 
 int main(int argc, const char *argv[])
 {
+#if COIN_BIG_INDEX<2
      try {
           // Empty model
           ClpSimplex  model;
@@ -278,5 +279,8 @@ int main(int argc, const char *argv[])
           if (e.lineNumber() >= 0)
                std::cout << "This was from a CoinAssert" << std::endl;
      }
+#else
+     printf("addRows not available with COIN_BIG_INDEX=2\n");
+#endif
      return 0;
 }

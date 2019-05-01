@@ -2,7 +2,7 @@
 // All Rights Reserved.
 // This code is published under the Eclipse Public License.
 //
-// $Id: IpIpoptAlg.cpp 2594 2015-08-09 14:31:05Z stefan $
+// $Id: IpIpoptAlg.cpp 2719 2018-06-02 13:36:27Z stefan $
 //
 // Authors:  Carl Laird, Andreas Waechter     IBM    2004-08-13
 
@@ -256,6 +256,9 @@ namespace Ipopt
 
     // Start measuring CPU time
     IpData().TimingStats().OverallAlgorithm().Start();
+
+    // Reset Cpu start time (so doesn't carry over from previous Optimize)
+    IpData().ResetCpuStartTime();
 
     if (!copyright_message_printed) {
       print_copyright_message(Jnlst());

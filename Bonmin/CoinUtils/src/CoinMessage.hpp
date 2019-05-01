@@ -1,4 +1,4 @@
-/* $Id: CoinMessage.hpp 1691 2014-03-19 12:43:56Z forrest $ */
+/* $Id: CoinMessage.hpp 2083 2019-01-06 19:38:09Z unxusr $ */
 // Copyright (C) 2002, International Business Machines
 // Corporation and others.  All Rights Reserved.
 // This code is licensed under the terms of the Eclipse Public License (EPL).
@@ -8,7 +8,7 @@
 
 #if defined(_MSC_VER)
 // Turn off compiler warning about long names
-#  pragma warning(disable:4786)
+#pragma warning(disable : 4786)
 #endif
 
 /*! \file
@@ -25,9 +25,8 @@
 
 /*! \brief Symbolic names for the standard set of COIN messages */
 
-enum COIN_Message
-{
-  COIN_MPS_LINE=0,
+enum COIN_Message {
+  COIN_MPS_LINE = 0,
   COIN_MPS_STATS,
   COIN_MPS_ILLEGAL,
   COIN_MPS_BADIMAGE,
@@ -55,19 +54,18 @@ enum COIN_Message
   COIN_PRESOLVE_POSTSOLVE,
   COIN_PRESOLVE_NEEDS_CLEANING,
   COIN_PRESOLVE_PASS,
-# if PRESOLVE_DEBUG
+#if PRESOLVE_DEBUG
   COIN_PRESOLDBG_FIRSTCHECK,
   COIN_PRESOLDBG_RCOSTACC,
   COIN_PRESOLDBG_RCOSTSTAT,
   COIN_PRESOLDBG_STATSB,
   COIN_PRESOLDBG_DUALSTAT,
-# endif
+#endif
   COIN_GENERAL_INFO,
   COIN_GENERAL_INFO2,
   COIN_GENERAL_WARNING,
   COIN_DUMMY_END
 };
-
 
 /*! \class CoinMessage
     \brief The standard set of Coin messages
@@ -80,7 +78,6 @@ enum COIN_Message
 class CoinMessage : public CoinMessages {
 
 public:
-
   /**@name Constructors etc */
   //@{
   /*! \brief Constructor
@@ -88,9 +85,11 @@ public:
     Build a CoinMessages object and load it with the standard set of
     Coin messages.
   */
-  CoinMessage(Language language=us_en);
+  CoinMessage(Language language = us_en);
   //@}
-
 };
 
 #endif
+
+/* vi: softtabstop=2 shiftwidth=2 expandtab tabstop=2
+*/

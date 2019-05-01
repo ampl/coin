@@ -1,4 +1,4 @@
-/* $Id: CoinShallowPackedVector.hpp 1498 2011-11-02 15:25:35Z mjs $ */
+/* $Id: CoinShallowPackedVector.hpp 2083 2019-01-06 19:38:09Z unxusr $ */
 // Copyright (C) 2000, International Business Machines
 // Corporation and others.  All Rights Reserved.
 // This code is licensed under the terms of the Eclipse Public License (EPL).
@@ -8,7 +8,7 @@
 
 #if defined(_MSC_VER)
 // Turn off compiler warning about long names
-#  pragma warning(disable:4786)
+#pragma warning(disable : 4786)
 #endif
 
 #include "CoinError.hpp"
@@ -72,38 +72,37 @@ Here is a sample usage:
 @endverbatim
 */
 class CoinShallowPackedVector : public CoinPackedVectorBase {
-   friend void CoinShallowPackedVectorUnitTest();
+  friend void CoinShallowPackedVectorUnitTest();
 
 public:
-  
-   /**@name Get methods */
-   //@{
-   /// Get length of indices and elements vectors
-   virtual int getNumElements() const { return nElements_; }
-   /// Get indices of elements
-   virtual const int * getIndices() const { return indices_; }
-   /// Get element values
-   virtual const double * getElements() const { return elements_; }
-   //@}
+  /**@name Get methods */
+  //@{
+  /// Get length of indices and elements vectors
+  virtual int getNumElements() const { return nElements_; }
+  /// Get indices of elements
+  virtual const int *getIndices() const { return indices_; }
+  /// Get element values
+  virtual const double *getElements() const { return elements_; }
+  //@}
 
-   /**@name Set methods */
-   //@{
-   /// Reset the vector (as if were just created an empty vector)
-   void clear();
-   /** Assignment operator. */
-   CoinShallowPackedVector& operator=(const CoinShallowPackedVector & x);
-   /** Assignment operator from a CoinPackedVectorBase. */
-   CoinShallowPackedVector& operator=(const CoinPackedVectorBase & x);
-   /** just like the explicit constructor */
-   void setVector(int size, const int * indices, const double * elements,
-		  bool testForDuplicateIndex = true);
-   //@}
+  /**@name Set methods */
+  //@{
+  /// Reset the vector (as if were just created an empty vector)
+  void clear();
+  /** Assignment operator. */
+  CoinShallowPackedVector &operator=(const CoinShallowPackedVector &x);
+  /** Assignment operator from a CoinPackedVectorBase. */
+  CoinShallowPackedVector &operator=(const CoinPackedVectorBase &x);
+  /** just like the explicit constructor */
+  void setVector(int size, const int *indices, const double *elements,
+    bool testForDuplicateIndex = true);
+  //@}
 
-   /**@name Methods to create, set and destroy */
-   //@{
-   /** Default constructor. */
-   CoinShallowPackedVector(bool testForDuplicateIndex = true);
-   /** Explicit Constructor.
+  /**@name Methods to create, set and destroy */
+  //@{
+  /** Default constructor. */
+  CoinShallowPackedVector(bool testForDuplicateIndex = true);
+  /** Explicit Constructor.
        Set vector size, indices, and elements. Size is the length of both the
        indices and elements vectors. The indices and elements vectors are not
        copied into this class instance. The ShallowPackedVector only maintains
@@ -111,29 +110,29 @@ public:
        The last argument specifies whether the creator of the object knows in
        advance that there are no duplicate indices.
    */
-   CoinShallowPackedVector(int size,
-			  const int * indices, const double * elements,
-			  bool testForDuplicateIndex = true);
-   /** Copy constructor from the base class. */
-   CoinShallowPackedVector(const CoinPackedVectorBase &);
-   /** Copy constructor. */
-   CoinShallowPackedVector(const CoinShallowPackedVector &);
-   /** Destructor. */
-   virtual ~CoinShallowPackedVector() {}
-   /// Print vector information.
-   void print();
-   //@}
+  CoinShallowPackedVector(int size,
+    const int *indices, const double *elements,
+    bool testForDuplicateIndex = true);
+  /** Copy constructor from the base class. */
+  CoinShallowPackedVector(const CoinPackedVectorBase &);
+  /** Copy constructor. */
+  CoinShallowPackedVector(const CoinShallowPackedVector &);
+  /** Destructor. */
+  virtual ~CoinShallowPackedVector() {}
+  /// Print vector information.
+  void print();
+  //@}
 
 private:
-   /**@name Private member data */
-   //@{
-   /// Vector indices
-   const int * indices_;
-   ///Vector elements
-   const double * elements_;
-   /// Size of indices and elements vectors
-   int nElements_;
-   //@}
+  /**@name Private member data */
+  //@{
+  /// Vector indices
+  const int *indices_;
+  ///Vector elements
+  const double *elements_;
+  /// Size of indices and elements vectors
+  int nElements_;
+  //@}
 };
 
 //#############################################################################
@@ -142,7 +141,9 @@ private:
     have to be compiled into the library. And that's a gain, because the
     library should be compiled with optimization on, but this method should be
     compiled with debugging. */
-void
-CoinShallowPackedVectorUnitTest();
+void CoinShallowPackedVectorUnitTest();
 
 #endif
+
+/* vi: softtabstop=2 shiftwidth=2 expandtab tabstop=2
+*/

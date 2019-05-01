@@ -1,4 +1,4 @@
-/* $Id: AbcPrimalColumnDantzig.hpp 1910 2013-01-27 02:00:13Z stefan $ */
+/* $Id: AbcPrimalColumnDantzig.hpp 2385 2019-01-06 19:43:06Z unxusr $ */
 // Copyright (C) 2002, International Business Machines
 // Corporation and others, Copyright (C) 2012, FasterCoin.  All Rights Reserved.
 // This code is licensed under the terms of the Eclipse Public License (EPL).
@@ -19,52 +19,54 @@ This is simplest choice - choose largest infeasibility
 class AbcPrimalColumnDantzig : public AbcPrimalColumnPivot {
 
 public:
+  ///@name Algorithmic methods
+  //@{
 
-     ///@name Algorithmic methods
-     //@{
-
-     /** Returns pivot column, -1 if none.
+  /** Returns pivot column, -1 if none.
          Lumbers over all columns - slow
          The Packed CoinIndexedVector updates has cost updates - for normal LP
          that is just +-weight where a feasibility changed.  It also has
          reduced cost from last iteration in pivot row
          Can just do full price if you really want to be slow
      */
-     virtual int pivotColumn(CoinPartitionedVector * updates,
-                             CoinPartitionedVector * spareRow2,
-                             CoinPartitionedVector * spareColumn1);
+  virtual int pivotColumn(CoinPartitionedVector *updates,
+    CoinPartitionedVector *spareRow2,
+    CoinPartitionedVector *spareColumn1);
 
-     /// Just sets model
-     virtual void saveWeights(AbcSimplex * model, int) {
-          model_ = model;
-     }
-     //@}
+  /// Just sets model
+  virtual void saveWeights(AbcSimplex *model, int)
+  {
+    model_ = model;
+  }
+  //@}
 
+  ///@name Constructors and destructors
+  //@{
+  /// Default Constructor
+  AbcPrimalColumnDantzig();
 
-     ///@name Constructors and destructors
-     //@{
-     /// Default Constructor
-     AbcPrimalColumnDantzig();
+  /// Copy constructor
+  AbcPrimalColumnDantzig(const AbcPrimalColumnDantzig &);
 
-     /// Copy constructor
-     AbcPrimalColumnDantzig(const AbcPrimalColumnDantzig &);
+  /// Assignment operator
+  AbcPrimalColumnDantzig &operator=(const AbcPrimalColumnDantzig &rhs);
 
-     /// Assignment operator
-     AbcPrimalColumnDantzig & operator=(const AbcPrimalColumnDantzig& rhs);
+  /// Destructor
+  virtual ~AbcPrimalColumnDantzig();
 
-     /// Destructor
-     virtual ~AbcPrimalColumnDantzig ();
+  /// Clone
+  virtual AbcPrimalColumnPivot *clone(bool copyData = true) const;
 
-     /// Clone
-     virtual AbcPrimalColumnPivot * clone(bool copyData = true) const;
+  //@}
 
-     //@}
-
-     //---------------------------------------------------------------------------
+  //---------------------------------------------------------------------------
 
 private:
-     ///@name Private member data
-     //@}
+  ///@name Private member data
+  //@}
 };
 
 #endif
+
+/* vi: softtabstop=2 shiftwidth=2 expandtab tabstop=2
+*/

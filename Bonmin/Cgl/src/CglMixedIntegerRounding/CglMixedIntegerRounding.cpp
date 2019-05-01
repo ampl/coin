@@ -68,14 +68,14 @@ CglMixedIntegerRounding::generateCuts(const OsiSolverInterface& si,
   const double* LHS        = si.getRowActivity();
   const double* coefByRow  = matrixByRow.getElements();
   const int* colInds       = matrixByRow.getIndices();
-  const int* rowStarts     = matrixByRow.getVectorStarts();
+  const CoinBigIndex* rowStarts     = matrixByRow.getVectorStarts();
   const int* rowLengths    = matrixByRow.getVectorLengths();
 
   // get matrix by column
   //const CoinPackedMatrix & matrixByCol = *si.getMatrixByCol();
   const double* coefByCol  = matrixByCol.getElements();
   const int* rowInds       = matrixByCol.getIndices();
-  const int* colStarts     = matrixByCol.getVectorStarts();
+  const CoinBigIndex* colStarts     = matrixByCol.getVectorStarts();
   const int* colLengths    = matrixByCol.getVectorLengths();
 
 
@@ -317,7 +317,7 @@ mixIntRoundPreprocess(const OsiSolverInterface& si)
   numCols_ = si.getNumCols();
   const double* coefByRow  = matrixByRow.getElements();
   const int* colInds       = matrixByRow.getIndices();
-  const int* rowStarts     = matrixByRow.getVectorStarts();
+  const CoinBigIndex* rowStarts     = matrixByRow.getVectorStarts();
   const int* rowLengths    = matrixByRow.getVectorLengths();
   // Get copies of sense and RHS so we can modify if ranges
   if (sense_) {
@@ -476,12 +476,12 @@ mixIntRoundPreprocess(const OsiSolverInterface& si)
 	      (rowType == ROW_VARLB) || 
 	      (rowType == ROW_VAREQ) )  { 
       
-      int startPos = rowStarts[iRow];
-      int stopPos  = startPos + rowLengths[iRow];
+      CoinBigIndex startPos = rowStarts[iRow];
+      CoinBigIndex stopPos  = startPos + rowLengths[iRow];
       int    xInd = 0,  yInd = 0;   // x is continuous, y is integer
       double xCoef = 0.0, yCoef = 0.0;
 
-      for (int i = startPos; i < stopPos; ++i) {
+      for (CoinBigIndex i = startPos; i < stopPos; ++i) {
 	if ( fabs(coefByRow[i]) > EPSILON_ ) {
 	  if( si.isInteger(colInds[i]) ) {
 	    yInd  = colInds[i];
@@ -529,9 +529,9 @@ mixIntRoundPreprocess(const OsiSolverInterface& si)
   countC = 0;
   for (int i = 0; i < numRowCont_; ++i) {
     int indRow = indRowCont_[i];
-    int jStart = rowStarts[indRow];
-    int jStop = jStart + rowLengths[indRow];
-    for (int j = jStart; j < jStop; ++j) {
+    CoinBigIndex jStart = rowStarts[indRow];
+    CoinBigIndex jStop = jStart + rowLengths[indRow];
+    for (CoinBigIndex j = jStart; j < jStop; ++j) {
       int indCol = colInds[j];
       CglMixIntRoundVLB VLB = vlbs_[indCol];
       CglMixIntRoundVUB VUB = vubs_[indCol];
@@ -655,12 +655,12 @@ CglMixedIntegerRounding::generateMirCuts(
 			    const double* LHS,
 			    const double* /*coefByRow*/,
 			    const int* /*colInds*/,
-			    const int* /*rowStarts*/,
+			    const CoinBigIndex* /*rowStarts*/,
 			    const int* /*rowLengths*/,
 			    //const CoinPackedMatrix& matrixByCol,
 			    const double* coefByCol,
 			    const int* rowInds,
-			    const int* colStarts,
+			    const CoinBigIndex* colStarts,
 			    const int* colLengths,
 			    OsiCuts& cs ) const
 {
@@ -900,7 +900,7 @@ CglMixedIntegerRounding::selectRowToAggregate(
 			    const double* colLowerBound,
 			    const std::set<int>& setRowsAggregated,
 			    const double* xlp, const double* coefByCol,
-			    const int* rowInds, const int* colStarts,
+			    const int* rowInds, const CoinBigIndex* colStarts,
 			    const int* colLengths,
 			    int& rowSelected,
 			    int& colSelected ) const
@@ -939,14 +939,14 @@ CglMixedIntegerRounding::selectRowToAggregate(
     // In case this variable is acceptable look for possible rows
     if (delta > deltaMax) {
 
-      int iStart = colStarts[indCol];
-      int iStop  = iStart + colLengths[indCol];
+      CoinBigIndex iStart = colStarts[indCol];
+      CoinBigIndex iStop  = iStart + colLengths[indCol];
       //      int count = 0;
 
       //      std::vector<int> rowPossible;
 
       // find a row to use in aggregation
-      for (int i = iStart; i < iStop; ++i) {
+      for (CoinBigIndex i = iStart; i < iStop; ++i) {
 	int rowInd = rowInds[i];
 	if (setRowsAggregated.find(rowInd) == setRowsAggregated.end()) {
 	  // if the row was not already selected, select it

@@ -1,4 +1,4 @@
-// $Id: Cgl012cut.cpp 1222 2014-09-14 17:32:18Z forrest $
+// $Id: Cgl012cut.cpp 1324 2016-01-20 18:41:08Z unxusr $
 // Copyright (C) 2010, International Business Machines
 // Corporation and others.  All Rights Reserved.
 // This code is licensed under the terms of the Eclipse Public License (EPL).
@@ -3552,6 +3552,8 @@ char **csense /* senses of the cuts: 'L', 'G' or 'E' */
   
   //ilp_load(mr,mc,mnz,mtbeg,mtcnt,mtind,mtval,
   //   vlb,vub,mrhs,msense);
+  if (!inp_ilp)
+      return FALSE;
   inp_ilp->xstar = xstar;
   
 

@@ -1,4 +1,4 @@
-// $Id: CbcCompareEstimate.hpp 1899 2013-04-09 18:12:08Z stefan $
+// $Id: CbcCompareEstimate.hpp 2465 2019-01-03 19:26:52Z unxusr $
 // Copyright (C) 2002, International Business Machines
 // Corporation and others.  All Rights Reserved.
 // This code is licensed under the terms of the Eclipse Public License (EPL).
@@ -7,7 +7,6 @@
 
 #ifndef CbcCompareEstimate_H
 #define CbcCompareEstimate_H
-
 
 //#############################################################################
 /*  These are alternative strategies for node traversal.
@@ -24,25 +23,26 @@ class CbcModel;
 
 /* This is when rounding is being done
 */
-class CbcCompareEstimate  : public CbcCompareBase {
+class CbcCompareEstimate : public CbcCompareBase {
 public:
-    // Default Constructor
-    CbcCompareEstimate () ;
-    ~CbcCompareEstimate() ;
-    // Copy constructor
-    CbcCompareEstimate ( const CbcCompareEstimate &rhs);
+  // Default Constructor
+  CbcCompareEstimate();
+  ~CbcCompareEstimate();
+  // Copy constructor
+  CbcCompareEstimate(const CbcCompareEstimate &rhs);
 
-    // Assignment operator
-    CbcCompareEstimate & operator=( const CbcCompareEstimate& rhs);
+  // Assignment operator
+  CbcCompareEstimate &operator=(const CbcCompareEstimate &rhs);
 
-    /// Clone
-    virtual CbcCompareBase * clone() const;
-    /// Create C++ lines to get to current state
-    virtual void generateCpp( FILE * fp);
+  /// Clone
+  virtual CbcCompareBase *clone() const;
+  /// Create C++ lines to get to current state
+  virtual void generateCpp(FILE *fp);
 
-    virtual bool test (CbcNode * x, CbcNode * y) ;
+  virtual bool test(CbcNode *x, CbcNode *y);
 };
-
 
 #endif //CbcCompareEstimate_H
 
+/* vi: softtabstop=2 shiftwidth=2 expandtab tabstop=2
+*/

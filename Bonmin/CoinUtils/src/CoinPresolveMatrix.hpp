@@ -1,4 +1,4 @@
-/* $Id: CoinPresolveMatrix.hpp 1761 2014-12-10 09:43:07Z forrest $ */
+/* $Id: CoinPresolveMatrix.hpp 2083 2019-01-06 19:38:09Z unxusr $ */
 // Copyright (C) 2002, International Business Machines
 // Corporation and others.  All Rights Reserved.
 // This code is licensed under the terms of the Eclipse Public License (EPL).
@@ -17,6 +17,7 @@
 #include <cassert>
 #include <cstdlib>
 
+//# define COIN_PRESOLVE_TUNING 2
 #if PRESOLVE_DEBUG > 0
 #include "CoinFinite.hpp"
 #endif
@@ -28,14 +29,13 @@
   CoinPresolveAction and a number of non-member utility functions.
 */
 
-
 #if defined(_MSC_VER)
 // Avoid MS Compiler problem in recognizing type to delete
 // by casting to type.
 // Is this still necessary? -- lh, 111202 --
-#define deleteAction(array,type) delete [] ((type) array)
+#define deleteAction(array, type) delete[]((type)array)
 #else
-#define deleteAction(array,type) delete [] array
+#define deleteAction(array, type) delete[] array
 #endif
 
 /*
@@ -47,10 +47,13 @@
 #define PRESOLVE_STMT(s) s
 
 #define PRESOLVEASSERT(x) \
-  ((x) ? 1 : ((std::cerr << "FAILED ASSERTION at line " \
-			 << __LINE__ << ": " #x "\n"), abort(), 0))
+  ((x) ? 1 : ((std::cerr << "FAILED ASSERTION at line " << __LINE__ << ": " #x "\n"), abort(), 0))
 
-inline void DIE(const char *s) { std::cout << s ; abort() ; }
+inline void DIE(const char *s)
+{
+  std::cout << s;
+  abort();
+}
 
 /*! \brief Indicate column or row present at start of postsolve
 
@@ -62,12 +65,16 @@ inline void DIE(const char *s) { std::cout << s ; abort() ; }
   There are a bunch of these code definitions, scattered through presolve
   files. They should be collected in one place.
 */
-#define PRESENT_IN_REDUCED	'\377'
+#define PRESENT_IN_REDUCED '\377'
 
 #else
 
-#define PRESOLVEASSERT(x) {} 
-#define	PRESOLVE_STMT(s) {}
+#define PRESOLVEASSERT(x) \
+  {                       \
+  }
+#define PRESOLVE_STMT(s) \
+  {                      \
+  }
 
 inline void DIE(const char *) {}
 
@@ -77,7 +84,9 @@ inline void DIE(const char *) {}
   Unclear why these are separate from standard debug.
 */
 #ifndef PRESOLVE_DETAIL
-#define PRESOLVE_DETAIL_PRINT(s) {}
+#define PRESOLVE_DETAIL_PRINT(s) \
+  {                              \
+  }
 #else
 #define PRESOLVE_DETAIL_PRINT(s) s
 #endif
@@ -86,22 +95,21 @@ inline void DIE(const char *) {}
 
   OSL had a fixed zero tolerance; we still use that here.
 */
-const double ZTOLDP = 1e-12 ;
+const double ZTOLDP = 1e-12;
 /*! \brief Alternate zero tolerance
 
   Use a different one if we are doing doubletons, etc.
 */
-const double ZTOLDP2 = 1e-10 ;
+const double ZTOLDP2 = 1e-10;
 
 /// The usual finite infinity
 #define PRESOLVE_INF COIN_DBL_MAX
 /// And a small infinity
 #define PRESOLVE_SMALL_INF 1.0e20
 /// Check for infinity using finite infinity
-#define	PRESOLVEFINITE(n) (-PRESOLVE_INF < (n) && (n) < PRESOLVE_INF)
+#define PRESOLVEFINITE(n) (-PRESOLVE_INF < (n) && (n) < PRESOLVE_INF)
 
-
-class CoinPostsolveMatrix ;
+class CoinPostsolveMatrix;
 
 /*! \class CoinPresolveAction
     \brief Abstract base class of all presolve routines.
@@ -152,9 +160,8 @@ class CoinPostsolveMatrix ;
 	expected that all derived subclasses of \c CoinPresolveAction also have
 	this property.
 */
-class CoinPresolveAction
-{
- public:
+class CoinPresolveAction {
+public:
   /*! \brief Stub routine to throw exceptions.
   
    Exceptions are inefficient, particularly with g++.  Even with xlC, the
@@ -162,23 +169,30 @@ class CoinPresolveAction
    than use throw directly in the routine, I use it in a stub routine.
   */
   static void throwCoinError(const char *error, const char *ps_routine)
-  { throw CoinError(error, ps_routine, "CoinPresolve"); } 
+  {
+    throw CoinError(error, ps_routine, "CoinPresolve");
+  }
 
   /*! \brief The next presolve transformation
   
     Set at object construction.
   */
   const CoinPresolveAction *next;
-  
+
   /*! \brief Construct a postsolve object and add it to the transformation list.
   
     This is an `add to head' operation. This object will point to the
     one passed as the parameter.
   */
-  CoinPresolveAction(const CoinPresolveAction *next) : next(next) {}
+  CoinPresolveAction(const CoinPresolveAction *next)
+    : next(next)
+  {
+  }
   /// modify next (when building rather than passing)
   inline void setNext(const CoinPresolveAction *nextAction)
-  { next = nextAction;}
+  {
+    next = nextAction;
+  }
 
   /*! \brief A name for debug printing.
 
@@ -206,7 +220,7 @@ class OsiSolverInterface;
   CoinWarmStartBasis is required for methods in CoinPrePostsolveMatrix
   that accept/return a CoinWarmStartBasis object.
 */
-class CoinWarmStartBasis ;
+class CoinWarmStartBasis;
 
 /*! \class CoinPrePostsolveMatrix
     \brief Collects all the information about the problem that is needed
@@ -262,10 +276,8 @@ class CoinWarmStartBasis ;
   forseeable future.  -- lh, 111202 --
 */
 
-class CoinPrePostsolveMatrix
-{
- public:
-
+class CoinPrePostsolveMatrix {
+public:
   /*! \name Constructors & Destructors */
 
   //@{
@@ -276,26 +288,26 @@ class CoinPrePostsolveMatrix
     OsiSolverInterface.
   */
   CoinPrePostsolveMatrix(int ncols_alloc, int nrows_alloc,
-			 CoinBigIndex nelems_alloc) ;
+    CoinBigIndex nelems_alloc);
 
   /*! \brief Generic OSI constructor
 
     See OSI code for the definition.
   */
-  CoinPrePostsolveMatrix(const OsiSolverInterface * si,
-			int ncols_,
-			int nrows_,
-			CoinBigIndex nelems_);
+  CoinPrePostsolveMatrix(const OsiSolverInterface *si,
+    int ncols_,
+    int nrows_,
+    CoinBigIndex nelems_);
 
   /*! ClpOsi constructor
 
     See Clp code for the definition.
   */
-  CoinPrePostsolveMatrix(const ClpSimplex * si,
-			int ncols_,
-			int nrows_,
-			CoinBigIndex nelems_,
-                         double bulkRatio);
+  CoinPrePostsolveMatrix(const ClpSimplex *si,
+    int ncols_,
+    int nrows_,
+    CoinBigIndex nelems_,
+    double bulkRatio);
 
   /// Destructor
   ~CoinPrePostsolveMatrix();
@@ -330,66 +342,85 @@ class CoinPrePostsolveMatrix
     assignment to set values.
   */
   //@{
-  
+
   /// Set row status (<i>i.e.</i>, status of artificial for this row)
   inline void setRowStatus(int sequence, Status status)
   {
-    unsigned char & st_byte = rowstat_[sequence];
-    st_byte = static_cast<unsigned char>(st_byte & (~7)) ;
-    st_byte = static_cast<unsigned char>(st_byte | status) ;
+    unsigned char &st_byte = rowstat_[sequence];
+    st_byte = static_cast< unsigned char >(st_byte & (~7));
+    st_byte = static_cast< unsigned char >(st_byte | status);
   }
   /// Get row status
   inline Status getRowStatus(int sequence) const
-  {return static_cast<Status> (rowstat_[sequence]&7);}
+  {
+    return static_cast< Status >(rowstat_[sequence] & 7);
+  }
   /// Check if artificial for this row is basic
   inline bool rowIsBasic(int sequence) const
-  {return (static_cast<Status> (rowstat_[sequence]&7)==basic);}
+  {
+    return (static_cast< Status >(rowstat_[sequence] & 7) == basic);
+  }
   /// Set column status (<i>i.e.</i>, status of primal variable)
   inline void setColumnStatus(int sequence, Status status)
   {
-    unsigned char & st_byte = colstat_[sequence];
-    st_byte = static_cast<unsigned char>(st_byte & (~7)) ;
-    st_byte = static_cast<unsigned char>(st_byte | status) ;
+    unsigned char &st_byte = colstat_[sequence];
+    st_byte = static_cast< unsigned char >(st_byte & (~7));
+    st_byte = static_cast< unsigned char >(st_byte | status);
 
-#   ifdef PRESOLVE_DEBUG
-    switch (status)
-    { case isFree:
-      { if (clo_[sequence] > -PRESOLVE_INF || cup_[sequence] < PRESOLVE_INF)
-	{ std::cout << "Bad status: Var " << sequence
-		    << " isFree, lb = " << clo_[sequence]
-		    << ", ub = " << cup_[sequence] << std::endl ; }
-	break ; }
-      case basic:
-      { break ; }
-      case atUpperBound:
-      { if (cup_[sequence] >= PRESOLVE_INF)
-	{ std::cout << "Bad status: Var " << sequence
-	            << " atUpperBound, lb = " << clo_[sequence]
-	            << ", ub = " << cup_[sequence] << std::endl ; }
-	break ; }
-      case atLowerBound:
-      { if (clo_[sequence] <= -PRESOLVE_INF)
-	{ std::cout << "Bad status: Var " << sequence
-	            << " atLowerBound, lb = " << clo_[sequence]
-	            << ", ub = " << cup_[sequence] << std::endl ; }
-	break ; }
-      case superBasic:
-      { if (clo_[sequence] <= -PRESOLVE_INF && cup_[sequence] >= PRESOLVE_INF)
-	{ std::cout << "Bad status: Var " << sequence
-	            << " superBasic, lb = " << clo_[sequence]
-	            << ", ub = " << cup_[sequence] << std::endl ; }
-	break ; }
-      default:
-      { assert(false) ;
-	break ; } }
-#   endif
+#ifdef PRESOLVE_DEBUG
+    switch (status) {
+    case isFree: {
+      if (clo_[sequence] > -PRESOLVE_INF || cup_[sequence] < PRESOLVE_INF) {
+        std::cout << "Bad status: Var " << sequence
+                  << " isFree, lb = " << clo_[sequence]
+                  << ", ub = " << cup_[sequence] << std::endl;
+      }
+      break;
+    }
+    case basic: {
+      break;
+    }
+    case atUpperBound: {
+      if (cup_[sequence] >= PRESOLVE_INF) {
+        std::cout << "Bad status: Var " << sequence
+                  << " atUpperBound, lb = " << clo_[sequence]
+                  << ", ub = " << cup_[sequence] << std::endl;
+      }
+      break;
+    }
+    case atLowerBound: {
+      if (clo_[sequence] <= -PRESOLVE_INF) {
+        std::cout << "Bad status: Var " << sequence
+                  << " atLowerBound, lb = " << clo_[sequence]
+                  << ", ub = " << cup_[sequence] << std::endl;
+      }
+      break;
+    }
+    case superBasic: {
+      if (clo_[sequence] <= -PRESOLVE_INF && cup_[sequence] >= PRESOLVE_INF) {
+        std::cout << "Bad status: Var " << sequence
+                  << " superBasic, lb = " << clo_[sequence]
+                  << ", ub = " << cup_[sequence] << std::endl;
+      }
+      break;
+    }
+    default: {
+      assert(false);
+      break;
+    }
+    }
+#endif
   }
   /// Get column (structural variable) status
   inline Status getColumnStatus(int sequence) const
-  {return static_cast<Status> (colstat_[sequence]&7);}
+  {
+    return static_cast< Status >(colstat_[sequence] & 7);
+  }
   /// Check if column (structural variable) is basic
   inline bool columnIsBasic(int sequence) const
-  {return (static_cast<Status> (colstat_[sequence]&7)==basic);}
+  {
+    return (static_cast< Status >(colstat_[sequence] & 7) == basic);
+  }
   /*! \brief Set status of row (artificial variable) to the correct nonbasic
 	     status given bounds and current value
   */
@@ -399,21 +430,21 @@ class CoinPrePostsolveMatrix
   */
   void setColumnStatusUsingValue(int iColumn);
   /*! \brief Set column (structural variable) status vector */
-  void setStructuralStatus(const char *strucStatus, int lenParam) ;
+  void setStructuralStatus(const char *strucStatus, int lenParam);
   /*! \brief Set row (artificial variable) status vector */
-  void setArtificialStatus(const char *artifStatus, int lenParam) ;
+  void setArtificialStatus(const char *artifStatus, int lenParam);
   /*! \brief Set the status of all variables from a basis */
-  void setStatus(const CoinWarmStartBasis *basis) ;
+  void setStatus(const CoinWarmStartBasis *basis);
   /*! \brief Get status in the form of a CoinWarmStartBasis */
-  CoinWarmStartBasis *getStatus() ;
+  CoinWarmStartBasis *getStatus();
   /*! \brief Return a print string for status of a column (structural
 	     variable)
   */
-  const char *columnStatusString(int j) const ;
+  const char *columnStatusString(int j) const;
   /*! \brief Return a print string for status of a row (artificial
 	     variable)
   */
-  const char *rowStatusString(int i) const ;
+  const char *rowStatusString(int i) const;
   //@}
 
   /*! \name Functions to load problem and solution information
@@ -424,114 +455,156 @@ class CoinPrePostsolveMatrix
   */
   //@{
   /// Set the objective function offset for the original system.
-  void setObjOffset(double offset) ;
+  void setObjOffset(double offset);
   /*! \brief Set the objective sense (max/min)
 
     Coded as 1.0 for min, -1.0 for max.
     Yes, there's a method, and a matching attribute. No, you really
     don't want to set this to maximise.
   */
-  void setObjSense(double objSense) ;
+  void setObjSense(double objSense);
   /// Set the primal feasibility tolerance
-  void setPrimalTolerance(double primTol) ;
+  void setPrimalTolerance(double primTol);
   /// Set the dual feasibility tolerance
-  void setDualTolerance(double dualTol) ;
+  void setDualTolerance(double dualTol);
   /// Set column lower bounds
-  void setColLower(const double *colLower, int lenParam) ;
+  void setColLower(const double *colLower, int lenParam);
   /// Set column upper bounds
-  void setColUpper(const double *colUpper, int lenParam) ;
+  void setColUpper(const double *colUpper, int lenParam);
   /// Set column solution
-  void setColSolution(const double *colSol, int lenParam) ;
+  void setColSolution(const double *colSol, int lenParam);
   /// Set objective coefficients
-  void setCost(const double *cost, int lenParam) ;
+  void setCost(const double *cost, int lenParam);
   /// Set reduced costs
-  void setReducedCost(const double *redCost, int lenParam) ;
+  void setReducedCost(const double *redCost, int lenParam);
   /// Set row lower bounds
-  void setRowLower(const double *rowLower, int lenParam) ;
+  void setRowLower(const double *rowLower, int lenParam);
   /// Set row upper bounds
-  void setRowUpper(const double *rowUpper, int lenParam) ;
+  void setRowUpper(const double *rowUpper, int lenParam);
   /// Set row solution
-  void setRowPrice(const double *rowSol, int lenParam) ;
+  void setRowPrice(const double *rowSol, int lenParam);
   /// Set row activity
-  void setRowActivity(const double *rowAct, int lenParam) ;
+  void setRowActivity(const double *rowAct, int lenParam);
   //@}
 
   /*! \name Functions to retrieve problem and solution information */
   //@{
   /// Get current number of columns
   inline int getNumCols() const
-  { return (ncols_) ; } 
+  {
+    return (ncols_);
+  }
   /// Get current number of rows
   inline int getNumRows() const
-  { return (nrows_) ; }
+  {
+    return (nrows_);
+  }
   /// Get current number of non-zero coefficients
-  inline int getNumElems() const
-  { return (nelems_) ; }
+  inline CoinBigIndex getNumElems() const
+  {
+    return (nelems_);
+  }
   /// Get column start vector for column-major packed matrix
   inline const CoinBigIndex *getColStarts() const
-  { return (mcstrt_) ; } 
+  {
+    return (mcstrt_);
+  }
   /// Get column length vector for column-major packed matrix
   inline const int *getColLengths() const
-  { return (hincol_) ; } 
+  {
+    return (hincol_);
+  }
   /// Get vector of row indices for column-major packed matrix
   inline const int *getRowIndicesByCol() const
-  { return (hrow_) ; } 
+  {
+    return (hrow_);
+  }
   /// Get vector of elements for column-major packed matrix
   inline const double *getElementsByCol() const
-  { return (colels_) ; } 
+  {
+    return (colels_);
+  }
   /// Get column lower bounds
   inline const double *getColLower() const
-  { return (clo_) ; } 
+  {
+    return (clo_);
+  }
   /// Get column upper bounds
   inline const double *getColUpper() const
-  { return (cup_) ; } 
+  {
+    return (cup_);
+  }
   /// Get objective coefficients
   inline const double *getCost() const
-  { return (cost_) ; } 
+  {
+    return (cost_);
+  }
   /// Get row lower bounds
   inline const double *getRowLower() const
-  { return (rlo_) ; } 
+  {
+    return (rlo_);
+  }
   /// Get row upper bounds
   inline const double *getRowUpper() const
-  { return (rup_) ; } 
+  {
+    return (rup_);
+  }
   /// Get column solution (primal variable values)
   inline const double *getColSolution() const
-  { return (sol_) ; }
+  {
+    return (sol_);
+  }
   /// Get row activity (constraint lhs values)
   inline const double *getRowActivity() const
-  { return (acts_) ; }
+  {
+    return (acts_);
+  }
   /// Get row solution (dual variables)
   inline const double *getRowPrice() const
-  { return (rowduals_) ; }
+  {
+    return (rowduals_);
+  }
   /// Get reduced costs
   inline const double *getReducedCost() const
-  { return (rcosts_) ; }
+  {
+    return (rcosts_);
+  }
   /// Count empty columns
   inline int countEmptyCols()
-  { int empty = 0 ;
-    for (int i = 0 ; i < ncols_ ; i++) if (hincol_[i] == 0) empty++ ;
-    return (empty) ; }
+  {
+    int empty = 0;
+    for (int i = 0; i < ncols_; i++)
+      if (hincol_[i] == 0)
+        empty++;
+    return (empty);
+  }
   //@}
-
 
   /*! \name Message handling */
   //@{
   /// Return message handler
-  inline CoinMessageHandler *messageHandler() const 
-  { return handler_; }
+  inline CoinMessageHandler *messageHandler() const
+  {
+    return handler_;
+  }
   /*! \brief Set message handler
 
     The client retains responsibility for the handler --- it will not be
     destroyed with the \c CoinPrePostsolveMatrix object.
   */
   inline void setMessageHandler(CoinMessageHandler *handler)
-  { if (defaultHandler_ == true)
-    { delete handler_ ;
-      defaultHandler_ = false ; }
-    handler_ = handler ; }
+  {
+    if (defaultHandler_ == true) {
+      delete handler_;
+      defaultHandler_ = false;
+    }
+    handler_ = handler;
+  }
   /// Return messages
-  inline CoinMessages messages() const 
-  { return messages_; }
+  inline CoinMessages messages() const
+  {
+    return messages_;
+  }
   //@}
 
   /*! \name Current and Allocated Size
@@ -554,9 +627,9 @@ class CoinPrePostsolveMatrix
   /// Allocated number of columns
   int ncols0_;
   /// Allocated number of rows
-  int nrows0_ ;
+  int nrows0_;
   /// Allocated number of coefficients
-  CoinBigIndex nelems0_ ;
+  CoinBigIndex nelems0_;
   /*! \brief Allocated size of bulk storage for row indices and coefficients
 
     This is the space allocated for hrow_ and colels_.  This must be large
@@ -565,7 +638,7 @@ class CoinPrePostsolveMatrix
     representation must be compressed) it's recommended that this be at least
     2*nelems0_.
   */
-  CoinBigIndex bulk0_ ;
+  CoinBigIndex bulk0_;
   /// Ratio of bulk0_ to nelems0_; default is 2.
   double bulkRatio_;
   //@}
@@ -608,14 +681,14 @@ class CoinPrePostsolveMatrix
     the entry for column j will contain the index of the corresponding
     column in the original problem.
   */
-  int * originalColumn_;
+  int *originalColumn_;
   /*! \brief Original row numbers
 
     Over the current range of row numbers in the presolved problem, the
     entry for row i will contain the index of the corresponding row in
     the original problem.
   */
-  int * originalRow_;
+  int *originalRow_;
 
   /// Primal feasibility tolerance
   double ztolzb_;
@@ -696,20 +769,18 @@ class CoinPrePostsolveMatrix
   */
   //@{
   /// Message handler
-  CoinMessageHandler *handler_; 
+  CoinMessageHandler *handler_;
   /// Indicates if the current #handler_ is default (true) or not (false).
   bool defaultHandler_;
   /// Standard COIN messages
-  CoinMessage messages_; 
+  CoinMessage messages_;
   //@}
-
 };
 
 /*! \relates CoinPrePostsolveMatrix
     \brief Generate a print string for a status code.
 */
-const char *statusName (CoinPrePostsolveMatrix::Status status) ;
-
+const char *statusName(CoinPrePostsolveMatrix::Status status);
 
 /*! \class presolvehlink
     \brief Links to aid in packed matrix modification
@@ -735,10 +806,10 @@ const char *statusName (CoinPrePostsolveMatrix::Status status) ;
    row-major matrix, of course.
 */
 
-class presolvehlink
-{ public:
+class presolvehlink {
+public:
   int pre, suc;
-} ;
+};
 
 #define NO_LINK -66666666
 
@@ -748,7 +819,7 @@ class presolvehlink
   Remove vector i from the ordering.
 */
 inline void PRESOLVE_REMOVE_LINK(presolvehlink *link, int i)
-{ 
+{
   int ipre = link[i].pre;
   int isuc = link[i].suc;
   if (ipre >= 0) {
@@ -788,7 +859,7 @@ inline void PRESOLVE_INSERT_LINK(presolvehlink *link, int i, int j)
    But, this routine will work even if i happens to be first in the order.
 */
 inline void PRESOLVE_MOVE_LINK(presolvehlink *link, int i, int j)
-{ 
+{
   int ipre = link[i].pre;
   int isuc = link[i].suc;
   if (ipre >= 0) {
@@ -799,7 +870,6 @@ inline void PRESOLVE_MOVE_LINK(presolvehlink *link, int i, int j)
   }
   link[i].pre = NO_LINK, link[i].suc = NO_LINK;
 }
-
 
 /*! \class CoinPresolveMatrix
     \brief Augments CoinPrePostsolveMatrix with information about the problem
@@ -832,10 +902,8 @@ inline void PRESOLVE_MOVE_LINK(presolvehlink *link, int i, int j)
   forseeable future.  -- lh, 111202 --
 */
 
-class CoinPresolveMatrix : public CoinPrePostsolveMatrix
-{
- public:
-
+class CoinPresolveMatrix : public CoinPrePostsolveMatrix {
+public:
   /*! \brief `Native' constructor
 
     This constructor creates an empty object which must then be loaded.
@@ -843,51 +911,51 @@ class CoinPresolveMatrix : public CoinPrePostsolveMatrix
     OsiSolverInterface.
   */
   CoinPresolveMatrix(int ncols_alloc, int nrows_alloc,
-		     CoinBigIndex nelems_alloc) ;
+    CoinBigIndex nelems_alloc);
 
   /*! \brief Clp OSI constructor
 
     See Clp code for the definition.
   */
   CoinPresolveMatrix(int ncols0,
-		    double maxmin,
-		    // end prepost members
+    double maxmin,
+    // end prepost members
 
-		    ClpSimplex * si,
+    ClpSimplex *si,
 
-		    // rowrep
-		    int nrows,
-		    CoinBigIndex nelems,
-		 bool doStatus,
-		 double nonLinearVariable,
-                     double bulkRatio);
+    // rowrep
+    int nrows,
+    CoinBigIndex nelems,
+    bool doStatus,
+    double nonLinearVariable,
+    double bulkRatio);
 
   /*! \brief Update the model held by a Clp OSI */
-  void update_model(ClpSimplex * si,
-			    int nrows0,
-			    int ncols0,
-			    CoinBigIndex nelems0);
+  void update_model(ClpSimplex *si,
+    int nrows0,
+    int ncols0,
+    CoinBigIndex nelems0);
   /*! \brief Generic OSI constructor
 
     See OSI code for the definition.
   */
   CoinPresolveMatrix(int ncols0,
-		     double maxmin,
-		     // end prepost members
-		     OsiSolverInterface * si,
-		     // rowrep
-		     int nrows,
-		     CoinBigIndex nelems,
-		     bool doStatus,
-		     double nonLinearVariable,
-                     const char * prohibited,
-		     const char * rowProhibited=NULL);
+    double maxmin,
+    // end prepost members
+    OsiSolverInterface *si,
+    // rowrep
+    int nrows,
+    CoinBigIndex nelems,
+    bool doStatus,
+    double nonLinearVariable,
+    const char *prohibited,
+    const char *rowProhibited = NULL);
 
   /*! \brief Update the model held by a generic OSI */
-  void update_model(OsiSolverInterface * si,
-			    int nrows0,
-			    int ncols0,
-			    CoinBigIndex nelems0);
+  void update_model(OsiSolverInterface *si,
+    int nrows0,
+    int ncols0,
+    CoinBigIndex nelems0);
 
   /// Destructor
   ~CoinPresolveMatrix();
@@ -897,7 +965,7 @@ class CoinPresolveMatrix : public CoinPrePostsolveMatrix
 
     See CoinPostsolveMatrix::assignPresolveToPostsolve.
   */
-  friend void assignPresolveToPostsolve (CoinPresolveMatrix *&preObj) ;
+  friend void assignPresolveToPostsolve(CoinPresolveMatrix *&preObj);
 
   /*! \name Functions to load the problem representation
   */
@@ -907,13 +975,17 @@ class CoinPresolveMatrix : public CoinPrePostsolveMatrix
     Load the coefficient matrix before loading the other vectors (bounds,
     objective, variable type) required to define the problem.
   */
-  void setMatrix(const CoinPackedMatrix *mtx) ;
+  void setMatrix(const CoinPackedMatrix *mtx);
 
   /// Count number of empty rows
   inline int countEmptyRows()
-  { int empty = 0 ;
-    for (int i = 0 ; i < nrows_ ; i++) if (hinrow_[i] == 0) empty++ ;
-    return (empty) ; }
+  {
+    int empty = 0;
+    for (int i = 0; i < nrows_; i++)
+      if (hinrow_[i] == 0)
+        empty++;
+    return (empty);
+  }
 
   /*! \brief Set variable type information for a single variable
 
@@ -921,26 +993,31 @@ class CoinPresolveMatrix : public CoinPrePostsolveMatrix
     Does not manipulate the #anyInteger_ flag.
   */
   inline void setVariableType(int i, int variableType)
-  { if (integerType_ == 0) integerType_ = new unsigned char [ncols0_] ;
-    integerType_[i] = static_cast<unsigned char>(variableType) ; }
+  {
+    if (integerType_ == 0)
+      integerType_ = new unsigned char[ncols0_];
+    integerType_[i] = static_cast< unsigned char >(variableType);
+  }
 
   /*! \brief Set variable type information for all variables
   
     Set \p variableType[i] to 0 for continuous, 1 for integer.
     Does not manipulate the #anyInteger_ flag.
   */
-  void setVariableType(const unsigned char *variableType, int lenParam) ;
+  void setVariableType(const unsigned char *variableType, int lenParam);
 
   /*! \brief Set the type of all variables
 
     allIntegers should be true to set the type to integer, false to set the
     type to continuous.
   */
-  void setVariableType (bool allIntegers, int lenParam) ;
+  void setVariableType(bool allIntegers, int lenParam);
 
   /// Set a flag for presence (true) or absence (false) of integer variables
-  inline void setAnyInteger (bool anyInteger = true)
-  { anyInteger_ = anyInteger ; }
+  inline void setAnyInteger(bool anyInteger = true)
+  {
+    anyInteger_ = anyInteger;
+  }
   //@}
 
   /*! \name Functions to retrieve problem information
@@ -949,40 +1026,54 @@ class CoinPresolveMatrix : public CoinPrePostsolveMatrix
 
   /// Get row start vector for row-major packed matrix
   inline const CoinBigIndex *getRowStarts() const
-  { return (mrstrt_) ; }
+  {
+    return (mrstrt_);
+  }
   /// Get vector of column indices for row-major packed matrix
   inline const int *getColIndicesByRow() const
-  { return (hcol_) ; }
+  {
+    return (hcol_);
+  }
   /// Get vector of elements for row-major packed matrix
   inline const double *getElementsByRow() const
-  { return (rowels_) ; }
+  {
+    return (rowels_);
+  }
 
   /*! \brief Check for integrality of the specified variable.
 
     Consults the #integerType_ vector if present; fallback is the
     #anyInteger_ flag.
   */
-  inline bool isInteger (int i) const
-  { if (integerType_ == 0)
-    { return (anyInteger_) ; }
-    else
-    if (integerType_[i] == 1)
-    { return (true) ; }
-    else
-    { return (false) ; } }
+  inline bool isInteger(int i) const
+  {
+    if (integerType_ == 0) {
+      return (anyInteger_);
+    } else if (integerType_[i] == 1) {
+      return (true);
+    } else {
+      return (false);
+    }
+  }
 
   /*! \brief Check if there are any integer variables
 
     Consults the #anyInteger_ flag
   */
-  inline bool anyInteger () const
-  { return (anyInteger_) ; }
+  inline bool anyInteger() const
+  {
+    return (anyInteger_);
+  }
   /// Picks up any special options
   inline int presolveOptions() const
-  { return presolveOptions_;}
+  {
+    return presolveOptions_;
+  }
   /// Sets any special options (see #presolveOptions_)
   inline void setPresolveOptions(int value)
-  { presolveOptions_=value;}
+  {
+    presolveOptions_ = value;
+  }
   //@}
 
   /*! \name Matrix storage management links
@@ -999,18 +1090,18 @@ class CoinPresolveMatrix : public CoinPrePostsolveMatrix
   //@}
 
   /// Objective function offset introduced during presolve
-  double dobias_ ;
+  double dobias_;
 
   /// Adjust objective function constant offset
   inline void change_bias(double change_amount)
   {
-    dobias_ += change_amount ;
-  # if PRESOLVE_DEBUG > 2
-    assert(fabs(change_amount)<1.0e50) ;
+    dobias_ += change_amount;
+#if PRESOLVE_DEBUG > 2
+    assert(fabs(change_amount) < 1.0e50);
     if (change_amount)
       PRESOLVE_STMT(printf("changing bias by %g to %g\n",
-			    change_amount, dobias_)) ;
-  # endif
+        change_amount, dobias_));
+#endif
   }
 
   /*! \name Row-major representation
@@ -1038,7 +1129,7 @@ class CoinPresolveMatrix : public CoinPrePostsolveMatrix
     Note that this flag is <i>not</i> manipulated by the various
     \c setVariableType routines.
   */
-  bool anyInteger_ ;
+  bool anyInteger_;
   /// Print statistics for tuning
   bool tuning_;
   /// Say we want statistics - also set time
@@ -1050,10 +1141,14 @@ class CoinPresolveMatrix : public CoinPrePostsolveMatrix
   double feasibilityTolerance_;
   /// Return feasibility tolerance
   inline double feasibilityTolerance()
-  { return (feasibilityTolerance_) ; }
+  {
+    return (feasibilityTolerance_);
+  }
   /// Set feasibility tolerance
-  inline void setFeasibilityTolerance (double val)
-  { feasibilityTolerance_ = val ; }
+  inline void setFeasibilityTolerance(double val)
+  {
+    feasibilityTolerance_ = val;
+  }
 
   /*! \brief Output status: 0 = feasible, 1 = infeasible, 2 = unbounded
 
@@ -1063,10 +1158,14 @@ class CoinPresolveMatrix : public CoinPrePostsolveMatrix
   int status_;
   /// Returns problem status (0 = feasible, 1 = infeasible, 2 = unbounded)
   inline int status()
-  { return (status_) ; }
+  {
+    return (status_);
+  }
   /// Set problem status
   inline void setStatus(int status)
-  { status_ = (status&0x3) ; }
+  {
+    status_ = (status & 0x3);
+  }
 
   /*! \brief Presolve pass number
 
@@ -1077,8 +1176,10 @@ class CoinPresolveMatrix : public CoinPrePostsolveMatrix
   */
   int pass_;
   /// Set pass number
-  inline void setPass (int pass = 0)
-  { pass_ = pass ; }
+  inline void setPass(int pass = 0)
+  {
+    pass_ = pass;
+  }
 
   /*! \brief Maximum substitution level
 
@@ -1086,9 +1187,10 @@ class CoinPresolveMatrix : public CoinPrePostsolveMatrix
   */
   int maxSubstLevel_;
   /// Set Maximum substitution level (normally 3)
-  inline void setMaximumSubstitutionLevel (int level)
-  { maxSubstLevel_ = level ; }
-
+  inline void setMaximumSubstitutionLevel(int level)
+  {
+    maxSubstLevel_ = level;
+  }
 
   /*! \name Row and column processing status
 
@@ -1113,13 +1215,13 @@ class CoinPresolveMatrix : public CoinPrePostsolveMatrix
       <li> 0x08: Column originally had infinite ub
     </ul>
   */
-  unsigned char * colChanged_;
+  unsigned char *colChanged_;
   /// Input list of columns to process
-  int * colsToDo_;
+  int *colsToDo_;
   /// Length of #colsToDo_
   int numberColsToDo_;
   /// Output list of columns to process next
-  int * nextColsToDo_;
+  int *nextColsToDo_;
   /// Length of #nextColsToDo_
   int numberNextColsToDo_;
 
@@ -1132,13 +1234,13 @@ class CoinPresolveMatrix : public CoinPrePostsolveMatrix
       <li> 0x04: Row has been used
     </ul>
   */
-  unsigned char * rowChanged_;
+  unsigned char *rowChanged_;
   /// Input list of rows to process
-  int * rowsToDo_;
+  int *rowsToDo_;
   /// Length of #rowsToDo_
   int numberRowsToDo_;
   /// Output list of rows to process next
-  int * nextRowsToDo_;
+  int *nextRowsToDo_;
   /// Length of #nextRowsToDo_
   int numberNextRowsToDo_;
   /*! \brief Fine control over presolve actions
@@ -1178,24 +1280,24 @@ class CoinPresolveMatrix : public CoinPrePostsolveMatrix
   */
   //@{
   /// Preallocated scratch work array, 3*nrows_
-  int *usefulRowInt_ ;
+  int *usefulRowInt_;
   /// Preallocated scratch work array, 2*nrows_
-  double *usefulRowDouble_ ;
+  double *usefulRowDouble_;
   /// Preallocated scratch work array, 2*ncols_
-  int *usefulColumnInt_ ;
+  int *usefulColumnInt_;
   /// Preallocated scratch work array, ncols_
-  double *usefulColumnDouble_ ;
+  double *usefulColumnDouble_;
   /// Array of random numbers (max row,column)
-  double *randomNumber_ ;
+  double *randomNumber_;
 
   /// Work array for count of infinite contributions to row lhs upper bound
-  int *infiniteUp_ ;
+  int *infiniteUp_;
   /// Work array for sum of finite contributions to row lhs upper bound
-  double *sumUp_ ;
+  double *sumUp_;
   /// Work array for count of infinite contributions to row lhs lower bound
-  int *infiniteDown_ ;
+  int *infiniteDown_;
   /// Work array for sum of finite contributions to row lhs lower bound
-  double *sumDown_ ;
+  double *sumDown_;
   //@}
 
   /*! \brief Recompute row lhs bounds
@@ -1209,12 +1311,12 @@ class CoinPresolveMatrix : public CoinPrePostsolveMatrix
     As of 110611, this seems to be a work in progress in the sense that it's
     barely used by the existing presolve code.
   */
-  int recomputeSums(int whichRow) ;
+  int recomputeSums(int whichRow);
 
   /// Allocate scratch arrays
-  void initializeStuff() ;
+  void initializeStuff();
   /// Free scratch arrays
-  void deleteStuff() ;
+  void deleteStuff();
 
   /*! \name Functions to manipulate row and column processing status */
   //@{
@@ -1224,41 +1326,48 @@ class CoinPresolveMatrix : public CoinPrePostsolveMatrix
     Places all columns in the #colsToDo_ list except for columns marked
     as prohibited (<i>viz.</i> #colChanged_).
   */
-  void initColsToDo () ;
+  void initColsToDo();
 
   /*! \brief Step column ToDo lists
 
     Moves columns on the #nextColsToDo_ list to the #colsToDo_ list, emptying
     #nextColsToDo_. Returns the number of columns transferred.
   */
-  int stepColsToDo () ;
+  int stepColsToDo();
 
   /// Return the number of columns on the #colsToDo_ list
   inline int numberColsToDo()
-  { return (numberColsToDo_) ; }
+  {
+    return (numberColsToDo_);
+  }
 
   /// Has column been changed?
-  inline bool colChanged(int i) const {
-    return (colChanged_[i]&1)!=0;
+  inline bool colChanged(int i) const
+  {
+    return (colChanged_[i] & 1) != 0;
   }
   /// Mark column as not changed
-  inline void unsetColChanged(int i) {
-    colChanged_[i] = static_cast<unsigned char>(colChanged_[i] & (~1)) ;
+  inline void unsetColChanged(int i)
+  {
+    colChanged_[i] = static_cast< unsigned char >(colChanged_[i] & (~1));
   }
   /// Mark column as changed.
-  inline void setColChanged(int i) {
-    colChanged_[i] = static_cast<unsigned char>(colChanged_[i] | (1)) ;
+  inline void setColChanged(int i)
+  {
+    colChanged_[i] = static_cast< unsigned char >(colChanged_[i] | (1));
   }
   /// Mark column as changed and add to list of columns to process next
-  inline void addCol(int i) {
-    if ((colChanged_[i]&1)==0) {
-      colChanged_[i] = static_cast<unsigned char>(colChanged_[i] | (1)) ;
+  inline void addCol(int i)
+  {
+    if ((colChanged_[i] & 1) == 0) {
+      colChanged_[i] = static_cast< unsigned char >(colChanged_[i] | (1));
       nextColsToDo_[numberNextColsToDo_++] = i;
     }
   }
   /// Test if column is eligible for preprocessing
-  inline bool colProhibited(int i) const {
-    return (colChanged_[i]&2)!=0;
+  inline bool colProhibited(int i) const
+  {
+    return (colChanged_[i] & 2) != 0;
   }
   /*! \brief Test if column is eligible for preprocessing
 
@@ -1266,43 +1375,51 @@ class CoinPresolveMatrix : public CoinPrePostsolveMatrix
     method first tests #anyProhibited_ before examining the specific entry
     for the specified column.
   */
-  inline bool colProhibited2(int i) const {
+  inline bool colProhibited2(int i) const
+  {
     if (!anyProhibited_)
       return false;
     else
-      return (colChanged_[i]&2)!=0;
+      return (colChanged_[i] & 2) != 0;
   }
   /// Mark column as ineligible for preprocessing
-  inline void setColProhibited(int i) {
-    colChanged_[i] = static_cast<unsigned char>(colChanged_[i] | (2)) ;
+  inline void setColProhibited(int i)
+  {
+    colChanged_[i] = static_cast< unsigned char >(colChanged_[i] | (2));
   }
   /*! \brief Test if column is marked as used
   
     This is for doing faster lookups to see where two columns have entries
     in common.
   */
-  inline bool colUsed(int i) const {
-    return (colChanged_[i]&4)!=0;
+  inline bool colUsed(int i) const
+  {
+    return (colChanged_[i] & 4) != 0;
   }
   /// Mark column as used
-  inline void setColUsed(int i) {
-    colChanged_[i] = static_cast<unsigned char>(colChanged_[i] | (4)) ;
+  inline void setColUsed(int i)
+  {
+    colChanged_[i] = static_cast< unsigned char >(colChanged_[i] | (4));
   }
   /// Mark column as unused
-  inline void unsetColUsed(int i) {
-    colChanged_[i] = static_cast<unsigned char>(colChanged_[i] & (~4)) ;
+  inline void unsetColUsed(int i)
+  {
+    colChanged_[i] = static_cast< unsigned char >(colChanged_[i] & (~4));
   }
   /// Has column infinite ub (originally)
-  inline bool colInfinite(int i) const {
-    return (colChanged_[i]&8)!=0;
+  inline bool colInfinite(int i) const
+  {
+    return (colChanged_[i] & 8) != 0;
   }
   /// Mark column as not infinite ub (originally)
-  inline void unsetColInfinite(int i) {
-    colChanged_[i] = static_cast<unsigned char>(colChanged_[i] & (~8)) ;
+  inline void unsetColInfinite(int i)
+  {
+    colChanged_[i] = static_cast< unsigned char >(colChanged_[i] & (~8));
   }
   /// Mark column as infinite ub (originally)
-  inline void setColInfinite(int i) {
-    colChanged_[i] = static_cast<unsigned char>(colChanged_[i] | (8)) ;
+  inline void setColInfinite(int i)
+  {
+    colChanged_[i] = static_cast< unsigned char >(colChanged_[i] | (8));
   }
 
   /*! \brief Initialise the row ToDo lists
@@ -1310,41 +1427,48 @@ class CoinPresolveMatrix : public CoinPrePostsolveMatrix
     Places all rows in the #rowsToDo_ list except for rows marked
     as prohibited (<i>viz.</i> #rowChanged_).
   */
-  void initRowsToDo () ;
+  void initRowsToDo();
 
   /*! \brief Step row ToDo lists
 
     Moves rows on the #nextRowsToDo_ list to the #rowsToDo_ list, emptying
     #nextRowsToDo_. Returns the number of rows transferred.
   */
-  int stepRowsToDo () ;
+  int stepRowsToDo();
 
   /// Return the number of rows on the #rowsToDo_ list
   inline int numberRowsToDo()
-  { return (numberRowsToDo_) ; }
+  {
+    return (numberRowsToDo_);
+  }
 
   /// Has row been changed?
-  inline bool rowChanged(int i) const {
-    return (rowChanged_[i]&1)!=0;
+  inline bool rowChanged(int i) const
+  {
+    return (rowChanged_[i] & 1) != 0;
   }
   /// Mark row as not changed
-  inline void unsetRowChanged(int i) {
-    rowChanged_[i] = static_cast<unsigned char>(rowChanged_[i] & (~1)) ;
+  inline void unsetRowChanged(int i)
+  {
+    rowChanged_[i] = static_cast< unsigned char >(rowChanged_[i] & (~1));
   }
   /// Mark row as changed
-  inline void setRowChanged(int i) {
-    rowChanged_[i] = static_cast<unsigned char>(rowChanged_[i] | (1)) ;
+  inline void setRowChanged(int i)
+  {
+    rowChanged_[i] = static_cast< unsigned char >(rowChanged_[i] | (1));
   }
   /// Mark row as changed and add to list of rows to process next
-  inline void addRow(int i) {
-    if ((rowChanged_[i]&1)==0) {
-      rowChanged_[i] = static_cast<unsigned char>(rowChanged_[i] | (1)) ;
+  inline void addRow(int i)
+  {
+    if ((rowChanged_[i] & 1) == 0) {
+      rowChanged_[i] = static_cast< unsigned char >(rowChanged_[i] | (1));
       nextRowsToDo_[numberNextRowsToDo_++] = i;
     }
   }
   /// Test if row is eligible for preprocessing
-  inline bool rowProhibited(int i) const {
-    return (rowChanged_[i]&2)!=0;
+  inline bool rowProhibited(int i) const
+  {
+    return (rowChanged_[i] & 2) != 0;
   }
   /*! \brief Test if row is eligible for preprocessing
 
@@ -1352,42 +1476,49 @@ class CoinPresolveMatrix : public CoinPrePostsolveMatrix
     method first tests #anyProhibited_ before examining the specific entry
     for the specified row.
   */
-  inline bool rowProhibited2(int i) const {
+  inline bool rowProhibited2(int i) const
+  {
     if (!anyProhibited_)
       return false;
     else
-      return (rowChanged_[i]&2)!=0;
+      return (rowChanged_[i] & 2) != 0;
   }
   /// Mark row as ineligible for preprocessing
-  inline void setRowProhibited(int i) {
-    rowChanged_[i] = static_cast<unsigned char>(rowChanged_[i] | (2)) ;
+  inline void setRowProhibited(int i)
+  {
+    rowChanged_[i] = static_cast< unsigned char >(rowChanged_[i] | (2));
   }
   /*! \brief Test if row is marked as used
 
      This is for doing faster lookups to see where two rows have entries
      in common.  It can be used anywhere as long as it ends up zeroed out.
   */
-  inline bool rowUsed(int i) const {
-    return (rowChanged_[i]&4)!=0;
+  inline bool rowUsed(int i) const
+  {
+    return (rowChanged_[i] & 4) != 0;
   }
   /// Mark row as used
-  inline void setRowUsed(int i) {
-    rowChanged_[i] = static_cast<unsigned char>(rowChanged_[i] | (4)) ;
+  inline void setRowUsed(int i)
+  {
+    rowChanged_[i] = static_cast< unsigned char >(rowChanged_[i] | (4));
   }
   /// Mark row as unused
-  inline void unsetRowUsed(int i) {
-    rowChanged_[i] = static_cast<unsigned char>(rowChanged_[i] & (~4)) ;
+  inline void unsetRowUsed(int i)
+  {
+    rowChanged_[i] = static_cast< unsigned char >(rowChanged_[i] & (~4));
   }
 
-
-  /// Check if there are any prohibited rows or columns 
+  /// Check if there are any prohibited rows or columns
   inline bool anyProhibited() const
-  { return anyProhibited_;}
+  {
+    return anyProhibited_;
+  }
   /// Set a flag for presence of prohibited rows or columns
   inline void setAnyProhibited(bool val = true)
-  { anyProhibited_ = val ; }
+  {
+    anyProhibited_ = val;
+  }
   //@}
-
 };
 
 /*! \class CoinPostsolveMatrix
@@ -1418,10 +1549,8 @@ class CoinPresolveMatrix : public CoinPrePostsolveMatrix
   not be here, but for historical reasons they will likely remain for the
   forseeable future.  -- lh, 111202 --
 */
-class CoinPostsolveMatrix : public CoinPrePostsolveMatrix
-{
- public:
-
+class CoinPostsolveMatrix : public CoinPrePostsolveMatrix {
+public:
   /*! \brief `Native' constructor
 
     This constructor creates an empty object which must then be loaded.
@@ -1429,46 +1558,45 @@ class CoinPostsolveMatrix : public CoinPrePostsolveMatrix
     OsiSolverInterface.
   */
   CoinPostsolveMatrix(int ncols_alloc, int nrows_alloc,
-		      CoinBigIndex nelems_alloc) ;
-
+    CoinBigIndex nelems_alloc);
 
   /*! \brief Clp OSI constructor
 
     See Clp code for the definition.
   */
-  CoinPostsolveMatrix(ClpSimplex * si,
+  CoinPostsolveMatrix(ClpSimplex *si,
 
-		   int ncols0,
-		   int nrows0,
-		   CoinBigIndex nelems0,
-		     
-		   double maxmin_,
-		   // end prepost members
+    int ncols0,
+    int nrows0,
+    CoinBigIndex nelems0,
 
-		   double *sol,
-		   double *acts,
+    double maxmin_,
+    // end prepost members
 
-		   unsigned char *colstat,
-		   unsigned char *rowstat);
+    double *sol,
+    double *acts,
+
+    unsigned char *colstat,
+    unsigned char *rowstat);
 
   /*! \brief Generic OSI constructor
 
     See OSI code for the definition.
   */
-  CoinPostsolveMatrix(OsiSolverInterface * si,
+  CoinPostsolveMatrix(OsiSolverInterface *si,
 
-		   int ncols0,
-		   int nrows0,
-		   CoinBigIndex nelems0,
-		     
-		   double maxmin_,
-		   // end prepost members
+    int ncols0,
+    int nrows0,
+    CoinBigIndex nelems0,
 
-		   double *sol,
-		   double *acts,
+    double maxmin_,
+    // end prepost members
 
-		   unsigned char *colstat,
-		   unsigned char *rowstat);
+    double *sol,
+    double *acts,
+
+    unsigned char *colstat,
+    unsigned char *rowstat);
 
   /*! \brief Load an empty CoinPostsolveMatrix from a CoinPresolveMatrix
 
@@ -1480,7 +1608,7 @@ class CoinPostsolveMatrix : public CoinPrePostsolveMatrix
     The routine expects an empty CoinPostsolveMatrix object. If handed a loaded
     object, a lot of memory will leak.
   */
-  void assignPresolveToPostsolve (CoinPresolveMatrix *&preObj) ;
+  void assignPresolveToPostsolve(CoinPresolveMatrix *&preObj);
 
   /// Destructor
   ~CoinPostsolveMatrix();
@@ -1500,7 +1628,7 @@ class CoinPostsolveMatrix : public CoinPrePostsolveMatrix
   /*! \brief First entry in free entries thread */
   CoinBigIndex free_list_;
   /// Allocated size of #link_
-  int maxlink_;
+  CoinBigIndex maxlink_;
   /*! \brief Thread array
 
     Within a thread, link_[k] points to the next entry in the thread.
@@ -1522,9 +1650,7 @@ class CoinPostsolveMatrix : public CoinPrePostsolveMatrix
 
   /// debug
   void check_nbasic();
-
 };
-
 
 /*! \defgroup MtxManip Presolve Matrix Manipulation Functions
 
@@ -1538,7 +1664,7 @@ class CoinPostsolveMatrix : public CoinPrePostsolveMatrix
 */
 
 void presolve_make_memlists(/*CoinBigIndex *starts,*/ int *lengths,
-			    presolvehlink *link, int n);
+  presolvehlink *link, int n);
 
 /*! \relates CoinPrePostsolveMatrix
     \brief Make sure a major-dimension vector k has room for one more
@@ -1548,8 +1674,8 @@ void presolve_make_memlists(/*CoinBigIndex *starts,*/ int *lengths,
     and presolve_expand_row
 */
 bool presolve_expand_major(CoinBigIndex *majstrts, double *majels,
-			   int *minndxs, int *majlens,
-			   presolvehlink *majlinks, int nmaj, int k) ;
+  int *minndxs, int *majlens,
+  presolvehlink *majlinks, int nmaj, int k);
 
 /*! \relates CoinPrePostsolveMatrix
     \brief Make sure a column (colx) in a column-major matrix has room for
@@ -1557,10 +1683,12 @@ bool presolve_expand_major(CoinBigIndex *majstrts, double *majels,
 */
 
 inline bool presolve_expand_col(CoinBigIndex *mcstrt, double *colels,
-				int *hrow, int *hincol,
-				presolvehlink *clink, int ncols, int colx)
-{ return presolve_expand_major(mcstrt,colels,
-			       hrow,hincol,clink,ncols,colx) ; }
+  int *hrow, int *hincol,
+  presolvehlink *clink, int ncols, int colx)
+{
+  return presolve_expand_major(mcstrt, colels,
+    hrow, hincol, clink, ncols, colx);
+}
 
 /*! \relates CoinPrePostsolveMatrix
     \brief Make sure a row (rowx) in a row-major matrix has room for one
@@ -1568,11 +1696,12 @@ inline bool presolve_expand_col(CoinBigIndex *mcstrt, double *colels,
 */
 
 inline bool presolve_expand_row(CoinBigIndex *mrstrt, double *rowels,
-				int *hcol, int *hinrow,
-				presolvehlink *rlink, int nrows, int rowx)
-{ return presolve_expand_major(mrstrt,rowels,
-			       hcol,hinrow,rlink,nrows,rowx) ; }
-
+  int *hcol, int *hinrow,
+  presolvehlink *rlink, int nrows, int rowx)
+{
+  return presolve_expand_major(mrstrt, rowels,
+    hcol, hinrow, rlink, nrows, rowx);
+}
 
 /*! \relates CoinPrePostsolveMatrix
     \brief Find position of a minor index in a major vector.
@@ -1583,20 +1712,26 @@ inline bool presolve_expand_row(CoinBigIndex *mrstrt, double *rowels,
     presolve_find_col.
 */
 inline CoinBigIndex presolve_find_minor(int tgt,
-					CoinBigIndex ks, CoinBigIndex ke,
-				        const int *minndxs)
-{ CoinBigIndex k ;
-  for (k = ks ; k < ke ; k++)
+  CoinBigIndex ks, CoinBigIndex ke,
+  const int *minndxs)
+{
+  CoinBigIndex k;
+  for (k = ks; k < ke; k++)
 #ifndef NDEBUG
-  { if (minndxs[k] == tgt)
-      return (k) ; }
-  DIE("FIND_MINOR") ;
+  {
+    if (minndxs[k] == tgt)
+      return (k);
+  }
+  DIE("FIND_MINOR");
 
-  abort () ; return -1;
+  abort();
+  return -1;
 #else
-  { if (minndxs[k] == tgt)
-      break ; }
-  return (k) ;
+  {
+    if (minndxs[k] == tgt)
+      break;
+  }
+  return (k);
 #endif
 }
 
@@ -1607,8 +1742,10 @@ inline CoinBigIndex presolve_find_minor(int tgt,
     It will abort if the entry does not exist.
 */
 inline CoinBigIndex presolve_find_row(int row, CoinBigIndex kcs,
-				      CoinBigIndex kce, const int *hrow)
-{ return presolve_find_minor(row,kcs,kce,hrow) ; }
+  CoinBigIndex kce, const int *hrow)
+{
+  return presolve_find_minor(row, kcs, kce, hrow);
+}
 
 /*! \relates CoinPostsolveMatrix
     \brief Find position of a column in a row in a row-major matrix.
@@ -1617,9 +1754,10 @@ inline CoinBigIndex presolve_find_row(int row, CoinBigIndex kcs,
     It will abort if the entry does not exist.
 */
 inline CoinBigIndex presolve_find_col(int col, CoinBigIndex krs,
-				      CoinBigIndex kre, const int *hcol)
-{ return presolve_find_minor(col,krs,kre,hcol) ; }
-
+  CoinBigIndex kre, const int *hcol)
+{
+  return presolve_find_minor(col, krs, kre, hcol);
+}
 
 /*! \relates CoinPrePostsolveMatrix
     \brief Find position of a minor index in a major vector.
@@ -1630,7 +1768,7 @@ inline CoinBigIndex presolve_find_col(int col, CoinBigIndex krs,
     presolve_find_row1 and presolve_find_col1.
 */
 CoinBigIndex presolve_find_minor1(int tgt, CoinBigIndex ks, CoinBigIndex ke,
-				  const int *minndxs);
+  const int *minndxs);
 
 /*! \relates CoinPrePostsolveMatrix
     \brief Find position of a row in a column in a column-major matrix.
@@ -1639,8 +1777,10 @@ CoinBigIndex presolve_find_minor1(int tgt, CoinBigIndex ks, CoinBigIndex ke,
     A return value of \p kce means the entry does not exist.
 */
 inline CoinBigIndex presolve_find_row1(int row, CoinBigIndex kcs,
-				       CoinBigIndex kce, const int *hrow)
-{ return presolve_find_minor1(row,kcs,kce,hrow) ; } 
+  CoinBigIndex kce, const int *hrow)
+{
+  return presolve_find_minor1(row, kcs, kce, hrow);
+}
 
 /*! \relates CoinPrePostsolveMatrix
     \brief Find position of a column in a row in a row-major matrix.
@@ -1649,8 +1789,10 @@ inline CoinBigIndex presolve_find_row1(int row, CoinBigIndex kcs,
     A return value of \p kre means the entry does not exist.
 */
 inline CoinBigIndex presolve_find_col1(int col, CoinBigIndex krs,
-				       CoinBigIndex kre, const int *hcol)
-{ return presolve_find_minor1(col,krs,kre,hcol) ; } 
+  CoinBigIndex kre, const int *hcol)
+{
+  return presolve_find_minor1(col, krs, kre, hcol);
+}
 
 /*! \relates CoinPostsolveMatrix
     \brief Find position of a minor index in a major vector in a threaded
@@ -1661,8 +1803,8 @@ inline CoinBigIndex presolve_find_col1(int col, CoinBigIndex krs,
     used directly or via the inline wrapper presolve_find_row2.
 */
 CoinBigIndex presolve_find_minor2(int tgt, CoinBigIndex ks, int majlen,
-				  const int *minndxs,
-				  const CoinBigIndex *majlinks) ;
+  const int *minndxs,
+  const CoinBigIndex *majlinks);
 
 /*! \relates CoinPostsolveMatrix
     \brief Find position of a row in a column in a column-major threaded
@@ -1672,9 +1814,11 @@ CoinBigIndex presolve_find_minor2(int tgt, CoinBigIndex ks, int majlen,
     It will abort if the entry does not exist.
 */
 inline CoinBigIndex presolve_find_row2(int row, CoinBigIndex kcs, int collen,
-				       const int *hrow,
-				       const CoinBigIndex *clinks)
-{ return presolve_find_minor2(row,kcs,collen,hrow,clinks) ; }
+  const int *hrow,
+  const CoinBigIndex *clinks)
+{
+  return presolve_find_minor2(row, kcs, collen, hrow, clinks);
+}
 
 /*! \relates CoinPostsolveMatrix
     \brief Find position of a minor index in a major vector in a threaded
@@ -1685,8 +1829,8 @@ inline CoinBigIndex presolve_find_row2(int row, CoinBigIndex kcs, int collen,
     Can be used directly or via the inline wrappers presolve_find_row3.
 */
 CoinBigIndex presolve_find_minor3(int tgt, CoinBigIndex ks, int majlen,
-				  const int *minndxs,
-				  const CoinBigIndex *majlinks) ;
+  const int *minndxs,
+  const CoinBigIndex *majlinks);
 
 /*! \relates CoinPostsolveMatrix
     \brief Find position of a row in a column in a column-major threaded
@@ -1696,9 +1840,11 @@ CoinBigIndex presolve_find_minor3(int tgt, CoinBigIndex ks, int majlen,
     It will return -1 if the entry does not exist.
 */
 inline CoinBigIndex presolve_find_row3(int row, CoinBigIndex kcs, int collen,
-				       const int *hrow,
-				       const CoinBigIndex *clinks)
-{ return presolve_find_minor3(row,kcs,collen,hrow,clinks) ; }
+  const int *hrow,
+  const CoinBigIndex *clinks)
+{
+  return presolve_find_minor3(row, kcs, collen, hrow, clinks);
+}
 
 /*! \relates CoinPrePostsolveMatrix
     \brief Delete the entry for a minor index from a major vector.
@@ -1710,19 +1856,19 @@ inline CoinBigIndex presolve_find_row3(int row, CoinBigIndex kcs, int collen,
    entry in the row into the position occupied by the deleted entry.
 */
 inline void presolve_delete_from_major(int majndx, int minndx,
-				const CoinBigIndex *majstrts,
-				int *majlens, int *minndxs, double *els) 
+  const CoinBigIndex *majstrts,
+  int *majlens, int *minndxs, double *els)
 {
-  const CoinBigIndex ks = majstrts[majndx] ;
-  const CoinBigIndex ke = ks+majlens[majndx] ;
+  const CoinBigIndex ks = majstrts[majndx];
+  const CoinBigIndex ke = ks + majlens[majndx];
 
-  const CoinBigIndex kmi = presolve_find_minor(minndx,ks,ke,minndxs) ;
+  const CoinBigIndex kmi = presolve_find_minor(minndx, ks, ke, minndxs);
 
-  minndxs[kmi] = minndxs[ke-1] ;
-  els[kmi] = els[ke-1] ;
-  majlens[majndx]-- ;
-  
-  return ;
+  minndxs[kmi] = minndxs[ke - 1];
+  els[kmi] = els[ke - 1];
+  majlens[majndx]--;
+
+  return;
 }
 
 /*! \relates CoinPrePostsolveMatrix
@@ -1732,23 +1878,23 @@ inline void presolve_delete_from_major(int majndx, int minndx,
     to maintain loose packing. \p marked is cleared in the process.
 */
 inline void presolve_delete_many_from_major(int majndx, char *marked,
-				const CoinBigIndex *majstrts,
-				int *majlens, int *minndxs, double *els) 
-{ 
-  const CoinBigIndex ks = majstrts[majndx] ;
-  const CoinBigIndex ke = ks+majlens[majndx] ;
-  CoinBigIndex put = ks ;
-  for (CoinBigIndex k = ks ; k < ke ; k++) {
-    int iMinor = minndxs[k] ;
+  const CoinBigIndex *majstrts,
+  int *majlens, int *minndxs, double *els)
+{
+  const CoinBigIndex ks = majstrts[majndx];
+  const CoinBigIndex ke = ks + majlens[majndx];
+  CoinBigIndex put = ks;
+  for (CoinBigIndex k = ks; k < ke; k++) {
+    int iMinor = minndxs[k];
     if (!marked[iMinor]) {
-      minndxs[put] = iMinor ;
-      els[put++] = els[k] ;
+      minndxs[put] = iMinor;
+      els[put++] = els[k];
     } else {
-      marked[iMinor] = 0 ;
+      marked[iMinor] = 0;
     }
-  } 
-  majlens[majndx] = put-ks ;
-  return ;
+  }
+  majlens[majndx] = static_cast< int >(put - ks);
+  return;
 }
 
 /*! \relates CoinPrePostsolveMatrix
@@ -1762,9 +1908,11 @@ inline void presolve_delete_many_from_major(int majndx, char *marked,
    entry in the row into the position occupied by the deleted entry.
 */
 inline void presolve_delete_from_col(int row, int col,
-				     const CoinBigIndex *mcstrt,
-				     int *hincol, int *hrow, double *colels)
-{ presolve_delete_from_major(col,row,mcstrt,hincol,hrow,colels) ; }
+  const CoinBigIndex *mcstrt,
+  int *hincol, int *hrow, double *colels)
+{
+  presolve_delete_from_major(col, row, mcstrt, hincol, hrow, colels);
+}
 
 /*! \relates CoinPrePostsolveMatrix
     \brief Delete the entry for column \p col from row \p row in a
@@ -1777,9 +1925,11 @@ inline void presolve_delete_from_col(int row, int col,
    entry in the column into the position occupied by the deleted entry.
 */
 inline void presolve_delete_from_row(int row, int col,
-				     const CoinBigIndex *mrstrt,
-				     int *hinrow, int *hcol, double *rowels)
-{ presolve_delete_from_major(row,col,mrstrt,hinrow,hcol,rowels) ; }
+  const CoinBigIndex *mrstrt,
+  int *hinrow, int *hcol, double *rowels)
+{
+  presolve_delete_from_major(row, col, mrstrt, hinrow, hcol, rowels);
+}
 
 /*! \relates CoinPostsolveMatrix
     \brief Delete the entry for a minor index from a major vector in a
@@ -1791,10 +1941,10 @@ inline void presolve_delete_from_row(int row, int col,
    majlens) is decremented. The thread for the major vector is relinked
    around the deleted entry and the space is returned to the free list.
 */
-void presolve_delete_from_major2 (int majndx, int minndx,
-				  CoinBigIndex *majstrts, int *majlens,
-				  int *minndxs, int *majlinks,
-				   CoinBigIndex *free_listp) ;
+void presolve_delete_from_major2(int majndx, int minndx,
+  CoinBigIndex *majstrts, int *majlens,
+  int *minndxs, CoinBigIndex *majlinks,
+  CoinBigIndex *free_listp);
 
 /*! \relates CoinPostsolveMatrix
     \brief Delete the entry for row \p row from column \p col in a
@@ -1807,9 +1957,11 @@ void presolve_delete_from_major2 (int majndx, int minndx,
    around the deleted entry and the space is returned to the free list.
 */
 inline void presolve_delete_from_col2(int row, int col, CoinBigIndex *mcstrt,
-				      int *hincol, int *hrow,
-				      int *clinks, CoinBigIndex *free_listp)
-{ presolve_delete_from_major2(col,row,mcstrt,hincol,hrow,clinks,free_listp) ; }
+  int *hincol, int *hrow,
+  CoinBigIndex *clinks, CoinBigIndex *free_listp)
+{
+  presolve_delete_from_major2(col, row, mcstrt, hincol, hrow, clinks, free_listp);
+}
 
 //@}
 
@@ -1831,12 +1983,14 @@ inline void presolve_delete_from_col2(int row, int col, CoinBigIndex *mcstrt,
     omitted from the copy.
 */
 double *presolve_dupmajor(const double *elems, const int *indices,
-			  int length, CoinBigIndex offset, int tgt = -1);
+  int length, CoinBigIndex offset, int tgt = -1);
 
 /// Initialize a vector with random numbers
 void coin_init_random_vec(double *work, int n);
 
 //@}
 
-
 #endif
+
+/* vi: softtabstop=2 shiftwidth=2 expandtab tabstop=2
+*/

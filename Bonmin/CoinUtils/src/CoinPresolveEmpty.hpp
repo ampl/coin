@@ -1,4 +1,4 @@
-/* $Id: CoinPresolveEmpty.hpp 1561 2012-11-24 00:32:16Z lou $ */
+/* $Id: CoinPresolveEmpty.hpp 2083 2019-01-06 19:38:09Z unxusr $ */
 // Copyright (C) 2002, International Business Machines
 // Corporation and others.  All Rights Reserved.
 // This code is licensed under the terms of the Eclipse Public License (EPL).
@@ -45,29 +45,29 @@ private:
   const action *const actions_;
 
   drop_empty_cols_action(int nactions,
-			 const action *const actions,
-			 const CoinPresolveAction *next) :
-    CoinPresolveAction(next),
-    nactions_(nactions), 
-    actions_(actions)
-  {}
+    const action *const actions,
+    const CoinPresolveAction *next)
+    : CoinPresolveAction(next)
+    , nactions_(nactions)
+    , actions_(actions)
+  {
+  }
 
- public:
+public:
   const char *name() const { return ("drop_empty_cols_action"); }
 
   static const CoinPresolveAction *presolve(CoinPresolveMatrix *,
-					 const int *ecols,
-					 int necols,
-					 const CoinPresolveAction*);
+    const int *ecols,
+    int necols,
+    const CoinPresolveAction *);
 
   static const CoinPresolveAction *presolve(CoinPresolveMatrix *prob,
-					 const CoinPresolveAction *next);
+    const CoinPresolveAction *next);
 
   void postsolve(CoinPostsolveMatrix *prob) const;
 
-  virtual ~drop_empty_cols_action() { deleteAction(actions_,action*); }
+  virtual ~drop_empty_cols_action() { deleteAction(actions_, action *); }
 };
-
 
 /*! \class drop_empty_rows_action
     \brief Physically removes empty rows in presolve, and reinserts
@@ -89,28 +89,32 @@ private:
     double rlo;
     double rup;
     int row;
-    int fill_row;	// which row was moved into position row to fill it
+    int fill_row; // which row was moved into position row to fill it
   };
 
   const int nactions_;
   const action *const actions_;
 
   drop_empty_rows_action(int nactions,
-			 const action *actions,
-			 const CoinPresolveAction *next) :
-    CoinPresolveAction(next),
-    nactions_(nactions), actions_(actions)
-{}
+    const action *actions,
+    const CoinPresolveAction *next)
+    : CoinPresolveAction(next)
+    , nactions_(nactions)
+    , actions_(actions)
+  {
+  }
 
- public:
+public:
   const char *name() const { return ("drop_empty_rows_action"); }
 
   static const CoinPresolveAction *presolve(CoinPresolveMatrix *prob,
-					    const CoinPresolveAction *next);
+    const CoinPresolveAction *next);
 
   void postsolve(CoinPostsolveMatrix *prob) const;
 
-  virtual ~drop_empty_rows_action() { deleteAction(actions_,action*); }
+  virtual ~drop_empty_rows_action() { deleteAction(actions_, action *); }
 };
 #endif
 
+/* vi: softtabstop=2 shiftwidth=2 expandtab tabstop=2
+*/

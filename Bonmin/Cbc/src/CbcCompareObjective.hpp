@@ -1,4 +1,4 @@
-// $Id: CbcCompareObjective.hpp 1899 2013-04-09 18:12:08Z stefan $
+// $Id: CbcCompareObjective.hpp 2465 2019-01-03 19:26:52Z unxusr $
 // Copyright (C) 2002, International Business Machines
 // Corporation and others.  All Rights Reserved.
 // This code is licensed under the terms of the Eclipse Public License (EPL).
@@ -7,7 +7,6 @@
 
 #ifndef CbcCompareObjective_H
 #define CbcCompareObjective_H
-
 
 //#############################################################################
 /*  These are alternative strategies for node traversal.
@@ -23,27 +22,29 @@
 
 class CbcModel;
 
-class CbcCompareObjective  : public CbcCompareBase {
+class CbcCompareObjective : public CbcCompareBase {
 public:
-    // Default Constructor
-    CbcCompareObjective ();
+  // Default Constructor
+  CbcCompareObjective();
 
-    virtual ~CbcCompareObjective();
-    // Copy constructor
-    CbcCompareObjective ( const CbcCompareObjective &rhs);
+  virtual ~CbcCompareObjective();
+  // Copy constructor
+  CbcCompareObjective(const CbcCompareObjective &rhs);
 
-    // Assignment operator
-    CbcCompareObjective & operator=( const CbcCompareObjective& rhs);
+  // Assignment operator
+  CbcCompareObjective &operator=(const CbcCompareObjective &rhs);
 
-    /// Clone
-    virtual CbcCompareBase * clone() const;
-    /// Create C++ lines to get to current state
-    virtual void generateCpp( FILE * fp);
+  /// Clone
+  virtual CbcCompareBase *clone() const;
+  /// Create C++ lines to get to current state
+  virtual void generateCpp(FILE *fp);
 
-    /* This returns true if objective value of node y is less than
+  /* This returns true if objective value of node y is less than
        objective value of node x */
-    virtual bool test (CbcNode * x, CbcNode * y);
+  virtual bool test(CbcNode *x, CbcNode *y);
 };
 
 #endif //CbcCompareObjective_H
 
+/* vi: softtabstop=2 shiftwidth=2 expandtab tabstop=2
+*/

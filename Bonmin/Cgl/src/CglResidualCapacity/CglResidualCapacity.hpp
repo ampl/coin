@@ -170,7 +170,7 @@ private:
 			     const double* LHS,
 			     const double* coefByRow,
 			     const int* colInds,
-			     const int* rowStarts,
+			     const CoinBigIndex* rowStarts,
 			     const int* rowLengths,
 			     OsiCuts& cs ) const;
     

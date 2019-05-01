@@ -998,11 +998,13 @@ CglGomoryUnitTest(
 #endif
 
       if (i-nOldCuts==testCut) {
-	assert( eq(rhs,ub));
+	assert( rhs*ub>=0.0);
 	assert(n==2);
+	double ratio = cut[indices[0]]/elements[0];
+	assert (eq(ub*ratio,rhs));
 	for (k=0; k<n; k++){
 	  int column=indices[k];
-	  assert (eq(cut[column],elements[k]));
+	  assert (eq(cut[column],ratio*elements[k]));
 	}
 	// add cut
 	// explicit slack
@@ -1134,11 +1136,13 @@ CglGomoryUnitTest(
 #endif
 
       if (i-nOldCuts==testCut) {
-	assert( eq(rhs,ub));
+	assert( rhs*ub>=0.0);
 	assert(n==2);
+	double ratio = cut[indices[0]]/elements[0];
+	assert (eq(ub*ratio,rhs));
 	for (k=0; k<n; k++){
 	  int column=indices[k];
-	  assert (eq(cut[column],elements[k]));
+	  assert (eq(cut[column],ratio*elements[k]));
 	}
 	// add cut
 	// explicit slack

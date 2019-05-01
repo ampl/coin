@@ -2,7 +2,7 @@
 // All Rights Reserved.
 // This code is published under the Eclipse Public License.
 //
-// $Id: IpIpoptApplication.cpp 2613 2015-11-04 14:42:02Z stefan $
+// $Id: IpIpoptApplication.cpp 2719 2018-06-02 13:36:27Z stefan $
 //
 // Authors:  Carl Laird, Andreas Waechter     IBM    2004-09-02
 
@@ -132,6 +132,7 @@ namespace Ipopt
     retval->read_params_dat_ = read_params_dat_;
     retval->inexact_algorithm_ = inexact_algorithm_;
     retval->replace_bounds_ = replace_bounds_;
+    retval->rethrow_nonipoptexception_ = rethrow_nonipoptexception_;
 
     return retval;
   }

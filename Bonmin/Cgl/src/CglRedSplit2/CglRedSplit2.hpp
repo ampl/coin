@@ -216,7 +216,7 @@ private:
   /// of the slack variables.
   void eliminate_slacks(double *row, 
 			const double *elements, 
-			const int *start,
+			const CoinBigIndex *start,
 			const int *indices,
 			const int *rowLength,
 			const double *rhs, double *rowrhs);

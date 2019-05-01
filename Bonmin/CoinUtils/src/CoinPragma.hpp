@@ -1,4 +1,4 @@
-/* $Id: CoinPragma.hpp 1372 2011-01-03 23:31:00Z lou $ */
+/* $Id: CoinPragma.hpp 2083 2019-01-06 19:38:09Z unxusr $ */
 // Copyright (C) 2000, International Business Machines
 // Corporation and others.  All Rights Reserved.
 // This code is licensed under the terms of the Eclipse Public License (EPL).
@@ -15,12 +15,15 @@
 
 #if defined(_MSC_VER)
 // Turn off compiler warning about long names
-#  pragma warning(disable:4786)
-// Turn off compiler warning: 
+#pragma warning(disable : 4786)
+// Turn off compiler warning:
 // "empty controlled statement found; is this the intent?"
-#  pragma warning(disable:4390)
+#pragma warning(disable : 4390)
 // Turn off compiler warning about deprecated functions
-#  pragma warning(disable:4996)
+#pragma warning(disable : 4996)
 #endif
 
 #endif
+
+/* vi: softtabstop=2 shiftwidth=2 expandtab tabstop=2
+*/

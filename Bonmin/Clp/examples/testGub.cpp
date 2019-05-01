@@ -1,4 +1,4 @@
-/* $Id: testGub.cpp 1937 2013-04-09 10:32:15Z forrest $ */
+/* $Id: testGub.cpp 2278 2017-10-02 09:51:14Z forrest $ */
 // Copyright (C) 2003, International Business Machines
 // Corporation and others.  All Rights Reserved.
 // This code is licensed under the terms of the Eclipse Public License (EPL).
@@ -12,6 +12,7 @@
 #include "CoinMpsIO.hpp"
 int main(int argc, const char *argv[])
 {
+#if COIN_BIG_INDEX<2
      ClpSimplex  model;
      int status;
      int maxFactor = 100;
@@ -449,5 +450,8 @@ int main(int argc, const char *argv[])
      delete [] whichGub;
      delete [] lower;
      delete [] upper;
+#else
+     printf("testGub2 not available with COIN_BIG_INDEX=2\n");
+#endif
      return 0;
 }

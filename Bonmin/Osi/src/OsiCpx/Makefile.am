@@ -2,7 +2,7 @@
 # All Rights Reserved.
 # This file is distributed under the Eclipse Public License.
 
-## $Id: Makefile.am 1800 2011-08-14 10:37:34Z stefan $
+## $Id: Makefile.am 2110 2017-11-07 03:18:31Z tkr $
 
 # Author:  Andreas Waechter           IBM    2006-04-13
 
@@ -18,6 +18,11 @@ lib_LTLIBRARIES = libOsiCpx.la
 # List all source files for this library, including headers
 libOsiCpx_la_SOURCES = \
 	OsiCpxSolverInterface.cpp OsiCpxSolverInterface.hpp
+
+# List all additionally required libraries
+if DEPENDENCY_LINKING
+libOsiCpx_la_LIBADD = $(OSILIB_LIBS) ../Osi/libOsi.la $(CPXLIB)
+endif
 
 # This is for libtool (on Windows)
 libOsiCpx_la_LDFLAGS = $(LT_LDFLAGS)

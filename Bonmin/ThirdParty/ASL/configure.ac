@@ -2,7 +2,7 @@
 # All Rights Reserved.
 # This file is distributed under the Eclipse Public License.
 
-## $Id: configure.ac 3724 2017-02-25 01:28:02Z stefan $
+## $Id: configure.ac 3842 2018-09-16 14:05:43Z stefan $
 
 # Author:  Andreas Waechter            IBM    2006-04-13
 # Revised: Lou Hafer		       SFU    2007-09-15
@@ -13,7 +13,7 @@
 
 AC_PREREQ(2.59)
 
-AC_INIT([ThirdPartyASL],[1.3.6],[http://projects.coin-or.org/BuildTools/newticket])
+AC_INIT([ThirdPartyASL],[1.4.1],[http://projects.coin-or.org/BuildTools/newticket])
 
 AC_COPYRIGHT([
 Copyright 2006, 2007, 2009 International Business Machines and others.
@@ -39,7 +39,7 @@ AC_PREFIX_DEFAULT([`pwd`])
 AC_CANONICAL_BUILD
 
 # A bit of initial setup.
-AC_COIN_PROJECTDIR_INIT(ASL,4:6:3)
+AC_COIN_PROJECTDIR_INIT(ASL,5:1:4)
 
 # Turn off warnings and pedantic mode since they could make trouble on some
 # platforms, and we can't fix issues in third-party code.

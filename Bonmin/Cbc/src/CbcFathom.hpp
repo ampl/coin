@@ -1,4 +1,4 @@
-/* $Id: CbcFathom.hpp 1889 2013-04-07 13:46:46Z stefan $ */
+/* $Id: CbcFathom.hpp 2465 2019-01-03 19:26:52Z unxusr $ */
 // Copyright (C) 2004, International Business Machines
 // Corporation and others.  All Rights Reserved.
 // This code is licensed under the terms of the Eclipse Public License (EPL).
@@ -13,7 +13,6 @@
 
   --lh, 071031 --
 */
-
 
 class CbcModel;
 
@@ -31,24 +30,24 @@ class CbcModel;
 
 class CbcFathom {
 public:
-    // Default Constructor
-    CbcFathom ();
+  // Default Constructor
+  CbcFathom();
 
-    // Constructor with model - assumed before cuts
-    CbcFathom (CbcModel & model);
+  // Constructor with model - assumed before cuts
+  CbcFathom(CbcModel &model);
 
-    virtual ~CbcFathom();
+  virtual ~CbcFathom();
 
-    /// update model (This is needed if cliques update matrix etc)
-    virtual void setModel(CbcModel * model);
+  /// update model (This is needed if cliques update matrix etc)
+  virtual void setModel(CbcModel *model);
 
-    /// Clone
-    virtual CbcFathom * clone() const = 0;
+  /// Clone
+  virtual CbcFathom *clone() const = 0;
 
-    /// Resets stuff if model changes
-    virtual void resetModel(CbcModel * model) = 0;
+  /// Resets stuff if model changes
+  virtual void resetModel(CbcModel *model) = 0;
 
-    /** returns 0 if no fathoming attempted, 1 fully fathomed,
+  /** returns 0 if no fathoming attempted, 1 fully fathomed,
         2 incomplete search, 3 incomplete search but treat as complete.
         If solution then newSolution will not be NULL and
         will be freed by CbcModel.  It is expected that the solution is better
@@ -56,24 +55,23 @@ public:
 
         If returns 3 then of course there is no guarantee of global optimum
     */
-    virtual int fathom(double *& newSolution) = 0;
+  virtual int fathom(double *&newSolution) = 0;
 
-    // Is this method possible
-    inline bool possible() const {
-        return possible_;
-    }
+  // Is this method possible
+  inline bool possible() const
+  {
+    return possible_;
+  }
 
 protected:
+  /// Model
+  CbcModel *model_;
+  /// Possible - if this method of fathoming can be used
+  bool possible_;
 
-    /// Model
-    CbcModel * model_;
-    /// Possible - if this method of fathoming can be used
-    bool possible_;
 private:
-
-    /// Illegal Assignment operator
-    CbcFathom & operator=(const CbcFathom& rhs);
-
+  /// Illegal Assignment operator
+  CbcFathom &operator=(const CbcFathom &rhs);
 };
 
 #include "OsiClpSolverInterface.hpp"
@@ -90,48 +88,49 @@ This is for codes where solver needs to know about CbcModel
 class CbcOsiSolver : public OsiClpSolverInterface {
 
 public:
+  /**@name Constructors and destructors */
+  //@{
+  /// Default Constructor
+  CbcOsiSolver();
 
-    /**@name Constructors and destructors */
-    //@{
-    /// Default Constructor
-    CbcOsiSolver ();
+  /// Clone
+  virtual OsiSolverInterface *clone(bool copyData = true) const;
 
-    /// Clone
-    virtual OsiSolverInterface * clone(bool copyData = true) const;
+  /// Copy constructor
+  CbcOsiSolver(const CbcOsiSolver &);
 
-    /// Copy constructor
-    CbcOsiSolver (const CbcOsiSolver &);
+  /// Assignment operator
+  CbcOsiSolver &operator=(const CbcOsiSolver &rhs);
 
-    /// Assignment operator
-    CbcOsiSolver & operator=(const CbcOsiSolver& rhs);
+  /// Destructor
+  virtual ~CbcOsiSolver();
 
-    /// Destructor
-    virtual ~CbcOsiSolver ();
+  //@}
 
-    //@}
+  /**@name Sets and Gets */
+  //@{
+  /// Set Cbc Model
+  inline void setCbcModel(CbcModel *model)
+  {
+    cbcModel_ = model;
+  }
+  /// Return Cbc Model
+  inline CbcModel *cbcModel() const
+  {
+    return cbcModel_;
+  }
+  //@}
 
-
-    /**@name Sets and Gets */
-    //@{
-    /// Set Cbc Model
-    inline void setCbcModel(CbcModel * model) {
-        cbcModel_ = model;
-    }
-    /// Return Cbc Model
-    inline CbcModel * cbcModel() const {
-        return cbcModel_;
-    }
-    //@}
-
-    //---------------------------------------------------------------------------
+  //---------------------------------------------------------------------------
 
 protected:
-
-
-    /**@name Private member data */
-    //@{
-    /// Pointer back to CbcModel
-    CbcModel * cbcModel_;
-    //@}
+  /**@name Private member data */
+  //@{
+  /// Pointer back to CbcModel
+  CbcModel *cbcModel_;
+  //@}
 };
 #endif
+
+/* vi: softtabstop=2 shiftwidth=2 expandtab tabstop=2
+*/

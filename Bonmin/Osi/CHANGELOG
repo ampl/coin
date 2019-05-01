@@ -1,3 +1,6 @@
+23/01/2018 OsiMsk
+  - add compatibility with Mosek 9.0 beta
+
 20/04/2017 OsiSpx
   - add compatibility with SoPlex 3.0
 

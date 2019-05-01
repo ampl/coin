@@ -1,4 +1,4 @@
-/* $Id: CbcCompare.hpp 1899 2013-04-09 18:12:08Z stefan $ */
+/* $Id: CbcCompare.hpp 2465 2019-01-03 19:26:52Z unxusr $ */
 // Copyright (C) 2002, International Business Machines
 // Corporation and others.  All Rights Reserved.
 // This code is licensed under the terms of the Eclipse Public License (EPL).
@@ -10,30 +10,37 @@ class CbcCompareBase;
 
 class CbcCompare {
 public:
-    CbcCompareBase * test_;
-    // Default Constructor
-    CbcCompare () {
-        test_ = NULL;
-    }
+  CbcCompareBase *test_;
+  // Default Constructor
+  CbcCompare()
+  {
+    test_ = NULL;
+  }
 
-    virtual ~CbcCompare() {}
+  virtual ~CbcCompare() {}
 
-    bool operator() (CbcNode * x, CbcNode * y) {
-        return test_->test(x, y);
-    }
-    bool compareNodes (CbcNode * x, CbcNode * y) {
-        return test_->test(x, y);
-    }
-    /// This is alternate test function
-    inline bool alternateTest (CbcNode * x, CbcNode * y) {
-        return test_->alternateTest(x, y);
-    }
+  bool operator()(CbcNode *x, CbcNode *y)
+  {
+    return test_->test(x, y);
+  }
+  bool compareNodes(CbcNode *x, CbcNode *y)
+  {
+    return test_->test(x, y);
+  }
+  /// This is alternate test function
+  inline bool alternateTest(CbcNode *x, CbcNode *y)
+  {
+    return test_->alternateTest(x, y);
+  }
 
-    /// return comparison object
-    inline CbcCompareBase * comparisonObject() const {
-        return test_;
-    }
+  /// return comparison object
+  inline CbcCompareBase *comparisonObject() const
+  {
+    return test_;
+  }
 };
 
 #endif
 
+/* vi: softtabstop=2 shiftwidth=2 expandtab tabstop=2
+*/

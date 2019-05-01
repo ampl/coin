@@ -4,7 +4,7 @@
 //           Carnegie Mellon University, Pittsburgh, PA 15213
 // Date:     21/07/05
 //
-// $Id: CglLandPSimplex.cpp 1153 2013-10-29 14:54:34Z forrest $
+// $Id: CglLandPSimplex.cpp 1387 2017-09-29 11:02:03Z forrest $
 //
 // This code is licensed under the terms of the Eclipse Public License (EPL).
 //---------------------------------------------------------------------------
@@ -350,7 +350,11 @@ CglLandPSimplex::computeWeights(CglLandP::LHSnorm norm, CglLandP::Normalization 
     norm_weights_.resize(ncols_orig_ + nrows_orig_, 0.);
 
     double * rows_weights = &norm_weights_[ncols_orig_];
+#ifndef INTEL_COMPILER
     std::vector<int> nnz(nrows_orig_,0);
+#else
+    std::vector<int> nnz(nrows_orig_);
+#endif
     const CoinPackedMatrix * m = si_->getMatrixByCol();
     const double * val = m->getElements();
     const int * ind = m->getIndices();
@@ -1241,7 +1245,7 @@ CglLandPSimplex::fastFindCutImprovingPivotRow( int &direction, int &gammaSign,
     const CoinPackedMatrix* mat = si_->getMatrixByCol();
 
     const CoinBigIndex* starts = mat->getVectorStarts();
-    const CoinBigIndex * lengths = mat->getVectorLengths();
+    const int * lengths = mat->getVectorLengths();
     const int * indices = mat->getIndices();
     const double * elements = mat->getElements();
 
@@ -2634,12 +2638,12 @@ CglLandPSimplex::createIntersectionCut(TabRow & row, OsiRowCut &cut) const
     const CoinBigIndex * starts = mat->getVectorStarts();
     const int * lengths = mat->getVectorLengths();
     const double * values = mat->getElements();
-    const CoinBigIndex * indices = mat->getIndices();
+    const int * indices = mat->getIndices();
     for (int j = 0 ; j < ncols_ ; j++)
     {
-        const int& start = starts[j];
-        int end = start + lengths[j];
-        for (int k = start ; k < end ; k++)
+        const CoinBigIndex& start = starts[j];
+        CoinBigIndex end = start + lengths[j];
+        for (CoinBigIndex k = start ; k < end ; k++)
         {
             vec[original_index_[j]] -= vec[original_index_[ncols_ + indices[k]]] * values[k];
         }
@@ -2805,7 +2809,7 @@ CglLandPSimplex::eliminate_slacks(double * vec) const
     const CoinBigIndex * starts = mat->getVectorStarts();
     const int * lengths = mat->getVectorLengths();
     const double * values = mat->getElements();
-    const CoinBigIndex * indices = mat->getIndices();
+    const int * indices = mat->getIndices();
     const double * vecSlacks = vec + ncols_orig_;
     for (int j = 0 ; j < ncols_ ; j++)
     {

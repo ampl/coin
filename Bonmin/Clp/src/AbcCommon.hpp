@@ -1,4 +1,4 @@
-/* $Id: AbcCommon.hpp 2074 2014-12-10 09:43:54Z forrest $ */
+/* $Id: AbcCommon.hpp 2385 2019-01-06 19:43:06Z unxusr $ */
 // Copyright (C) 2003, International Business Machines
 // Corporation and others, Copyright (C) 2012, FasterCoin.  All Rights Reserved.
 // This code is licensed under the terms of the Eclipse Public License (EPL).
@@ -21,14 +21,14 @@
   4 - build Abc cilk parallel and inherit code
  */
 #ifdef CLP_HAS_ABC
-#if CLP_HAS_ABC==1
+#if CLP_HAS_ABC == 1
 #ifndef ABC_PARALLEL
 #define ABC_PARALLEL 0
 #endif
 #ifndef ABC_USE_HOMEGROWN_LAPACK
 #define ABC_USE_HOMEGROWN_LAPACK 2
 #endif
-#elif CLP_HAS_ABC==2
+#elif CLP_HAS_ABC == 2
 #ifndef ABC_PARALLEL
 #define ABC_PARALLEL 0
 #endif
@@ -41,14 +41,14 @@
 #define CLP_INHERIT_MODE 2
 #endif
 #endif
-#elif CLP_HAS_ABC==3
+#elif CLP_HAS_ABC == 3
 #ifndef ABC_PARALLEL
 #define ABC_PARALLEL 2
 #endif
 #ifndef ABC_USE_HOMEGROWN_LAPACK
 #define ABC_USE_HOMEGROWN_LAPACK 2
 #endif
-#elif CLP_HAS_ABC==4
+#elif CLP_HAS_ABC == 4
 #ifndef ABC_PARALLEL
 #define ABC_PARALLEL 2
 #endif
@@ -63,3 +63,6 @@
 #endif
 #endif
 #endif
+
+/* vi: softtabstop=2 shiftwidth=2 expandtab tabstop=2
+*/

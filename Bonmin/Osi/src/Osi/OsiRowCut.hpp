@@ -27,81 +27,79 @@ A row cut has:
   </ul>
 */
 class OsiRowCut : public OsiCut {
-   friend void OsiRowCutUnitTest(const OsiSolverInterface * baseSiP,    
-				 const std::string & mpsDir);
+  friend void OsiRowCutUnitTest(const OsiSolverInterface *baseSiP,
+    const std::string &mpsDir);
 
 public:
-  
   /**@name Row bounds */
   //@{
-    /// Get lower bound
-    OsiRowCut_inline double lb() const;
-    /// Set lower bound
-    OsiRowCut_inline void setLb(double lb);
-    /// Get upper bound
-    OsiRowCut_inline double ub() const;
-    /// Set upper bound
-    OsiRowCut_inline void setUb(double ub);
+  /// Get lower bound
+  OsiRowCut_inline double lb() const;
+  /// Set lower bound
+  OsiRowCut_inline void setLb(double lb);
+  /// Get upper bound
+  OsiRowCut_inline double ub() const;
+  /// Set upper bound
+  OsiRowCut_inline void setUb(double ub);
   //@}
 
   /**@name Row rhs, sense, range */
   //@{
-    /// Get sense ('E', 'G', 'L', 'N', 'R')
-    char sense() const;
-    /// Get right-hand side
-    double rhs() const;
-    /// Get range (ub - lb for 'R' rows, 0 otherwise)
-    double range() const;
+  /// Get sense ('E', 'G', 'L', 'N', 'R')
+  char sense() const;
+  /// Get right-hand side
+  double rhs() const;
+  /// Get range (ub - lb for 'R' rows, 0 otherwise)
+  double range() const;
   //@}
 
   //-------------------------------------------------------------------
   /**@name Row elements  */
   //@{
-    /// Set row elements
-    OsiRowCut_inline void setRow( 
-      int size, 
-      const int * colIndices, 
-      const double * elements,
-      bool testForDuplicateIndex = COIN_DEFAULT_VALUE_FOR_DUPLICATE);
-    /// Set row elements from a packed vector
-    OsiRowCut_inline void setRow( const CoinPackedVector & v );
-    /// Get row elements
-    OsiRowCut_inline const CoinPackedVector & row() const;
-    /// Get row elements for changing
-    OsiRowCut_inline CoinPackedVector & mutableRow() ;
+  /// Set row elements
+  OsiRowCut_inline void setRow(
+    int size,
+    const int *colIndices,
+    const double *elements,
+    bool testForDuplicateIndex = COIN_DEFAULT_VALUE_FOR_DUPLICATE);
+  /// Set row elements from a packed vector
+  OsiRowCut_inline void setRow(const CoinPackedVector &v);
+  /// Get row elements
+  OsiRowCut_inline const CoinPackedVector &row() const;
+  /// Get row elements for changing
+  OsiRowCut_inline CoinPackedVector &mutableRow();
   //@}
 
   /**@name Comparison operators  */
   //@{
-#if __GNUC__ != 2 
-    using OsiCut::operator== ;
+#if __GNUC__ != 2
+  using OsiCut::operator==;
 #endif
-    /** equal - true if lower bound, upper bound, row elements,
+  /** equal - true if lower bound, upper bound, row elements,
         and OsiCut are equal.
     */
-    OsiRowCut_inline bool operator==(const OsiRowCut& rhs) const; 
+  OsiRowCut_inline bool operator==(const OsiRowCut &rhs) const;
 
-#if __GNUC__ != 2 
-    using OsiCut::operator!= ;
+#if __GNUC__ != 2
+  using OsiCut::operator!=;
 #endif
-    /// not equal
-    OsiRowCut_inline bool operator!=(const OsiRowCut& rhs) const; 
+  /// not equal
+  OsiRowCut_inline bool operator!=(const OsiRowCut &rhs) const;
   //@}
-  
-    
+
   //----------------------------------------------------------------
   /**@name Sanity checks on cut */
   //@{
-    /** Returns true if the cut is consistent.
+  /** Returns true if the cut is consistent.
         This checks to ensure that:
         <ul>
         <li>The row element vector does not have duplicate indices
         <li>The row element vector indices are >= 0
         </ul>
     */
-    OsiRowCut_inline bool consistent() const; 
+  OsiRowCut_inline bool consistent() const;
 
-    /** Returns true if cut is consistent with respect to the solver
+  /** Returns true if cut is consistent with respect to the solver
         interface's model.
         This checks to ensure that
         <ul>
@@ -109,91 +107,99 @@ public:
             in the model
         </ul>
     */
-    OsiRowCut_inline bool consistent(const OsiSolverInterface& im) const;
+  OsiRowCut_inline bool consistent(const OsiSolverInterface &im) const;
 
-    /** Returns true if the row cut itself is infeasible and cannot be satisfied.       
+  /** Returns true if the row cut itself is infeasible and cannot be satisfied.       
         This checks whether
         <ul>
         <li>the lower bound is strictly greater than the
             upper bound.
         </ul>
     */
-    OsiRowCut_inline bool infeasible(const OsiSolverInterface &im) const;
-    /** Returns infeasibility of the cut with respect to solution 
+  OsiRowCut_inline bool infeasible(const OsiSolverInterface &im) const;
+  /** Returns infeasibility of the cut with respect to solution 
 	passed in i.e. is positive if cuts off that solution.  
 	solution is getNumCols() long..
     */
-    virtual double violated(const double * solution) const;
+  virtual double violated(const double *solution) const;
   //@}
 
   /**@name Arithmetic operators. Apply CoinPackedVector methods to the vector */
   //@{
-    /// add <code>value</code> to every vector entry
-    void operator+=(double value)
-	{ row_ += value; }
+  /// add <code>value</code> to every vector entry
+  void operator+=(double value)
+  {
+    row_ += value;
+  }
 
-    /// subtract <code>value</code> from every vector entry
-    void operator-=(double value)
-	{ row_ -= value; }
+  /// subtract <code>value</code> from every vector entry
+  void operator-=(double value)
+  {
+    row_ -= value;
+  }
 
-    /// multiply every vector entry by <code>value</code>
-    void operator*=(double value)
-	{ row_ *= value; }
+  /// multiply every vector entry by <code>value</code>
+  void operator*=(double value)
+  {
+    row_ *= value;
+  }
 
-    /// divide every vector entry by <code>value</code>
-    void operator/=(double value)
-	{ row_ /= value; }
+  /// divide every vector entry by <code>value</code>
+  void operator/=(double value)
+  {
+    row_ /= value;
+  }
   //@}
 
   /// Allow access row sorting function
   void sortIncrIndex()
-	{row_.sortIncrIndex();}
+  {
+    row_.sortIncrIndex();
+  }
 
   /**@name Constructors and destructors */
   //@{
-    /// Assignment operator
-    OsiRowCut & operator=( const OsiRowCut& rhs);
-  
-    /// Copy constructor 
-    OsiRowCut ( const OsiRowCut &);  
+  /// Assignment operator
+  OsiRowCut &operator=(const OsiRowCut &rhs);
 
-    /// Clone
-    virtual OsiRowCut * clone() const;
-  
-    /// Default Constructor 
-    OsiRowCut ();
+  /// Copy constructor
+  OsiRowCut(const OsiRowCut &);
 
-    /** \brief Ownership Constructor
+  /// Clone
+  virtual OsiRowCut *clone() const;
+
+  /// Default Constructor
+  OsiRowCut();
+
+  /** \brief Ownership Constructor
 
       This constructor assumes ownership of the vectors passed as parameters
       for indices and elements. \p colIndices and \p elements will be NULL
       on return.
     */
-    OsiRowCut(double cutlb, double cutub,
- 		     int capacity, int size,
- 		     int *&colIndices, double *&elements);
-  
-    /// Destructor 
-    virtual ~OsiRowCut ();
+  OsiRowCut(double cutlb, double cutub,
+    int capacity, int size,
+    int *&colIndices, double *&elements);
+
+  /// Destructor
+  virtual ~OsiRowCut();
   //@}
 
   /**@name Debug stuff */
   //@{
-    /// Print cuts in collection
-  virtual void print() const ;
+  /// Print cuts in collection
+  virtual void print() const;
   //@}
-   
+
 private:
-  
- 
   /**@name Private member data */
   //@{
-    /// Row elements
-    CoinPackedVector row_;
-    /// Row lower bound
-    double lb_;
-    /// Row upper bound
-    double ub_;
+  /// Row elements
+  CoinPackedVector row_;
+  /// Row lower bound
+  double lb_;
+  /// Row upper bound
+  double ub_;
   //@}
 };
 
@@ -209,13 +215,13 @@ void OsiRowCut::setUb(double ub) { ub_ = ub; }
 
 //-------------------------------------------------------------------
 // Set row elements
-//------------------------------------------------------------------- 
-void OsiRowCut::setRow(int size, 
-		       const int * colIndices, const double * elements)
+//-------------------------------------------------------------------
+void OsiRowCut::setRow(int size,
+  const int *colIndices, const double *elements)
 {
-  row_.setVector(size,colIndices,elements);
+  row_.setVector(size, colIndices, elements);
 }
-void OsiRowCut::setRow( const CoinPackedVector & v )
+void OsiRowCut::setRow(const CoinPackedVector &v)
 {
   row_ = v;
 }
@@ -223,58 +229,62 @@ void OsiRowCut::setRow( const CoinPackedVector & v )
 //-------------------------------------------------------------------
 // Get the row
 //-------------------------------------------------------------------
-const CoinPackedVector & OsiRowCut::row() const 
-{ 
-  return row_; 
+const CoinPackedVector &OsiRowCut::row() const
+{
+  return row_;
 }
 
 //-------------------------------------------------------------------
 // Get the row so we can change
 //-------------------------------------------------------------------
-CoinPackedVector & OsiRowCut::mutableRow() 
-{ 
-  return row_; 
+CoinPackedVector &OsiRowCut::mutableRow()
+{
+  return row_;
 }
 
 //----------------------------------------------------------------
-// == operator 
+// == operator
 //-------------------------------------------------------------------
-bool
-OsiRowCut::operator==(const OsiRowCut& rhs) const
+bool OsiRowCut::operator==(const OsiRowCut &rhs) const
 {
-  if ( this->OsiCut::operator!=(rhs) ) return false;
-  if ( row() != rhs.row() ) return false;
-  if ( lb() != rhs.lb() ) return false;
-  if ( ub() != rhs.ub() ) return false;
+  if (this->OsiCut::operator!=(rhs))
+    return false;
+  if (row() != rhs.row())
+    return false;
+  if (lb() != rhs.lb())
+    return false;
+  if (ub() != rhs.ub())
+    return false;
   return true;
 }
-bool
-OsiRowCut::operator!=(const OsiRowCut& rhs) const
+bool OsiRowCut::operator!=(const OsiRowCut &rhs) const
 {
-  return !( (*this)==rhs );
+  return !((*this) == rhs);
 }
 
-
 //----------------------------------------------------------------
-// consistent & infeasible 
+// consistent & infeasible
 //-------------------------------------------------------------------
 bool OsiRowCut::consistent() const
 {
-  const CoinPackedVector & r=row();
+  const CoinPackedVector &r = row();
   r.duplicateIndex("consistent", "OsiRowCut");
-  if ( r.getMinIndex() < 0 ) return false;
+  if (r.getMinIndex() < 0)
+    return false;
   return true;
 }
-bool OsiRowCut::consistent(const OsiSolverInterface& im) const
-{  
-  const CoinPackedVector & r=row();
-  if ( r.getMaxIndex() >= im.getNumCols() ) return false;
+bool OsiRowCut::consistent(const OsiSolverInterface &im) const
+{
+  const CoinPackedVector &r = row();
+  if (r.getMaxIndex() >= im.getNumCols())
+    return false;
 
   return true;
 }
 bool OsiRowCut::infeasible(const OsiSolverInterface &im) const
 {
-  if ( lb() > ub() ) return true;
+  if (lb() > ub())
+    return true;
 
   return false;
 }
@@ -290,38 +300,39 @@ bool OsiRowCut::infeasible(const OsiSolverInterface &im) const
 class OsiRowCut2 : public OsiRowCut {
 
 public:
-  
   /**@name Which row */
   //@{
   /// Get row
   inline int whichRow() const
-  { return whichRow_;}
+  {
+    return whichRow_;
+  }
   /// Set row
   inline void setWhichRow(int row)
-  { whichRow_=row;}
+  {
+    whichRow_ = row;
+  }
   //@}
-  
+
   /**@name Constructors and destructors */
   //@{
   /// Assignment operator
-  OsiRowCut2 & operator=( const OsiRowCut2& rhs);
-  
-  /// Copy constructor 
-  OsiRowCut2 ( const OsiRowCut2 &);  
-  
+  OsiRowCut2 &operator=(const OsiRowCut2 &rhs);
+
+  /// Copy constructor
+  OsiRowCut2(const OsiRowCut2 &);
+
   /// Clone
-  virtual OsiRowCut * clone() const;
-  
-  /// Default Constructor 
-  OsiRowCut2 (int row=-1);
-  
-  /// Destructor 
-  virtual ~OsiRowCut2 ();
+  virtual OsiRowCut *clone() const;
+
+  /// Default Constructor
+  OsiRowCut2(int row = -1);
+
+  /// Destructor
+  virtual ~OsiRowCut2();
   //@}
 
 private:
-  
- 
   /**@name Private member data */
   //@{
   /// Which row
@@ -329,3 +340,6 @@ private:
   //@}
 };
 #endif
+
+/* vi: softtabstop=2 shiftwidth=2 expandtab tabstop=2
+*/

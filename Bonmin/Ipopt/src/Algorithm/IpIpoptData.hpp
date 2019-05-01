@@ -2,7 +2,7 @@
 // All Rights Reserved.
 // This code is published under the Eclipse Public License.
 //
-// $Id: IpIpoptData.hpp 2472 2014-04-05 17:47:20Z stefan $
+// $Id: IpIpoptData.hpp 2706 2018-01-15 04:11:56Z stefan $
 //
 // Authors:  Carl Laird, Andreas Waechter     IBM    2004-08-13
 
@@ -369,9 +369,11 @@ namespace Ipopt
 
     /** Cpu time counter at the beginning of the optimization.  This
      *  is useful to see how much CPU time has been spent in this
-     *  optimization run. */
+     *  optimization run.
+     *  Can only be called after beginning of optimization. */
     Number cpu_time_start() const
     {
+      DBG_ASSERT(cpu_time_start_ >= 0);
       return cpu_time_start_;
     }
 
@@ -482,6 +484,12 @@ namespace Ipopt
     TimingStatistics& TimingStats()
     {
       return timing_statistics_;
+    }
+
+    /** Resetting CPU Start Time */
+    void ResetCpuStartTime()
+    {
+      cpu_time_start_ = CpuTime();
     }
 
     /** Check if additional data has been set */
@@ -637,7 +645,7 @@ namespace Ipopt
      *  statistics */
     TimingStatistics timing_statistics_;
 
-    /** CPU time counter at initialization. */
+    /** CPU time counter at begin of optimization. */
     Number cpu_time_start_;
 
     /** Object for the data specific for the Chen-Goldfarb penalty

@@ -2,7 +2,7 @@
 // All Rights Reserved.
 // This code is published under the Eclipse Public License.
 //
-// $Id: IpFilterLSAcceptor.cpp 2613 2015-11-04 14:42:02Z stefan $
+// $Id: IpFilterLSAcceptor.cpp 2706 2018-01-15 04:11:56Z stefan $
 //
 // Authors:  Carl Laird, Andreas Waechter     IBM    2004-08-13
 //           Andreas Waechter                 IBM    2005-10-13
@@ -139,41 +139,43 @@ namespace Ipopt
 
     roptions->AddStringOption3(
       "corrector_type",
-      "The type of corrector steps that should be taken (unsupported!).",
+      "The type of corrector steps that should be taken.",
       "none",
       "none", "no corrector",
       "affine", "corrector step towards mu=0",
       "primal-dual", "corrector step towards current mu",
       "If \"mu_strategy\" is \"adaptive\", this option determines "
-      "what kind of corrector steps should be tried.");
+      "what kind of corrector steps should be tried. Changing this "
+      "option is experimental.");
 
     roptions->AddStringOption2(
       "skip_corr_if_neg_curv",
-      "Skip the corrector step in negative curvature iteration (unsupported!).",
+      "Skip the corrector step in negative curvature iteration.",
       "yes",
       "no", "don't skip",
       "yes", "skip",
       "The corrector step is not tried if negative curvature has been "
       "encountered during the computation of the search direction in "
       "the current iteration. This option is only used if \"mu_strategy\" is "
-      "\"adaptive\".");
+      "\"adaptive\". Changing this option is experimental.");
 
     roptions->AddStringOption2(
       "skip_corr_in_monotone_mode",
-      "Skip the corrector step during monotone barrier parameter mode (unsupported!).",
+      "Skip the corrector step during monotone barrier parameter mode.",
       "yes",
       "no", "don't skip",
       "yes", "skip",
       "The corrector step is not tried if the algorithm is currently in the "
       "monotone mode (see also option \"barrier_strategy\")."
-      "This option is only used if \"mu_strategy\" is \"adaptive\".");
+      "This option is only used if \"mu_strategy\" is \"adaptive\". "
+      "Changing this option is experimental.");
 
     roptions->AddLowerBoundedNumberOption(
       "corrector_compl_avrg_red_fact",
-      "Complementarity tolerance factor for accepting corrector step (unsupported!).",
+      "Complementarity tolerance factor for accepting corrector step.",
       0.0, true, 1.0,
       "This option determines the factor by which complementarity is allowed to increase "
-      "for a corrector step to be accepted.");
+      "for a corrector step to be accepted. Changing this option is experimental.");
 
 	roptions->AddBoundedIntegerOption(
 	  "soc_method",

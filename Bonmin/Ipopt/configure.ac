@@ -2,7 +2,7 @@
 # All Rights Reserved.
 # This file is distributed under the Eclipse Public License.
 
-## $Id: configure.ac 2691 2017-06-12 10:36:01Z stefan $
+## $Id: configure.ac 2760 2018-11-17 17:22:41Z stefan $
 
 # Authors:  Carl Laird, Andreas Waechter     IBM    2004-08-13
 
@@ -12,7 +12,7 @@
 
 AC_PREREQ(2.59)
 
-AC_INIT([Ipopt],[3.12.8],[http://projects.coin-or.org/Ipopt/newticket])
+AC_INIT([Ipopt],[3.12.12],[http://projects.coin-or.org/Ipopt/newticket])
 
 AC_COPYRIGHT(
 [Copyright 2004, 2011 International Business Machines and others.
@@ -41,7 +41,7 @@ AC_CANONICAL_BUILD
 # the source root directory contains definition of where to find those
 # externals.  The following macro ensures that those externals are
 # retrieved by svn if they are not there yet.
-AC_COIN_PROJECTDIR_INIT(Ipopt,11:8:10)
+AC_COIN_PROJECTDIR_INIT(Ipopt,11:12:10)
 
 # Check if user wants to produce debugging code
 AC_COIN_DEBUG_COMPILE(Ipopt)
@@ -492,6 +492,9 @@ case $build in
   *-cygwin* | *-mingw*)
     JIPOPTDLL=jipopt.dll
     ;;
+  *-darwin* )
+    JIPOPTDLL=libjipopt.dylib
+    ;;  
   *)
     JIPOPTDLL=libjipopt.so
     ;;
@@ -561,6 +564,10 @@ if test x"$use_matlab_home" = x; then
     MATLAB_HOME=`echo $mexpath | sed -e "s=/bin/matlab$EXEEXT$=="`
     AC_MSG_RESULT([$MATLAB_HOME])
   fi
+elif test x"$use_matlab_home" = xno; then
+  # Matlab interface disabled by user
+  MATLAB_HOME=""
+  AC_MSG_RESULT([disabled])
 else
   MATLAB_HOME="$use_matlab_home"
   AC_MSG_RESULT([$MATLAB_HOME])

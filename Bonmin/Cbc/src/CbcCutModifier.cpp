@@ -1,4 +1,4 @@
-// $Id: CbcCutModifier.cpp 1899 2013-04-09 18:12:08Z stefan $
+// $Id: CbcCutModifier.cpp 2465 2019-01-03 19:26:52Z unxusr $
 // Copyright (C) 2003, International Business Machines
 // Corporation and others.  All Rights Reserved.
 // This code is licensed under the terms of the Eclipse Public License (EPL).
@@ -7,7 +7,7 @@
 
 #if defined(_MSC_VER)
 // Turn off compiler warning about long names
-#  pragma warning(disable:4786)
+#pragma warning(disable : 4786)
 #endif
 #include "CbcConfig.h"
 #include <cassert>
@@ -33,23 +33,24 @@ CbcCutModifier::CbcCutModifier()
 {
 }
 
-
 // Destructor
-CbcCutModifier::~CbcCutModifier ()
+CbcCutModifier::~CbcCutModifier()
 {
 }
 
 // Copy constructor
-CbcCutModifier::CbcCutModifier ( const CbcCutModifier & /*rhs*/)
+CbcCutModifier::CbcCutModifier(const CbcCutModifier & /*rhs*/)
 {
 }
 
 // Assignment operator
 CbcCutModifier &
-CbcCutModifier::operator=( const CbcCutModifier & rhs)
+CbcCutModifier::operator=(const CbcCutModifier &rhs)
 {
-    if (this != &rhs) {
-    }
-    return *this;
+  if (this != &rhs) {
+  }
+  return *this;
 }
 
+/* vi: softtabstop=2 shiftwidth=2 expandtab tabstop=2
+*/
