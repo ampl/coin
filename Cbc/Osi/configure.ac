@@ -2,7 +2,7 @@
 # All Rights Reserved.
 # This file is distributed under the Eclipse Public License.
 
-## $Id: configure.ac 2100 2017-06-12 10:19:48Z stefan $
+## $Id: configure.ac 2255 2019-04-22 04:06:58Z stefan $
 
 # Author:  Andreas Waechter            IBM    2006-04-13
 
@@ -12,7 +12,7 @@
 
 AC_PREREQ(2.59)
 
-AC_INIT([Osi],[0.107.9],[osi@list.coin-or.org])
+AC_INIT([Osi],[0.108.4],[osi@list.coin-or.org])
 
 AC_COPYRIGHT([
 Copyright 2006 International Business Machines and others.
@@ -38,7 +38,7 @@ AC_PREFIX_DEFAULT([`pwd`])
 AC_CANONICAL_BUILD
 
 # A bit of initial setup
-AC_COIN_PROJECTDIR_INIT(Osi,13:9:12)
+AC_COIN_PROJECTDIR_INIT(Osi,14:4:13)
 
 # Check if user wants to produce debugging code
 AC_COIN_DEBUG_COMPILE(Osi)
@@ -58,7 +58,7 @@ if test $coin_has_coinutils != yes ; then
   AC_MSG_ERROR([Required package CoinUtils not available.])
 fi
 AC_COIN_CHECK_PACKAGE(Glpk,      [coinglpk],  [OsiGlpkLib])
-AC_COIN_CHECK_PACKAGE(SoPlex,    [coinsoplex],[OsiSpxLib])
+AC_COIN_CHECK_PACKAGE(SoPlex,    [coinsoplex < 1.7],[OsiSpxLib])
 AC_COIN_CHECK_PACKAGE(Sample,    [coindatasample])
 AC_COIN_CHECK_PACKAGE(Netlib,    [coindatanetlib])
 

@@ -2,7 +2,7 @@
 # All Rights Reserved.
 # This file is distributed under the Eclipse Public License.
 
-## $Id: Makefile.am 1792 2015-02-07 00:02:10Z tkr $
+## $Id: Makefile.am 1788 2015-01-28 17:25:23Z tkr $
 
 # Author:  Andreas Waechter           IBM    2006-04-13
 

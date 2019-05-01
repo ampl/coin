@@ -8,5 +8,5 @@ Description: Multifrontal Massively Parallel sparse direct Solver
 URL: https://projects.coin-or.org/BuildTools
 Version: @PACKAGE_VERSION@
 Libs: -L${libdir} -lcoinmumps @MUMPS_PCLIBS@
-Cflags: -I${includedir}
+Cflags: -I${includedir} -DCOIN_USE_MUMPS_MPI_H
 Requires: @MUMPS_PCREQUIRES@

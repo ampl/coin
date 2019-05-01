@@ -1,4 +1,4 @@
-/* $Id: testGub.cpp 1937 2013-04-09 10:32:15Z forrest $ */
+/* $Id: testGub.cpp 2449 2019-04-08 03:34:28Z stefan $ */
 // Copyright (C) 2003, International Business Machines
 // Corporation and others.  All Rights Reserved.
 // This code is licensed under the terms of the Eclipse Public License (EPL).
@@ -12,6 +12,7 @@
 #include "CoinMpsIO.hpp"
 int main(int argc, const char *argv[])
 {
+#if COIN_BIG_INDEX<2
      ClpSimplex  model;
      int status;
      int maxFactor = 100;
@@ -441,6 +442,9 @@ int main(int argc, const char *argv[])
           }
           printf("obj offset is %g\n", model2.objectiveOffset());
           printf("Primal took %g seconds\n", CoinCpuTime() - time1);
+     } else {
+       printf("No gub rows - this is just example code so exiting\n");
+       exit(77);
      }
      delete [] mark;
      delete [] gubStart;
@@ -449,5 +453,8 @@ int main(int argc, const char *argv[])
      delete [] whichGub;
      delete [] lower;
      delete [] upper;
+#else
+     printf("testGub2 not available with COIN_BIG_INDEX=2\n");
+#endif
      return 0;
 }

@@ -2,7 +2,7 @@
 # All Rights Reserved.
 # This file is distributed under the Eclipse Public License.
 
-## $Id: Makefile.am 1800 2011-08-14 10:37:34Z stefan $
+## $Id: Makefile.am 2111 2017-11-07 03:40:06Z tkr $
 
 # Author:  Andreas Waechter           IBM    2006-04-13
 
@@ -18,6 +18,11 @@ lib_LTLIBRARIES = libOsiMsk.la
 # List all source files for this library, including headers
 libOsiMsk_la_SOURCES = \
 	OsiMskSolverInterface.cpp OsiMskSolverInterface.hpp
+
+# List all additionally required libraries
+if DEPENDENCY_LINKING
+libOsiMsk_la_LIBADD = $(OSILIB_LIBS) ../Osi/libOsi.la $(MSKLIB)
+endif
 
 # This is for libtool (on Windows)
 libOsiMsk_la_LDFLAGS = $(LT_LDFLAGS)

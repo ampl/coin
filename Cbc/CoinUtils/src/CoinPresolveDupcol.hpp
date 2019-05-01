@@ -1,4 +1,4 @@
-/* $Id: CoinPresolveDupcol.hpp 1854 2015-12-18 14:18:54Z forrest $ */
+/* $Id: CoinPresolveDupcol.hpp 2083 2019-01-06 19:38:09Z unxusr $ */
 // Copyright (C) 2002, International Business Machines
 // Corporation and others.  All Rights Reserved.
 // This code is licensed under the terms of the Eclipse Public License (EPL).
@@ -12,7 +12,7 @@
   \file
 */
 
-#define	DUPCOL	10
+#define DUPCOL 10
 
 /*! \class dupcol_action
     \brief Detect and remove duplicate columns
@@ -31,8 +31,8 @@
 
 class dupcol_action : public CoinPresolveAction {
   dupcol_action();
-  dupcol_action(const dupcol_action& rhs);
-  dupcol_action& operator=(const dupcol_action& rhs);
+  dupcol_action(const dupcol_action &rhs);
+  dupcol_action &operator=(const dupcol_action &rhs);
 
   struct action {
     double thislo;
@@ -51,23 +51,23 @@ class dupcol_action : public CoinPresolveAction {
   const action *const actions_;
 
   dupcol_action(int nactions, const action *actions,
-		const CoinPresolveAction *next) :
-      CoinPresolveAction(next),
-      nactions_(nactions),
-      actions_(actions) {}
+    const CoinPresolveAction *next)
+    : CoinPresolveAction(next)
+    , nactions_(nactions)
+    , actions_(actions)
+  {
+  }
 
- public:
+public:
   const char *name() const;
 
   static const CoinPresolveAction *presolve(CoinPresolveMatrix *prob,
-					 const CoinPresolveAction *next);
+    const CoinPresolveAction *next);
 
   void postsolve(CoinPostsolveMatrix *prob) const;
 
   virtual ~dupcol_action();
-
 };
-
 
 /*! \class duprow_action
     \brief Detect and remove duplicate rows
@@ -94,18 +94,26 @@ class duprow_action : public CoinPresolveAction {
   const int nactions_;
   const action *const actions_;
 
-  duprow_action():CoinPresolveAction(NULL),nactions_(0),actions_(NULL) {}
+  duprow_action()
+    : CoinPresolveAction(NULL)
+    , nactions_(0)
+    , actions_(NULL)
+  {
+  }
   duprow_action(int nactions,
-		      const action *actions,
-		      const CoinPresolveAction *next) :
-    CoinPresolveAction(next),
-    nactions_(nactions), actions_(actions) {}
+    const action *actions,
+    const CoinPresolveAction *next)
+    : CoinPresolveAction(next)
+    , nactions_(nactions)
+    , actions_(actions)
+  {
+  }
 
- public:
+public:
   const char *name() const;
 
   static const CoinPresolveAction *presolve(CoinPresolveMatrix *prob,
-					 const CoinPresolveAction *next);
+    const CoinPresolveAction *next);
 
   void postsolve(CoinPostsolveMatrix *prob) const;
 
@@ -122,18 +130,26 @@ class duprow3_action : public CoinPresolveAction {
   const int nactions_;
   const action *const actions_;
 
-  duprow3_action():CoinPresolveAction(NULL),nactions_(0),actions_(NULL) {}
+  duprow3_action()
+    : CoinPresolveAction(NULL)
+    , nactions_(0)
+    , actions_(NULL)
+  {
+  }
   duprow3_action(int nactions,
-		      const action *actions,
-		      const CoinPresolveAction *next) :
-    CoinPresolveAction(next),
-    nactions_(nactions), actions_(actions) {}
+    const action *actions,
+    const CoinPresolveAction *next)
+    : CoinPresolveAction(next)
+    , nactions_(nactions)
+    , actions_(actions)
+  {
+  }
 
- public:
+public:
   const char *name() const;
 
   static const CoinPresolveAction *presolve(CoinPresolveMatrix *prob,
-					 const CoinPresolveAction *next);
+    const CoinPresolveAction *next);
 
   void postsolve(CoinPostsolveMatrix *prob) const;
 
@@ -154,9 +170,9 @@ class gubrow_action : public CoinPresolveAction {
   struct action {
     double rhs;
     // last is row itself
-    int * deletedRow;
-    double * rowels;
-    int * indices; // indices in gub row
+    int *deletedRow;
+    double *rowels;
+    int *indices; // indices in gub row
     int nDrop;
     int ninrow;
   };
@@ -166,16 +182,19 @@ class gubrow_action : public CoinPresolveAction {
 
   //gubrow_action():CoinPresolveAction(NULL),nactions_(0),actions_(NULL) {}
   gubrow_action(int nactions,
-		      const action *actions,
-		      const CoinPresolveAction *next) :
-    CoinPresolveAction(next),
-    nactions_(nactions), actions_(actions) {}
+    const action *actions,
+    const CoinPresolveAction *next)
+    : CoinPresolveAction(next)
+    , nactions_(nactions)
+    , actions_(actions)
+  {
+  }
 
- public:
+public:
   const char *name() const;
 
   static const CoinPresolveAction *presolve(CoinPresolveMatrix *prob,
-					 const CoinPresolveAction *next);
+    const CoinPresolveAction *next);
 
   void postsolve(CoinPostsolveMatrix *prob) const;
 
@@ -208,23 +227,33 @@ class twoxtwo_action : public CoinPresolveAction {
   const int nactions_;
   const action *const actions_;
 
-  twoxtwo_action():CoinPresolveAction(NULL),nactions_(0),actions_(NULL) {}
+  twoxtwo_action()
+    : CoinPresolveAction(NULL)
+    , nactions_(0)
+    , actions_(NULL)
+  {
+  }
   twoxtwo_action(int nactions,
-		      const action *actions,
-		      const CoinPresolveAction *next) :
-    CoinPresolveAction(next),
-    nactions_(nactions), actions_(actions) {}
+    const action *actions,
+    const CoinPresolveAction *next)
+    : CoinPresolveAction(next)
+    , nactions_(nactions)
+    , actions_(actions)
+  {
+  }
 
- public:
+public:
   const char *name() const;
 
   static const CoinPresolveAction *presolve(CoinPresolveMatrix *prob,
-					 const CoinPresolveAction *next);
+    const CoinPresolveAction *next);
 
   void postsolve(CoinPostsolveMatrix *prob) const;
 
-  ~twoxtwo_action() { delete [] actions_; }
+  ~twoxtwo_action() { delete[] actions_; }
 };
 
 #endif
 
+/* vi: softtabstop=2 shiftwidth=2 expandtab tabstop=2
+*/

@@ -1,4 +1,4 @@
-/* $Id: CoinWarmStart.hpp 1372 2011-01-03 23:31:00Z lou $ */
+/* $Id: CoinWarmStart.hpp 2083 2019-01-06 19:38:09Z unxusr $ */
 // Copyright (C) 2000, International Business Machines
 // Corporation and others.  All Rights Reserved.
 // This code is licensed under the terms of the Eclipse Public License (EPL).
@@ -20,22 +20,18 @@ class CoinWarmStartDiff;
 
 class CoinWarmStart {
 public:
-
   /// Abstract destructor
   virtual ~CoinWarmStart() {}
 
   /// `Virtual constructor'
-  virtual CoinWarmStart *clone() const = 0 ;
-   
-  virtual CoinWarmStartDiff*
-  generateDiff (const CoinWarmStart *const ) const { return 0; }
-   
-   
+  virtual CoinWarmStart *clone() const = 0;
+
+  virtual CoinWarmStartDiff *
+  generateDiff(const CoinWarmStart *const) const { return 0; }
+
   virtual void
-  applyDiff (const CoinWarmStartDiff *const ) {}
-
+  applyDiff(const CoinWarmStartDiff *const) {}
 };
-
 
 /*! \class CoinWarmStartDiff
     \brief Abstract base class for warm start `diff' objects
@@ -47,12 +43,14 @@ public:
 
 class CoinWarmStartDiff {
 public:
-
   /// Abstract destructor
   virtual ~CoinWarmStartDiff() {}
 
   /// `Virtual constructor'
-  virtual CoinWarmStartDiff *clone() const = 0 ;
+  virtual CoinWarmStartDiff *clone() const = 0;
 };
 
 #endif
+
+/* vi: softtabstop=2 shiftwidth=2 expandtab tabstop=2
+*/

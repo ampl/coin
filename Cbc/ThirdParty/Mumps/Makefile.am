@@ -2,7 +2,7 @@
 # All Rights Reserved.
 # This file is distributed under the Eclipse Public License.
 
-## $Id: Makefile.am 3102 2013-11-21 19:56:01Z stefan $
+## $Id: Makefile.am 3703 2016-11-25 11:59:59Z tkr $
 
 AUTOMAKE_OPTIONS = foreign
 
@@ -101,7 +101,7 @@ thirdpartyinclude_HEADERS = \
   $(MUMPSDIR)/include/dmumps_c.h \
   $(MUMPSDIR)/include/mumps_compat.h \
   $(MUMPSDIR)/include/mumps_c_types.h \
-  $(MUMPSDIR)/libseq/mpi.h
+  $(MUMPSDIR)/libseq/mumps_mpi.h
 
 pkgconfiglibdir = $(libdir)/pkgconfig
 pkgconfiglib_DATA = coinmumps.pc

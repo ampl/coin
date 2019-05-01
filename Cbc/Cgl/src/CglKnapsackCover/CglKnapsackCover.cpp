@@ -1,4 +1,4 @@
-// $Id: CglKnapsackCover.cpp 1357 2016-02-22 14:43:10Z forrest $
+// $Id: CglKnapsackCover.cpp 1387 2017-09-29 11:02:03Z forrest $
 // Copyright (C) 2000, International Business Machines
 // Corporation and others.  All Rights Reserved.
 // This code is licensed under the terms of the Eclipse Public License (EPL).
@@ -135,8 +135,8 @@ void CglKnapsackCover::generateCuts(const OsiSolverInterface& si, OsiCuts& cs,
 
   for (rowIndex=0;rowIndex<nRows;rowIndex++) {
     vub[rowIndex]=-1;
-    int start = rowStart[rowIndex];
-    int end = start + rowLength[rowIndex];
+    CoinBigIndex start = rowStart[rowIndex];
+    CoinBigIndex end = start + rowLength[rowIndex];
     double upRhs = rowUpper[rowIndex]; 
     double loRhs = rowLower[rowIndex]; 
     double multiplier=0.0;
@@ -153,7 +153,7 @@ void CglKnapsackCover::generateCuts(const OsiSolverInterface& si, OsiCuts& cs,
     double valueBinary=0.0;
     int iBinary=-1;
 #endif
-    int j;
+    CoinBigIndex j;
     for (j=start;j<end;j++) {
       int iColumn=column[j];
       double value = elementByRow[j];
@@ -428,9 +428,9 @@ void CglKnapsackCover::generateCuts(const OsiSolverInterface& si, OsiCuts& cs,
             double scale = thisCoefficient/vubCoefficient;
             // modify rhs
             b -= scale*useRhs;
-            int start = rowStart[iRow];
-            int end = start+rowLength[iRow];
-            int j;
+            CoinBigIndex start = rowStart[iRow];
+            CoinBigIndex end = start+rowLength[iRow];
+            CoinBigIndex j;
             for (j=start;j<end;j++) {
               int iColumn = column[j];
               if (vubRow[iColumn]==-2) {
@@ -3316,14 +3316,14 @@ CglKnapsackCover::liftCoverCut(
     double * els2 = els+numberColumns;
     for (i=0;i<n;i++) 
       els[ind3[i]]=els3[i];
-    for (i=rowStart[whichRow_];i<rowStart[whichRow_]+rowLength[whichRow_];i++) {
+    for (CoinBigIndex i=rowStart[whichRow_];i<rowStart[whichRow_]+rowLength[whichRow_];i++) {
       int iColumn = column[i];
       els2[iColumn]=elementByRow[i];
     }
 #if CGL_DEBUG
     bool found=false;
 #endif
-    for (i=0;i<n;i++) {
+    for (int i=0;i<n;i++) {
       int iColumn = ind3[i];
       // complement doesn't seem to work?
       if (!complement_[iColumn]) {
@@ -3382,9 +3382,9 @@ CglKnapsackCover::liftCoverCut(
     // zero out
     n = cut.getNumElements();
     ind3 = cut.getIndices();
-    for (i=0;i<n;i++) 
+    for (int i=0;i<n;i++) 
       els[ind3[i]]=0.0;
-    for (i=rowStart[whichRow_];i<rowStart[whichRow_]+rowLength[whichRow_];i++) {
+    for (CoinBigIndex i=rowStart[whichRow_];i<rowStart[whichRow_]+rowLength[whichRow_];i++) {
       int iColumn = column[i];
       els2[iColumn]=0.0;
     }
@@ -3423,7 +3423,7 @@ CglKnapsackCover::gubifyCut(CoinPackedVector & cut)
 	break;
       }
     }
-    for (int i=rowStart[whichRow_];i<rowStart[whichRow_]+rowLength[whichRow_];i++) {
+    for (CoinBigIndex i=rowStart[whichRow_];i<rowStart[whichRow_]+rowLength[whichRow_];i++) {
       int iColumn = column[i];
       els2[iColumn]=elementByRow[i];
     }
@@ -3484,7 +3484,7 @@ CglKnapsackCover::gubifyCut(CoinPackedVector & cut)
     ind3 = cut.getIndices();
     for (int i=0;i<n;i++) 
       els[ind3[i]]=0.0;
-    for (int i=rowStart[whichRow_];i<rowStart[whichRow_]+rowLength[whichRow_];i++) {
+    for (CoinBigIndex i=rowStart[whichRow_];i<rowStart[whichRow_]+rowLength[whichRow_];i++) {
       int iColumn = column[i];
       els2[iColumn]=0.0;
     }
@@ -3875,7 +3875,7 @@ CglKnapsackCover::createCliques( OsiSolverInterface & si,
   int iRow;
   for (iRow=0;iRow<numberRows;iRow++) {
     int numberP1=0, numberM1=0;
-    int j;
+    CoinBigIndex j;
     double upperValue=rowUpper[iRow];
     double lowerValue=rowLower[iRow];
     bool good=true;
@@ -4016,7 +4016,7 @@ CglKnapsackCover::createCliques( OsiSolverInterface & si,
       int iRow=whichRow[iClique];
       whichRow[numberCliques_]=iRow;
       int numberP1=0, numberM1=0;
-      int j;
+      CoinBigIndex j;
       double upperValue=rowUpper[iRow];
       double lowerValue=rowLower[iRow];
       for (j=rowStart[iRow];j<rowStart[iRow]+rowLength[iRow];j++) {

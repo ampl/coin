@@ -1,4 +1,4 @@
-// $Id: Cgl012cut.cpp 1222 2014-09-14 17:32:18Z forrest $
+// $Id: Cgl012cut.cpp 1476 2019-04-10 03:59:49Z stefan $
 // Copyright (C) 2010, International Business Machines
 // Corporation and others.  All Rights Reserved.
 // This code is licensed under the terms of the Eclipse Public License (EPL).
@@ -1685,8 +1685,9 @@ cut *Cgl012Cut::get_cut(
   crhs = 0;
   for ( e = 0; e < s_cyc->length; e++ ) {
     i = (s_cyc->edge_list[e])->constr; 
-    if ( i >= 0 ) {
+    if ( i >= 0 && flag_comb[i] != IN) {
       /* the edge is not associated with a bound constraint */
+      assert (ncomb<inp_ilp->mr);
       comb[ncomb] = i; ncomb++; flag_comb[i] = IN;
     }
   }
@@ -3552,6 +3553,8 @@ char **csense /* senses of the cuts: 'L', 'G' or 'E' */
   
   //ilp_load(mr,mc,mnz,mtbeg,mtcnt,mtind,mtval,
   //   vlb,vub,mrhs,msense);
+  if (!inp_ilp)
+      return FALSE;
   inp_ilp->xstar = xstar;
   
 

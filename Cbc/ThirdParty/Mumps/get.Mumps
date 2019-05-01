@@ -11,11 +11,11 @@ wgetcount=`which wget 2>/dev/null | wc -l`
 if test ! $wgetcount = 1; then
   echo "Utility wget not found in your PATH."
   if test `uname` = Darwin; then
-    wgetcmd=ftp
-    echo "Using ftp command instead."
+    wgetcmd="curl -L -O"
+    echo "Using curl instead."
   elif test `uname` = FreeBSD; then
     wgetcmd=fetch
-    echo "Using fetch command instead."
+    echo "Using fetch instead."
   else
     exit -1
   fi
@@ -49,6 +49,8 @@ echo "Apply a patch to work around a bug in MUMPS."
 echo " "
 
 patch -p0 < mumps.patch
+patch -p0 < mumps_mpi.patch
+mv MUMPS/libseq/mpi.h MUMPS/libseq/mumps_mpi.h
 
 echo " "
 echo "Verify that there are no error message in the output above."

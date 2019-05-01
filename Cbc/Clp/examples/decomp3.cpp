@@ -1,4 +1,4 @@
-/* $Id: decomp3.cpp 1662 2011-01-04 17:52:40Z lou $ */
+/* $Id: decomp3.cpp 2278 2017-10-02 09:51:14Z forrest $ */
 // Copyright (C) 2008, International Business Machines
 // Corporation and others.  All Rights Reserved.
 // This code is licensed under the terms of the Eclipse Public License (EPL).
@@ -11,6 +11,7 @@
 
 int main(int argc, const char *argv[])
 {
+#if COIN_BIG_INDEX<2
      /* Create a structured model by reading mps file and trying
         Dantzig-Wolfe or Benders decomposition
      */
@@ -104,5 +105,8 @@ int main(int argc, const char *argv[])
      time1 = CoinCpuTime() ;
      solver2.dual();
      std::cout << "second try took " << CoinCpuTime() - time1 << " seconds" << std::endl;
+#else
+     printf("this does not work with COIN_BIG_INDEX=2\n");
+#endif
      return 0;
 }

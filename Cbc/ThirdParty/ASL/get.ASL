@@ -7,45 +7,45 @@ wgetcount=`which wget 2>/dev/null | wc -l`
 if test ! $wgetcount = 1; then
   echo "Utility wget not found in your PATH."
   if test `uname` = Darwin; then
-    wgetcmd="curl -L -k -O"
-    echo "Using ftp command instead."
+    wgetcmd="curl -L -O"
+    echo "Using curl instead."
   elif test `uname` = FreeBSD; then
     wgetcmd=fetch
-    echo "Using fetch command instead."
+    echo "Using fetch instead."
   else
     exit -1
   fi
 fi
 
-coinasl=1.3.0
+coinasl=solvers-20180528
 
 echo " "
 echo "Running script for downloading the source code for the ASL"
 echo " "
 
-rm -f $coinasl.tar.gz
+rm -f $coinasl
 
-echo "Downloading the source code from Github..."
-if $wgetcmd https://github.com/ampl/mp/archive/$coinasl.tar.gz ;
+echo "Downloading the source code from www.coin-or.org..."
+if $wgetcmd https://www.coin-or.org/BuildTools/ASL/${coinasl}.tgz ;
 then
   echo "Download finished."
 else
-    echo "Downloading from Github failed, trying www.coin-or.org..."
-    if $wgetcmd http://www.coin-or.org/BuildTools/ASL/$coinasl.tar.gz ;
-    then
-      echo "Download finished."
-    else
-      echo "Download failed...exiting"
-    fi	
+  echo
+  echo "Downloading from COIN-OR failed, trying ampl.com..."
+  if $wgetcmd https://ampl.com/netlib/ampl/solvers.tgz ;
+  then
+    echo "Download finished."
+    mv solvers.tgz ${coinasl}.tgz
+  else
+    echo "Download failed...exiting"
+  fi
 fi
 
 rm -rf solvers
 
 echo "Unpacking the source code..."
-gunzip -f $coinasl.tar.gz
+gunzip -f ${coinasl}.tgz
 tar xf $coinasl.tar
-mv mp-$coinasl/src/asl/solvers .
-rm -rf mp-$coinasl
 
 echo "Adding No_dtoa to CFLAGS..."
 cd solvers

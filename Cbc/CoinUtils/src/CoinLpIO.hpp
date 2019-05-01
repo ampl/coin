@@ -1,4 +1,4 @@
-/* $Id: CoinLpIO.hpp 1749 2014-10-24 20:00:14Z tkr $ */
+/* $Id: CoinLpIO.hpp 2122 2019-04-08 03:26:16Z stefan $ */
 // Last edit: 11/5/08
 //
 // Name:     CoinLpIO.hpp; Support for Lp files
@@ -19,13 +19,14 @@
 
 #include "CoinPackedMatrix.hpp"
 #include "CoinMessage.hpp"
+#include "CoinFileIO.hpp"
 class CoinSet;
 
 const int MAX_OBJECTIVES = 2;
 
 typedef int COINColumnIndex;
 
-  /** Class to read and write Lp files 
+/** Class to read and write Lp files 
 
  Lp file format: 
 
@@ -53,7 +54,7 @@ typedef int COINColumnIndex;
 
 Notes: <UL>
  <LI> Keywords are: Min, Max, Minimize, Maximize, s.t., Subject To, 
-      Bounds, Integers, Generals, Binaries, End, Free, Inf. 
+      Bounds, Integers, Generals, Binaries, Semis, End, Free, Inf. 
  <LI> Keywords are not case sensitive and may be in plural or singular form.
       They should not be used as objective, row or column names.
  <LI> Bounds, Integers, Generals, Binaries sections are optional.
@@ -102,27 +103,27 @@ Notes: <UL>
 </UL>
 */
 class CoinLpIO {
-      friend void CoinLpIOUnitTest(const std::string & lpDir); 
-public:
+  friend void CoinLpIOUnitTest(const std::string &lpDir);
 
+public:
   /**@name Constructor and Destructor */
   //@{
   /// Default Constructor
-  CoinLpIO(); 
-  
-  /// Does the heavy lifting for destruct and assignment.
-  void gutsOfDestructor(); 
- 
-  /// Does the heavy lifting for copy and assignment
-  void gutsOfCopy(const CoinLpIO &); 
- 
-  /// assignment operator
-  CoinLpIO & operator = (const CoinLpIO& rhs) ; 
- 
-  /// Copy constructor 
-  CoinLpIO (const CoinLpIO &); 
+  CoinLpIO();
 
-  /// Destructor 
+  /// Does the heavy lifting for destruct and assignment.
+  void gutsOfDestructor();
+
+  /// Does the heavy lifting for copy and assignment
+  void gutsOfCopy(const CoinLpIO &);
+
+  /// assignment operator
+  CoinLpIO &operator=(const CoinLpIO &rhs);
+
+  /// Copy constructor
+  CoinLpIO(const CoinLpIO &);
+
+  /// Destructor
   ~CoinLpIO();
 
   /** Free the vector previous_names_[section] and set 
@@ -136,17 +137,17 @@ public:
   void freeAll();
   //@}
 
-    /** A quick inlined function to convert from lb/ub style constraint
+  /** A quick inlined function to convert from lb/ub style constraint
 	definition to sense/rhs/range style */
-    inline void
-    convertBoundToSense(const double lower, const double upper,
-			char& sense, double& right, double& range) const;
+  inline void
+  convertBoundToSense(const double lower, const double upper,
+    char &sense, double &right, double &range) const;
 
   /**@name Queries */
   //@{
 
   /// Get the problem name
-  const char * getProblemName() const;
+  const char *getProblemName() const;
 
   /// Set problem name
   void setProblemName(const char *name);
@@ -158,20 +159,20 @@ public:
   int getNumRows() const;
 
   /// Get number of nonzero elements
-  int getNumElements() const;
-  
+  CoinBigIndex getNumElements() const;
+
   /// Get pointer to array[getNumCols()] of column lower bounds
-  const double * getColLower() const;
+  const double *getColLower() const;
 
   /// Get pointer to array[getNumCols()] of column upper bounds
-  const double * getColUpper() const;
+  const double *getColUpper() const;
 
   /// Get pointer to array[getNumRows()] of row lower bounds
-  const double * getRowLower() const;
-  
+  const double *getRowLower() const;
+
   /// Get pointer to array[getNumRows()] of row upper bounds
-  const double * getRowUpper() const;
-      /** Get pointer to array[getNumRows()] of constraint senses.
+  const double *getRowUpper() const;
+  /** Get pointer to array[getNumRows()] of constraint senses.
 	<ul>
 	<li>'L': <= constraint
 	<li>'E': =  constraint
@@ -180,8 +181,8 @@ public:
 	<li>'N': free constraint
 	</ul>
       */
-  const char * getRowSense() const;
-  
+  const char *getRowSense() const;
+
   /** Get pointer to array[getNumRows()] of constraint right-hand sides.
       
   Given constraints with upper (rowupper) and/or lower (rowlower) bounds,
@@ -193,8 +194,8 @@ public:
   <li> if rowsense()[i] == 'N' then rhs()[i] == 0.0
 	</ul>
   */
-  const double * getRightHandSide() const;
-  
+  const double *getRightHandSide() const;
+
   /** Get pointer to array[getNumRows()] of row ranges.
       
   Given constraints with upper (rowupper) and/or lower (rowlower) bounds, 
@@ -208,92 +209,101 @@ public:
   Put another way, only ranged constraints have a nontrivial value for
   rowrange.
   */
-  const double * getRowRange() const;
+  const double *getRowRange() const;
 
   /// Get pointer to array[getNumCols()] of objective function coefficients
   const int getNumObjectives() const;
-  
+
   /// Get pointer to array[getNumCols()] of objective function coefficients
-  const double * getObjCoefficients() const;
-  
+  const double *getObjCoefficients() const;
+
   /// Get pointer to array[getNumCols()] of objective function coefficients for objective j
-  const double * getObjCoefficients(int j) const;
-  
+  const double *getObjCoefficients(int j) const;
+
   /// Get pointer to row-wise copy of the coefficient matrix
-  const CoinPackedMatrix * getMatrixByRow() const;
+  const CoinPackedMatrix *getMatrixByRow() const;
 
   /// Get pointer to column-wise copy of the coefficient matrix
-  const CoinPackedMatrix * getMatrixByCol() const;
+  const CoinPackedMatrix *getMatrixByCol() const;
 
   /// Get objective function name
-  const char * getObjName() const;
-  
+  const char *getObjName() const;
+
   /// Get objective function name for objective j
-  const char * getObjName(int j) const;
-  
+  const char *getObjName(int j) const;
+
   /// Get pointer to array[*card_prev] of previous row names.
-  /// The value of *card_prev might be different than getNumRows()+1 if 
+  /// The value of *card_prev might be different than getNumRows()+1 if
   /// non distinct
   /// row names were present or if no previous names were saved or if
   /// the object was holding a different problem before.
-  void getPreviousRowNames(char const * const * prev, 
-			   int *card_prev) const;
+  void getPreviousRowNames(char const *const *prev,
+    int *card_prev) const;
 
   /// Get pointer to array[*card_prev] of previous column names.
   /// The value of *card_prev might be different than getNumCols() if non
-  /// distinct column names were present of if no previous names were saved, 
-  /// or if the object was holding a different problem before. 
-  void getPreviousColNames(char const * const * prev, 
-			   int *card_prev) const;
+  /// distinct column names were present of if no previous names were saved,
+  /// or if the object was holding a different problem before.
+  void getPreviousColNames(char const *const *prev,
+    int *card_prev) const;
 
   /// Get pointer to array[getNumRows()+1] of row names, including
   /// objective function name as last entry.
-  char const * const * getRowNames() const;
-  
+  char const *const *getRowNames() const;
+
   /// Get pointer to array[getNumCols()] of column names
-  char const * const *getColNames() const;
-  
+  char const *const *getColNames() const;
+
   /// Return the row name for the specified index.
   /// Return the objective function name if index = getNumRows().
   /// Return 0 if the index is out of range or if row names are not defined.
-  const char * rowName(int index) const;
+  const char *rowName(int index) const;
 
   /// Return the column name for the specified index.
-  /// Return 0 if the index is out of range or if column names are not 
+  /// Return 0 if the index is out of range or if column names are not
   /// defined.
-  const char * columnName(int index) const;
+  const char *columnName(int index) const;
 
   /// Return the index for the specified row name.
   /// Return getNumRows() for the objective function name.
   /// Return -1 if the name is not found.
-  int rowIndex(const char * name) const;
+  int rowIndex(const char *name) const;
 
   /// Return the index for the specified column name.
   /// Return -1 if the name is not found.
-  int columnIndex(const char * name) const;
+  int columnIndex(const char *name) const;
 
   ///Returns the (constant) objective offset
   double objectiveOffset() const;
-  
+
   ///Returns the (constant) objective offset for objective j
   double objectiveOffset(int j) const;
-  
+
   /// Set objective offset
   inline void setObjectiveOffset(double value)
-  { objectiveOffset_[0] = value;}
-  
+  {
+    objectiveOffset_[0] = value;
+  }
+  /// Return true if maximization problem reformulated as minimization
+  inline bool wasMaximization() const
+  {
+    return wasMaximization_;
+  }
+
   /// Set objective offset
-   inline void setObjectiveOffset(double value, int j)
-  { objectiveOffset_[j] = value;}
-  
-  /// Return true if a column is an integer (binary or general 
+  inline void setObjectiveOffset(double value, int j)
+  {
+    objectiveOffset_[j] = value;
+  }
+
+  /// Return true if a column is an integer (binary or general
   /// integer) variable
   bool isInteger(int columnNumber) const;
-  
+
   /// Get characteristic vector of integer variables
-  const char * integerColumns() const;
+  const char *integerColumns() const;
   //@}
-  
+
   /**@name Parameters */
   //@{
   /// Get infinity
@@ -338,19 +348,19 @@ public:
       setting multiple objectives.
   */
   void setLpDataWithoutRowAndColNames(
-			      const CoinPackedMatrix& m,
-			      const double* collb, const double* colub,
-			      const double* obj_coeff,
-			      const char* integrality,
-			      const double* rowlb, const double* rowub);
+    const CoinPackedMatrix &m,
+    const double *collb, const double *colub,
+    const double *obj_coeff,
+    const char *integrality,
+    const double *rowlb, const double *rowub);
 
   void setLpDataWithoutRowAndColNames(
-			      const CoinPackedMatrix& m,
-			      const double* collb, const double* colub,
-			      const double* obj_coeff[MAX_OBJECTIVES],
-			      int num_objectives,
-			      const char* integrality,
-			      const double* rowlb, const double* rowub);
+    const CoinPackedMatrix &m,
+    const double *collb, const double *colub,
+    const double *obj_coeff[MAX_OBJECTIVES],
+    int num_objectives,
+    const char *integrality,
+    const double *rowlb, const double *rowub);
 
   /** Return 0 if buff is a valid name for a row, a column or objective
       function, return a positive number otherwise.
@@ -365,7 +375,7 @@ public:
       Return 4 if the name is a keyword.<BR>
       Return 5 if the name is empty or NULL. */
   int is_invalid_name(const char *buff, const bool ranged) const;
-  
+
   /** Return 0 if each of the card_vnames entries of vnames is a valid name, 
       return a positive number otherwise. The return value, if not 0, is the 
       return value of is_invalid_name() for the last invalid name
@@ -382,11 +392,11 @@ public:
       setLpDataWithoutRowAndColNames() has been called, since access
       to the indices of all the ranged constraints is required.
   */
-  int are_invalid_names(char const * const *vnames, 
-				  const int card_vnames,
-				  const bool check_ranged) const;
-  
-  /// Set objective function name to the default "obj" and row 
+  int are_invalid_names(char const *const *vnames,
+    const int card_vnames,
+    const bool check_ranged) const;
+
+  /// Set objective function name to the default "obj" and row
   /// names to the default "cons0", "cons1", ...
   void setDefaultRowNames();
 
@@ -412,8 +422,8 @@ public:
       Similar remarks apply to the array colnames, which must either be
       NULL or have exactly getNumCols() entries.
   */
-  void setLpDataRowAndColNames(char const * const * const rownames,
-			       char const * const * const colnames);
+  void setLpDataRowAndColNames(char const *const *const rownames,
+    char const *const *const colnames);
 
   /** Write the data in Lp format in the file with name filename.
       Coefficients with value less than epsilon away from an integer value
@@ -429,11 +439,11 @@ public:
       "_low" as suffix. If doing so creates two identical row names,
       default row names are used (see setDefaultRowNames()).
   */
-  int writeLp(const char *filename, 
-	      const double epsilon, 
-	      const int numberAcross,
-	      const int decimals,
-	      const bool useRowNames = true);
+  int writeLp(const char *filename,
+    const double epsilon,
+    const int numberAcross,
+    const int decimals,
+    const bool useRowNames = true);
 
   /** Write the data in Lp format in the file pointed to by the paramater fp.
       Coefficients with value less than epsilon away from an integer value
@@ -449,11 +459,11 @@ public:
       "_low" as suffix. If doing so creates two identical row names,
       default row names are used (see setDefaultRowNames()).
   */
-  int writeLp(FILE *fp, 
-	      const double epsilon, 
-	      const int numberAcross,
-	      const int decimals,
-	      const bool useRowNames = true);
+  int writeLp(FILE *fp,
+    const double epsilon,
+    const int numberAcross,
+    const int decimals,
+    const bool useRowNames = true);
 
   /// Write the data in Lp format in the file with name filename.
   /// Write objective function name and row names if useRowNames = true.
@@ -465,76 +475,82 @@ public:
 
   /// Read the data in Lp format from the file with name filename, using
   /// the given value for epsilon. If the original problem is
-  /// a maximization problem, the objective function is immediadtly 
+  /// a maximization problem, the objective function is immediadtly
   /// flipped to get a minimization problem.
   void readLp(const char *filename, const double epsilon);
 
   /// Read the data in Lp format from the file with name filename.
   /// If the original problem is
-  /// a maximization problem, the objective function is immediadtly 
-  /// flipped to get a minimization problem.  
+  /// a maximization problem, the objective function is immediadtly
+  /// flipped to get a minimization problem.
   void readLp(const char *filename);
 
   /// Read the data in Lp format from the file stream, using
   /// the given value for epsilon.
   /// If the original problem is
-  /// a maximization problem, the objective function is immediadtly 
-  /// flipped to get a minimization problem.  
+  /// a maximization problem, the objective function is immediadtly
+  /// flipped to get a minimization problem.
   void readLp(FILE *fp, const double epsilon);
 
   /// Read the data in Lp format from the file stream.
   /// If the original problem is
-  /// a maximization problem, the objective function is immediadtly 
-  /// flipped to get a minimization problem.  
+  /// a maximization problem, the objective function is immediadtly
+  /// flipped to get a minimization problem.
   void readLp(FILE *fp);
 
+  /// Does work of readLp
+  void readLp();
   /// Dump the data. Low level method for debugging.
   void print() const;
-  
+
   /// Load in SOS stuff
-  void loadSOS(int numberSets,const CoinSet * sets);
-  
+  void loadSOS(int numberSets, const CoinSet *sets);
+
   /// Load in SOS stuff
-  void loadSOS(int numberSets,const CoinSet ** sets);
-  
+  void loadSOS(int numberSets, const CoinSet **sets);
+
   /// Number of SOS sets
   inline int numberSets() const
-  { return numberSets_;}
+  {
+    return numberSets_;
+  }
 
   /// Set information
-  inline CoinSet ** setInformation() const
-  { return set_;}
+  inline CoinSet **setInformation() const
+  {
+    return set_;
+  }
   //@}
-/**@name Message handling */
-//@{
+  /**@name Message handling */
+  //@{
   /** Pass in Message handler
   
       Supply a custom message handler. It will not be destroyed when the
       CoinMpsIO object is destroyed.
   */
-  void passInMessageHandler(CoinMessageHandler * handler);
+  void passInMessageHandler(CoinMessageHandler *handler);
 
   /// Set the language for messages.
   void newLanguage(CoinMessages::Language language);
 
   /// Set the language for messages.
-  inline void setLanguage(CoinMessages::Language language) {newLanguage(language);}
+  inline void setLanguage(CoinMessages::Language language) { newLanguage(language); }
 
   /// Return the message handler
-  inline CoinMessageHandler * messageHandler() const {return handler_;}
+  inline CoinMessageHandler *messageHandler() const { return handler_; }
 
   /// Return the messages
-  inline CoinMessages messages() {return messages_;}
+  inline CoinMessages messages() { return messages_; }
   /// Return the messages pointer
-  inline CoinMessages * messagesPointer() {return & messages_;}
-//@}
+  inline CoinMessages *messagesPointer() { return &messages_; }
+  //@}
 
 protected:
   /// Problem name
-  char * problemName_;
+  char *problemName_;
 
   /// Message handler
-  CoinMessageHandler * handler_;
+  CoinMessageHandler *handler_;
   /** Flag to say if the message handler is the default handler.
       
       If true, the handler will be destroyed when the CoinMpsIO
@@ -546,64 +562,64 @@ protected:
 
   /// Number of rows
   int numberRows_;
-  
+
   /// Number of columns
   int numberColumns_;
-  
+
   /// Number of elements
-  int numberElements_;
-  
+  CoinBigIndex numberElements_;
+
   /// Pointer to column-wise copy of problem matrix coefficients.
-  mutable CoinPackedMatrix *matrixByColumn_;  
-  
+  mutable CoinPackedMatrix *matrixByColumn_;
+
   /// Pointer to row-wise copy of problem matrix coefficients.
-  CoinPackedMatrix *matrixByRow_;  
-  
+  CoinPackedMatrix *matrixByRow_;
+
   /// Pointer to dense vector of row lower bounds
-  double * rowlower_;
-  
+  double *rowlower_;
+
   /// Pointer to dense vector of row upper bounds
-  double * rowupper_;
-  
+  double *rowupper_;
+
   /// Pointer to dense vector of column lower bounds
-  double * collower_;
-  
+  double *collower_;
+
   /// Pointer to dense vector of column upper bounds
-  double * colupper_;
-  
+  double *colupper_;
+
   /// Pointer to dense vector of row rhs
-  mutable double * rhs_;
-  
+  mutable double *rhs_;
+
   /** Pointer to dense vector of slack variable upper bounds for ranged 
       constraints (undefined for non-ranged constraints)
   */
-  mutable double  *rowrange_;
+  mutable double *rowrange_;
 
   /// Pointer to dense vector of row senses
-  mutable char * rowsense_;
-  
+  mutable char *rowsense_;
+
   /// Pointer to dense vector of objective coefficients
-  double * objective_[MAX_OBJECTIVES];
+  double *objective_[MAX_OBJECTIVES];
 
   /// Number of objectives
   int num_objectives_;
-  
+
   /// Constant offset for objective value
   double objectiveOffset_[MAX_OBJECTIVES];
-  
+
   /// Pointer to dense vector specifying if a variable is continuous
-  /// (0) or integer (1).
-  char * integerType_;
-  
+  /// (0) or integer (1).  Added (3) sc (4) sc int.
+  char *integerType_;
+
   /// Pointer to sets
-  CoinSet ** set_;
+  CoinSet **set_;
 
   /// Number of sets
   int numberSets_;
-  
+
   /// Current file name
-  char * fileName_;
-  
+  char *fileName_;
+
   /// Value to use for infinity
   double infinity_;
 
@@ -619,6 +635,9 @@ protected:
   /// Objective function name
   char *objName_[MAX_OBJECTIVES];
 
+  /// Maximization reformulation flag
+  bool wasMaximization_;
+
   /** Row names (including objective function name) 
       and column names when stopHash() for the corresponding 
       section was last called or for initial names (deemed invalid) 
@@ -627,16 +646,16 @@ protected:
       section = 1 for column names.  */
   char **previous_names_[2];
 
-  /// card_previous_names_[section] holds the number of entries in the vector 
+  /// card_previous_names_[section] holds the number of entries in the vector
   /// previous_names_[section].
-  /// section = 0 for row names, 
-  /// section = 1 for column names. 
+  /// section = 0 for row names,
+  /// section = 1 for column names.
   int card_previous_names_[2];
 
-  /// Row names (including objective function name) 
+  /// Row names (including objective function name)
   /// and column names (linked to Hash tables).
-  /// section = 0 for row names, 
-  /// section = 1 for column names. 
+  /// section = 0 for row names,
+  /// section = 1 for column names.
   char **names_[2];
 
   typedef struct {
@@ -644,54 +663,69 @@ protected:
   } CoinHashLink;
 
   /// Maximum number of entries in a hash table section.
-  /// section = 0 for row names, 
-  /// section = 1 for column names. 
+  /// section = 0 for row names,
+  /// section = 1 for column names.
   int maxHash_[2];
 
   /// Number of entries in a hash table section.
-  /// section = 0 for row names, 
-  /// section = 1 for column names. 
+  /// section = 0 for row names,
+  /// section = 1 for column names.
   int numberHash_[2];
 
   /// Hash tables with two sections.
-  /// section = 0 for row names (including objective function name), 
-  /// section = 1 for column names. 
+  /// section = 0 for row names (including objective function name),
+  /// section = 1 for column names.
   mutable CoinHashLink *hash_[2];
 
+  /// Current buffer (needed so can get rid of blanks with :
+  mutable char inputBuffer_[1028];
+  /// Current buffer length (negative if not got eol)
+  mutable int bufferLength_;
+  /// Current buffer position
+  mutable int bufferPosition_;
+  /// File handler
+  CoinFileInput *input_;
+  /// If already inserted one End
+  mutable bool eofFound_;
+  /// Get next string (returns number in)
+  int fscanfLpIO(char *buff) const;
+  /// Get next line into inputBuffer_ (returns number in)
+  int newCardLpIO() const;
+
   /// Build the hash table for the given names. The parameter number is
-  /// the cardinality of parameter names. Remove duplicate names. 
+  /// the cardinality of parameter names. Remove duplicate names.
   ///
-  /// section = 0 for row names, 
-  /// section = 1 for column names. 
-  void startHash(char const * const * const names, 
-		 const COINColumnIndex number, 
-		 int section);
+  /// section = 0 for row names,
+  /// section = 1 for column names.
+  void startHash(char const *const *const names,
+    const COINColumnIndex number,
+    int section);
 
   /// Delete hash storage. If section = 0, it also frees objName_.
-  /// section = 0 for row names, 
-  /// section = 1 for column names. 
+  /// section = 0 for row names,
+  /// section = 1 for column names.
   void stopHash(int section);
 
   /// Return the index of the given name, return -1 if the name is not found.
   /// Return getNumRows() for the objective function name.
-  /// section = 0 for row names (including objective function name), 
-  /// section = 1 for column names. 
+  /// section = 0 for row names (including objective function name),
+  /// section = 1 for column names.
   COINColumnIndex findHash(const char *name, int section) const;
 
   /// Insert thisName in the hash table if not present yet; does nothing
   /// if the name is already in.
-  /// section = 0 for row names, 
-  /// section = 1 for column names. 
+  /// section = 0 for row names,
+  /// section = 1 for column names.
   void insertHash(const char *thisName, int section);
 
   /// Write a coefficient.
   /// print_1 = 0 : do not print the value 1.
   void out_coeff(FILE *fp, double v, int print_1) const;
 
-  /// Locate the objective function. 
-  /// Return 1 if found the keyword "Minimize" or one of its variants, 
+  /// Locate the objective function.
+  /// Return 1 if found the keyword "Minimize" or one of its variants,
   /// -1 if found keyword "Maximize" or one of its variants.
-  int find_obj(FILE *fp) const;
+  int find_obj() const;
 
   /// Return an integer indicating if the keyword "subject to" or one
   /// of its variants has been read.
@@ -709,19 +743,16 @@ protected:
   int is_comment(const char *buff) const;
 
   /// Read the file fp until buff contains an end of line
-  void skip_comment(char *buff, FILE *fp) const;
-
-  /// Put in buff the next string that is not part of a comment
-  void scan_next(char *buff, FILE *fp) const;
+  void skip_comment(char *buff) const;
 
   /// Return 1 if buff is the keyword "free" or one of its variants.
   /// Return 0 otherwise.
   int is_free(const char *buff) const;
-  
+
   /// Return 1 if buff is the keyword "inf" or one of its variants.
   /// Return 0 otherwise.
   int is_inf(const char *buff) const;
-  
+
   /// Return an integer indicating the inequality sense read.
   /// Return 0 if buff is '<='.
   /// Return 1 if buff is '='.
@@ -733,7 +764,7 @@ protected:
   /// "Generals", "Binaries", "Semi-continuous", "Sos", "End", or one
   /// of their variants has been read. (note Semi-continuous not coded)
   /// Return 1 if buff is the keyword "Bounds" or one of its variants.
-  /// Return 2 if buff is the keyword "Integers" or "Generals" or one of their 
+  /// Return 2 if buff is the keyword "Integers" or "Generals" or one of their
   /// variants.
   /// Return 3 if buff is the keyword "Binaries" or one of its variants.
   /// Return 4 if buff is the keyword "Semi-continuous" or one of its variants.
@@ -744,32 +775,32 @@ protected:
 
   /// Read a monomial of the objective function.
   /// Return 1 if "subject to" or one of its variants has been read.
-  int read_monom_obj(FILE *fp, double *coeff, char **name, int *cnt, 
-		     char **obj_name, int *num_objectives, int *obj_starts);
+  int read_monom_obj(double *coeff, char **name, int *cnt,
+    char **obj_name, int *num_objectives, int *obj_starts);
 
   /// Read a monomial of a constraint.
-  /// Return a positive number if the sense of the inequality has been 
+  /// Return a positive number if the sense of the inequality has been
   /// read (see method is_sense() for the return code).
   /// Return -1 otherwise.
-  int read_monom_row(FILE *fp, char *start_str, double *coeff, char **name, 
-		     int cnt_coeff) const;
+  int read_monom_row(char *start_str, double *coeff, char **name,
+    int cnt_coeff) const;
 
   /// Reallocate vectors related to number of coefficients.
   void realloc_coeff(double **coeff, char ***colNames, int *maxcoeff) const;
 
   /// Reallocate vectors related to rows.
-  void realloc_row(char ***rowNames, int **start, double **rhs, 
-		   double **rowlow, double **rowup, int *maxrow) const;
-    
+  void realloc_row(char ***rowNames, CoinBigIndex **start, double **rhs,
+    double **rowlow, double **rowup, int *maxrow) const;
+
   /// Reallocate vectors related to columns.
   void realloc_col(double **collow, double **colup, char **is_int,
-		   int *maxcol) const;
+    int *maxcol) const;
 
   /// Read a constraint.
-  void read_row(FILE *fp, char *buff, double **pcoeff, char ***pcolNames, 
-		int *cnt_coeff, int *maxcoeff,
-		     double *rhs, double *rowlow, double *rowup, 
-		     int *cnt_row, double inf) const;
+  void read_row(char *buff, double **pcoeff, char ***pcolNames,
+    int *cnt_coeff, int *maxcoeff,
+    double *rhs, double *rowlow, double *rowup,
+    int *cnt_row, double inf) const;
 
   /** Check that current objective name and all row names are distinct
       including row names obtained by adding "_low" for ranged constraints.
@@ -795,11 +826,11 @@ protected:
       to all the column names is required.
   */
   void checkColNames();
-
 };
 
-void
-CoinLpIOUnitTest(const std::string& lpDir);
+void CoinLpIOUnitTest(const std::string &lpDir);
 
+#endif
 
-#endif 
+/* vi: softtabstop=2 shiftwidth=2 expandtab tabstop=2
+*/

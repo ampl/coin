@@ -1,4 +1,4 @@
-// $Id: CglDuplicateRow.cpp 1287 2015-04-15 15:02:39Z forrest $
+// $Id: CglDuplicateRow.cpp 1387 2017-09-29 11:02:03Z forrest $
 // Copyright (C) 2004, International Business Machines
 // Corporation and others.  All Rights Reserved.
 // This code is licensed under the terms of the Eclipse Public License (EPL).
@@ -74,7 +74,7 @@ void CglDuplicateRow::generateCuts12(const OsiSolverInterface & si, OsiCuts & cs
   int * effectiveRhs = CoinCopyOfArray(rhs_,numberRows);
   int * effectiveLower = CoinCopyOfArray(lower_,numberRows);
   double * effectiveRhs2 = new double [numberRows];
-  /* For L or G rows - compute effective lower we have to raech */
+  /* For L or G rows - compute effective lower we have to reach */
   // mark bad rows - also used for domination
   for (i=0;i<numberRows;i++) {
     int duplicate=-1;
@@ -87,7 +87,7 @@ void CglDuplicateRow::generateCuts12(const OsiSolverInterface & si, OsiCuts & cs
       LorG=2;
       rhs=rowLower[i];
     }
-    int j;
+    CoinBigIndex j;
     for (j=rowStart[i];j<rowStart[i]+rowLength[i];j++) {
       int iColumn = column[j];
       double value=elementByRow[j];
@@ -170,7 +170,7 @@ void CglDuplicateRow::generateCuts12(const OsiSolverInterface & si, OsiCuts & cs
     for ( i=0;i<numberColumns;i++) {
       if (si.isBinary(i)) {
 	double value = 0.0;
-	for (int jj=columnStart[i];jj<columnStart[i]+columnLength[i];jj++) {
+	for (CoinBigIndex jj=columnStart[i];jj<columnStart[i]+columnLength[i];jj++) {
 	  int iRow = row[jj];
 	  value += element[jj]*random[iRow];
 	}
@@ -206,7 +206,7 @@ void CglDuplicateRow::generateCuts12(const OsiSolverInterface & si, OsiCuts & cs
 	      continue;
 	    int nGeJ=0;
 	    int nEqualJ=0;
-	    int jj;
+	    CoinBigIndex jj;
 	    int nJ=columnLength[jColumn];
 	    for (jj=columnStart[jColumn];jj<columnStart[jColumn]+columnLength[jColumn];jj++) {
 	      int iRow = row[jj];
@@ -233,7 +233,7 @@ void CglDuplicateRow::generateCuts12(const OsiSolverInterface & si, OsiCuts & cs
 	      // -2 no good, -1 J dominates K, 0 unknown or equal, 1 K dominates J
 	      int dominate=0;
 	      // mark
-	      int kk;
+	      CoinBigIndex kk;
 	      for (kk=0;kk<nGeJ;kk++)
 		mark[rowGeJ[kk]]=1;
 	      for (kk=columnStart[kColumn];kk<columnStart[kColumn]+columnLength[kColumn];kk++) {
@@ -341,7 +341,7 @@ void CglDuplicateRow::generateCuts12(const OsiSolverInterface & si, OsiCuts & cs
 		    } else {
 		      double minSum=0.0;
 		      double maxSum=0.0;
-		      for (int j=rowStart[iRow];j<rowStart[iRow]+rowLength[iRow];j++) {
+		      for (CoinBigIndex j=rowStart[iRow];j<rowStart[iRow]+rowLength[iRow];j++) {
 			int iColumn = column[j];
 			if (iColumn!=jColumn&&iColumn!=kColumn) {
 			  double elValue = elementByRow[j];
@@ -444,7 +444,7 @@ void CglDuplicateRow::generateCuts12(const OsiSolverInterface & si, OsiCuts & cs
   for ( i=0;i<numberColumns;i++) {
     if (columnLower[i]) {
       double value = columnLower[i];
-      for (int jj=columnStart[i];jj<columnStart[i]+columnLength[i];jj++) {
+      for (CoinBigIndex jj=columnStart[i];jj<columnStart[i]+columnLength[i];jj++) {
         int iRow = row[jj];
         nOut += static_cast<int> (element[jj]*value);
         effectiveRhs[iRow] -= static_cast<int> (element[jj]*value);
@@ -455,7 +455,7 @@ void CglDuplicateRow::generateCuts12(const OsiSolverInterface & si, OsiCuts & cs
   for ( i=0;i<numberColumns;i++) {
     if (columnLower[i]!=colUpper2[i]) {
       bool fixed=false;
-      for (int jj=columnStart[i];jj<columnStart[i]+columnLength[i];jj++) {
+      for (CoinBigIndex jj=columnStart[i];jj<columnStart[i]+columnLength[i];jj++) {
         int iRow = row[jj];
         if (rhs_[iRow]>=0&&element[jj]>effectiveRhs[iRow]) 
           fixed=true;
@@ -480,7 +480,7 @@ void CglDuplicateRow::generateCuts12(const OsiSolverInterface & si, OsiCuts & cs
 	effectiveRhs[i]= static_cast<int> (rowUpper[i]);
 	effectiveLower[i] = static_cast<int> (CoinMax(0.0,rowLower[i]));
 	bool goodRow=true;
-	for (int j=rowStart[i];j<rowStart[i]+rowLength[i];j++) {
+	for (CoinBigIndex j=rowStart[i];j<rowStart[i]+rowLength[i];j++) {
 	  int iColumn = column[j];
 	  double value=columnLower[iColumn];
 	  if (value) {
@@ -516,11 +516,17 @@ void CglDuplicateRow::generateCuts12(const OsiSolverInterface & si, OsiCuts & cs
     }
   }
   // Look at <= rows
+  double maxLook=100*numberRows;
+  double nLook=maxLook;
   for (i=0;i<numberRows;i++) {
     // initially just one
     if (effectiveRhs[i]==1&&duplicate_[i]==-1) {
       int nn=0;
-      int j,k;
+      CoinBigIndex j;
+      int k;
+      nLook -= numberRows-i;
+      if (nLook<0)
+	break;
       for (j=rowStart[i];j<rowStart[i]+rowLength[i];j++) {
 	int iColumn = column[j];
 	if (columnLower[iColumn]!=colUpper2[iColumn]) {
@@ -557,6 +563,7 @@ void CglDuplicateRow::generateCuts12(const OsiSolverInterface & si, OsiCuts & cs
                        k,i,i);
               // treat i as duplicate
               duplicate_[i]=k;
+	      nLook=maxLook; // reset
               // zero out check so we can see what is extra
               for ( j=rowStart[k];j<rowStart[k]+rowLength[k];j++) {
                 int iColumn = column[j];
@@ -585,6 +592,7 @@ void CglDuplicateRow::generateCuts12(const OsiSolverInterface & si, OsiCuts & cs
                 printf("row %d identical to row %d\n",
                        k,i);
               duplicate_[k]=i;
+	      nLook=maxLook; // reset
 	      checked=true;
             } else if (nn2>=nn&&effectiveLower[i]==rhs_[i]&&effectiveLower[k]==rhs_[k]) {
               abort();
@@ -595,6 +603,7 @@ void CglDuplicateRow::generateCuts12(const OsiSolverInterface & si, OsiCuts & cs
                      k,i,k);
             // treat k as duplicate
             duplicate_[k]=i;
+	    nLook=maxLook; // reset
             // set check for k
             for ( j=rowStart[k];j<rowStart[k]+rowLength[k];j++) {
               int iColumn = column[j];
@@ -638,6 +647,7 @@ void CglDuplicateRow::generateCuts12(const OsiSolverInterface & si, OsiCuts & cs
                          k,i,k);
                 // treat k as duplicate
                 duplicate_[k]=i;
+		nLook=maxLook; // reset
               }
             } else if (nnsame==nn) {
               // i redundant ?
@@ -647,6 +657,7 @@ void CglDuplicateRow::generateCuts12(const OsiSolverInterface & si, OsiCuts & cs
                          i,k,i);
                 // treat i as duplicate
                 duplicate_[i]=k;
+		nLook=maxLook; // reset
               }
             }
           }
@@ -661,7 +672,8 @@ void CglDuplicateRow::generateCuts12(const OsiSolverInterface & si, OsiCuts & cs
   for (i=0;i<numberRows;i++) {
     if (duplicate_[i]==-4) {
       int nn=0;
-      int j,k;
+      CoinBigIndex j;
+      int k;
       for (j=rowStart[i];j<rowStart[i]+rowLength[i];j++) {
 	int iColumn = column[j];
 	if (columnLower[iColumn]!=colUpper2[iColumn]) {
@@ -727,7 +739,7 @@ void CglDuplicateRow::generateCuts12(const OsiSolverInterface & si, OsiCuts & cs
     for (i=0;i<numberRows;i++) {
       if (rowLength[i]==2&&(duplicate_[i]<0&&duplicate_[i]!=-2)) {
 	bool possible=true;
-	int j;
+	CoinBigIndex j;
 	for (j=rowStart[i];j<rowStart[i]+2;j++) {
 	  int iColumn = column[j];
 	  if (fabs(elementByRow[j])!=1.0||!si.isBinary(iColumn)) {
@@ -736,7 +748,7 @@ void CglDuplicateRow::generateCuts12(const OsiSolverInterface & si, OsiCuts & cs
 	  }
 	}
 	if (possible) {
-	  int j = rowStart[i];
+	  CoinBigIndex j = rowStart[i];
 	  int column0 = column[j];
 	  double element0 = elementByRow[j];
 	  int column1 = column[j+1];
@@ -767,14 +779,14 @@ void CglDuplicateRow::generateCuts12(const OsiSolverInterface & si, OsiCuts & cs
 	  assert (check2[i]==-1);
 #endif
 	i=effectiveRhs[iPossible];
-	int j = rowStart[i];
+	CoinBigIndex j = rowStart[i];
 	int column0 = column[j];
 	int column1 = column[j+1];
 	int k;
 	int nMarked=0;
 	for (int kPossible=iPossible+1;kPossible<nPossible;kPossible++) {
 	  k=effectiveRhs[kPossible];
-	  int j = rowStart[k];
+	  CoinBigIndex j = rowStart[k];
 	  int columnB0 = column[j];
 	  int columnB1 = column[j+1];
 	  if (column0==columnB1||column1==columnB1) {
@@ -910,7 +922,7 @@ void CglDuplicateRow::generateCuts4(const OsiSolverInterface & si, OsiCuts & cs,
   int nCol2=0;
   for (int i=0;i<numberColumns;i++) {
     if (columnLower[i]<-1.0e20&&columnUpper[i]>-1.0e20) {
-      for (int jj=columnStart[i];jj<columnStart[i]+columnLength[i];jj++) {
+      for (CoinBigIndex jj=columnStart[i];jj<columnStart[i]+columnLength[i];jj++) {
 	int iRow = row[jj];
 	rowFlag[iRow] |= 8; // say no good
       }
@@ -939,13 +951,13 @@ void CglDuplicateRow::generateCuts4(const OsiSolverInterface & si, OsiCuts & cs,
 	newBound[nCol2]=up-lo;
 	trueLower[nCol2]=lo;
 	originalColumns[nCol2++]=i;
-	for (int jj=columnStart[i];jj<columnStart[i]+columnLength[i];jj++) {
+	for (CoinBigIndex jj=columnStart[i];jj<columnStart[i]+columnLength[i];jj++) {
 	  int iRow = row[jj];
 	  rowCount[iRow]++;
 	  originalRows[iRow] += add;
 	}
       }
-      for (int jj=columnStart[i];jj<columnStart[i]+columnLength[i];jj++) {
+      for (CoinBigIndex jj=columnStart[i];jj<columnStart[i]+columnLength[i];jj++) {
 	int iRow = row[jj];
 	rhs2[iRow] += element[jj]*value;
       }
@@ -989,13 +1001,13 @@ void CglDuplicateRow::generateCuts4(const OsiSolverInterface & si, OsiCuts & cs,
     const CoinBigIndex * columnStart = small.getVectorStarts();
     //const int * columnLength = small.getVectorLengths();
     for (int i=0;i<nCol2;i++) {
-      for (int jj=columnStart[i];jj<columnStart[i+1];jj++) {
+      for (CoinBigIndex jj=columnStart[i];jj<columnStart[i+1];jj++) {
 	int iRow=row[jj];
 	if ((rowFlag[iRow]&2)!=0)
 	  element[jj] = -element[jj];
       }
       if ((columnFlag[i]&1)!=0) {
-	for (int jj=columnStart[i];jj<columnStart[i+1];jj++) {
+	for (CoinBigIndex jj=columnStart[i];jj<columnStart[i+1];jj++) {
 	  element[jj] = -element[jj];
 	}
       }
@@ -1011,8 +1023,8 @@ void CglDuplicateRow::generateCuts4(const OsiSolverInterface & si, OsiCuts & cs,
     const CoinBigIndex * rowStart = smallRow.getVectorStarts();
     //const int * rowLength = smallRow.getVectorLengths();
     for (int i=0;i<nRow2;i++) {
-      int start=rowStart[i];
-      int end=rowStart[i+1];
+      CoinBigIndex start=rowStart[i];
+      CoinBigIndex end=rowStart[i+1];
       CoinSort_2(column+start,column+end,elementByRow+start);
       int k=originalRows[i];
       double rhs;
@@ -1027,8 +1039,8 @@ void CglDuplicateRow::generateCuts4(const OsiSolverInterface & si, OsiCuts & cs,
 #define MAX_IN_BASE 3
 #define MAX_IN_COMP 3
     for (nRowLook=0;nRowLook<nRow2;nRowLook++) {
-      int start1 = rowStart[nRowLook];
-      int n=rowStart[nRowLook+1]-start1;
+      CoinBigIndex start1 = rowStart[nRowLook];
+      int n=static_cast<int>(rowStart[nRowLook+1]-start1);
       if (n>=2&&nRowStart<0)
 	nRowStart=nRowLook;
       if (n>MAX_IN_BASE) 
@@ -1037,8 +1049,8 @@ void CglDuplicateRow::generateCuts4(const OsiSolverInterface & si, OsiCuts & cs,
     // cut back nRow2
     int nnRow2=nRowLook;
     for (nnRow2=0;nnRow2<nRow2;nnRow2++) {
-      int start1 = rowStart[nnRow2];
-      int n=rowStart[nnRow2+1]-start1;
+      CoinBigIndex start1 = rowStart[nnRow2];
+      int n=static_cast<int>(rowStart[nnRow2+1]-start1);
       if (n>MAX_IN_COMP) 
 	break;
     }
@@ -1057,8 +1069,8 @@ void CglDuplicateRow::generateCuts4(const OsiSolverInterface & si, OsiCuts & cs,
     double upC1[4];
     int allowed1[8];
     for (int i=nRowStart;i<nRowLook;i++) {
-      int start0 = rowStart[i];
-      int n=rowStart[i+1]-start0;
+      CoinBigIndex start0 = rowStart[i];
+      int n=static_cast<int>(rowStart[i+1]-start0);
       const int * column0 = column+start0;
       const double * element0 = elementByRow+start0;
       int nInt=0;
@@ -1073,8 +1085,8 @@ void CglDuplicateRow::generateCuts4(const OsiSolverInterface & si, OsiCuts & cs,
 	  continue;
 	if (duplicate_[i]==-2)
 	  break;
-	int start1 = rowStart[k];
-	int n1=rowStart[k+1]-start1;
+	CoinBigIndex start1 = rowStart[k];
+	int n1=static_cast<int>(rowStart[k+1]-start1);
 	const int * column1 = column+start1;
 	const double * element1 = elementByRow+start1;
 	int nMatch=0;
@@ -1250,7 +1262,7 @@ void CglDuplicateRow::generateCuts4(const OsiSolverInterface & si, OsiCuts & cs,
 			  columnFlag[iColumn] |= 16;
 			  trueLower[iColumn] += lo;
 			  newBound[iColumn] = 0.0;
-			  for (int jj=columnStart[iColumn];jj<columnStart[iColumn+1];
+			  for (CoinBigIndex jj=columnStart[iColumn];jj<columnStart[iColumn+1];
 			       jj++) {
 			    int iRow=row[jj];
 			    effectiveRhs[iRow] -= lo*element[jj];
@@ -1476,7 +1488,7 @@ void CglDuplicateRow::generateCuts4(const OsiSolverInterface & si, OsiCuts & cs,
 			  columnFlag[iColumn] |= 16;
 			  trueLower[iColumn] += lo;
 			  newBound[iColumn] = 0.0;
-			  for (int jj=columnStart[iColumn];jj<columnStart[iColumn+1];
+			  for (CoinBigIndex jj=columnStart[iColumn];jj<columnStart[iColumn+1];
 			       jj++) {
 			    int iRow=row[jj];
 			    effectiveRhs[iRow] -= lo*element[jj];
@@ -1742,7 +1754,7 @@ void CglDuplicateRow::generateCuts4(const OsiSolverInterface & si, OsiCuts & cs,
 		  columnFlag[iColumn] |= 16;
 		  trueLower[iColumn] += newLo;
 		  newBound[iColumn] = newUp-newLo;
-		  for (int jj=columnStart[iColumn];jj<columnStart[iColumn+1];
+		  for (CoinBigIndex jj=columnStart[iColumn];jj<columnStart[iColumn+1];
 		       jj++) {
 		    int iRow=row[jj];
 		    effectiveRhs[iRow] -= newLo*element[jj];
@@ -1871,7 +1883,7 @@ void CglDuplicateRow::generateCuts4(const OsiSolverInterface & si, OsiCuts & cs,
 			columnFlag[iColumn] |= 16;
 			trueLower[iColumn] += lo;
 			newBound[iColumn] = 0.0;
-			for (int jj=columnStart[iColumn];jj<columnStart[iColumn+1];
+			for (CoinBigIndex jj=columnStart[iColumn];jj<columnStart[iColumn+1];
 			     jj++) {
 			  int iRow=row[jj];
 			  effectiveRhs[iRow] -= lo*element[jj];
@@ -2149,14 +2161,14 @@ void CglDuplicateRow::generateCuts4(const OsiSolverInterface & si, OsiCuts & cs,
     const CoinBigIndex * rowStart = matrixByRow_.getVectorStarts();
     //const int * rowLength = matrixByRow_.getVectorLengths();
     for (int i=1231;i<1235;i++) {
-      for (int jj=columnStart[i];jj<columnStart[i+1];
+      for (CoinBigIndex jj=columnStart[i];jj<columnStart[i+1];
 	   jj++) {
 	int iRow=row[jj];
 	printf("row %d el %g\n",iRow,element[jj]);
       }
     }
     for (int i=283;i<284;i++) {
-      for (int jj=rowStart[i];jj<rowStart[i+1];
+      for (CoinBigIndex jj=rowStart[i];jj<rowStart[i+1];
 	   jj++) {
 	printf("col %d el %g\n",column[jj],elementByRow[jj]);
       }
@@ -2441,7 +2453,7 @@ static int outDupsEtc(int numberIntegers, int numberCliques, int * statusClique,
   }
 #endif
   if (printit)
-    printf("%d duplicates\n",nDup);
+    printf("%d duplicates\n",nDup); 
   // For column version
   int numberElements=cliqueStart[numberCliques];
   int * start = new int [numberIntegers];
@@ -2861,7 +2873,7 @@ static int outDupsEtc(int numberIntegers, int numberCliques, int * statusClique,
 	    //statusClique[iClique]=-2;
 	    nOut--;
 	    // can fix all in iClique not in kClique
-	    printf("ZZ clique %d E, %d S\n",kClique,iClique);
+	    //printf("ZZ clique %d E, %d S\n",kClique,iClique);
 	    int offset = cliqueStart[iClique]-position[kClique];
 	    int j;
 	    for (j=cliqueStart[kClique];j<cliqueStart[kClique+1];j++) {
@@ -2869,7 +2881,7 @@ static int outDupsEtc(int numberIntegers, int numberCliques, int * statusClique,
 	      int iColumn = entry[j+offset];
 	      while (iColumn<kColumn) {
 		if (!fixed[iColumn]) {
-		  printf("ZZ fixing %d to zero\n",iColumn);
+		  //printf("ZZ fixing %d to zero\n",iColumn);
 		  fixed[iColumn]=-1;
 		} else {
 		  assert (fixed[iColumn]==-1);
@@ -3045,7 +3057,7 @@ void CglDuplicateRow::generateCuts8(const OsiSolverInterface & si, OsiCuts & cs,
   int * fixed = new int[CoinMax(numberIntegers,numberCliques)];
   memset(fixed,0,numberIntegers*sizeof(int));
   outDupsEtc(numberIntegers, numberCliques, dups,
-	     cliqueStart, cliqueType, entry, fixed, printit ? 2 : 1);
+	     cliqueStart, cliqueType, entry, fixed, printit ? 2 : 0);
   delete[] cliqueStart;
   delete[] entry;
   delete[] cliqueType;
@@ -3242,7 +3254,7 @@ CglDuplicateRow::refreshSolver(OsiSolverInterface * solver)
       int iRhs= static_cast<int> (floor(rowUpper[iRow]));
       // check elements
       bool good=true;
-      for (int j=rowStart[iRow];j<rowStart[iRow]+rowLength[iRow];j++) {
+      for (CoinBigIndex j=rowStart[iRow];j<rowStart[iRow]+rowLength[iRow];j++) {
         int iColumn = column[j];
         if (!solver->isInteger(iColumn))
 	  good=false;
@@ -3269,7 +3281,7 @@ CglDuplicateRow::refreshSolver(OsiSolverInterface * solver)
       // may be OK to look for dominated in >=1 rows
       // check elements
       bool good=true;
-      for (int j=rowStart[iRow];j<rowStart[iRow]+rowLength[iRow];j++) {
+      for (CoinBigIndex j=rowStart[iRow];j<rowStart[iRow]+rowLength[iRow];j++) {
         int iColumn = column[j];
         if (!solver->isInteger(iColumn))
 	  good=false;

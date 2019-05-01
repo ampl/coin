@@ -2,7 +2,7 @@
 # All Rights Reserved.
 # This file is distributed under the Eclipse Public License.
 
-## $Id: configure.ac 3760 2017-06-12 10:01:37Z stefan $
+## $Id: configure.ac 3897 2018-11-17 16:04:47Z stefan $
 
 #############################################################################
 #                       Names and other basic things                        #
@@ -10,7 +10,7 @@
 
 AC_PREREQ(2.59)
 
-AC_INIT([ThirdPartyGlpk],[1.10.5],[http://projects.coin-or.org/BuildTools/newticket])
+AC_INIT([ThirdPartyGlpk],[1.10.6],[http://projects.coin-or.org/BuildTools/newticket])
 
 AC_COPYRIGHT([
 Copyright 2007-2010 Stefan Vigerske and others.
@@ -28,7 +28,7 @@ AC_CONFIG_SRCDIR(glpk/src/glpk.h)
 # /usr/local.
 AC_PREFIX_DEFAULT([`pwd`])
 
-AC_COIN_PROJECTDIR_INIT(Glpk,11:5:10)
+AC_COIN_PROJECTDIR_INIT(Glpk,11:6:10)
 
 #############################################################################
 #                         Standard build tool stuff                         #

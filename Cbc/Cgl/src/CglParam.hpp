@@ -5,7 +5,7 @@
 //           email: fmargot@andrew.cmu.edu
 // Date:     11/24/06
 //
-// $Id: CglParam.hpp 1122 2013-04-06 20:39:53Z stefan $
+// $Id: CglParam.hpp 1442 2019-01-06 16:39:41Z unxusr $
 //
 // This code is licensed under the terms of the Eclipse Public License (EPL).
 //-----------------------------------------------------------------------------
@@ -22,52 +22,50 @@
 class CglParam {
 
 public:
-
   /**@name Public Set/get methods */
   //@{
 
   /** Set INFINIT */
   virtual void setINFINIT(const double inf);
   /** Get value of INFINIT */
-  inline double getINFINIT() const {return INFINIT;}
+  inline double getINFINIT() const { return INFINIT; }
 
   /** Set EPS */
   virtual void setEPS(const double eps);
   /** Get value of EPS */
-  inline double getEPS() const {return EPS;}
+  inline double getEPS() const { return EPS; }
 
   /** Set EPS_COEFF */
   virtual void setEPS_COEFF(const double eps_c);
   /** Get value of EPS_COEFF */
-  inline double getEPS_COEFF() const {return EPS_COEFF;}
+  inline double getEPS_COEFF() const { return EPS_COEFF; }
 
   /** Set MAX_SUPPORT */
   virtual void setMAX_SUPPORT(const int max_s);
   /** Get value of MAX_SUPPORT */
-  inline int getMAX_SUPPORT() const {return MAX_SUPPORT;}
+  inline int getMAX_SUPPORT() const { return MAX_SUPPORT; }
   //@}
 
   /**@name Constructors and destructors */
   //@{
-  /// Default constructor 
+  /// Default constructor
   CglParam(const double inf = COIN_DBL_MAX, const double eps = 1e-6,
-	   const double eps_c = 1e-5, const int max_s = COIN_INT_MAX);
- 
-  /// Copy constructor 
-  CglParam(const CglParam&);
+    const double eps_c = 1e-5, const int max_s = COIN_INT_MAX);
+
+  /// Copy constructor
+  CglParam(const CglParam &);
 
   /// Clone
-  virtual CglParam* clone() const;
+  virtual CglParam *clone() const;
 
-  /// Assignment operator 
-  CglParam& operator=(const CglParam &rhs);
+  /// Assignment operator
+  CglParam &operator=(const CglParam &rhs);
 
-  /// Destructor 
+  /// Destructor
   virtual ~CglParam();
   //@}
 
 protected:
-
   // Protected member data
 
   /**@name Protected member data */
@@ -79,15 +77,17 @@ protected:
   // EPSILON for double comparisons. Default: 1e-6.
   double EPS;
 
-  // Returned cuts do not have coefficients with absolute value smaller 
+  // Returned cuts do not have coefficients with absolute value smaller
   // than EPS_COEFF. Default: 1e-5.
   double EPS_COEFF;
 
   /** Maximum number of non zero coefficients in a generated cut;
-      Default: COIN_INT_MAX */ 
-  int MAX_SUPPORT; 
+      Default: COIN_INT_MAX */
+  int MAX_SUPPORT;
   //@}
-
 };
 
 #endif
+
+/* vi: softtabstop=2 shiftwidth=2 expandtab tabstop=2
+*/

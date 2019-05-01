@@ -7,11 +7,11 @@ wgetcount=`which wget 2>/dev/null | wc -l`
 if test ! $wgetcount = 1; then
   echo "Utility wget not found in your PATH."
   if test `uname` = Darwin; then
-    wgetcmd="curl -L -k -O"
-    echo "Using ftp command instead."
+    wgetcmd="curl -L -O"
+    echo "Using curl instead."
   elif test `uname` = FreeBSD; then
     wgetcmd=fetch
-    echo "Using fetch command instead."
+    echo "Using fetch instead."
   else
     exit -1
   fi

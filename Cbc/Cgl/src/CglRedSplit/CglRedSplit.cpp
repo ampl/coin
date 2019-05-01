@@ -6,7 +6,7 @@
 //           Carnegie Mellon University, Pittsburgh, PA 15213
 // Date:     2/6/05
 //
-// $Id: CglRedSplit.cpp 1119 2013-04-06 20:24:18Z stefan $
+// $Id: CglRedSplit.cpp 1387 2017-09-29 11:02:03Z forrest $
 //---------------------------------------------------------------------------
 // Copyright (C) 2005, Francois Margot and others.  All Rights Reserved.
 // This code is licensed under the terms of the Eclipse Public License (EPL).
@@ -545,13 +545,12 @@ int CglRedSplit::generate_cgcut_2(int/* basic_ind*/, double *row, double *rhs) {
 /************************************************************************/
 void CglRedSplit::eliminate_slacks(double *row, 
 				   const double *elements, 
-				   const int *rowStart,
+				   const CoinBigIndex *rowStart,
 				   const int *indices,
 				   const int *rowLength,
 				   const double *rhs, double *tabrowrhs) {
 
-  int i, j;
-  for(i=0; i<nrow; i++) {
+  for(int i=0; i<nrow; i++) {
     if(fabs(row[ncol+i]) > param.getEPS_ELIM()) {
 
       if(rowLower[i] > rowUpper[i] - param.getEPS()) {
@@ -559,8 +558,8 @@ void CglRedSplit::eliminate_slacks(double *row,
 	continue;
       }
 
-      int upto = rowStart[i] + rowLength[i];
-      for(j=rowStart[i]; j<upto; j++) {
+      CoinBigIndex upto = rowStart[i] + rowLength[i];
+      for(CoinBigIndex j=rowStart[i]; j<upto; j++) {
 	row[indices[j]] -= row[ncol+i] * elements[j];
       }
       *tabrowrhs -= row[ncol+i] * rhs[i];
@@ -1124,17 +1123,18 @@ bool CglRedSplit::rs_are_different_matrices(const CoinPackedMatrix *mat1,
 					    const int nmaj,
 					    const int /*nmin*/) {
   
-  const int *matStart1 = mat1->getVectorStarts();
+  const CoinBigIndex *matStart1 = mat1->getVectorStarts();
   const double *matElements1 = mat1->getElements();
   const int *matIndices1 = mat1->getIndices();
   const int *matRowLength1 = mat1->getVectorLengths(); 
 
-  const int *matStart2 = mat2->getVectorStarts();
+  const CoinBigIndex *matStart2 = mat2->getVectorStarts();
   const double *matElements2 = mat2->getElements();
   const int *matIndices2 = mat2->getIndices();
   const int *matRowLength2 = mat2->getVectorLengths(); 
 
-  int i, j;
+  int i;
+  CoinBigIndex j;
 
   for(i=0; i<nmaj; i++) {
     if(matStart1[i] != matStart2[i]) {
@@ -1524,7 +1524,7 @@ double *slack_val = new double[nrow];
   double *rowelem = new double[ncol];
 
   const double *elements = byRow->getElements();
-  const int *rowStart = byRow->getVectorStarts();
+  const CoinBigIndex *rowStart = byRow->getVectorStarts();
   const int *indices = byRow->getIndices();
   const int *rowLength = byRow->getVectorLengths(); 
 

@@ -1,3 +1,19 @@
+10/03/2019 OsiSpx
+  - fixed problems with copy constructor / clone (#113)
+
+10/03/2019 OsiMsk
+  - fixed problem where no Mosek output was produced on cloned/copied OsiMsk instances
+  - eliminated additional newline printed in Mosek output (#105)
+
+10/03/2019 OsiCpx
+  - fixed OsiCpx::setRowPrice(), see also #81
+
+22/02/2019 OsiSolverInterfaceTest
+  - remove nonsense test for whether a column solution exists *before* solve
+
+23/01/2018 OsiMsk
+  - add compatibility with Mosek 9.0 beta
+
 20/04/2017 OsiSpx
   - add compatibility with SoPlex 3.0
 

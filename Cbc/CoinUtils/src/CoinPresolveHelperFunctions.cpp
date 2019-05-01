@@ -1,4 +1,4 @@
-/* $Id: CoinPresolveHelperFunctions.cpp 1854 2015-12-18 14:18:54Z forrest $ */
+/* $Id: CoinPresolveHelperFunctions.cpp 2083 2019-01-06 19:38:09Z unxusr $ */
 // Copyright (C) 2002, International Business Machines
 // Corporation and others.  All Rights Reserved.
 // This code is licensed under the terms of the Eclipse Public License (EPL).
@@ -16,7 +16,6 @@
 
 #include "CoinHelperFunctions.hpp"
 #include "CoinPresolveMatrix.hpp"
-
 
 /*! \defgroup PMMDVX Packed Matrix Major Dimension Vector Expansion
     \brief Functions to help with major-dimension vector expansion in a
@@ -65,34 +64,33 @@ namespace {
   reordered, just shifted down to remove gaps.
 */
 
-void compact_rep (double *elems, int *indices,
-		  CoinBigIndex *starts, const int *lengths, int n,
-		  const presolvehlink *link)
+void compact_rep(double *elems, int *indices,
+  CoinBigIndex *starts, const int *lengths, int n,
+  const presolvehlink *link)
 {
-# if PRESOLVE_SUMMARY
-  printf("****COMPACTING****\n") ;
-# endif
+#if PRESOLVE_SUMMARY
+  printf("****COMPACTING****\n");
+#endif
 
   // for now, just look for the first element of the list
-  int i = n ;
+  int i = n;
   while (link[i].pre != NO_LINK)
-    i = link[i].pre ;
+    i = link[i].pre;
 
-  CoinBigIndex j = 0 ;
+  CoinBigIndex j = 0;
   for (; i != n; i = link[i].suc) {
-    CoinBigIndex s = starts[i] ;
-    CoinBigIndex e = starts[i] + lengths[i] ;
+    CoinBigIndex s = starts[i];
+    CoinBigIndex e = starts[i] + lengths[i];
 
     // because of the way link is organized, j <= s
-    starts[i] = j ;
+    starts[i] = j;
     for (CoinBigIndex k = s; k < e; k++) {
-      elems[j] = elems[k] ;
-      indices[j] = indices[k] ;
-      j++ ;
-   }
+      elems[j] = elems[k];
+      indices[j] = indices[k];
+      j++;
+    }
   }
 }
-
 
 } /* end unnamed namespace */
 
@@ -115,34 +113,31 @@ void compact_rep (double *elems, int *indices,
   starts[j] > starts[i] for j < i.)
 */
 
-void presolve_make_memlists (/*CoinBigIndex *starts,*/ int *lengths,
-			     presolvehlink *link, int n)
+void presolve_make_memlists(/*CoinBigIndex *starts,*/ int *lengths,
+  presolvehlink *link, int n)
 {
-  int i ;
-  int pre = NO_LINK ;
-  
-  for (i=0; i<n; i++) {
+  int i;
+  int pre = NO_LINK;
+
+  for (i = 0; i < n; i++) {
     if (lengths[i]) {
-      link[i].pre = pre ;
+      link[i].pre = pre;
       if (pre != NO_LINK)
-	link[pre].suc = i ;
-      pre = i ;
-    }
-    else {
-      link[i].pre = NO_LINK ;
-      link[i].suc = NO_LINK ;
+        link[pre].suc = i;
+      pre = i;
+    } else {
+      link[i].pre = NO_LINK;
+      link[i].suc = NO_LINK;
     }
   }
   if (pre != NO_LINK)
-    link[pre].suc = n ;
+    link[pre].suc = n;
 
   // (1) Arbitrarily place the last non-empty entry in link[n].pre
-  link[n].pre = pre ;
+  link[n].pre = pre;
 
-  link[n].suc = NO_LINK ;
+  link[n].suc = NO_LINK;
 }
-
-
 
 /*
   presolve_expand_major
@@ -157,92 +152,93 @@ void presolve_make_memlists (/*CoinBigIndex *starts,*/ int *lengths,
   Returns true for failure, false for success.
 */
 
-bool presolve_expand_major (CoinBigIndex *majstrts, double *els,
-			    int *minndxs, int *majlens,
-			    presolvehlink *majlinks, int nmaj, int k)
+bool presolve_expand_major(CoinBigIndex *majstrts, double *els,
+  int *minndxs, int *majlens,
+  presolvehlink *majlinks, int nmaj, int k)
 
-{ const CoinBigIndex bulkCap = majstrts[nmaj] ;
+{
+  const CoinBigIndex bulkCap = majstrts[nmaj];
 
-/*
+  /*
   Get the start and end of column k, and the index of the column which
   follows in the bulk storage.
 */
-  CoinBigIndex kcsx = majstrts[k] ;
-  CoinBigIndex kcex = kcsx + majlens[k] ;
-  int nextcol = majlinks[k].suc ;
-/*
+  CoinBigIndex kcsx = majstrts[k];
+  CoinBigIndex kcex = kcsx + majlens[k];
+  int nextcol = majlinks[k].suc;
+  /*
   Do we have room to add one coefficient in place?
 */
-  if (kcex+1 < majstrts[nextcol])
-  { /* no action required */ }
-/*
+  if (kcex + 1 < majstrts[nextcol]) { /* no action required */
+  }
+  /*
   Is k the last non-empty column? In that case, attempt to compact the
   bulk storage. This will move k, so update the column start and end.
   If we still have no space, it's a fatal error.
 */
-  else
-  if (nextcol == nmaj)
-  { compact_rep(els,minndxs,majstrts,majlens,nmaj,majlinks) ;
-    kcsx = majstrts[k] ;
-    kcex = kcsx + majlens[k] ;
-    if (kcex+1 >= bulkCap)
-    { return (true) ; } }
-/*
+  else if (nextcol == nmaj) {
+    compact_rep(els, minndxs, majstrts, majlens, nmaj, majlinks);
+    kcsx = majstrts[k];
+    kcex = kcsx + majlens[k];
+    if (kcex + 1 >= bulkCap) {
+      return (true);
+    }
+  }
+  /*
   The most complicated case --- we need to move k from its current location
   to empty space at the end of the bulk storage. And we may need to make that!
   Compaction is identical to the above case.
 */
-  else
-  { int lastcol = majlinks[nmaj].pre ;
-    int newkcsx = majstrts[lastcol]+majlens[lastcol] ;
-    int newkcex = newkcsx+majlens[k] ;
+  else {
+    int lastcol = majlinks[nmaj].pre;
+    CoinBigIndex newkcsx = majstrts[lastcol] + majlens[lastcol];
+    CoinBigIndex newkcex = newkcsx + majlens[k];
 
-    if (newkcex+1 >= bulkCap)
-    { compact_rep(els,minndxs,majstrts,majlens,nmaj,majlinks) ;
-      kcsx = majstrts[k] ;
-      kcex = kcsx + majlens[k] ;
-      newkcsx = majstrts[lastcol]+majlens[lastcol] ;
-      newkcex = newkcsx+majlens[k] ;
+    if (newkcex + 1 >= bulkCap) {
+      compact_rep(els, minndxs, majstrts, majlens, nmaj, majlinks);
+      kcsx = majstrts[k];
+      kcex = kcsx + majlens[k];
+      newkcsx = majstrts[lastcol] + majlens[lastcol];
+      newkcex = newkcsx + majlens[k];
     }
     /*
       It is possible (probably on very small problems) that
       there is not room for two copies of modified column -
       so allow temporary overflow
     */
-/*
+    /*
   Moving the vector requires three actions. First we move the data, then
   update the packed matrix vector start, then relink the storage order list,
 */
-    memcpy(reinterpret_cast<void *>(&minndxs[newkcsx]),
-	   reinterpret_cast<void *>(&minndxs[kcsx]),majlens[k]*sizeof(int)) ;
-    memcpy(reinterpret_cast<void *>(&els[newkcsx]),
-	   reinterpret_cast<void *>(&els[kcsx]),majlens[k]*sizeof(double)) ;
-    majstrts[k] = newkcsx ;
-    PRESOLVE_REMOVE_LINK(majlinks,k) ;
-    PRESOLVE_INSERT_LINK(majlinks,k,lastcol) ;
-    if (newkcex+1 >= bulkCap) {
+    memcpy(reinterpret_cast< void * >(&minndxs[newkcsx]),
+      reinterpret_cast< void * >(&minndxs[kcsx]), majlens[k] * sizeof(int));
+    memcpy(reinterpret_cast< void * >(&els[newkcsx]),
+      reinterpret_cast< void * >(&els[kcsx]), majlens[k] * sizeof(double));
+    majstrts[k] = newkcsx;
+    PRESOLVE_REMOVE_LINK(majlinks, k);
+    PRESOLVE_INSERT_LINK(majlinks, k, lastcol);
+    if (newkcex + 1 >= bulkCap) {
       // compact - faking extra one
       //majlens[k]++;
       //majstrts[nmaj]=newkcex;
-      compact_rep(els,minndxs,majstrts,majlens,nmaj,majlinks) ;
+      compact_rep(els, minndxs, majstrts, majlens, nmaj, majlinks);
       //majlens[k]--;
       //majstrts[nmaj]=bulkCap;
-      kcsx = majstrts[k] ;
-      kcex = kcsx + majlens[k] ;
+      kcsx = majstrts[k];
+      kcex = kcsx + majlens[k];
       if (kcex > bulkCap) {
-	// still no room
-	return (true) ;
+        // still no room
+        return (true);
       }
     }
-  } 
-/*
+  }
+  /*
   Success --- the vector has room for one more coefficient.
 */
-  return (false) ; }
+  return (false);
+}
 
 //@}
-
-
 
 /*
   Helper function to duplicate a major-dimension vector.
@@ -261,38 +257,42 @@ bool presolve_expand_major (CoinBigIndex *majstrts, double *els,
   happens this code will fail.
 */
 
-double *presolve_dupmajor (const double *elems, const int *indices,
-			   int length, CoinBigIndex offset, int tgt)
+double *presolve_dupmajor(const double *elems, const int *indices,
+  int length, CoinBigIndex offset, int tgt)
 
-{ int n ;
+{
+  int n;
 
-  if (tgt >= 0) length-- ;
+  if (tgt >= 0)
+    length--;
 
-  if (2*sizeof(int) <= sizeof(double))
-    n = (3*length+1)>>1 ;
+  if (2 * sizeof(int) <= sizeof(double))
+    n = (3 * length + 1) >> 1;
   else
-    n = 2*length ;
+    n = 2 * length;
 
-  double *dArray = new double [n] ;
-  int *iArray = reinterpret_cast<int *>(dArray+length) ;
+  double *dArray = new double[n];
+  int *iArray = reinterpret_cast< int * >(dArray + length);
 
-  if (tgt < 0)
-  { memcpy(dArray,elems+offset,length*sizeof(double)) ;
-    memcpy(iArray,indices+offset,length*sizeof(int)) ; }
-  else
-  { int korig ;
-    int kcopy = 0 ;
-    indices += offset ;
-    elems += offset ;
-    for (korig = 0 ; korig <= length ; korig++)
-    { int i = indices[korig] ;
-      if (i != tgt)
-      { dArray[kcopy] = elems[korig] ;
-	iArray[kcopy++] = indices[korig] ; } } }
+  if (tgt < 0) {
+    memcpy(dArray, elems + offset, length * sizeof(double));
+    memcpy(iArray, indices + offset, length * sizeof(int));
+  } else {
+    int korig;
+    int kcopy = 0;
+    indices += offset;
+    elems += offset;
+    for (korig = 0; korig <= length; korig++) {
+      int i = indices[korig];
+      if (i != tgt) {
+        dArray[kcopy] = elems[korig];
+        iArray[kcopy++] = indices[korig];
+      }
+    }
+  }
 
-  return (dArray) ; }
-
-
+  return (dArray);
+}
 
 /*
   Routines to find the position of the entry for a given minor index in a
@@ -326,14 +326,17 @@ CoinBigIndex presolve_find_minor (int tgt, CoinBigIndex ks,
   As presolve_find_minor, but return a position one past the end of
   the major vector when the entry is not already present.
 */
-CoinBigIndex presolve_find_minor1 (int tgt, CoinBigIndex ks,
-				   CoinBigIndex ke, const int *minndxs)
-{ CoinBigIndex k ;
-  for (k = ks ; k < ke ; k++)
-  { if (minndxs[k] == tgt)
-      return (k) ; }
+CoinBigIndex presolve_find_minor1(int tgt, CoinBigIndex ks,
+  CoinBigIndex ke, const int *minndxs)
+{
+  CoinBigIndex k;
+  for (k = ks; k < ke; k++) {
+    if (minndxs[k] == tgt)
+      return (k);
+  }
 
-  return (k) ; }
+  return (k);
+}
 
 /*
   In a threaded matrix, the major vector does not occupy a contiguous block
@@ -341,31 +344,38 @@ CoinBigIndex presolve_find_minor1 (int tgt, CoinBigIndex ks,
   if a<i,p> is in pos'n kp of hrow, the next coefficient a<i,q> will be
   in pos'n kq = link[kp]. Abort if we don't find it.
 */
-CoinBigIndex presolve_find_minor2 (int tgt, CoinBigIndex ks,
-				   int majlen, const int *minndxs,
-				   const CoinBigIndex *majlinks)
+CoinBigIndex presolve_find_minor2(int tgt, CoinBigIndex ks,
+  int majlen, const int *minndxs,
+  const CoinBigIndex *majlinks)
 
-{ for (int i = 0 ; i < majlen ; ++i)
-  { if (minndxs[ks] == tgt)
-      return (ks) ;
-    ks = majlinks[ks] ; }
-  DIE("FIND_MINOR2") ;
+{
+  for (int i = 0; i < majlen; ++i) {
+    if (minndxs[ks] == tgt)
+      return (ks);
+    ks = majlinks[ks];
+  }
+  DIE("FIND_MINOR2");
 
-  abort () ; return -1; }
+  abort();
+  return -1;
+}
 
 /*
   As presolve_find_minor2, but return -1 if the entry is missing
 */
-CoinBigIndex presolve_find_minor3 (int tgt, CoinBigIndex ks,
-				   int majlen, const int *minndxs,
-				   const CoinBigIndex *majlinks)
+CoinBigIndex presolve_find_minor3(int tgt, CoinBigIndex ks,
+  int majlen, const int *minndxs,
+  const CoinBigIndex *majlinks)
 
-{ for (int i = 0 ; i < majlen ; ++i)
-  { if (minndxs[ks] == tgt)
-      return (ks) ;
-    ks = majlinks[ks] ; }
+{
+  for (int i = 0; i < majlen; ++i) {
+    if (minndxs[ks] == tgt)
+      return (ks);
+    ks = majlinks[ks];
+  }
 
-  return (-1) ; }
+  return (-1);
+}
 
 /*
   Delete the entry for a minor index from a major vector.  The last entry in
@@ -420,50 +430,52 @@ void presolve_delete_many_from_major (int majndx, char * marked,
 
   This involves properly relinking the free list.
 */
-void presolve_delete_from_major2 (int majndx, int minndx,
-				  CoinBigIndex *majstrts, int *majlens,
-				  int *minndxs, int *majlinks, 
-				  CoinBigIndex *free_listp)
+void presolve_delete_from_major2(int majndx, int minndx,
+  CoinBigIndex *majstrts, int *majlens,
+  int *minndxs, CoinBigIndex *majlinks,
+  CoinBigIndex *free_listp)
 
 {
-  CoinBigIndex k = majstrts[majndx] ;
+  CoinBigIndex k = majstrts[majndx];
 
-/*
+  /*
   Desired entry is the first in its major vector. We need to touch up majstrts
   to point to the next entry and link the deleted entry to the front of the
   free list.
 */
   if (minndxs[k] == minndx) {
-    majstrts[majndx] = majlinks[k] ;
-    majlinks[k] = *free_listp ;
-    *free_listp = k ;
-    majlens[majndx]-- ;
+    majstrts[majndx] = majlinks[k];
+    majlinks[k] = *free_listp;
+    *free_listp = k;
+    majlens[majndx]--;
   } else {
-/*
+    /*
   Desired entry is somewhere in the major vector. We need to relink around
   it and then link it on the front of the free list.
 
   The loop runs over elements 1 .. len-1; we've already ruled out element 0.
 */
-    int len = majlens[majndx] ;
-    CoinBigIndex kpre = k ;
-    k = majlinks[k] ;
-    for (int i = 1 ; i < len ; ++i) {
+    int len = majlens[majndx];
+    CoinBigIndex kpre = k;
+    k = majlinks[k];
+    for (int i = 1; i < len; ++i) {
       if (minndxs[k] == minndx) {
-        majlinks[kpre] = majlinks[k] ;
-	majlinks[k] = *free_listp ;
-	*free_listp = k ;
-	majlens[majndx]-- ;
-	return ;
+        majlinks[kpre] = majlinks[k];
+        majlinks[k] = *free_listp;
+        *free_listp = k;
+        majlens[majndx]--;
+        return;
       }
-      kpre = k ;
-      k = majlinks[k] ;
+      kpre = k;
+      k = majlinks[k];
     }
-    DIE("DELETE_FROM_MAJOR2") ;
+    DIE("DELETE_FROM_MAJOR2");
   }
 
-  assert(*free_listp >= 0) ;
+  assert(*free_listp >= 0);
 
-  return ;
+  return;
 }
 
+/* vi: softtabstop=2 shiftwidth=2 expandtab tabstop=2
+*/

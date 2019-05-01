@@ -45,6 +45,10 @@
 
 #define MSK_WARNING_ON
 
+#if MSK_VERSION_MAJOR >= 9
+#define MSKCONST const
+#endif
+
 #undef getc
 
 //#############################################################################
@@ -95,11 +99,31 @@ static void MSKAPI printlog(void *ptr, char* s)
   printf("%s",s);
 } 
 
+static
+void handleMessage(CoinMessageHandler* handler, MSKCONST char* str)
+{
+	size_t len = strlen(str);
+	if( len == 0 )
+		return;
+
+	if( str[len-1] == '\n')
+	{
+		char* str_ = (char*)malloc(len);
+		memcpy(str_, str, len-1);
+		str_[len-1] = '\0';
+		handler->message(0, "MSK", str_, ' ') << CoinMessageEol;
+		free(str_);
+	}
+	else
+		handler->message(0, "MSK", str, ' ');
+}
+
 static 
 void MSKAPI OsiMskStreamFuncLog(MSKuserhandle_t handle, MSKCONST char* str) {
-	if (handle) {
-		if (((CoinMessageHandler*)handle)->logLevel() >= 1)
-			((CoinMessageHandler*)handle)->message(0, "MSK", str, ' ') << CoinMessageEol;
+	CoinMessageHandler* handler = (CoinMessageHandler*)handle;
+	if (handler != NULL) {
+		if (handler->logLevel() >= 1)
+			handleMessage(handler, str);
 	} else {
 		printf(str);
 		printf("\n");
@@ -108,9 +132,10 @@ void MSKAPI OsiMskStreamFuncLog(MSKuserhandle_t handle, MSKCONST char* str) {
 
 static 
 void MSKAPI OsiMskStreamFuncWarning(MSKuserhandle_t handle, MSKCONST char* str) {
-	if (handle) {
-		if (((CoinMessageHandler*)handle)->logLevel() >= 0)
-			((CoinMessageHandler*)handle)->message(0, "MSK", str, ' ') << CoinMessageEol;
+	CoinMessageHandler* handler = (CoinMessageHandler*)handle;
+	if (handler != NULL) {
+		if (handler->logLevel() >= 0)
+			handleMessage(handler, str);
 	} else {
 		printf(str);
 		printf("\n");
@@ -119,8 +144,9 @@ void MSKAPI OsiMskStreamFuncWarning(MSKuserhandle_t handle, MSKCONST char* str) 
 
 static 
 void MSKAPI OsiMskStreamFuncError(MSKuserhandle_t handle, MSKCONST char* str) {
-	if (handle) {
-		((CoinMessageHandler*)handle)->message(0, "MSK", str, ' ') << CoinMessageEol;
+	CoinMessageHandler* handler = (CoinMessageHandler*)handle;
+	if (handler != NULL) {
+		handleMessage(handler, str);
 	} else {
 		fprintf(stderr, str);
 		fprintf(stderr, "\n");
@@ -423,17 +449,20 @@ void OsiMskSolverInterface::initialSolve()
     err = MSK_getintparam(getMutableLpPtr(), MSK_IPAR_OPTIMIZER, &MSKsolverused_);
     checkMSKerror(err,"MSK_getintparam","initialsolve");
 
-    #if MSK_DO_MOSEK_LOG > 0
+#if MSK_DO_MOSEK_LOG > 0
+    err = MSK_putintparam( getMutableLpPtr(),MSK_IPAR_LOG,MSK_DO_MOSEK_LOG);
+    checkMSKerror(err,"MSK_putintparam","initialsolve");
+
     err = MSK_putintparam( getMutableLpPtr(),MSK_IPAR_LOG_SIM,MSK_DO_MOSEK_LOG);
     checkMSKerror(err,"MSK_putintparam","initialsolve");
-    #endif
+#endif
 
     Mskerr = MSK_optimize(getLpPtr( OsiMskSolverInterface::FREECACHED_RESULTS ));
 
-    #if MSK_DO_MOSEK_LOG > 0
+#if MSK_DO_MOSEK_LOG > 0
     err = MSK_solutionsummary( getMutableLpPtr(),MSK_STREAM_LOG);
     checkMSKerror(err,"MSK_solutionsummary","initialsolve");
-    #endif
+#endif
 
     err = MSK_putintparam(getMutableLpPtr(), MSK_IPAR_OPTIMIZER, solver);
     checkMSKerror(err,"MSK_putintparam","initialsolve");
@@ -476,13 +505,13 @@ void OsiMskSolverInterface::resolve()
     err = MSK_getintparam(getMutableLpPtr(), MSK_IPAR_OPTIMIZER, &MSKsolverused_);
     checkMSKerror(err,"MSK_getintparam","resolve");
 
-    #if MSK_DO_MOSEK_LOG > 0
+#if MSK_DO_MOSEK_LOG > 0
     err = MSK_putintparam( getMutableLpPtr(),MSK_IPAR_LOG,MSK_DO_MOSEK_LOG);
     checkMSKerror(err,"MSK_putintparam","resolve");
 
     err = MSK_putintparam( getMutableLpPtr(),MSK_IPAR_LOG_SIM,MSK_DO_MOSEK_LOG);
     checkMSKerror(err,"MSK_putintparam","resolve");
-    #endif
+#endif
 
     Mskerr = MSK_optimize(getLpPtr( OsiMskSolverInterface::FREECACHED_RESULTS ));
 
@@ -1232,6 +1261,7 @@ CoinWarmStart* OsiMskSolverInterface::getWarmStart() const
   bux = new double[numcols];
   xx  = new double[numcols];
 
+#if MSK_VERSION_MAJOR < 9
   err = MSK_getboundslice(getMutableLpPtr(),
                           MSK_ACC_CON,
                           0,
@@ -1240,7 +1270,7 @@ CoinWarmStart* OsiMskSolverInterface::getWarmStart() const
                           (MSKrealt*)blc,
                           (MSKrealt*)buc);
     
-  checkMSKerror( err, "MSK_getsolution", "getWarmStart" );
+  checkMSKerror( err, "MSK_getboundslice", "getWarmStart" );
 
   err = MSK_getboundslice(getMutableLpPtr(),
                           MSK_ACC_VAR,
@@ -1248,9 +1278,28 @@ CoinWarmStart* OsiMskSolverInterface::getWarmStart() const
                           numcols,
                           (MSKboundkeye*)bkx,
                           (MSKrealt*)blx,
-                          (MSKrealt*)bux);  
- 
-  checkMSKerror( err, "MSK_getsolution", "getWarmStart" );
+                          (MSKrealt*)bux);
+
+  checkMSKerror( err, "MSK_getboundslice", "getWarmStart" );
+#else
+  err = MSK_getconboundslice(getMutableLpPtr(),
+                          0,
+                          numrows,
+                          (MSKboundkeye*)bkc,
+                          (MSKrealt*)blc,
+                          (MSKrealt*)buc);
+
+  checkMSKerror( err, "getconboundslice", "getWarmStart" );
+
+  err = MSK_getvarboundslice(getMutableLpPtr(),
+                          0,
+                          numcols,
+                          (MSKboundkeye*)bkx,
+                          (MSKrealt*)blx,
+                          (MSKrealt*)bux);
+
+  checkMSKerror( err, "MSK_getvarboundslice", "getWarmStart" );
+#endif
   
   MSKassert(3,!probtypemip_,"!probtypemip_","getWarmStart");
 
@@ -1454,6 +1503,7 @@ bool OsiMskSolverInterface::setWarmStart(const CoinWarmStart* warmstart)
   skc  = new int[numrows];
   bkc  = new int[numrows];
 
+#if MSK_VERSION_MAJOR < 9
   restat = MSK_getboundslice(getMutableLpPtr(),
                              MSK_ACC_CON,
                              0,
@@ -1463,6 +1513,16 @@ bool OsiMskSolverInterface::setWarmStart(const CoinWarmStart* warmstart)
                              NULL);
 
   checkMSKerror( restat, "MSK_getboundslice", "setWarmStart" );
+#else
+  restat = MSK_getconboundslice(getMutableLpPtr(),
+                             0,
+                             numrows,
+                             (MSKboundkeye*) (bkc),
+                             NULL,
+                             NULL);
+
+  checkMSKerror( restat, "MSK_getconboundslice", "setWarmStart" );
+#endif
 
   for( i = 0; i < numrows; ++i )
   {
@@ -1521,6 +1581,7 @@ bool OsiMskSolverInterface::setWarmStart(const CoinWarmStart* warmstart)
   {
     bkx = new int[numcols];
 
+#if MSK_VERSION_MAJOR < 9
     restat = MSK_getboundslice(getMutableLpPtr(),
                                MSK_ACC_VAR,
                                0,
@@ -1530,6 +1591,16 @@ bool OsiMskSolverInterface::setWarmStart(const CoinWarmStart* warmstart)
                                NULL);
 
    checkMSKerror( restat, "MSK_getboundslice", "setWarmStart" );
+#else
+   restat = MSK_getvarboundslice(getMutableLpPtr(),
+                              0,
+                              numcols,
+                              (MSKboundkeye*) (bkx),
+                              NULL,
+                              NULL);
+
+  checkMSKerror( restat, "MSK_getvarboundslice", "setWarmStart" );
+#endif
 
    for( i = 0; i < numcols; ++i )
     {
@@ -1864,6 +1935,7 @@ const double * OsiMskSolverInterface::getColLower() const
 
       int *dummy_tags = new int[ncols];
 
+#if MSK_VERSION_MAJOR < 9
       int err = MSK_getboundslice(getMutableLpPtr(), 
                                   MSK_ACC_VAR, 
                                   (MSKidxt)0, 
@@ -1873,6 +1945,16 @@ const double * OsiMskSolverInterface::getColLower() const
                                   colupper_);
                                   
       checkMSKerror(err, "MSK_getboundslice","getColUpper");
+#else
+      int err = MSK_getvarboundslice(getMutableLpPtr(),
+                                  0,
+                                  ncols,
+                                  (MSKboundkeye*) (dummy_tags),
+                                  collower_,
+                                  colupper_);
+
+      checkMSKerror(err, "MSK_getvarboundslice","getColUpper");
+#endif
 
       for( int k = 0; k < ncols; ++k )
       {
@@ -1937,7 +2019,8 @@ const double * OsiMskSolverInterface::getColUpper() const
         collower_       = new double[ncols];
 
       int *dummy_tags = new int[ncols];
-      
+
+#if MSK_VERSION_MAJOR < 9
       int err = MSK_getboundslice( getMutableLpPtr(), 
                                    MSK_ACC_VAR, 
                                    (MSKidxt)0, 
@@ -1947,6 +2030,16 @@ const double * OsiMskSolverInterface::getColUpper() const
                                    colupper_);
                                   
       checkMSKerror(err,"MSK_getboundslice","getColUpper");
+#else
+      int err = MSK_getvarboundslice( getMutableLpPtr(),
+                                   0,
+                                   ncols,
+                                   (MSKboundkeye*) (dummy_tags),
+                                   collower_,
+                                   colupper_);
+
+      checkMSKerror(err,"MSK_getvarboundslice","getColUpper");
+#endif
       
       delete[] dummy_tags;
     } 
@@ -2073,7 +2166,8 @@ const double * OsiMskSolverInterface::getRowLower() const
       rowlower_       = new double[nrows];
       rowupper_       = new double[nrows];
       int *dummy_tags = new int[nrows];
-        
+
+#if MSK_VERSION_MAJOR < 9
       int err = MSK_getboundslice(getMutableLpPtr(), 
                                   MSK_ACC_CON, 
                                   (MSKidxt)0, 
@@ -2083,7 +2177,16 @@ const double * OsiMskSolverInterface::getRowLower() const
                                   rowupper_);
         
       checkMSKerror(err,"MSK_getboundslice","getRowLower");
-      
+#else
+      int err = MSK_getconboundslice(getMutableLpPtr(),
+                                  0,
+                                  nrows,
+                                  (MSKboundkeye*) (dummy_tags),
+                                  rowlower_,
+                                  rowupper_);
+
+      checkMSKerror(err,"MSK_getconboundslice","getRowLower");
+#endif
       delete[] dummy_tags;
     }
   }
@@ -2116,7 +2219,8 @@ const double * OsiMskSolverInterface::getRowUpper() const
       rowupper_       = new double[nrows];
       rowlower_       = new double[nrows];
       int *dummy_tags = new int[nrows];
-        
+
+#if MSK_VERSION_MAJOR < 9
       int err = MSK_getboundslice(getMutableLpPtr(), 
                                   MSK_ACC_CON, 
                                   (MSKidxt)0,
@@ -2126,6 +2230,16 @@ const double * OsiMskSolverInterface::getRowUpper() const
                                   rowupper_);
         
       checkMSKerror(err,"MSK_getboundslice","getRowUpper");
+#else
+      int err = MSK_getconboundslice(getMutableLpPtr(),
+                                  0,
+                                  nrows,
+                                  (MSKboundkeye*) (dummy_tags),
+                                  rowlower_,
+                                  rowupper_);
+
+      checkMSKerror(err,"MSK_getconboundslice","getRowUpper");
+#endif
       
       delete[] dummy_tags;
     }
@@ -2235,6 +2349,7 @@ const CoinPackedMatrix * OsiMskSolverInterface::getMatrixByRow() const
     len      = new int[nr];
     ptrb[nr] = nz;
 
+#if MSK_VERSION_MAJOR < 9
     int err = MSK_getaslice(getMutableLpPtr(),
                             MSK_ACC_CON,
                             0,
@@ -2247,6 +2362,19 @@ const CoinPackedMatrix * OsiMskSolverInterface::getMatrixByRow() const
                             val); 
 
     checkMSKerror(err, "MSK_getaslice", "getMatrixByRow");
+#else
+    int err = MSK_getarowslice(getMutableLpPtr(),
+                            0,
+                            nr,
+                            nz,
+                            &surp,
+                            ptrb,
+                            ptre,
+                            sub,
+                            val);
+
+    checkMSKerror(err, "MSK_getarowslice", "getMatrixByRow");
+#endif
 
     for(int i=0; i<nr; i++)
       len[i] = ptre[i]-ptrb[i];
@@ -2296,6 +2424,7 @@ const CoinPackedMatrix * OsiMskSolverInterface::getMatrixByCol() const
     len      = new int[nc];
     ptrb[nc] = nz;
 
+#if MSK_VERSION_MAJOR < 9
     int err = MSK_getaslice(getMutableLpPtr(),
                             MSK_ACC_VAR,
                             0,
@@ -2308,6 +2437,19 @@ const CoinPackedMatrix * OsiMskSolverInterface::getMatrixByCol() const
                             val); 
 
     checkMSKerror(err, "MSK_getaslice", "getMatrixByCol");
+#else
+    int err = MSK_getacolslice(getMutableLpPtr(),
+                            0,
+                            nc,
+                            nz,
+                            &surp,
+                            ptrb,
+                            ptre,
+                            sub,
+                            val);
+
+    checkMSKerror(err, "MSK_getacolslice", "getMatrixByCol");
+#endif
 
     for(int i=0; i<nc; i++)
       len[i] = ptre[i]-ptrb[i];
@@ -2920,7 +3062,8 @@ void OsiMskSolverInterface::setColLower(int elementIndex, double elementValue)
   
   if( elementValue <= -getInfinity() )
     finite = 0;
-  
+
+#if MSK_VERSION_MAJOR < 9
   int err = MSK_chgbound(getMutableLpPtr(), 
                          MSK_ACC_VAR,
                          elementIndex,
@@ -2929,6 +3072,15 @@ void OsiMskSolverInterface::setColLower(int elementIndex, double elementValue)
                          elementValue);
 
   checkMSKerror( err, "MSK_chgbound", "setColLower" );
+#else
+  int err = MSK_chgvarbound(getMutableLpPtr(),
+                         elementIndex,
+                         1,       /*It is a lower bound*/
+                         finite,  /* Is it finite */
+                         elementValue);
+
+  checkMSKerror( err, "MSK_chgvarbound", "setColLower" );
+#endif
    
   if( collower_ != NULL )
     collower_[elementIndex] = elementValue;
@@ -2952,6 +3104,7 @@ void OsiMskSolverInterface::setColUpper(int elementIndex, double elementValue)
   if( elementValue >= getInfinity() )
     finite = 0;
 
+#if MSK_VERSION_MAJOR < 9
   int err = MSK_chgbound( getMutableLpPtr(), 
                           MSK_ACC_VAR,
                           elementIndex,
@@ -2960,6 +3113,15 @@ void OsiMskSolverInterface::setColUpper(int elementIndex, double elementValue)
                           elementValue);
 
   checkMSKerror( err, "MSK_chgbound", "setColUpper" );
+#else
+  int err = MSK_chgvarbound( getMutableLpPtr(),
+                          elementIndex,
+                          0,       /* It is a upper bound */
+                          finite,  /* Is it finite */
+                          elementValue);
+
+  checkMSKerror( err, "MSK_chgvarbound", "setColUpper" );
+#endif
     
   if( colupper_ != NULL )
     colupper_[elementIndex] = elementValue;
@@ -3096,12 +3258,24 @@ OsiMskSolverInterface::setRowType(int i, char sense, double rightHandSide,double
 
   MskConvertSenseToBound(sense, range, rightHandSide, rlb, rub, rtag); 
 
+#if MSK_VERSION_MAJOR < 9
   int err = MSK_putbound(getMutableLpPtr(),
                          MSK_ACC_CON, 
                          i, 
                          (MSKboundkeye)rtag, 
                          rlb, 
                          rub);
+
+  checkMSKerror( err, "MSK_putbound", "setRowType" );
+#else
+  int err = MSK_putconbound(getMutableLpPtr(),
+                         i,
+                         (MSKboundkeye)rtag,
+                         rlb,
+                         rub);
+
+  checkMSKerror( err, "MSK_putconbound", "setRowType" );
+#endif
 
   if( rowsense_ != NULL )
      rowsense_[i] = sense;
@@ -3111,8 +3285,6 @@ OsiMskSolverInterface::setRowType(int i, char sense, double rightHandSide,double
 
   if( rhs_      != NULL )
      rhs_[i]      = rightHandSide;
-                  
-  checkMSKerror( err, "MSK_putbound", "setRowType" );
 
   #if MSK_OSI_DEBUG_LEVEL > 3
   debugMessage("End OsiMskSolverInterface::setRowType(%d, %c, %g, %g)\n", i, sense, rightHandSide, range);
@@ -3367,27 +3539,47 @@ void OsiMskSolverInterface::setColSolution(const double * cs)
       txc[i]  = -txc[i];
       tskc[i] = MSK_SK_UNK; 
     }
-    
+
+#if MSK_VERSION_MAJOR < 9
     err = MSK_getboundslice(getMutableLpPtr(),
                             MSK_ACC_CON,
                             0,
                             nr,
-                            tbkc, 
+                            tbkc,
                             tblc,
                             tbuc);
-    
+
     checkMSKerror( err, "MSK_getboundslice", "setColsolution" );
 
     err = MSK_getboundslice(getMutableLpPtr(),
                             MSK_ACC_VAR,
                             0,
                             nc,
-                            tbkx, 
+                            tbkx,
                             tblx,
                             tbux);
     
     checkMSKerror( err, "MSK_getboundslice", "setColsolution" );
+#else
+    err = MSK_getconboundslice(getMutableLpPtr(),
+                            0,
+                            nr,
+                            tbkc, 
+                            tblc,
+                            tbuc);
     
+    checkMSKerror( err, "MSK_getconboundslice", "setColsolution" );
+
+    err = MSK_getvarboundslice(getMutableLpPtr(),
+                            0,
+                            nc,
+                            tbkx, 
+                            tblx,
+                            tbux);
+    
+    checkMSKerror( err, "MSK_getvarboundslice", "setColsolution" );
+#endif
+
     if( definedSolution( MSK_SOL_BAS ) == true )
     {
       err = MSK_getsolution(getMutableLpPtr(), 
@@ -3515,7 +3707,7 @@ void OsiMskSolverInterface::setRowPrice(const double * rs)
 
   int err,nr = getNumRows(),nc = getNumCols();
   MSKstakeye *tskc,*tskx;
-  MSKrealt *tslc,*tsuc,*tslx,*tsux,sn,*txc,*txx;
+  MSKrealt *tslc,*tsuc,*tslx,*tsux,*txc,*txx;
   double *redcost;
 
   if( rs == NULL )
@@ -3557,6 +3749,8 @@ void OsiMskSolverInterface::setRowPrice(const double * rs)
     {
       for( int i = 0; i < nr; ++i )
       {
+#if MSK_VERSION_MAJOR < 9
+         MSKrealt sn;
         err = MSK_getsolutioni(getMutableLpPtr(),
                                MSK_ACC_CON,
                                i,
@@ -3567,11 +3761,21 @@ void OsiMskSolverInterface::setRowPrice(const double * rs)
                                &tsuc[i], 
                                &sn);
 
-        tslc[i] = CoinMax(0.0,rowsol_[i]);
-        tsuc[i] = CoinMax(0.0,-rowsol_[i]);
-
         checkMSKerror(err,"MSK_putsolutioni","setRowPrice");
 
+#else
+        err = MSK_getskcslice(getMutableLpPtr(), MSK_SOL_BAS, i, i+1, &tskc[i]);
+        checkMSKerror(err,"MSK_getskcslice","setRowPrice");
+        err = MSK_getxcslice(getMutableLpPtr(), MSK_SOL_BAS, i, i+1, &txc[i]);
+        checkMSKerror(err,"MSK_getxcslice","setRowPrice");
+        err = MSK_getslcslice(getMutableLpPtr(), MSK_SOL_BAS, i, i+1, &tslc[i]);
+        checkMSKerror(err,"MSK_getslcslice","setRowPrice");
+        err = MSK_getsucslice(getMutableLpPtr(), MSK_SOL_BAS, i, i+1, &tsuc[i]);
+        checkMSKerror(err,"MSK_getsucslice","setRowPrice");
+#endif
+
+        tslc[i] = CoinMax(0.0,rowsol_[i]);
+        tsuc[i] = CoinMax(0.0,-rowsol_[i]);
       }
 
       err = MSK_getsolution(getMutableLpPtr(),
@@ -4943,9 +5147,11 @@ MSKtask_t OsiMskSolverInterface::getMutableLpPtr() const
 
     err = MSK_putintparam(task_, MSK_IPAR_PRESOLVE_USE, MSK_ON);
     checkMSKerror(err,"MSK_putintparam","getMutableLpPtr()");  
-    
+
+#if MSK_VERSION_MAJOR < 9
     err = MSK_putintparam(task_, MSK_IPAR_WRITE_DATA_FORMAT, MSK_DATA_FORMAT_MPS);
-    checkMSKerror(err,"MSK_putintparam","getMutableLpPtr()");  
+    checkMSKerror(err,"MSK_putintparam","getMutableLpPtr()");
+#endif
     
     err = MSK_putintparam(task_, MSK_IPAR_WRITE_GENERIC_NAMES, MSK_ON);
     checkMSKerror(err,"MSK_putintparam","getMutableLpPtr()");  
@@ -5004,6 +5210,11 @@ void OsiMskSolverInterface::gutsOfCopy( const OsiMskSolverInterface & source )
   err = MSK_clonetask(source.getMutableLpPtr(),&task_);
 
   checkMSKerror( err, "MSK_clonetask", "gutsOfCopy" );
+
+  // reinitialize output streams to use message handler of copy, also not sure that MSK_clonetask copied these over
+  MSK_linkfunctotaskstream(task_, MSK_STREAM_LOG, messageHandler(), OsiMskStreamFuncLog);
+  MSK_linkfunctotaskstream(task_, MSK_STREAM_ERR, messageHandler(), OsiMskStreamFuncWarning);
+  MSK_linkfunctotaskstream(task_, MSK_STREAM_WRN, messageHandler(), OsiMskStreamFuncError);
 
   // Set MIP information
   resizeColType(source.coltypesize_);

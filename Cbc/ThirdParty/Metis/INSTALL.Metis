@@ -36,6 +36,10 @@ Unpack it in this directory:
 gunzip metis-4.0.3.tar.gz
 tar xf metis-4.0.3.tar
 
+Apply a patch to fix a bug:
+
+patch -p0 < metis.patch
+
 Rename the extracted directory:
 
 mv metis-4.0.3 metis-4.0

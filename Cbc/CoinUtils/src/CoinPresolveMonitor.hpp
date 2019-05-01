@@ -26,29 +26,27 @@
   to the CoinPresolveMatrix and CoinPostsolveMatrix classes that will only be
   used for debugging. That's not too attractive either.
 */
-class CoinPresolveMonitor
-{
-  public:
-
+class CoinPresolveMonitor {
+public:
   /*! \brief Default constructor
 
     Creates an empty monitor.
   */
-  CoinPresolveMonitor() ;
+  CoinPresolveMonitor();
 
   /*! \brief Initialise from a CoinPresolveMatrix
 
     Load the initial row or column from a CoinPresolveMatrix. Set \p isRow
     true for a row, false for a column.
   */
-  CoinPresolveMonitor(const CoinPresolveMatrix *mtx, bool isRow, int k) ;
+  CoinPresolveMonitor(const CoinPresolveMatrix *mtx, bool isRow, int k);
 
   /*! \brief Initialise from a CoinPostsolveMatrix
 
     Load the initial row or column from a CoinPostsolveMatrix. Set \p isRow
     true for a row, false for a column.
   */
-  CoinPresolveMonitor(const CoinPostsolveMatrix *mtx, bool isRow, int k) ;
+  CoinPresolveMonitor(const CoinPostsolveMatrix *mtx, bool isRow, int k);
 
   /*! \brief Compare the present row or column against the stored copy and
   	     report differences.
@@ -56,7 +54,7 @@ class CoinPresolveMonitor
     Load the current row or column from a CoinPresolveMatrix and compare.
     Differences are printed to std::cout.
   */
-  void checkAndTell(const CoinPresolveMatrix *mtx) ;
+  void checkAndTell(const CoinPresolveMatrix *mtx);
 
   /*! \brief Compare the present row or column against the stored copy and
   	     report differences.
@@ -64,42 +62,44 @@ class CoinPresolveMonitor
     Load the current row or column from a CoinPostsolveMatrix and compare.
     Differences are printed to std::cout.
   */
-  void checkAndTell(const CoinPostsolveMatrix *mtx) ;
+  void checkAndTell(const CoinPostsolveMatrix *mtx);
 
-  private:
-
+private:
   /// Extract a row from a CoinPresolveMatrix
-  CoinPackedVector *extractRow(int i, const CoinPresolveMatrix *mtx) const ;
+  CoinPackedVector *extractRow(int i, const CoinPresolveMatrix *mtx) const;
 
   /// Extract a column from a CoinPresolveMatrix
-  CoinPackedVector *extractCol(int j, const CoinPresolveMatrix *mtx) const ;
+  CoinPackedVector *extractCol(int j, const CoinPresolveMatrix *mtx) const;
 
   /// Extract a row from a CoinPostsolveMatrix
-  CoinPackedVector *extractRow(int i, const CoinPostsolveMatrix *mtx) const ;
+  CoinPackedVector *extractRow(int i, const CoinPostsolveMatrix *mtx) const;
 
   /// Extract a column from a CoinPostsolveMatrix
-  CoinPackedVector *extractCol(int j, const CoinPostsolveMatrix *mtx) const ;
+  CoinPackedVector *extractCol(int j, const CoinPostsolveMatrix *mtx) const;
 
   /// Worker method underlying the public checkAndTell methods.
-  void checkAndTell(CoinPackedVector *curVec, double lb, double ub) ;
+  void checkAndTell(CoinPackedVector *curVec, double lb, double ub);
 
   /// True to monitor a row, false to monitor a column
-  bool isRow_ ;
+  bool isRow_;
 
   /// Row or column index
-  int ndx_ ;
+  int ndx_;
 
   /*! The original row or column
 
     Sorted in increasing order of indices.
   */
-  CoinPackedVector *origVec_ ;
+  CoinPackedVector *origVec_;
 
   /// Original row or column lower bound
-  double lb_ ;
+  double lb_;
 
   /// Original row or column upper bound
-  double ub_ ;
-} ;
+  double ub_;
+};
 
 #endif
+
+/* vi: softtabstop=2 shiftwidth=2 expandtab tabstop=2
+*/

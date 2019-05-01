@@ -1,4 +1,4 @@
-/* $Id: addRows.cpp 1935 2013-04-08 19:16:07Z stefan $ */
+/* $Id: addRows.cpp 2431 2019-03-15 15:56:51Z stefan $ */
 // Copyright (C) 2004, International Business Machines
 // Corporation and others.  All Rights Reserved.
 // This code is licensed under the terms of the Eclipse Public License (EPL).
@@ -15,6 +15,7 @@
 
 int main(int argc, const char *argv[])
 {
+#if COIN_BIG_INDEX<2
      try {
           // Empty model
           ClpSimplex  model;
@@ -230,29 +231,29 @@ int main(int argc, const char *argv[])
                std::cout << std::setw(6) << iColumn << " ";
                value = columnPrimal[iColumn];
                if (fabs(value) < 1.0e5)
-                    std::cout << setiosflags(std::ios::fixed | std::ios::showpoint) << std::setw(14) << value;
+                    std::cout << std::setiosflags(std::ios::fixed | std::ios::showpoint) << std::setw(14) << value;
                else
-                    std::cout << setiosflags(std::ios::scientific) << std::setw(14) << value;
+                    std::cout << std::setiosflags(std::ios::scientific) << std::setw(14) << value;
                value = columnDual[iColumn];
                if (fabs(value) < 1.0e5)
-                    std::cout << setiosflags(std::ios::fixed | std::ios::showpoint) << std::setw(14) << value;
+                    std::cout << std::setiosflags(std::ios::fixed | std::ios::showpoint) << std::setw(14) << value;
                else
-                    std::cout << setiosflags(std::ios::scientific) << std::setw(14) << value;
+                    std::cout << std::setiosflags(std::ios::scientific) << std::setw(14) << value;
                value = columnLower[iColumn];
                if (fabs(value) < 1.0e5)
-                    std::cout << setiosflags(std::ios::fixed | std::ios::showpoint) << std::setw(14) << value;
+                    std::cout << std::setiosflags(std::ios::fixed | std::ios::showpoint) << std::setw(14) << value;
                else
-                    std::cout << setiosflags(std::ios::scientific) << std::setw(14) << value;
+                    std::cout << std::setiosflags(std::ios::scientific) << std::setw(14) << value;
                value = columnUpper[iColumn];
                if (fabs(value) < 1.0e5)
-                    std::cout << setiosflags(std::ios::fixed | std::ios::showpoint) << std::setw(14) << value;
+                    std::cout << std::setiosflags(std::ios::fixed | std::ios::showpoint) << std::setw(14) << value;
                else
-                    std::cout << setiosflags(std::ios::scientific) << std::setw(14) << value;
+                    std::cout << std::setiosflags(std::ios::scientific) << std::setw(14) << value;
                value = columnObjective[iColumn];
                if (fabs(value) < 1.0e5)
-                    std::cout << setiosflags(std::ios::fixed | std::ios::showpoint) << std::setw(14) << value;
+                    std::cout << std::setiosflags(std::ios::fixed | std::ios::showpoint) << std::setw(14) << value;
                else
-                    std::cout << setiosflags(std::ios::scientific) << std::setw(14) << value;
+                    std::cout << std::setiosflags(std::ios::scientific) << std::setw(14) << value;
 
                std::cout << std::endl;
           }
@@ -278,5 +279,8 @@ int main(int argc, const char *argv[])
           if (e.lineNumber() >= 0)
                std::cout << "This was from a CoinAssert" << std::endl;
      }
+#else
+     printf("addRows not available with COIN_BIG_INDEX=2\n");
+#endif
      return 0;
 }

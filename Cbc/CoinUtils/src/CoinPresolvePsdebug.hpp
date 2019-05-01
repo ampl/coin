@@ -1,4 +1,4 @@
-/* $Id: CoinPresolvePsdebug.hpp 1854 2015-12-18 14:18:54Z forrest $ */
+/* $Id: CoinPresolvePsdebug.hpp 2083 2019-01-06 19:38:09Z unxusr $ */
 // Copyright (C) 2002, International Business Machines
 // Corporation and others.  All Rights Reserved.
 // This code is licensed under the terms of the Eclipse Public License (EPL).
@@ -56,7 +56,7 @@
   to false to suppress the column (row) scan.
 */
 void presolve_no_dups(const CoinPresolveMatrix *preObj,
-		      bool doCol = true, bool doRow = true) ;
+  bool doCol = true, bool doRow = true);
 
 /*! \relates CoinPresolveMatrix
     \brief Check the links which track storage order for major vectors in
@@ -67,7 +67,7 @@ void presolve_no_dups(const CoinPresolveMatrix *preObj,
   scan. 
 */
 void presolve_links_ok(const CoinPresolveMatrix *preObj,
-		       bool doCol = true, bool doRow = true) ;
+  bool doCol = true, bool doRow = true);
 
 /*! \relates CoinPresolveMatrix
     \brief Check for explicit zeros in the column- and/or row-major matrices.
@@ -76,7 +76,7 @@ void presolve_links_ok(const CoinPresolveMatrix *preObj,
   to false to suppress the column (row) scan.
 */
 void presolve_no_zeros(const CoinPresolveMatrix *preObj,
-		       bool doCol = true, bool doRow = true) ;
+  bool doCol = true, bool doRow = true);
 
 /*! \relates CoinPresolveMatrix
     \brief Checks for equivalence of the column- and row-major matrices.
@@ -85,12 +85,12 @@ void presolve_no_zeros(const CoinPresolveMatrix *preObj,
   \p chkvals to false to suppress the check for equal value.
 */
 void presolve_consistent(const CoinPresolveMatrix *preObj,
-			 bool chkvals = true) ;
+  bool chkvals = true);
 
 /*! \relates CoinPostsolveMatrix
     \brief Checks that column threads agree with column lengths
 */
-void presolve_check_threads(const CoinPostsolveMatrix *obj) ;
+void presolve_check_threads(const CoinPostsolveMatrix *obj);
 
 /*! \relates CoinPostsolveMatrix
     \brief Checks the free list
@@ -103,7 +103,7 @@ void presolve_check_threads(const CoinPostsolveMatrix *obj) ;
     for checking a newly constructed postsolve matrix.
 */
 void presolve_check_free_list(const CoinPostsolveMatrix *obj,
-			      bool chkElemCnt = false) ;
+  bool chkElemCnt = false);
 
 /*! \relates CoinPostsolveMatrix
     \brief Check stored reduced costs for accuracy and consistency with
@@ -115,7 +115,7 @@ void presolve_check_free_list(const CoinPostsolveMatrix *obj,
   value for consistency with the status information in
   CoinPrePostsolveMatrix::colstat_.
 */
-void presolve_check_reduced_costs(const CoinPostsolveMatrix *obj) ;
+void presolve_check_reduced_costs(const CoinPostsolveMatrix *obj);
 
 /*! \relates CoinPostsolveMatrix
     \brief Check the dual variables for consistency with row activity.
@@ -124,7 +124,7 @@ void presolve_check_reduced_costs(const CoinPostsolveMatrix *obj) ;
   with the state of the constraint (loose, tight at lower bound, or tight at
   upper bound).
 */
-void presolve_check_duals(const CoinPostsolveMatrix *postObj) ;
+void presolve_check_duals(const CoinPostsolveMatrix *postObj);
 
 /*! \relates CoinPresolveMatrix
     \brief Check primal solution and architectural variable status.
@@ -136,8 +136,8 @@ void presolve_check_duals(const CoinPostsolveMatrix *postObj) ;
     CoinPresolvePsdebug.cpp for more information.
 */
 void presolve_check_sol(const CoinPresolveMatrix *preObj,
-			int chkColSol = 2, int chkRowAct = 1,
-			int chkStatus = 1) ;
+  int chkColSol = 2, int chkRowAct = 1,
+  int chkStatus = 1);
 
 /*! \relates CoinPostsolveMatrix
     \brief Check primal solution and architectural variable status.
@@ -148,22 +148,22 @@ void presolve_check_sol(const CoinPresolveMatrix *preObj,
     information.
 */
 void presolve_check_sol(const CoinPostsolveMatrix *postObj,
-			int chkColSol = 2, int chkRowAct = 2,
-			int chkStatus = 1) ;
+  int chkColSol = 2, int chkRowAct = 2,
+  int chkStatus = 1);
 
 /*! \relates CoinPresolveMatrix
     \brief Check for the proper number of basic variables.
 */
-void presolve_check_nbasic(const CoinPresolveMatrix *preObj) ;
+void presolve_check_nbasic(const CoinPresolveMatrix *preObj);
 
 /*! \relates CoinPostsolveMatrix
     \brief Check for the proper number of basic variables.
 */
-void presolve_check_nbasic(const CoinPostsolveMatrix *postObj) ;
+void presolve_check_nbasic(const CoinPostsolveMatrix *postObj);
 
-/// get a row copy in postsolve
-void postsolve_get_rowcopy(const CoinPostsolveMatrix *postObj,
-			   int * & rowStarts, int * & columns, double * & elements ) ;
 //@}
 
 #endif
+
+/* vi: softtabstop=2 shiftwidth=2 expandtab tabstop=2
+*/

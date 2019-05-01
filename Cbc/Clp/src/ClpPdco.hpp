@@ -1,4 +1,4 @@
-/* $Id: ClpPdco.hpp 1665 2011-01-04 17:55:54Z lou $ */
+/* $Id: ClpPdco.hpp 2385 2019-01-06 19:43:06Z unxusr $ */
 // Copyright (C) 2003, International Business Machines
 // Corporation and others.  All Rights Reserved.
 // This code is licensed under the terms of the Eclipse Public License (EPL).
@@ -22,51 +22,52 @@
 class ClpPdco : public ClpInterior {
 
 public:
-
-     /**@name Description of algorithm */
-     //@{
-     /** Pdco algorithm
+  /**@name Description of algorithm */
+  //@{
+  /** Pdco algorithm
 
          Method
 
 
      */
 
-     int pdco();
-     // ** Temporary version
-     int  pdco( ClpPdcoBase * stuff, Options &options, Info &info, Outfo &outfo);
+  int pdco();
+  // ** Temporary version
+  int pdco(ClpPdcoBase *stuff, Options &options, Info &info, Outfo &outfo);
 
-     //@}
+  //@}
 
-     /**@name Functions used in pdco */
-     //@{
-     /// LSQR
-     void lsqr();
+  /**@name Functions used in pdco */
+  //@{
+  /// LSQR
+  void lsqr();
 
-     void matVecMult( int, double *, double *);
+  void matVecMult(int, double *, double *);
 
-     void matVecMult( int, CoinDenseVector<double> &, double *);
+  void matVecMult(int, CoinDenseVector< double > &, double *);
 
-     void matVecMult( int, CoinDenseVector<double> &, CoinDenseVector<double> &);
+  void matVecMult(int, CoinDenseVector< double > &, CoinDenseVector< double > &);
 
-     void matVecMult( int, CoinDenseVector<double> *, CoinDenseVector<double> *);
+  void matVecMult(int, CoinDenseVector< double > *, CoinDenseVector< double > *);
 
-     void getBoundTypes( int *, int *, int *, int**);
+  void getBoundTypes(int *, int *, int *, int **);
 
-     void getGrad(CoinDenseVector<double> &x, CoinDenseVector<double> &grad);
+  void getGrad(CoinDenseVector< double > &x, CoinDenseVector< double > &grad);
 
-     void getHessian(CoinDenseVector<double> &x, CoinDenseVector<double> &H);
+  void getHessian(CoinDenseVector< double > &x, CoinDenseVector< double > &H);
 
-     double getObj(CoinDenseVector<double> &x);
+  double getObj(CoinDenseVector< double > &x);
 
-     void matPrecon( double, double *, double *);
+  void matPrecon(double, double *, double *);
 
-     void matPrecon( double, CoinDenseVector<double> &, double *);
+  void matPrecon(double, CoinDenseVector< double > &, double *);
 
-     void matPrecon( double, CoinDenseVector<double> &, CoinDenseVector<double> &);
+  void matPrecon(double, CoinDenseVector< double > &, CoinDenseVector< double > &);
 
-     void matPrecon( double, CoinDenseVector<double> *, CoinDenseVector<double> *);
-     //@}
-
+  void matPrecon(double, CoinDenseVector< double > *, CoinDenseVector< double > *);
+  //@}
 };
 #endif
+
+/* vi: softtabstop=2 shiftwidth=2 expandtab tabstop=2
+*/

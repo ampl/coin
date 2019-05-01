@@ -3,7 +3,7 @@
 
 #if defined(_MSC_VER)
 // Turn off compiler warning about long names
-#  pragma warning(disable:4786)
+#pragma warning(disable : 4786)
 #endif
 
 #include <sstream>
@@ -64,29 +64,37 @@ namespace {
   The 'u' code is intended to be used when a routine is expecting one of 'r' or
   'c' and saw something else.
 */
-std::string invRowColName (char rcd, int ndx)
+std::string invRowColName(char rcd, int ndx)
 
-{ std::ostringstream buildName ;
+{
+  std::ostringstream buildName;
 
-  buildName << "!!invalid " ;
-  switch (rcd)
-  { case 'r':
-    { buildName << "Row " << ndx << "!!" ;
-      break ; }
-    case 'c':
-    { buildName << "Col " << ndx << "!!" ;
-      break ; }
-    case 'd':
-    { buildName << "Discipline " << ndx << "!!" ;
-      break ; }
-    case 'u':
-    { buildName << "Row/Col " << ndx << "!!" ;
-      break ; }
-    default:
-    { buildName << "!!Internal Confusion!!" ;
-      break ; } }
+  buildName << "!!invalid ";
+  switch (rcd) {
+  case 'r': {
+    buildName << "Row " << ndx << "!!";
+    break;
+  }
+  case 'c': {
+    buildName << "Col " << ndx << "!!";
+    break;
+  }
+  case 'd': {
+    buildName << "Discipline " << ndx << "!!";
+    break;
+  }
+  case 'u': {
+    buildName << "Row/Col " << ndx << "!!";
+    break;
+  }
+  default: {
+    buildName << "!!Internal Confusion!!";
+    break;
+  }
+  }
 
-  return (buildName.str()) ; }
+  return (buildName.str());
+}
 
 /*
   Adjust the allocated capacity of the name vectors, if they're sufficiently
@@ -94,32 +102,33 @@ std::string invRowColName (char rcd, int ndx)
   the current contents of the vectors. The `assignment & swap' bit is a trick
   lifted from Stroustrop 16.3.8 to make sure we really give back some space.
 */
-void reallocRowColNames (OsiSolverInterface::OsiNameVec &rowNames, int m,
-			 OsiSolverInterface::OsiNameVec &colNames, int n)
+void reallocRowColNames(OsiSolverInterface::OsiNameVec &rowNames, int m,
+  OsiSolverInterface::OsiNameVec &colNames, int n)
 
-{ int rowCap = static_cast<int>(rowNames.capacity()) ;
-  int colCap = static_cast<int>(colNames.capacity()) ;
+{
+  int rowCap = static_cast< int >(rowNames.capacity());
+  int colCap = static_cast< int >(colNames.capacity());
 
-  if (rowCap-m > 1000)
-  { rowNames.resize(m) ;
-    OsiSolverInterface::OsiNameVec tmp = rowNames ;
-    rowNames.swap(tmp) ; }
-  else
-  if (rowCap < m)
-  { rowNames.reserve(m) ; }
-  assert(rowNames.capacity() >= static_cast<unsigned>(m)) ;
+  if (rowCap - m > 1000) {
+    rowNames.resize(m);
+    OsiSolverInterface::OsiNameVec tmp = rowNames;
+    rowNames.swap(tmp);
+  } else if (rowCap < m) {
+    rowNames.reserve(m);
+  }
+  assert(rowNames.capacity() >= static_cast< unsigned >(m));
 
-  if (colCap-n > 1000)
-  { colNames.resize(n) ;
-    OsiSolverInterface::OsiNameVec tmp = colNames ;
-    colNames.swap(tmp) ; }
-  else
-  if (colCap < n)
-  { colNames.reserve(n) ; }
-  assert(colNames.capacity() >= static_cast<unsigned>(n)) ;
+  if (colCap - n > 1000) {
+    colNames.resize(n);
+    OsiSolverInterface::OsiNameVec tmp = colNames;
+    colNames.swap(tmp);
+  } else if (colCap < n) {
+    colNames.reserve(n);
+  }
+  assert(colNames.capacity() >= static_cast< unsigned >(n));
 
-  return ; }
-
+  return;
+}
 
 /*
   It's handy to have a 0-length name vector hanging around to use as a return
@@ -127,7 +136,7 @@ void reallocRowColNames (OsiSolverInterface::OsiNameVec &rowNames, int m,
   about what's actually occupying rowNames_ or colNames_.
 */
 
-const OsiSolverInterface::OsiNameVec zeroLengthNameVec(0) ;
+const OsiSolverInterface::OsiNameVec zeroLengthNameVec(0);
 
 }
 
@@ -145,40 +154,49 @@ const OsiSolverInterface::OsiNameVec zeroLengthNameVec(0) ;
 */
 
 std::string
-OsiSolverInterface::dfltRowColName (char rc, int ndx, unsigned digits) const
+OsiSolverInterface::dfltRowColName(char rc, int ndx, unsigned digits) const
 
-{ std::ostringstream buildName ;
+{
+  std::ostringstream buildName;
 
-  if (!(rc == 'r' || rc == 'c' || rc == 'o'))
-  { return (invRowColName('u',ndx)) ; }
-  if (ndx < 0)
-  { return (invRowColName(rc,ndx)) ; }
-  
-  if (digits <= 0)
-  { digits = 7 ; }
+  if (!(rc == 'r' || rc == 'c' || rc == 'o')) {
+    return (invRowColName('u', ndx));
+  }
+  if (ndx < 0) {
+    return (invRowColName(rc, ndx));
+  }
 
-  if (rc == 'o')
-  { std::string dfltObjName = "OBJECTIVE" ;
-    buildName << dfltObjName.substr(0,digits+1) ; }
-  else
-  { buildName << ((rc == 'r')?"R":"C") ;
-    buildName << std::setw(digits) << std::setfill('0') ;
-    buildName << ndx ; }
+  if (digits <= 0) {
+    digits = 7;
+  }
 
-  return buildName.str() ; }
+  if (rc == 'o') {
+    std::string dfltObjName = "OBJECTIVE";
+    buildName << dfltObjName.substr(0, digits + 1);
+  } else {
+    buildName << ((rc == 'r') ? "R" : "C");
+    buildName << std::setw(digits) << std::setfill('0');
+    buildName << ndx;
+  }
+
+  return buildName.str();
+}
 
 /*
   Return the name of the objective function.
 */
-std::string OsiSolverInterface::getObjName (unsigned maxLen) const
-{ std::string name ;
-  
-  if (objName_.length() == 0)
-  { name = dfltRowColName('o',0,maxLen) ; }
-  else
-  { name = objName_.substr(0,maxLen) ; }
+std::string OsiSolverInterface::getObjName(unsigned maxLen) const
+{
+  std::string name;
 
-  return (name) ; }
+  if (objName_.length() == 0) {
+    name = dfltRowColName('o', 0, maxLen);
+  } else {
+    name = objName_.substr(0, maxLen);
+  }
+
+  return (name);
+}
 
 /*
   Return a row name, according to the current name discipline, truncated if
@@ -186,55 +204,63 @@ std::string OsiSolverInterface::getObjName (unsigned maxLen) const
   message. By definition, ndx = getNumRows() (i.e., one greater than the
   largest valid row index) is the objective function.
 */
-std::string OsiSolverInterface::getRowName (int ndx, unsigned maxLen) const
+std::string OsiSolverInterface::getRowName(int ndx, unsigned maxLen) const
 
-{ int nameDiscipline ;
-  std::string name ;
-/*
+{
+  int nameDiscipline;
+  std::string name;
+  /*
   Check for valid row index.
 */
-  int m = getNumRows() ;
-  if (ndx < 0 || ndx > m)
-  { name = invRowColName('r',ndx) ;
-    return (name) ; }
-/*
+  int m = getNumRows();
+  if (ndx < 0 || ndx > m) {
+    name = invRowColName('r', ndx);
+    return (name);
+  }
+  /*
   The objective is kept separately, so we don't always have an entry at
   index m in the names vector. If no name is set, return the default.
 */
-  if (ndx == m)
-  { return (getObjName(maxLen)) ; }
-/*
+  if (ndx == m) {
+    return (getObjName(maxLen));
+  }
+  /*
   Determine how we're handling names. It's possible that the underlying solver
   has overridden getIntParam, but doesn't recognise OsiNameDiscipline. In that
   case, we want to default to auto names
 */
-  bool recognisesOsiNames = getIntParam(OsiNameDiscipline,nameDiscipline) ;
-  if (recognisesOsiNames == false)
-  { nameDiscipline = 0 ; }
-/*
+  bool recognisesOsiNames = getIntParam(OsiNameDiscipline, nameDiscipline);
+  if (recognisesOsiNames == false) {
+    nameDiscipline = 0;
+  }
+  /*
   Find/generate the proper name, based on discipline.
 */
-  switch (nameDiscipline)
-  { case 0:
-    { name = dfltRowColName('r',ndx) ;
-      break ; }
-    case 1:
-    case 2:
-    { name = "" ;
-      if (static_cast<unsigned>(ndx) < rowNames_.size())
-	name = rowNames_[ndx] ;
-      if (name.length() == 0)
-	name = dfltRowColName('r',ndx) ;
-      break ; }
-    default:
-    { name = invRowColName('d',nameDiscipline) ;
-      return (name) ; } }
-/*
+  switch (nameDiscipline) {
+  case 0: {
+    name = dfltRowColName('r', ndx);
+    break;
+  }
+  case 1:
+  case 2: {
+    name = "";
+    if (static_cast< unsigned >(ndx) < rowNames_.size())
+      name = rowNames_[ndx];
+    if (name.length() == 0)
+      name = dfltRowColName('r', ndx);
+    break;
+  }
+  default: {
+    name = invRowColName('d', nameDiscipline);
+    return (name);
+  }
+  }
+  /*
   Return the (possibly truncated) substring. The default for maxLen is npos
   (no truncation).
 */
-  return (name.substr(0,maxLen)) ; }
-
+  return (name.substr(0, maxLen));
+}
 
 /*
   Return the vector of row names. The vector we need depends on the name
@@ -244,95 +270,112 @@ std::string OsiSolverInterface::getRowName (int ndx, unsigned maxLen) const
     2: Check that rowNames_ is complete. Generate a complete vector on
        the spot if we need it.
 */
-const OsiSolverInterface::OsiNameVec &OsiSolverInterface::getRowNames ()
+const OsiSolverInterface::OsiNameVec &OsiSolverInterface::getRowNames()
 
-{ int nameDiscipline ;
-/*
+{
+  int nameDiscipline;
+  /*
   Determine how we're handling names. It's possible that the underlying solver
   has overridden getIntParam, but doesn't recognise OsiNameDiscipline. In that
   case, we want to default to auto names
 */
-  bool recognisesOsiNames = getIntParam(OsiNameDiscipline,nameDiscipline) ;
-  if (recognisesOsiNames == false)
-  { nameDiscipline = 0 ; }
-/*
+  bool recognisesOsiNames = getIntParam(OsiNameDiscipline, nameDiscipline);
+  if (recognisesOsiNames == false) {
+    nameDiscipline = 0;
+  }
+  /*
   Return the proper vector, as described at the head of the routine. If we
   need to generate a full vector, resize the existing vector and scan, filling
   in entries as required.
 */
-  switch (nameDiscipline)
-  { case 0:
-    { return (zeroLengthNameVec) ; }
-    case 1:
-    { return (rowNames_) ; }
-    case 2:
-    { int m = getNumRows() ;
-      if (rowNames_.size() < static_cast<unsigned>(m+1))
-      { rowNames_.resize(m+1) ; }
-      for (int i = 0 ; i < m ; i++)
-      { if (rowNames_[i].length() == 0)
-	{ rowNames_[i] = dfltRowColName('r',i) ; } }
-      if (rowNames_[m].length() == 0)
-      { rowNames_[m] = getObjName() ; }
-      return (rowNames_) ; }
-    default:
-    { /* quietly fail */
-      return (zeroLengthNameVec) ; } }
-/*
+  switch (nameDiscipline) {
+  case 0: {
+    return (zeroLengthNameVec);
+  }
+  case 1: {
+    return (rowNames_);
+  }
+  case 2: {
+    int m = getNumRows();
+    if (rowNames_.size() < static_cast< unsigned >(m + 1)) {
+      rowNames_.resize(m + 1);
+    }
+    for (int i = 0; i < m; i++) {
+      if (rowNames_[i].length() == 0) {
+        rowNames_[i] = dfltRowColName('r', i);
+      }
+    }
+    if (rowNames_[m].length() == 0) {
+      rowNames_[m] = getObjName();
+    }
+    return (rowNames_);
+  }
+  default: { /* quietly fail */
+    return (zeroLengthNameVec);
+  }
+  }
+  /*
   We should never reach here.
 */
-  assert(false) ;
+  assert(false);
 
-  return (zeroLengthNameVec) ; }
-  
+  return (zeroLengthNameVec);
+}
 
 /*
   Return a column name, according to the current name discipline, truncated if
   necessary. If the column index is out of range, the name becomes an error
   message.
 */
-std::string OsiSolverInterface::getColName (int ndx, unsigned maxLen) const
+std::string OsiSolverInterface::getColName(int ndx, unsigned maxLen) const
 
-{ int nameDiscipline ;
-  std::string name ;
-/*
+{
+  int nameDiscipline;
+  std::string name;
+  /*
   Check for valid column index.
 */
-  if (ndx < 0 || ndx >= getNumCols())
-  { name = invRowColName('c',ndx) ;
-    return (name) ; }
-/*
+  if (ndx < 0 || ndx >= getNumCols()) {
+    name = invRowColName('c', ndx);
+    return (name);
+  }
+  /*
   Determine how we're handling names. It's possible that the underlying solver
   has overridden getIntParam, but doesn't recognise OsiNameDiscipline. In that
   case, we want to default to auto names
 */
-  bool recognisesOsiNames = getIntParam(OsiNameDiscipline,nameDiscipline) ;
-  if (recognisesOsiNames == false)
-  { nameDiscipline = 0 ; }
-/*
+  bool recognisesOsiNames = getIntParam(OsiNameDiscipline, nameDiscipline);
+  if (recognisesOsiNames == false) {
+    nameDiscipline = 0;
+  }
+  /*
   Find/generate the proper name, based on discipline.
 */
-  switch (nameDiscipline)
-  { case 0:
-    { name = dfltRowColName('c',ndx) ;
-      break ; }
-    case 1:
-    case 2:
-    { name = "" ;
-      if (static_cast<unsigned>(ndx) < colNames_.size())
-	name = colNames_[ndx] ;
-      if (name.length() == 0)
-	name = dfltRowColName('c',ndx) ;
-      break ; }
-    default:
-    { name = invRowColName('d',nameDiscipline) ;
-      return (name) ; } }
-/*
+  switch (nameDiscipline) {
+  case 0: {
+    name = dfltRowColName('c', ndx);
+    break;
+  }
+  case 1:
+  case 2: {
+    name = "";
+    if (static_cast< unsigned >(ndx) < colNames_.size())
+      name = colNames_[ndx];
+    if (name.length() == 0)
+      name = dfltRowColName('c', ndx);
+    break;
+  }
+  default: {
+    name = invRowColName('d', nameDiscipline);
+    return (name);
+  }
+  }
+  /*
   Return the (possibly truncated) substring. The default for maxLen is npos
   (no truncation).
 */
-  return (name.substr(0,maxLen)) ; }
-
+  return (name.substr(0, maxLen));
+}
 
 /*
   Return the vector of column names. The vector we need depends on the name
@@ -342,87 +385,104 @@ std::string OsiSolverInterface::getColName (int ndx, unsigned maxLen) const
     2: Check that colNames_ is complete. Generate a complete vector on
        the spot if we need it.
 */
-const OsiSolverInterface::OsiNameVec &OsiSolverInterface::getColNames ()
+const OsiSolverInterface::OsiNameVec &OsiSolverInterface::getColNames()
 
-{ int nameDiscipline ;
-/*
+{
+  int nameDiscipline;
+  /*
   Determine how we're handling names. It's possible that the underlying solver
   has overridden getIntParam, but doesn't recognise OsiNameDiscipline. In that
   case, we want to default to auto names
 */
-  bool recognisesOsiNames = getIntParam(OsiNameDiscipline,nameDiscipline) ;
-  if (recognisesOsiNames == false)
-  { nameDiscipline = 0 ; }
-/*
+  bool recognisesOsiNames = getIntParam(OsiNameDiscipline, nameDiscipline);
+  if (recognisesOsiNames == false) {
+    nameDiscipline = 0;
+  }
+  /*
   Return the proper vector, as described at the head of the routine. If we
   need to generate a full vector, resize the existing vector and scan, filling
   in entries as required.
 */
-  switch (nameDiscipline)
-  { case 0:
-    { return (zeroLengthNameVec) ; }
-    case 1:
-    { return (colNames_) ; }
-    case 2:
-    { int n = getNumCols() ;
-      if (colNames_.size() < static_cast<unsigned>(n))
-      { colNames_.resize(n) ; }
-      for (int j = 0 ; j < n ; j++)
-      { if (colNames_[j].length() == 0)
-	{ colNames_[j] = dfltRowColName('c',j) ; } }
-      return (colNames_) ; }
-    default:
-    { /* quietly fail */
-      return (zeroLengthNameVec) ; } }
-/*
+  switch (nameDiscipline) {
+  case 0: {
+    return (zeroLengthNameVec);
+  }
+  case 1: {
+    return (colNames_);
+  }
+  case 2: {
+    int n = getNumCols();
+    if (colNames_.size() < static_cast< unsigned >(n)) {
+      colNames_.resize(n);
+    }
+    for (int j = 0; j < n; j++) {
+      if (colNames_[j].length() == 0) {
+        colNames_[j] = dfltRowColName('c', j);
+      }
+    }
+    return (colNames_);
+  }
+  default: { /* quietly fail */
+    return (zeroLengthNameVec);
+  }
+  }
+  /*
   We should never reach here.
 */
-  assert(false) ;
+  assert(false);
 
-  return (zeroLengthNameVec) ; }
-  
+  return (zeroLengthNameVec);
+}
 
 /*
   Set a single row name. Quietly does nothing if the index or name discipline
   is invalid.
 */
-void OsiSolverInterface::setRowName (int ndx, std::string name)
+void OsiSolverInterface::setRowName(int ndx, std::string name)
 
-{ int nameDiscipline ;
-/*
+{
+  int nameDiscipline;
+  /*
   Quietly do nothing if the index is out of bounds. This should be changed,
   but what's our error convention, eh? There's no precedent in
   OsiSolverInterface.cpp.
 */
-  if (ndx < 0 || ndx >= getNumRows())
-  { return ; }
-/*
+  if (ndx < 0 || ndx >= getNumRows()) {
+    return;
+  }
+  /*
   Determine how we're handling names. It's possible that the underlying solver
   has overridden getIntParam, but doesn't recognise OsiNameDiscipline. In that
   case, we want to default to auto names
 */
-  bool recognisesOsiNames = getIntParam(OsiNameDiscipline,nameDiscipline) ;
-  if (recognisesOsiNames == false)
-  { nameDiscipline = 0 ; }
-/*
+  bool recognisesOsiNames = getIntParam(OsiNameDiscipline, nameDiscipline);
+  if (recognisesOsiNames == false) {
+    nameDiscipline = 0;
+  }
+  /*
   Do the right thing, according to the discipline.
 */
-  switch (nameDiscipline)
-  { case 0:
-    { break ; }
-    case 1:
-    case 2:
-    { if (static_cast<unsigned>(ndx) > rowNames_.capacity())
-      { rowNames_.resize(ndx+1) ; }
-      else
-      if (static_cast<unsigned>(ndx) >= rowNames_.size())
-      { rowNames_.resize(ndx+1) ; }
-      rowNames_[ndx] = name ;
-      break ; }
-    default:
-    { break ; } }
+  switch (nameDiscipline) {
+  case 0: {
+    break;
+  }
+  case 1:
+  case 2: {
+    if (static_cast< unsigned >(ndx) > rowNames_.capacity()) {
+      rowNames_.resize(ndx + 1);
+    } else if (static_cast< unsigned >(ndx) >= rowNames_.size()) {
+      rowNames_.resize(ndx + 1);
+    }
+    rowNames_[ndx] = name;
+    break;
+  }
+  default: {
+    break;
+  }
+  }
 
-  return ; }
+  return;
+}
 
 /*
   Set a run of row names. Quietly fail if the specified indices are invalid.
@@ -432,126 +492,147 @@ void OsiSolverInterface::setRowName (int ndx, std::string name)
   be zero or greater. If we run off the end of srcNames, we just generate
   default names.
 */
-void OsiSolverInterface::setRowNames (OsiNameVec &srcNames,
-				      int srcStart, int len, int tgtStart)
+void OsiSolverInterface::setRowNames(OsiNameVec &srcNames,
+  int srcStart, int len, int tgtStart)
 
-{ int nameDiscipline ;
-/*
+{
+  int nameDiscipline;
+  /*
   Determine how we're handling names. It's possible that the underlying solver
   has overridden getIntParam, but doesn't recognise OsiNameDiscipline. In that
   case, we want to default to auto names
 */
-  bool recognisesOsiNames = getIntParam(OsiNameDiscipline,nameDiscipline) ;
-  if (recognisesOsiNames == false)
-  { nameDiscipline = 0 ; }
-/*
+  bool recognisesOsiNames = getIntParam(OsiNameDiscipline, nameDiscipline);
+  if (recognisesOsiNames == false) {
+    nameDiscipline = 0;
+  }
+  /*
   If the name discipline is auto, we're already done.
 */
-  if (nameDiscipline == 0)
-  { return ; }
-/*
+  if (nameDiscipline == 0) {
+    return;
+  }
+  /*
   A little self-protection. Check that we're within [0,m-1] on the target side,
   and that srcStart is zero or greater. Quietly fail if the indices don't fit.
 */
-  int m = getNumRows() ;
-  if (tgtStart < 0 || tgtStart+len > m)
-  { return ; }
-  if (srcStart < 0)
-  { return ; }
-  int srcLen = static_cast<int>(srcNames.size()) ;
-/*
+  int m = getNumRows();
+  if (tgtStart < 0 || tgtStart + len > m) {
+    return;
+  }
+  if (srcStart < 0) {
+    return;
+  }
+  int srcLen = static_cast< int >(srcNames.size());
+  /*
   Load 'em up.
 */
-  int srcNdx = srcStart ;
-  int tgtNdx = tgtStart ;
-  for ( ; tgtNdx < tgtStart+len ; srcNdx++,tgtNdx++)
-  { if (srcNdx < srcLen)
-    { setRowName(tgtNdx,srcNames[srcNdx]) ; }
-    else
-    { setRowName(tgtNdx,dfltRowColName('r',tgtNdx)) ; } }
+  int srcNdx = srcStart;
+  int tgtNdx = tgtStart;
+  for (; tgtNdx < tgtStart + len; srcNdx++, tgtNdx++) {
+    if (srcNdx < srcLen) {
+      setRowName(tgtNdx, srcNames[srcNdx]);
+    } else {
+      setRowName(tgtNdx, dfltRowColName('r', tgtNdx));
+    }
+  }
 
-  return ; }
+  return;
+}
 
 /*
   Delete one or more row names.
 */
-void OsiSolverInterface::deleteRowNames (int tgtStart, int len)
+void OsiSolverInterface::deleteRowNames(int tgtStart, int len)
 
-{ int nameDiscipline ;
-/*
+{
+  int nameDiscipline;
+  /*
   Determine how we're handling names. It's possible that the underlying solver
   has overridden getIntParam, but doesn't recognise OsiNameDiscipline. In that
   case, we want to default to auto names
 */
-  bool recognisesOsiNames = getIntParam(OsiNameDiscipline,nameDiscipline) ;
-  if (recognisesOsiNames == false)
-  { nameDiscipline = 0 ; }
-/*
+  bool recognisesOsiNames = getIntParam(OsiNameDiscipline, nameDiscipline);
+  if (recognisesOsiNames == false) {
+    nameDiscipline = 0;
+  }
+  /*
   If the name discipline is auto, we're done.
 */
-  if (nameDiscipline == 0)
-  { return ; }
-/*
+  if (nameDiscipline == 0) {
+    return;
+  }
+  /*
   Trim the range to names that exist in the name vector. If we're doing lazy
   names, it's quite likely that we don't need to do any work.
 */
-  int lastNdx = static_cast<int>(rowNames_.size()) ;
-  if (tgtStart < 0 || tgtStart >= lastNdx)
-  { return ; }
-  if (tgtStart+len > lastNdx)
-  { len = lastNdx-tgtStart ; }
-/*
+  int lastNdx = static_cast< int >(rowNames_.size());
+  if (tgtStart < 0 || tgtStart >= lastNdx) {
+    return;
+  }
+  if (tgtStart + len > lastNdx) {
+    len = lastNdx - tgtStart;
+  }
+  /*
   Erase the names.
 */
-  OsiNameVec::iterator firstIter,lastIter ;
-  firstIter = rowNames_.begin()+tgtStart ;
-  lastIter = firstIter+len ;
-  rowNames_.erase(firstIter,lastIter) ;
+  OsiNameVec::iterator firstIter, lastIter;
+  firstIter = rowNames_.begin() + tgtStart;
+  lastIter = firstIter + len;
+  rowNames_.erase(firstIter, lastIter);
 
-  return ; }
-  
+  return;
+}
 
 /*
   Set a single column name. Quietly does nothing if the index or name
   discipline is invalid.
 */
-void OsiSolverInterface::setColName (int ndx, std::string name)
+void OsiSolverInterface::setColName(int ndx, std::string name)
 
-{ int nameDiscipline ;
-/*
+{
+  int nameDiscipline;
+  /*
   Quietly do nothing if the index is out of bounds. This should be changed,
   but what's our error convention, eh? There's no precedent in
   OsiSolverInterface.cpp.
 */
-  if (ndx < 0 || ndx >= getNumCols())
-  { return ; }
-/*
+  if (ndx < 0 || ndx >= getNumCols()) {
+    return;
+  }
+  /*
   Determine how we're handling names. It's possible that the underlying solver
   has overridden getIntParam, but doesn't recognise OsiNameDiscipline. In that
   case, we want to default to auto names
 */
-  bool recognisesOsiNames = getIntParam(OsiNameDiscipline,nameDiscipline) ;
-  if (recognisesOsiNames == false)
-  { nameDiscipline = 0 ; }
-/*
+  bool recognisesOsiNames = getIntParam(OsiNameDiscipline, nameDiscipline);
+  if (recognisesOsiNames == false) {
+    nameDiscipline = 0;
+  }
+  /*
   Do the right thing, according to the discipline.
 */
-  switch (nameDiscipline)
-  { case 0:
-    { break ; }
-    case 1:
-    case 2:
-    { if (static_cast<unsigned>(ndx) > colNames_.capacity())
-      { colNames_.resize(ndx+1) ; }
-      else
-      if (static_cast<unsigned>(ndx) >= colNames_.size())
-      { colNames_.resize(ndx+1) ; }
-      colNames_[ndx] = name ;
-      break ; }
-    default:
-    { break ; } }
+  switch (nameDiscipline) {
+  case 0: {
+    break;
+  }
+  case 1:
+  case 2: {
+    if (static_cast< unsigned >(ndx) > colNames_.capacity()) {
+      colNames_.resize(ndx + 1);
+    } else if (static_cast< unsigned >(ndx) >= colNames_.size()) {
+      colNames_.resize(ndx + 1);
+    }
+    colNames_[ndx] = name;
+    break;
+  }
+  default: {
+    break;
+  }
+  }
 
-  return ; }
+  return;
+}
 
 /*
   Set a run of column names. Quietly fail if the specified indices are
@@ -562,247 +643,293 @@ void OsiSolverInterface::setColName (int ndx, std::string name)
   must be zero or greater. If we run off the end of srcNames, we just
   generate default names.
 */
-void OsiSolverInterface::setColNames (OsiNameVec &srcNames,
-				      int srcStart, int len, int tgtStart)
+void OsiSolverInterface::setColNames(OsiNameVec &srcNames,
+  int srcStart, int len, int tgtStart)
 
-{ int nameDiscipline ;
-/*
+{
+  int nameDiscipline;
+  /*
   Determine how we're handling names. It's possible that the underlying solver
   has overridden getIntParam, but doesn't recognise OsiNameDiscipline. In that
   case, we want to default to auto names
 */
-  bool recognisesOsiNames = getIntParam(OsiNameDiscipline,nameDiscipline) ;
-  if (recognisesOsiNames == false)
-  { nameDiscipline = 0 ; }
-/*
+  bool recognisesOsiNames = getIntParam(OsiNameDiscipline, nameDiscipline);
+  if (recognisesOsiNames == false) {
+    nameDiscipline = 0;
+  }
+  /*
   If the name discipline is auto, we're already done.
 */
-  if (nameDiscipline == 0)
-  { return ; }
-/*
+  if (nameDiscipline == 0) {
+    return;
+  }
+  /*
   A little self-protection. Check that we're within [0,m-1] on the target side,
   and that srcStart is zero or greater. Quietly fail if the indices don't fit.
 */
-  int n = getNumCols() ;
-  if (tgtStart < 0 || tgtStart+len > n)
-  { return ; }
-  if (srcStart < 0)
-  { return ; }
-  int srcLen = static_cast<int>(srcNames.size()) ;
-/*
+  int n = getNumCols();
+  if (tgtStart < 0 || tgtStart + len > n) {
+    return;
+  }
+  if (srcStart < 0) {
+    return;
+  }
+  int srcLen = static_cast< int >(srcNames.size());
+  /*
   Load 'em up.
 */
-  int srcNdx = srcStart ;
-  int tgtNdx = tgtStart ;
-  for ( ; tgtNdx < tgtStart+len ; srcNdx++,tgtNdx++)
-  { if (srcNdx < srcLen)
-    { setColName(tgtNdx,srcNames[srcNdx]) ; }
-    else
-    { setColName(tgtNdx,dfltRowColName('c',tgtNdx)) ; } }
+  int srcNdx = srcStart;
+  int tgtNdx = tgtStart;
+  for (; tgtNdx < tgtStart + len; srcNdx++, tgtNdx++) {
+    if (srcNdx < srcLen) {
+      setColName(tgtNdx, srcNames[srcNdx]);
+    } else {
+      setColName(tgtNdx, dfltRowColName('c', tgtNdx));
+    }
+  }
 
-  return ; }
+  return;
+}
 
 /*
   Delete one or more column names. Quietly fail if firstNdx is less than zero
   or if firstNdx+len is greater than the number of columns.
 */
-void OsiSolverInterface::deleteColNames (int tgtStart, int len)
+void OsiSolverInterface::deleteColNames(int tgtStart, int len)
 
-{ int nameDiscipline ;
-/*
+{
+  int nameDiscipline;
+  /*
   Determine how we're handling names. It's possible that the underlying solver
   has overridden getIntParam, but doesn't recognise OsiNameDiscipline. In that
   case, we want to default to auto names
 */
-  bool recognisesOsiNames = getIntParam(OsiNameDiscipline,nameDiscipline) ;
-  if (recognisesOsiNames == false)
-  { nameDiscipline = 0 ; }
-/*
+  bool recognisesOsiNames = getIntParam(OsiNameDiscipline, nameDiscipline);
+  if (recognisesOsiNames == false) {
+    nameDiscipline = 0;
+  }
+  /*
   If the name discipline is auto, we're done.
 */
-  if (nameDiscipline == 0)
-  { return ; }
-/*
+  if (nameDiscipline == 0) {
+    return;
+  }
+  /*
   Trim the range to names that exist in the name vector. If we're doing lazy
   names, it's quite likely that we don't need to do any work.
 */
-  int lastNdx = static_cast<int>(colNames_.size()) ;
-  if (tgtStart < 0 || tgtStart >= lastNdx)
-  { return ; }
-  if (tgtStart+len > lastNdx)
-  { len = lastNdx-tgtStart ; }
-/*
+  int lastNdx = static_cast< int >(colNames_.size());
+  if (tgtStart < 0 || tgtStart >= lastNdx) {
+    return;
+  }
+  if (tgtStart + len > lastNdx) {
+    len = lastNdx - tgtStart;
+  }
+  /*
   Erase the names.
 */
-  OsiNameVec::iterator firstIter,lastIter ;
-  firstIter = colNames_.begin()+tgtStart ;
-  lastIter = firstIter+len ;
-  colNames_.erase(firstIter,lastIter) ;
+  OsiNameVec::iterator firstIter, lastIter;
+  firstIter = colNames_.begin() + tgtStart;
+  lastIter = firstIter + len;
+  colNames_.erase(firstIter, lastIter);
 
-  return ; }
+  return;
+}
 
 /*
   Install the name information from a CoinMpsIO object.
 */
-void OsiSolverInterface::setRowColNames (const CoinMpsIO &mps)
+void OsiSolverInterface::setRowColNames(const CoinMpsIO &mps)
 
-{ int nameDiscipline,m,n ;
-/*
+{
+  int nameDiscipline, m, n;
+  /*
   Determine how we're handling names. It's possible that the underlying solver
   has overridden getIntParam, but doesn't recognise OsiNameDiscipline. In that
   case, we want to default to auto names
 */
-  bool recognisesOsiNames = getIntParam(OsiNameDiscipline,nameDiscipline) ;
-  if (recognisesOsiNames == false)
-  { nameDiscipline = 0 ; }
-/*
+  bool recognisesOsiNames = getIntParam(OsiNameDiscipline, nameDiscipline);
+  if (recognisesOsiNames == false) {
+    nameDiscipline = 0;
+  }
+  /*
   Whatever happens, we're about to clean out the current name vectors. Decide
   on an appropriate size and call reallocRowColNames to adjust capacity.
 */
-  if (nameDiscipline == 0)
-  { m = 0 ;
-    n = 0 ; }
-  else
-  { m = mps.getNumRows() ;
-    n = mps.getNumCols() ; }
-  reallocRowColNames(rowNames_,m,colNames_,n) ;
-/*
+  if (nameDiscipline == 0) {
+    m = 0;
+    n = 0;
+  } else {
+    m = mps.getNumRows();
+    n = mps.getNumCols();
+  }
+  reallocRowColNames(rowNames_, m, colNames_, n);
+  /*
   If name discipline is auto, we're done already. Otherwise, load 'em
   up. If I understand MPS correctly, names are required.
 */
-  if (nameDiscipline != 0)
-  { rowNames_.resize(m) ;
-    for (int i = 0 ; i < m ; i++)
-    { rowNames_[i] = mps.rowName(i) ; }
-    objName_ = mps.getObjectiveName() ;
-    colNames_.resize(n) ;
-    for (int j = 0 ; j < n ; j++)
-    { colNames_[j] = mps.columnName(j) ; } }
+  if (nameDiscipline != 0) {
+    rowNames_.resize(m);
+    for (int i = 0; i < m; i++) {
+      rowNames_[i] = mps.rowName(i);
+    }
+    objName_ = mps.getObjectiveName();
+    colNames_.resize(n);
+    for (int j = 0; j < n; j++) {
+      colNames_[j] = mps.columnName(j);
+    }
+  }
 
-  return ; }
-
+  return;
+}
 
 /*
   Install the name information from a CoinModel object. CoinModel does not
   maintain a name for the objective function (in fact, it has no concept of
   objective function).
 */
-void OsiSolverInterface::setRowColNames (CoinModel &mod)
+void OsiSolverInterface::setRowColNames(CoinModel &mod)
 
-{ int nameDiscipline,m,n ;
-/*
+{
+  int nameDiscipline, m, n;
+  /*
   Determine how we're handling names. It's possible that the underlying solver
   has overridden getIntParam, but doesn't recognise OsiNameDiscipline. In that
   case, we want to default to auto names
 */
-  bool recognisesOsiNames = getIntParam(OsiNameDiscipline,nameDiscipline) ;
-  if (recognisesOsiNames == false)
-  { nameDiscipline = 0 ; }
-/*
+  bool recognisesOsiNames = getIntParam(OsiNameDiscipline, nameDiscipline);
+  if (recognisesOsiNames == false) {
+    nameDiscipline = 0;
+  }
+  /*
   Whatever happens, we're about to clean out the current name vectors. Decide
   on an appropriate size and call reallocRowColNames to adjust capacity.
 */
-  if (nameDiscipline == 0)
-  { m = 0 ;
-    n = 0 ; }
-  else
-  { m = mod.rowNames()->numberItems() ;
-    n = mod.columnNames()->numberItems() ; }
-  reallocRowColNames(rowNames_,m,colNames_,n) ;
-/*
+  if (nameDiscipline == 0) {
+    m = 0;
+    n = 0;
+  } else {
+    m = mod.rowNames()->numberItems();
+    n = mod.columnNames()->numberItems();
+  }
+  reallocRowColNames(rowNames_, m, colNames_, n);
+  /*
   If name discipline is auto, we're done already. Otherwise, load 'em
   up. As best I can see, there's no guarantee that we'll have names for all
   rows and columns, so we need to pay attention.
 */
-  if (nameDiscipline != 0)
-  { int maxRowNdx=-1, maxColNdx=-1 ;
-    const char *const *names = mod.rowNames()->names() ;
-    rowNames_.resize(m) ;
-    for (int i = 0 ; i < m ; i++)
-    { std::string nme = names[i] ;
-      if (nme.length() == 0)
-      { if (nameDiscipline == 2)
-	{ nme = dfltRowColName('r',i) ; } }
-      if (nme.length() > 0)
-      { maxRowNdx = i ; }
-      rowNames_[i] = nme ; }
-    rowNames_.resize(maxRowNdx+1) ;
-    names = mod.columnNames()->names() ;
-    colNames_.resize(n) ;
-    for (int j = 0 ; j < n ; j++)
-    { std::string nme = names[j] ;
-      if (nme.length() == 0)
-      { if (nameDiscipline == 2)
-	{ nme = dfltRowColName('c',j) ; } }
-      if (nme.length() > 0)
-      { maxColNdx = j ; }
-      colNames_[j] = nme ; }
-    colNames_.resize(maxColNdx+1) ; }
-/*
+  if (nameDiscipline != 0) {
+    int maxRowNdx = -1, maxColNdx = -1;
+    const char *const *names = mod.rowNames()->names();
+    rowNames_.resize(m);
+    for (int i = 0; i < m; i++) {
+      std::string nme = names[i];
+      if (nme.length() == 0) {
+        if (nameDiscipline == 2) {
+          nme = dfltRowColName('r', i);
+        }
+      }
+      if (nme.length() > 0) {
+        maxRowNdx = i;
+      }
+      rowNames_[i] = nme;
+    }
+    rowNames_.resize(maxRowNdx + 1);
+    names = mod.columnNames()->names();
+    colNames_.resize(n);
+    for (int j = 0; j < n; j++) {
+      std::string nme = names[j];
+      if (nme.length() == 0) {
+        if (nameDiscipline == 2) {
+          nme = dfltRowColName('c', j);
+        }
+      }
+      if (nme.length() > 0) {
+        maxColNdx = j;
+      }
+      colNames_[j] = nme;
+    }
+    colNames_.resize(maxColNdx + 1);
+  }
+  /*
   And we're done.
 */
-  return ; }
-
-
+  return;
+}
 
 /*
   Install the name information from a CoinLpIO object. Nearly identical to the
   previous routine, but we start from a different object.
 */
-void OsiSolverInterface::setRowColNames (CoinLpIO &mod)
+void OsiSolverInterface::setRowColNames(CoinLpIO &mod)
 
-{ int nameDiscipline,m,n ;
-/*
+{
+  int nameDiscipline, m, n;
+  /*
   Determine how we're handling names. It's possible that the underlying solver
   has overridden getIntParam, but doesn't recognise OsiNameDiscipline. In that
   case, we want to default to auto names
 */
-  bool recognisesOsiNames = getIntParam(OsiNameDiscipline,nameDiscipline) ;
-  if (recognisesOsiNames == false)
-  { nameDiscipline = 0 ; }
-/*
+  bool recognisesOsiNames = getIntParam(OsiNameDiscipline, nameDiscipline);
+  if (recognisesOsiNames == false) {
+    nameDiscipline = 0;
+  }
+  /*
   Whatever happens, we're about to clean out the current name vectors. Decide
   on an appropriate size and call reallocRowColNames to adjust capacity.
 */
-  if (nameDiscipline == 0)
-  { m = 0 ;
-    n = 0 ; }
-  else
-  { m = mod.getNumRows() ;
-    n = mod.getNumCols() ; }
-  reallocRowColNames(rowNames_,m,colNames_,n) ;
-/*
+  if (nameDiscipline == 0) {
+    m = 0;
+    n = 0;
+  } else {
+    m = mod.getNumRows();
+    n = mod.getNumCols();
+  }
+  reallocRowColNames(rowNames_, m, colNames_, n);
+  /*
   If name discipline is auto, we're done already. Otherwise, load 'em
   up. I have no idea whether we can guarantee valid names for all rows and
   columns, so we need to pay attention.
 */
-  if (nameDiscipline != 0)
-  { int maxRowNdx=-1, maxColNdx=-1 ;
-    const char *const *names = mod.getRowNames() ;
-    rowNames_.resize(m) ;
-    for (int i = 0 ; i < m ; i++)
-    { std::string nme = names[i] ;
-      if (nme.length() == 0)
-      { if (nameDiscipline == 2)
-	{ nme = dfltRowColName('r',i) ; } }
-      if (nme.length() > 0)
-      { maxRowNdx = i ; }
-      rowNames_[i] = nme ; }
-    rowNames_.resize(maxRowNdx+1) ;
-    objName_ = mod.getObjName() ;
-    names = mod.getColNames() ;
-    colNames_.resize(n) ;
-    for (int j = 0 ; j < n ; j++)
-    { std::string nme = names[j] ;
-      if (nme.length() == 0)
-      { if (nameDiscipline == 2)
-	{ nme = dfltRowColName('c',j) ; } }
-      if (nme.length() > 0)
-      { maxColNdx = j ; }
-      colNames_[j] = nme ; }
-    colNames_.resize(maxColNdx+1) ; }
-/*
+  if (nameDiscipline != 0) {
+    int maxRowNdx = -1, maxColNdx = -1;
+    const char *const *names = mod.getRowNames();
+    rowNames_.resize(m);
+    for (int i = 0; i < m; i++) {
+      std::string nme = names[i];
+      if (nme.length() == 0) {
+        if (nameDiscipline == 2) {
+          nme = dfltRowColName('r', i);
+        }
+      }
+      if (nme.length() > 0) {
+        maxRowNdx = i;
+      }
+      rowNames_[i] = nme;
+    }
+    rowNames_.resize(maxRowNdx + 1);
+    objName_ = mod.getObjName();
+    names = mod.getColNames();
+    colNames_.resize(n);
+    for (int j = 0; j < n; j++) {
+      std::string nme = names[j];
+      if (nme.length() == 0) {
+        if (nameDiscipline == 2) {
+          nme = dfltRowColName('c', j);
+        }
+      }
+      if (nme.length() > 0) {
+        maxColNdx = j;
+      }
+      colNames_[j] = nme;
+    }
+    colNames_.resize(maxColNdx + 1);
+  }
+  /*
   And we're done.
 */
-  return ; }
+  return;
+}
 
+/* vi: softtabstop=2 shiftwidth=2 expandtab tabstop=2
+*/

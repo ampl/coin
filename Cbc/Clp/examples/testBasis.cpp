@@ -1,4 +1,4 @@
-/* $Id: testBasis.cpp 1662 2011-01-04 17:52:40Z lou $ */
+/* $Id: testBasis.cpp 2278 2017-10-02 09:51:14Z forrest $ */
 // Copyright (C) 2003, International Business Machines
 // Corporation and others.  All Rights Reserved.
 // This code is licensed under the terms of the Eclipse Public License (EPL).
@@ -33,7 +33,7 @@ int main(int argc, const char *argv[])
      int originalNumberColumns = model.numberColumns();
      int numberRows = model.numberRows();
 
-     int * addStarts = new int [numberRows+1];
+     CoinBigIndex * addStarts = new CoinBigIndex [numberRows+1];
      int * addRow = new int[numberRows];
      double * addElement = new double[numberRows];
      double * newUpper = new double[numberRows];

@@ -65,7 +65,7 @@ CglResidualCapacity::generateCuts(const OsiSolverInterface& si,
   const double* LHS        = si.getRowActivity();
   const double* coefByRow  = matrixByRow.getElements();
   const int* colInds       = matrixByRow.getIndices();
-  const int* rowStarts     = matrixByRow.getVectorStarts();
+  const CoinBigIndex* rowStarts     = matrixByRow.getVectorStarts();
   const int* rowLengths    = matrixByRow.getVectorLengths();
 
 
@@ -241,7 +241,7 @@ resCapPreprocess(const OsiSolverInterface& si)
     numCols_ = si.getNumCols();
     const double* coefByRow  = matrixByRow.getElements();
     const int* colInds       = matrixByRow.getIndices();
-    const int* rowStarts     = matrixByRow.getVectorStarts();
+    const CoinBigIndex* rowStarts     = matrixByRow.getVectorStarts();
     const int* rowLengths    = matrixByRow.getVectorLengths();
     const double * colLowerBound = si.getColLower();
     const double * colUpperBound = si.getColUpper();
@@ -464,7 +464,7 @@ CglResidualCapacity::generateResCapCuts(
 				     const double* /*LHS*/,
 				     const double* coefByRow,
 				     const int* colInds,
-				     const int* rowStarts,
+				     const CoinBigIndex* rowStarts,
 				     const int* rowLengths,
 				     OsiCuts& cs ) const
 {
@@ -499,7 +499,7 @@ CglResidualCapacity::generateResCapCuts(
 	OsiRowCut resCapCut;
 	const int rowLen=rowLengths[rowToUse];
 	double *negCoef= new double[rowLen];
-	const int rStart=rowStarts[rowToUse];
+	const CoinBigIndex rStart=rowStarts[rowToUse];
 	for ( int i=0; i < rowLen; ++i )
 	    negCoef[i]=-coefByRow[rStart+i];
 	// Find a most violated residual capacity ineq

@@ -1,4 +1,4 @@
-/* $Id: CoinPresolveImpliedFree.hpp 1694 2014-04-29 02:08:35Z tkr $ */
+/* $Id: CoinPresolveImpliedFree.hpp 2083 2019-01-06 19:38:09Z unxusr $ */
 // Copyright (C) 2002, International Business Machines
 // Corporation and others.  All Rights Reserved.
 // This code is licensed under the terms of the Eclipse Public License (EPL).
@@ -10,7 +10,7 @@
   \file
 */
 
-#define	IMPLIED_FREE	9
+#define IMPLIED_FREE 9
 
 /*! \class implied_free_action
     \brief Detect and process implied free variables
@@ -40,17 +40,20 @@ class implied_free_action : public CoinPresolveAction {
   const action *const actions_;
 
   implied_free_action(int nactions,
-		      const action *actions,
-		      const CoinPresolveAction *next) :
-    CoinPresolveAction(next),
-    nactions_(nactions), actions_(actions) {}
+    const action *actions,
+    const CoinPresolveAction *next)
+    : CoinPresolveAction(next)
+    , nactions_(nactions)
+    , actions_(actions)
+  {
+  }
 
- public:
+public:
   const char *name() const;
 
-  static const CoinPresolveAction *presolve(CoinPresolveMatrix * prob,
-					 const CoinPresolveAction *next,
-					int & fillLevel);
+  static const CoinPresolveAction *presolve(CoinPresolveMatrix *prob,
+    const CoinPresolveAction *next,
+    int &fillLevel);
 
   void postsolve(CoinPostsolveMatrix *prob) const;
 
@@ -58,3 +61,6 @@ class implied_free_action : public CoinPresolveAction {
 };
 
 #endif
+
+/* vi: softtabstop=2 shiftwidth=2 expandtab tabstop=2
+*/

@@ -2,7 +2,7 @@
 # All Rights Reserved.
 # This file is distributed under the Eclipse Public License.
 
-## $Id: configure.ac 2335 2017-06-12 10:55:45Z stefan $
+## $Id: configure.ac 2551 2019-04-22 05:50:04Z stefan $
 
 # Author:  Andreas Waechter            IBM    2006-04-13
 
@@ -12,7 +12,7 @@
 
 AC_PREREQ(2.59)
 
-AC_INIT([Cbc],[2.9.9],[cbc@lists.coin-or.org])
+AC_INIT([Cbc],[2.10.2],[cbc@lists.coin-or.org])
 
 AC_COPYRIGHT([
 Copyright 2006 International Business Machines and others.
@@ -41,7 +41,7 @@ AC_CANONICAL_BUILD
 # the source root directory contains definition of where to find those
 # externals.  The following macro ensures that those externals are
 # retrieved by svn if they are not there yet.
-AC_COIN_PROJECTDIR_INIT(Cbc,12:9:9)
+AC_COIN_PROJECTDIR_INIT(Cbc,13:2:10)
 
 # Check if user wants to produce debugging code
 AC_COIN_DEBUG_COMPILE(Cbc)
@@ -94,6 +94,7 @@ AC_COIN_CHECK_PACKAGE(Vol,  [osi-vol])
 AC_COIN_CHECK_PACKAGE(Cpx,  [osi-cplex],  [CbcLib CbcGeneric])
 AC_COIN_CHECK_PACKAGE(Glpk, [osi-glpk],   [CbcGeneric])
 AC_COIN_CHECK_PACKAGE(Grb,  [osi-gurobi])
+AC_COIN_CHECK_PACKAGE(Highs,[osi-highs],  [CbcGeneric])
 AC_COIN_CHECK_PACKAGE(Msk,  [osi-mosek],  [CbcGeneric])
 AC_COIN_CHECK_PACKAGE(Spx,  [osi-soplex], [CbcGeneric])
 AC_COIN_CHECK_PACKAGE(Xpr,  [osi-xpress])
@@ -104,6 +105,9 @@ AC_COIN_CHECK_PACKAGE(Xpr,  [osi-xpress])
 
 # Ampl Solver library
 AC_COIN_CHECK_PACKAGE(ASL, [coinasl], [CbcLib CbcGeneric])
+
+# MUMPS
+AC_COIN_CHECK_PACKAGE(Mumps, [coinmumps])
 
 # Nauty library (for symmetry detection)
 AC_LANG_PUSH(C)
@@ -149,6 +153,8 @@ case $cbc_default_solver in
    dylp)
       ;;
    glpk)
+      ;;
+  highs)
       ;;
  soplex)
       ;;
@@ -268,6 +274,12 @@ case "${osicbc_with_solver}" in
     osi_uc_solver=GRB ;           
     osi_exists_solver=${coin_has_grb-"unavailable"}
     ;;                                             
+  @<:@H@:>@@<:@i@:>@@<:@g@:>@@<:@h@:>@@<:@s@:>@*)        
+    osi_lc_solver=highs ;                            
+    osi_mc_solver=HiGHS ;                            
+    osi_uc_solver=HIGHS ;                              
+    osi_exists_solver=${coin_has_highs-"unavailable"}
+    ;;
   @<:@Mm@:>@@<:@Ss@:>@@<:@Kk@:>@*)
     osi_lc_solver=msk ;
     osi_mc_solver=Msk
@@ -333,6 +345,7 @@ AM_CONDITIONAL([OSICBC_DFLT_SOLVER_CPX],[test $osi_mc_solver = Cpx])
 AM_CONDITIONAL([OSICBC_DFLT_SOLVER_DYLP],[test $osi_mc_solver = Dylp])
 AM_CONDITIONAL([OSICBC_DFLT_SOLVER_GLPK],[test $osi_mc_solver = Glpk])
 AM_CONDITIONAL([OSICBC_DFLT_SOLVER_GRB],[test $osi_mc_solver = Grb])
+AM_CONDITIONAL([OSICBC_DFLT_SOLVER_HIGHS],[test $osi_mc_solver = HiGHS])
 AM_CONDITIONAL([OSICBC_DFLT_SOLVER_MSK],[test $osi_mc_solver = Msk])
 AM_CONDITIONAL([OSICBC_DFLT_SOLVER_SPX],[test $osi_mc_solver = Spx])
 AM_CONDITIONAL([OSICBC_DFLT_SOLVER_SYM],[test $osi_mc_solver = Sym])

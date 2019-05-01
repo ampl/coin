@@ -1,4 +1,4 @@
-/* $Id: dualCuts.cpp 1662 2011-01-04 17:52:40Z lou $ */
+/* $Id: dualCuts.cpp 2278 2017-10-02 09:51:14Z forrest $ */
 /*
   Copyright (C) 2003, International Business Machines Corporation and others.
   All Rights Reserved.
@@ -119,7 +119,7 @@ int main(int argc, const char *argv[])
      int takeOutPass = 30;
      int iPass;
 
-     const int * start = model2->clpMatrix()->getVectorStarts();
+     const CoinBigIndex * start = model2->clpMatrix()->getVectorStarts();
      const int * length = model2->clpMatrix()->getVectorLengths();
      const int * row = model2->clpMatrix()->getIndices();
      int * whichColumns = new int [numberColumns];
@@ -229,7 +229,7 @@ int main(int argc, const char *argv[])
                numberSmallColumns = 0;
                for (iColumn = 0; iColumn < numberColumns; iColumn++) {
                     int n = 0;
-                    for (int j = start[iColumn]; j < start[iColumn] + length[iColumn]; j++) {
+                    for (CoinBigIndex j = start[iColumn]; j < start[iColumn] + length[iColumn]; j++) {
                          int iRow = row[j];
                          if (take[iRow])
                               n++;

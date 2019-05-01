@@ -1,4 +1,4 @@
-// $Id: CglTwomir.hpp 1119 2013-04-06 20:24:18Z stefan $
+// $Id: CglTwomir.hpp 1469 2019-03-15 16:16:04Z stefan $
 // Copyright (C) 2002, International Business Machines
 // Corporation and others.  All Rights Reserved.
 // This code is licensed under the terms of the Eclipse Public License (EPL).
@@ -295,9 +295,6 @@ private:
 
 /* 0 = min steepness, 1 = max norm */
 #define DGG_NORM_CRITERIA 1
-
-/* internal representation of +infinity */
-#define UB_MAX DBL_MAX
 
 /* used to define how fractional a basic-integer variable must be
    before choosing to use it to generate a TMIR cut on.

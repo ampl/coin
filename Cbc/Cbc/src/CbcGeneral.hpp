@@ -1,4 +1,4 @@
-// $Id: CbcGeneral.hpp 1899 2013-04-09 18:12:08Z stefan $
+// $Id: CbcGeneral.hpp 2465 2019-01-03 19:26:52Z unxusr $
 // Copyright (C) 2002, International Business Machines
 // Corporation and others.  All Rights Reserved.
 // This code is licensed under the terms of the Eclipse Public License (EPL).
@@ -13,48 +13,48 @@
     This will create a list of subproblems
 */
 
-
 class CbcGeneral : public CbcObject {
 
 public:
+  // Default Constructor
+  CbcGeneral();
 
-    // Default Constructor
-    CbcGeneral ();
-
-    /** Useful constructor
+  /** Useful constructor
         Just needs to point to model.
     */
-    CbcGeneral (CbcModel * model);
+  CbcGeneral(CbcModel *model);
 
-    // Copy constructor
-    CbcGeneral ( const CbcGeneral &);
+  // Copy constructor
+  CbcGeneral(const CbcGeneral &);
 
-    /// Clone
-    virtual CbcObject * clone() const = 0;
+  /// Clone
+  virtual CbcObject *clone() const = 0;
 
-    // Assignment operator
-    CbcGeneral & operator=( const CbcGeneral& rhs);
+  // Assignment operator
+  CbcGeneral &operator=(const CbcGeneral &rhs);
 
-    // Destructor
-    ~CbcGeneral ();
+  // Destructor
+  ~CbcGeneral();
 
-    /// Infeasibility - large is 0.5
-    virtual double infeasibility(const OsiBranchingInformation * info,
-                                 int &preferredWay) const;
+  /// Infeasibility - large is 0.5
+  virtual double infeasibility(const OsiBranchingInformation *info,
+    int &preferredWay) const;
 
-    using CbcObject::feasibleRegion ;
-    /// This looks at solution and sets bounds to contain solution
-    virtual void feasibleRegion() = 0;
+  using CbcObject::feasibleRegion;
+  /// This looks at solution and sets bounds to contain solution
+  virtual void feasibleRegion() = 0;
 
-    /// Creates a branching object
-    virtual CbcBranchingObject * createCbcBranch(OsiSolverInterface * solver, const OsiBranchingInformation * info, int way) ;
+  /// Creates a branching object
+  virtual CbcBranchingObject *createCbcBranch(OsiSolverInterface *solver, const OsiBranchingInformation *info, int way);
 
-    /// Redoes data when sequence numbers change
-    virtual void redoSequenceEtc(CbcModel * model, int numberColumns, const int * originalColumns) = 0;
+  /// Redoes data when sequence numbers change
+  virtual void redoSequenceEtc(CbcModel *model, int numberColumns, const int *originalColumns) = 0;
 
 protected:
-    /// data
+  /// data
 };
 
 #endif
 
+/* vi: softtabstop=2 shiftwidth=2 expandtab tabstop=2
+*/

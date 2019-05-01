@@ -49,11 +49,17 @@
 /* Define to 1 if the Grb package is available */
 #undef COIN_HAS_GRB
 
+/* Define to 1 if the Highs package is available */
+#undef COIN_HAS_HIGHS
+
 /* Define to 1 if the Miplib3 package is available */
 #undef COIN_HAS_MIPLIB3
 
 /* Define to 1 if the Msk package is available */
 #undef COIN_HAS_MSK
+
+/* Define to 1 if the Mumps package is available */
+#undef COIN_HAS_MUMPS
 
 /* Define to 1 if the Netlib package is available */
 #undef COIN_HAS_NETLIB

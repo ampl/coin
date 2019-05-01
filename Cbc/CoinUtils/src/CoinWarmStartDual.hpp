@@ -1,4 +1,4 @@
-/* $Id: CoinWarmStartDual.hpp 1372 2011-01-03 23:31:00Z lou $ */
+/* $Id: CoinWarmStartDual.hpp 2083 2019-01-06 19:38:09Z unxusr $ */
 // Copyright (C) 2000, International Business Machines
 // Corporation and others.  All Rights Reserved.
 // This code is licensed under the terms of the Eclipse Public License (EPL).
@@ -10,46 +10,55 @@
 #include "CoinWarmStart.hpp"
 #include "CoinWarmStartVector.hpp"
 
-
 //#############################################################################
 
 /** WarmStart information that is only a dual vector */
 
 class CoinWarmStartDual : public virtual CoinWarmStart {
 public:
-   /// return the size of the dual vector
-   inline int size() const { return dual_.size(); }
-   /// return a pointer to the array of duals
-   inline const double * dual() const { return dual_.values(); }
+  /// return the size of the dual vector
+  inline int size() const { return dual_.size(); }
+  /// return a pointer to the array of duals
+  inline const double *dual() const { return dual_.values(); }
 
-   /** Assign the dual vector to be the warmstart information. In this method
+  /** Assign the dual vector to be the warmstart information. In this method
        the object assumes ownership of the pointer and upon return "dual" will
        be a NULL pointer. If copying is desirable use the constructor. */
-   inline void assignDual(int size, double *& dual)
-    { dual_.assignVector(size, dual); }
+  inline void assignDual(int size, double *&dual)
+  {
+    dual_.assignVector(size, dual);
+  }
 
-   CoinWarmStartDual() {}
+  CoinWarmStartDual() {}
 
-   CoinWarmStartDual(int size, const double * dual) : dual_(size, dual) {}
+  CoinWarmStartDual(int size, const double *dual)
+    : dual_(size, dual)
+  {
+  }
 
-   CoinWarmStartDual(const CoinWarmStartDual& rhs) : dual_(rhs.dual_) {}
+  CoinWarmStartDual(const CoinWarmStartDual &rhs)
+    : dual_(rhs.dual_)
+  {
+  }
 
-   CoinWarmStartDual& operator=(const CoinWarmStartDual& rhs) {
-     if (this != &rhs) {
-       dual_ = rhs.dual_;
-     }
-     return *this;
-   }
+  CoinWarmStartDual &operator=(const CoinWarmStartDual &rhs)
+  {
+    if (this != &rhs) {
+      dual_ = rhs.dual_;
+    }
+    return *this;
+  }
 
-   /** `Virtual constructor' */
-   virtual CoinWarmStart *clone() const {
-      return new CoinWarmStartDual(*this);
-   }
+  /** `Virtual constructor' */
+  virtual CoinWarmStart *clone() const
+  {
+    return new CoinWarmStartDual(*this);
+  }
 
-   virtual ~CoinWarmStartDual() {}
+  virtual ~CoinWarmStartDual() {}
 
-/*! \name Dual warm start `diff' methods */
-//@{
+  /*! \name Dual warm start `diff' methods */
+  //@{
 
   /*! \brief Generate a `diff' that can convert the warm start passed as a
 	     parameter to the warm start specified by \c this.
@@ -58,8 +67,8 @@ public:
     larger than the basis pointed to by \c this.
   */
 
-  virtual CoinWarmStartDiff*
-  generateDiff (const CoinWarmStart *const oldCWS) const ;
+  virtual CoinWarmStartDiff *
+  generateDiff(const CoinWarmStart *const oldCWS) const;
 
   /*! \brief Apply \p diff to this warm start.
 
@@ -67,18 +76,18 @@ public:
     allocated capacity of the warm start is sufficiently large.
   */
 
-  virtual void applyDiff (const CoinWarmStartDiff *const cwsdDiff) ;
+  virtual void applyDiff(const CoinWarmStartDiff *const cwsdDiff);
 
 #if 0
 protected:
   inline const CoinWarmStartVector<double>& warmStartVector() const { return dual_; }
 #endif
 
-//@}
+  //@}
 
 private:
-   ///@name Private data members
-  CoinWarmStartVector<double> dual_;
+  ///@name Private data members
+  CoinWarmStartVector< double > dual_;
 };
 
 //#############################################################################
@@ -98,36 +107,37 @@ private:
     
 */
 
-class CoinWarmStartDualDiff : public virtual CoinWarmStartDiff
-{ public:
-
+class CoinWarmStartDualDiff : public virtual CoinWarmStartDiff {
+public:
   /*! \brief `Virtual constructor' */
   virtual CoinWarmStartDiff *clone() const
   {
-      return new CoinWarmStartDualDiff(*this) ;
+    return new CoinWarmStartDualDiff(*this);
   }
 
   /*! \brief Assignment */
-  virtual CoinWarmStartDualDiff &operator= (const CoinWarmStartDualDiff &rhs)
+  virtual CoinWarmStartDualDiff &operator=(const CoinWarmStartDualDiff &rhs)
   {
-      if (this != &rhs) {
-	  diff_ = rhs.diff_;
-      }
-      return *this;
+    if (this != &rhs) {
+      diff_ = rhs.diff_;
+    }
+    return *this;
   }
 
   /*! \brief Destructor */
   virtual ~CoinWarmStartDualDiff() {}
 
-  protected:
-
+protected:
   /*! \brief Default constructor
   
     This is protected (rather than private) so that derived classes can
     see it when they make <i>their</i> default constructor protected or
     private.
   */
-  CoinWarmStartDualDiff () : diff_() {}
+  CoinWarmStartDualDiff()
+    : diff_()
+  {
+  }
 
   /*! \brief Copy constructor
   
@@ -139,28 +149,32 @@ class CoinWarmStartDualDiff : public virtual CoinWarmStartDiff
     see it when the make <i>their</i> copy constructor protected or
     private.
   */
-  CoinWarmStartDualDiff (const CoinWarmStartDualDiff &rhs) :
-      diff_(rhs.diff_) {}
+  CoinWarmStartDualDiff(const CoinWarmStartDualDiff &rhs)
+    : diff_(rhs.diff_)
+  {
+  }
 
-  private:
-
-  friend CoinWarmStartDiff*
-    CoinWarmStartDual::generateDiff(const CoinWarmStart *const oldCWS) const ;
+private:
+  friend CoinWarmStartDiff *
+  CoinWarmStartDual::generateDiff(const CoinWarmStart *const oldCWS) const;
   friend void
-    CoinWarmStartDual::applyDiff(const CoinWarmStartDiff *const diff) ;
+  CoinWarmStartDual::applyDiff(const CoinWarmStartDiff *const diff);
 
   /*! \brief Standard constructor */
-  CoinWarmStartDualDiff (int sze, const unsigned int *const diffNdxs,
-			 const double *const diffVals) :
-      diff_(sze, diffNdxs, diffVals) {}
+  CoinWarmStartDualDiff(int sze, const unsigned int *const diffNdxs,
+    const double *const diffVals)
+    : diff_(sze, diffNdxs, diffVals)
+  {
+  }
 
   /*!
       \brief The difference in the dual vector is simply the difference in a
       vector.
   */
-  CoinWarmStartVectorDiff<double> diff_;
+  CoinWarmStartVectorDiff< double > diff_;
 };
-
 
 #endif
 
+/* vi: softtabstop=2 shiftwidth=2 expandtab tabstop=2
+*/

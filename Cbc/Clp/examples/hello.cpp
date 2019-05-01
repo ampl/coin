@@ -1,4 +1,4 @@
-/* $Id: hello.cpp 1559 2010-06-05 19:42:36Z stefan $ */
+/* $Id: hello.cpp 2278 2017-10-02 09:51:14Z forrest $ */
 /* Copyright (C) 2004, International Business Machines Corporation
    and others.  All Rights Reserved.
 
@@ -51,7 +51,7 @@ int main(int argc, const char *argv[])
      x[numberColumns] = '\0';
      for (iRow = 0; iRow < numberRows; iRow++) {
           memset(x, ' ', numberColumns);
-          for (int k = rowStart[iRow]; k < rowStart[iRow] + rowLength[iRow]; k++) {
+          for (CoinBigIndex k = rowStart[iRow]; k < rowStart[iRow] + rowLength[iRow]; k++) {
                int iColumn = column[k];
                x[iColumn] = 'x';
           }

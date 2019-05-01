@@ -2,7 +2,7 @@
 # All Rights Reserved.
 # This file is distributed under the Eclipse Public License.
 
-## $Id: Makefile.am 1881 2013-01-28 00:05:47Z stefan $
+## $Id: Makefile.am 2111 2017-11-07 03:40:06Z tkr $
 
 AUTOMAKE_OPTIONS = foreign
 
@@ -15,6 +15,11 @@ lib_LTLIBRARIES = libOsiGrb.la
 
 # List all source files for this library, including headers
 libOsiGrb_la_SOURCES = OsiGrbSolverInterface.cpp OsiGrbSolverInterface.hpp
+
+# List all additionally required libraries
+if DEPENDENCY_LINKING
+libOsiGrb_la_LIBADD = $(OSILIB_LIBS) ../Osi/libOsi.la $(GRBLIB)
+endif
 
 # This is for libtool (on Windows)
 libOsiGrb_la_LDFLAGS = $(LT_LDFLAGS)

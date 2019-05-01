@@ -1,4 +1,4 @@
-/* $Id: CoinPresolveIsolated.cpp 1373 2011-01-03 23:57:44Z lou $ */
+/* $Id: CoinPresolveIsolated.cpp 2083 2019-01-06 19:38:09Z unxusr $ */
 // Copyright (C) 2002, International Business Machines
 // Corporation and others.  All Rights Reserved.
 // This code is licensed under the terms of the Eclipse Public License (EPL).
@@ -21,58 +21,56 @@
 // Since that is actually not trivial, I'm just going to ignore
 // them and stick them back in at postsolve.
 const CoinPresolveAction *isolated_constraint_action::presolve(CoinPresolveMatrix *prob,
-							    int irow,
-							    const CoinPresolveAction *next)
+  int irow,
+  const CoinPresolveAction *next)
 {
-  int *hincol	= prob->hincol_;
-  const CoinBigIndex *mcstrt	= prob->mcstrt_;
-  int *hrow	= prob->hrow_;
-  double *colels	= prob->colels_;
+  int *hincol = prob->hincol_;
+  const CoinBigIndex *mcstrt = prob->mcstrt_;
+  int *hrow = prob->hrow_;
+  double *colels = prob->colels_;
 
-  double *clo	= prob->clo_;
-  double *cup	= prob->cup_;
+  double *clo = prob->clo_;
+  double *cup = prob->cup_;
 
-  const double *rowels	= prob->rowels_;
-  const int *hcol	= prob->hcol_;
-  const CoinBigIndex *mrstrt	= prob->mrstrt_;
+  const double *rowels = prob->rowels_;
+  const int *hcol = prob->hcol_;
+  const CoinBigIndex *mrstrt = prob->mrstrt_;
 
   // may be written by useless constraint
-  int *hinrow	= prob->hinrow_;
+  int *hinrow = prob->hinrow_;
 
-  double *rlo	= prob->rlo_;
-  double *rup	= prob->rup_;
+  double *rlo = prob->rlo_;
+  double *rup = prob->rup_;
 
   CoinBigIndex krs = mrstrt[irow];
   CoinBigIndex kre = krs + hinrow[irow];
-  
-  double *dcost	= prob->cost_;
-  const double maxmin	= prob->maxmin_;
 
-# if PRESOLVE_DEBUG
+  double *dcost = prob->cost_;
+  const double maxmin = prob->maxmin_;
+
+#if PRESOLVE_DEBUG
   {
     printf("ISOLATED:  %d - ", irow);
     CoinBigIndex k;
-    for ( k = krs; k<kre; ++k)
+    for (k = krs; k < kre; ++k)
       printf("%d ", hcol[k]);
     printf("\n");
   }
-# endif
+#endif
 
   if (rlo[irow] != 0.0 || rup[irow] != 0.0) {
-#   if PRESOLVE_DEBUG
+#if PRESOLVE_DEBUG
     printf("can't handle non-trivial isolated constraints for now\n");
-#   endif
+#endif
     return NULL;
   }
   CoinBigIndex k;
-  for ( k = krs; k<kre; ++k) {
+  for (k = krs; k < kre; ++k) {
     int jcol = hcol[k];
-    if ((clo[jcol] != 0.0 && cup[jcol] != 0.0)||
-        (maxmin*dcost[jcol] > 0.0 && clo[jcol] != 0.0) ||
-        (maxmin*dcost[jcol] < 0.0 && cup[jcol] != 0.0) ){
-#     if PRESOLVE_DEBUG
+    if ((clo[jcol] != 0.0 && cup[jcol] != 0.0) || (maxmin * dcost[jcol] > 0.0 && clo[jcol] != 0.0) || (maxmin * dcost[jcol] < 0.0 && cup[jcol] != 0.0)) {
+#if PRESOLVE_DEBUG
       printf("can't handle non-trivial isolated constraints for now\n");
-#     endif
+#endif
       return NULL;
     }
   }
@@ -98,33 +96,35 @@ const CoinPresolveAction *isolated_constraint_action::presolve(CoinPresolveMatri
 
   // HACK - set costs to 0.0 so empty.cpp doesn't complain
   double *costs = new double[nc];
-  for (k = krs; k<kre; ++k) {
-    costs[k-krs] = dcost[hcol[k]];
+  for (k = krs; k < kre; ++k) {
+    costs[k - krs] = dcost[hcol[k]];
     dcost[hcol[k]] = 0.0;
   }
 
   next = new isolated_constraint_action(rlo[irow], rup[irow],
-					irow, nc,
-					CoinCopyOfArray(&hcol[krs], nc),
-					CoinCopyOfArray(&rowels[krs], nc),
-					costs,
-					next);
+    irow, nc,
+    CoinCopyOfArray(&hcol[krs], nc),
+    CoinCopyOfArray(&rowels[krs], nc),
+    costs,
+    next);
 
-  for ( k=krs; k<kre; k++)
-  { presolve_delete_from_col(irow,hcol[k],mcstrt,hincol,hrow,colels) ;
-    if (hincol[hcol[k]] == 0)
-    { PRESOLVE_REMOVE_LINK(prob->clink_,hcol[k]) ; } }
-  hinrow[irow] = 0 ;
-  PRESOLVE_REMOVE_LINK(prob->rlink_,irow) ;
+  for (k = krs; k < kre; k++) {
+    presolve_delete_from_col(irow, hcol[k], mcstrt, hincol, hrow, colels);
+    if (hincol[hcol[k]] == 0) {
+      PRESOLVE_REMOVE_LINK(prob->clink_, hcol[k]);
+    }
+  }
+  hinrow[irow] = 0;
+  PRESOLVE_REMOVE_LINK(prob->rlink_, irow);
 
   // just to make things squeeky
   rlo[irow] = 0.0;
   rup[irow] = 0.0;
 
-# if CHECK_CONSISTENCY
-  presolve_links_ok(prob) ;
+#if CHECK_CONSISTENCY
+  presolve_links_ok(prob);
   presolve_consistent(prob);
-# endif
+#endif
 
   return (next);
 }
@@ -136,38 +136,37 @@ const char *isolated_constraint_action::name() const
 
 void isolated_constraint_action::postsolve(CoinPostsolveMatrix *prob) const
 {
-  double *colels	= prob->colels_;
-  int *hrow		= prob->hrow_;
-  CoinBigIndex *mcstrt		= prob->mcstrt_;
-  int *link		= prob->link_;
-  int *hincol		= prob->hincol_;
-  
-  double *rowduals	= prob->rowduals_;
-  double *rowacts	= prob->acts_;
-  double *sol		= prob->sol_;
+  double *colels = prob->colels_;
+  int *hrow = prob->hrow_;
+  CoinBigIndex *mcstrt = prob->mcstrt_;
+  CoinBigIndex *link = prob->link_;
+  int *hincol = prob->hincol_;
 
-  CoinBigIndex &free_list		= prob->free_list_;
+  double *rowduals = prob->rowduals_;
+  double *rowacts = prob->acts_;
+  double *sol = prob->sol_;
 
+  CoinBigIndex &free_list = prob->free_list_;
 
   // hides fields
-  double *rlo	= prob->rlo_;
-  double *rup	= prob->rup_;
+  double *rlo = prob->rlo_;
+  double *rup = prob->rup_;
 
   double rowact = 0.0;
 
-  int irow  = this->row_;
+  int irow = this->row_;
 
   rup[irow] = this->rup_;
   rlo[irow] = this->rlo_;
   int k;
 
-  for (k=0; k<this->ninrow_; k++) {
+  for (k = 0; k < this->ninrow_; k++) {
     int jcol = this->rowcols_[k];
 
-    sol[jcol] = 0.0;	// ONLY ACCEPTED SUCH CONSTRAINTS
+    sol[jcol] = 0.0; // ONLY ACCEPTED SUCH CONSTRAINTS
 
     CoinBigIndex kk = free_list;
-    assert(kk >= 0 && kk < prob->bulk0_) ;
+    assert(kk >= 0 && kk < prob->bulk0_);
     free_list = link[free_list];
 
     mcstrt[jcol] = kk;
@@ -175,19 +174,19 @@ void isolated_constraint_action::postsolve(CoinPostsolveMatrix *prob) const
     //rowact += rowels[k] * sol[jcol];
 
     colels[kk] = this->rowels_[k];
-    hrow[kk]   = irow;
-    link[kk] = NO_LINK ;
+    hrow[kk] = irow;
+    link[kk] = NO_LINK;
 
     hincol[jcol] = 1;
   }
 
-# if PRESOLVE_CONSISTENCY
-  presolve_check_free_list(prob) ;
-# endif
+#if PRESOLVE_CONSISTENCY
+  presolve_check_free_list(prob);
+#endif
 
   // ???
-  prob->setRowStatus(irow,CoinPrePostsolveMatrix::basic);
-    rowduals[irow] = 0.0;
+  prob->setRowStatus(irow, CoinPrePostsolveMatrix::basic);
+  rowduals[irow] = 0.0;
 
   rowacts[irow] = rowact;
 
@@ -199,7 +198,10 @@ void isolated_constraint_action::postsolve(CoinPostsolveMatrix *prob) const
 
 isolated_constraint_action::~isolated_constraint_action()
 {
-    deleteAction(rowcols_,int *);
-    deleteAction(rowels_,double *);
-    deleteAction(costs_,double *);
+  deleteAction(rowcols_, int *);
+  deleteAction(rowels_, double *);
+  deleteAction(costs_, double *);
 }
+
+/* vi: softtabstop=2 shiftwidth=2 expandtab tabstop=2
+*/

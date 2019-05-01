@@ -18,8 +18,8 @@
 #include "OsiColCut.hpp"
 #include "OsiRowCut.hpp"
 
-typedef struct cpxlp*  CPXLPptr;
-typedef struct cpxenv* CPXENVptr;
+typedef struct cpxlp *CPXLPptr;
+typedef struct cpxenv *CPXENVptr;
 
 /** CPLEX Solver Interface
 
@@ -27,23 +27,22 @@ typedef struct cpxenv* CPXENVptr;
 */
 
 class OsiCpxSolverInterface : virtual public OsiSolverInterface {
-  friend void OsiCpxSolverInterfaceUnitTest(const std::string & mpsDir, const std::string & netlibDir);
-  
+  friend void OsiCpxSolverInterfaceUnitTest(const std::string &mpsDir, const std::string &netlibDir);
+
 public:
-  
   //---------------------------------------------------------------------------
   /**@name Solve methods */
   //@{
-  /// Solve initial LP relaxation 
+  /// Solve initial LP relaxation
   virtual void initialSolve();
-  
+
   /// Resolve an LP relaxation after problem modification
   virtual void resolve();
-  
+
   /// Invoke solver's built-in enumeration algorithm
   virtual void branchAndBound();
   //@}
-  
+
   //---------------------------------------------------------------------------
   /**@name Parameter set/get methods
 
@@ -60,41 +59,41 @@ public:
      returned in the second argument. Otherwise they return false.
   */
   //@{
-    // Set an integer parameter
-    bool setIntParam(OsiIntParam key, int value);
-    // Set an double parameter
-    bool setDblParam(OsiDblParam key, double value);
-    // Set a string parameter
-    bool setStrParam(OsiStrParam key, const std::string & value);
-    // Get an integer parameter
-    bool getIntParam(OsiIntParam key, int& value) const;
-    // Get an double parameter
-    bool getDblParam(OsiDblParam key, double& value) const;
-    // Get a string parameter
-    bool getStrParam(OsiStrParam key, std::string& value) const;
-    // Set mipstart option (pass column solution to CPLEX before MIP start)
-    void setMipStart(bool value) { domipstart = value; }
-    // Get mipstart option value
-    bool getMipStart() const { return domipstart; }
+  // Set an integer parameter
+  bool setIntParam(OsiIntParam key, int value);
+  // Set an double parameter
+  bool setDblParam(OsiDblParam key, double value);
+  // Set a string parameter
+  bool setStrParam(OsiStrParam key, const std::string &value);
+  // Get an integer parameter
+  bool getIntParam(OsiIntParam key, int &value) const;
+  // Get an double parameter
+  bool getDblParam(OsiDblParam key, double &value) const;
+  // Get a string parameter
+  bool getStrParam(OsiStrParam key, std::string &value) const;
+  // Set mipstart option (pass column solution to CPLEX before MIP start)
+  void setMipStart(bool value) { domipstart = value; }
+  // Get mipstart option value
+  bool getMipStart() const { return domipstart; }
   //@}
 
   //---------------------------------------------------------------------------
   ///@name Methods returning info on how the solution process terminated
   //@{
-    /// Are there a numerical difficulties?
-    virtual bool isAbandoned() const;
-    /// Is optimality proven?
-    virtual bool isProvenOptimal() const;
-    /// Is primal infeasiblity proven?
-    virtual bool isProvenPrimalInfeasible() const;
-    /// Is dual infeasiblity proven?
-    virtual bool isProvenDualInfeasible() const;
-    /// Is the given primal objective limit reached?
-    virtual bool isPrimalObjectiveLimitReached() const;
-    /// Is the given dual objective limit reached?
-    virtual bool isDualObjectiveLimitReached() const;
-    /// Iteration limit reached?
-    virtual bool isIterationLimitReached() const;
+  /// Are there a numerical difficulties?
+  virtual bool isAbandoned() const;
+  /// Is optimality proven?
+  virtual bool isProvenOptimal() const;
+  /// Is primal infeasiblity proven?
+  virtual bool isProvenPrimalInfeasible() const;
+  /// Is dual infeasiblity proven?
+  virtual bool isProvenDualInfeasible() const;
+  /// Is the given primal objective limit reached?
+  virtual bool isPrimalObjectiveLimitReached() const;
+  /// Is the given dual objective limit reached?
+  virtual bool isDualObjectiveLimitReached() const;
+  /// Iteration limit reached?
+  virtual bool isIterationLimitReached() const;
   //@}
 
   //---------------------------------------------------------------------------
@@ -107,13 +106,13 @@ public:
     to provide a way to give a client a warm start basis object of the
     appropriate type, which can resized and modified as desired.
   */
-  CoinWarmStart *getEmptyWarmStart () const;
+  CoinWarmStart *getEmptyWarmStart() const;
 
-    /// Get warmstarting information
-    virtual CoinWarmStart* getWarmStart() const;
-    /** Set warmstarting information. Return true/false depending on whether
+  /// Get warmstarting information
+  virtual CoinWarmStart *getWarmStart() const;
+  /** Set warmstarting information. Return true/false depending on whether
 	the warmstart information was accepted or not. */
-    virtual bool setWarmStart(const CoinWarmStart* warmstart);
+  virtual bool setWarmStart(const CoinWarmStart *warmstart);
   //@}
 
   //---------------------------------------------------------------------------
@@ -123,12 +122,12 @@ public:
      <strong>NOTE</strong>: between hotstarted optimizations only
      bound changes are allowed. */
   //@{
-    /// Create a hotstart point of the optimization process
-    virtual void markHotStart();
-    /// Optimize starting from the hotstart
-    virtual void solveFromHotStart();
-    /// Delete the snapshot
-    virtual void unmarkHotStart();
+  /// Create a hotstart point of the optimization process
+  virtual void markHotStart();
+  /// Optimize starting from the hotstart
+  virtual void solveFromHotStart();
+  /// Delete the snapshot
+  virtual void unmarkHotStart();
   //@}
 
   //---------------------------------------------------------------------------
@@ -144,24 +143,24 @@ public:
      long as the data is unchanged and the solver is not called.
   */
   //@{
-    /**@name Methods related to querying the input data */
-    //@{
-      /// Get number of columns
-      virtual int getNumCols() const;
-  
-      /// Get number of rows
-      virtual int getNumRows() const;
-  
-      /// Get number of nonzero elements
-      virtual int getNumElements() const;
-  
-      /// Get pointer to array[getNumCols()] of column lower bounds
-      virtual const double * getColLower() const;
-  
-      /// Get pointer to array[getNumCols()] of column upper bounds
-      virtual const double * getColUpper() const;
-  
-      /** Get pointer to array[getNumRows()] of row constraint senses.
+  /**@name Methods related to querying the input data */
+  //@{
+  /// Get number of columns
+  virtual int getNumCols() const;
+
+  /// Get number of rows
+  virtual int getNumRows() const;
+
+  /// Get number of nonzero elements
+  virtual int getNumElements() const;
+
+  /// Get pointer to array[getNumCols()] of column lower bounds
+  virtual const double *getColLower() const;
+
+  /// Get pointer to array[getNumCols()] of column upper bounds
+  virtual const double *getColUpper() const;
+
+  /** Get pointer to array[getNumRows()] of row constraint senses.
   	<ul>
   	<li>'L': <= constraint
   	<li>'E': =  constraint
@@ -170,9 +169,9 @@ public:
   	<li>'N': free constraint
   	</ul>
       */
-      virtual const char * getRowSense() const;
-  
-      /** Get pointer to array[getNumRows()] of rows right-hand sides
+  virtual const char *getRowSense() const;
+
+  /** Get pointer to array[getNumRows()] of rows right-hand sides
   	<ul>
   	  <li> if rowsense()[i] == 'L' then rhs()[i] == rowupper()[i]
   	  <li> if rowsense()[i] == 'G' then rhs()[i] == rowlower()[i]
@@ -180,9 +179,9 @@ public:
   	  <li> if rowsense()[i] == 'N' then rhs()[i] == 0.0
   	</ul>
       */
-      virtual const double * getRightHandSide() const;
-  
-      /** Get pointer to array[getNumRows()] of row ranges.
+  virtual const double *getRightHandSide() const;
+
+  /** Get pointer to array[getNumRows()] of row ranges.
   	<ul>
             <li> if rowsense()[i] == 'R' then
                     rowrange()[i] == rowupper()[i] - rowlower()[i]
@@ -190,22 +189,22 @@ public:
                     rowrange()[i] is 0.0
           </ul>
       */
-      virtual const double * getRowRange() const;
-  
-      /// Get pointer to array[getNumRows()] of row lower bounds
-      virtual const double * getRowLower() const;
-  
-      /// Get pointer to array[getNumRows()] of row upper bounds
-      virtual const double * getRowUpper() const;
-  
-      /// Get pointer to array[getNumCols()] of objective function coefficients
-      virtual const double * getObjCoefficients() const;
-  
-      /// Get objective function sense (1 for min (default), -1 for max)
-      virtual double getObjSense() const;
+  virtual const double *getRowRange() const;
 
-      /// Return true if column is continuous
-      virtual bool isContinuous(int colNumber) const;
+  /// Get pointer to array[getNumRows()] of row lower bounds
+  virtual const double *getRowLower() const;
+
+  /// Get pointer to array[getNumRows()] of row upper bounds
+  virtual const double *getRowUpper() const;
+
+  /// Get pointer to array[getNumCols()] of objective function coefficients
+  virtual const double *getObjCoefficients() const;
+
+  /// Get objective function sense (1 for min (default), -1 for max)
+  virtual double getObjSense() const;
+
+  /// Return true if column is continuous
+  virtual bool isContinuous(int colNumber) const;
 
 #if 0
       /// Return true if column is binary
@@ -223,40 +222,40 @@ public:
       /// Return true if column is binary and not fixed at either bound
       virtual bool isFreeBinary(int columnNumber) const;
 #endif
-  
-      /// Get pointer to row-wise copy of matrix
-      virtual const CoinPackedMatrix * getMatrixByRow() const;
-  
-      /// Get pointer to column-wise copy of matrix
-      virtual const CoinPackedMatrix * getMatrixByCol() const;
-  
-      /// Get solver's value for infinity
-      virtual double getInfinity() const;
-    //@}
-    
-    /**@name Methods related to querying the solution */
-    //@{
-      /// Get pointer to array[getNumCols()] of primal solution vector
-      virtual const double * getColSolution() const;
-  
-      /// Get pointer to array[getNumRows()] of dual prices
-      virtual const double * getRowPrice() const;
-  
-      /// Get a pointer to array[getNumCols()] of reduced costs
-      virtual const double * getReducedCost() const;
-  
-      /** Get pointer to array[getNumRows()] of row activity levels (constraint
+
+  /// Get pointer to row-wise copy of matrix
+  virtual const CoinPackedMatrix *getMatrixByRow() const;
+
+  /// Get pointer to column-wise copy of matrix
+  virtual const CoinPackedMatrix *getMatrixByCol() const;
+
+  /// Get solver's value for infinity
+  virtual double getInfinity() const;
+  //@}
+
+  /**@name Methods related to querying the solution */
+  //@{
+  /// Get pointer to array[getNumCols()] of primal solution vector
+  virtual const double *getColSolution() const;
+
+  /// Get pointer to array[getNumRows()] of dual prices
+  virtual const double *getRowPrice() const;
+
+  /// Get a pointer to array[getNumCols()] of reduced costs
+  virtual const double *getReducedCost() const;
+
+  /** Get pointer to array[getNumRows()] of row activity levels (constraint
   	matrix times the solution vector */
-      virtual const double * getRowActivity() const;
-  
-      /// Get objective function value
-      virtual double getObjValue() const;
-  
-      /** Get how many iterations it took to solve the problem (whatever
+  virtual const double *getRowActivity() const;
+
+  /// Get objective function value
+  virtual double getObjValue() const;
+
+  /** Get how many iterations it took to solve the problem (whatever
 	  "iteration" mean to the solver. */
-      virtual int getIterationCount() const;
-  
-      /** Get as many dual rays as the solver can provide. (In case of proven
+  virtual int getIterationCount() const;
+
+  /** Get as many dual rays as the solver can provide. (In case of proven
           primal infeasibility there should be at least one.)
 
 	  The first getNumRows() ray components will always be associated with
@@ -273,9 +272,9 @@ public:
           It is the user's responsibility to free the double pointers in the
           vector using delete[].
       */
-      virtual std::vector<double*> getDualRays(int maxNumRays,
-					       bool fullRay = false) const;
-      /** Get as many primal rays as the solver can provide. (In case of proven
+  virtual std::vector< double * > getDualRays(int maxNumRays,
+    bool fullRay = false) const;
+  /** Get as many primal rays as the solver can provide. (In case of proven
           dual infeasibility there should be at least one.)
      
           <strong>NOTE for implementers of solver interfaces:</strong> <br>
@@ -286,89 +285,89 @@ public:
           It is the user's responsibility to free the double pointers in the
           vector using delete[].
       */
-      virtual std::vector<double*> getPrimalRays(int maxNumRays) const;
-  
+  virtual std::vector< double * > getPrimalRays(int maxNumRays) const;
+
 #if 0
       /** Get vector of indices of solution which are integer variables 
   	presently at fractional values */
       virtual OsiVectorInt getFractionalIndices(const double etol=1.e-05)
 	const;
 #endif
-    //@}
   //@}
-  
+  //@}
+
   //---------------------------------------------------------------------------
 
   /**@name Problem modifying methods */
   //@{
-    //-------------------------------------------------------------------------
-    /**@name Changing bounds on variables and constraints */
-    //@{
-      /** Set an objective function coefficient */
-      virtual void setObjCoeff( int elementIndex, double elementValue );
+  //-------------------------------------------------------------------------
+  /**@name Changing bounds on variables and constraints */
+  //@{
+  /** Set an objective function coefficient */
+  virtual void setObjCoeff(int elementIndex, double elementValue);
 
-      /** Set a a set of objective function coefficients */
-      virtual void setObjCoeffSet(const int* indexFirst,
-				  const int* indexLast,
-				  const double* coeffList);
+  /** Set a a set of objective function coefficients */
+  virtual void setObjCoeffSet(const int *indexFirst,
+    const int *indexLast,
+    const double *coeffList);
 
-      using OsiSolverInterface::setColLower ;
-      /** Set a single column lower bound<br>
+  using OsiSolverInterface::setColLower;
+  /** Set a single column lower bound<br>
     	  Use -COIN_DBL_MAX for -infinity. */
-      virtual void setColLower( int elementIndex, double elementValue );
-      
-      using OsiSolverInterface::setColUpper ;
-      /** Set a single column upper bound<br>
+  virtual void setColLower(int elementIndex, double elementValue);
+
+  using OsiSolverInterface::setColUpper;
+  /** Set a single column upper bound<br>
     	  Use COIN_DBL_MAX for infinity. */
-      virtual void setColUpper( int elementIndex, double elementValue );
-      
-      /** Set a single column lower and upper bound<br>
+  virtual void setColUpper(int elementIndex, double elementValue);
+
+  /** Set a single column lower and upper bound<br>
     	  The default implementation just invokes <code>setColLower()</code> and
     	  <code>setColUpper()</code> */
-      virtual void setColBounds( int elementIndex,
-    				 double lower, double upper );
-    
-      /** Set the bounds on a number of columns simultaneously<br>
+  virtual void setColBounds(int elementIndex,
+    double lower, double upper);
+
+  /** Set the bounds on a number of columns simultaneously<br>
     	  The default implementation just invokes <code>setCollower()</code> and
     	  <code>setColupper()</code> over and over again.
     	  @param <code>[indexfirst,indexLast]</code> contains the indices of
     	         the constraints whose </em>either</em> bound changes
     	  @param boundList the new lower/upper bound pairs for the variables
       */
-      virtual void setColSetBounds(const int* indexFirst,
-				   const int* indexLast,
-				   const double* boundList);
-      
-      /** Set a single row lower bound<br>
+  virtual void setColSetBounds(const int *indexFirst,
+    const int *indexLast,
+    const double *boundList);
+
+  /** Set a single row lower bound<br>
     	  Use -COIN_DBL_MAX for -infinity. */
-      virtual void setRowLower( int elementIndex, double elementValue );
-      
-      /** Set a single row upper bound<br>
+  virtual void setRowLower(int elementIndex, double elementValue);
+
+  /** Set a single row upper bound<br>
     	  Use COIN_DBL_MAX for infinity. */
-      virtual void setRowUpper( int elementIndex, double elementValue );
-    
-      /** Set a single row lower and upper bound<br>
+  virtual void setRowUpper(int elementIndex, double elementValue);
+
+  /** Set a single row lower and upper bound<br>
     	  The default implementation just invokes <code>setRowLower()</code> and
     	  <code>setRowUpper()</code> */
-      virtual void setRowBounds( int elementIndex,
-    				 double lower, double upper );
-    
-      /** Set the type of a single row<br> */
-      virtual void setRowType(int index, char sense, double rightHandSide,
-    			      double range);
-    
-      /** Set the bounds on a number of rows simultaneously<br>
+  virtual void setRowBounds(int elementIndex,
+    double lower, double upper);
+
+  /** Set the type of a single row<br> */
+  virtual void setRowType(int index, char sense, double rightHandSide,
+    double range);
+
+  /** Set the bounds on a number of rows simultaneously<br>
     	  The default implementation just invokes <code>setRowLower()</code> and
     	  <code>setRowUpper()</code> over and over again.
     	  @param <code>[indexfirst,indexLast]</code> contains the indices of
     	         the constraints whose </em>either</em> bound changes
     	  @param boundList the new lower/upper bound pairs for the constraints
       */
-      virtual void setRowSetBounds(const int* indexFirst,
-    				   const int* indexLast,
-    				   const double* boundList);
-    
-      /** Set the type of a number of rows simultaneously<br>
+  virtual void setRowSetBounds(const int *indexFirst,
+    const int *indexLast,
+    const double *boundList);
+
+  /** Set the type of a number of rows simultaneously<br>
     	  The default implementation just invokes <code>setRowType()</code> and
     	  over and over again.
     	  @param <code>[indexfirst,indexLast]</code> contains the indices of
@@ -377,33 +376,33 @@ public:
     	  @param rhsList   the new right hand sides
     	  @param rangeList the new ranges
       */
-      virtual void setRowSetTypes(const int* indexFirst,
-				  const int* indexLast,
-				  const char* senseList,
-				  const double* rhsList,
-				  const double* rangeList);
-    //@}
-    
-    //-------------------------------------------------------------------------
-    /**@name Integrality related changing methods */
-    //@{
-      /** Set the index-th variable to be a continuous variable */
-      virtual void setContinuous(int index);
-      /** Set the index-th variable to be an integer variable */
-      virtual void setInteger(int index);
-      /** Set the variables listed in indices (which is of length len) to be
+  virtual void setRowSetTypes(const int *indexFirst,
+    const int *indexLast,
+    const char *senseList,
+    const double *rhsList,
+    const double *rangeList);
+  //@}
+
+  //-------------------------------------------------------------------------
+  /**@name Integrality related changing methods */
+  //@{
+  /** Set the index-th variable to be a continuous variable */
+  virtual void setContinuous(int index);
+  /** Set the index-th variable to be an integer variable */
+  virtual void setInteger(int index);
+  /** Set the variables listed in indices (which is of length len) to be
 	  continuous variables */
-      virtual void setContinuous(const int* indices, int len);
-      /** Set the variables listed in indices (which is of length len) to be
+  virtual void setContinuous(const int *indices, int len);
+  /** Set the variables listed in indices (which is of length len) to be
 	  integer variables */
-      virtual void setInteger(const int* indices, int len);
-    //@}
-    
-    //-------------------------------------------------------------------------
-    /// Set objective function sense (1 for min (default), -1 for max,)
-    virtual void setObjSense(double s);
-    
-    /** Set the primal solution column values
+  virtual void setInteger(const int *indices, int len);
+  //@}
+
+  //-------------------------------------------------------------------------
+  /// Set objective function sense (1 for min (default), -1 for max,)
+  virtual void setObjSense(double s);
+
+  /** Set the primal solution column values
     
     	colsol[numcols()] is an array of values of the problem column
     	variables. These values are copied to memory owned by the
@@ -413,9 +412,9 @@ public:
     	solver makes use of the solution in any way is
     	solver-dependent. 
     */
-    virtual void setColSolution(const double * colsol);
-    
-    /** Set dual solution vector
+  virtual void setColSolution(const double *colsol);
+
+  /** Set dual solution vector
     
     	rowprice[numrows()] is an array of values of the problem row
     	dual variables. These values are copied to memory owned by the
@@ -425,50 +424,50 @@ public:
     	solver makes use of the solution in any way is
     	solver-dependent. 
     */
-    virtual void setRowPrice(const double * rowprice);
-    
-    //-------------------------------------------------------------------------
-    /**@name Methods to expand a problem.<br>
+  virtual void setRowPrice(const double *rowprice);
+
+  //-------------------------------------------------------------------------
+  /**@name Methods to expand a problem.<br>
        Note that if a column is added then by default it will correspond to a
        continuous variable. */
-    //@{
-      using OsiSolverInterface::addCol ;
-      /** */
-      virtual void addCol(const CoinPackedVectorBase& vec,
-			  const double collb, const double colub,   
-			  const double obj);
+  //@{
+  using OsiSolverInterface::addCol;
+  /** */
+  virtual void addCol(const CoinPackedVectorBase &vec,
+    const double collb, const double colub,
+    const double obj);
 
-      using OsiSolverInterface::addCols ;
-      /** */
-      virtual void addCols(const int numcols,
-			   const CoinPackedVectorBase * const * cols,
-			   const double* collb, const double* colub,   
-			   const double* obj);
-      /** */
-      virtual void deleteCols(const int num, const int * colIndices);
-    
-      using OsiSolverInterface::addRow ;
-      /** */
-      virtual void addRow(const CoinPackedVectorBase& vec,
-    			  const double rowlb, const double rowub);
-      /** */
-      virtual void addRow(const CoinPackedVectorBase& vec,
-    			  const char rowsen, const double rowrhs,   
-    			  const double rowrng);
+  using OsiSolverInterface::addCols;
+  /** */
+  virtual void addCols(const int numcols,
+    const CoinPackedVectorBase *const *cols,
+    const double *collb, const double *colub,
+    const double *obj);
+  /** */
+  virtual void deleteCols(const int num, const int *colIndices);
 
-      using OsiSolverInterface::addRows ;
-      /** */
-      virtual void addRows(const int numrows,
-			   const CoinPackedVectorBase * const * rows,
-			   const double* rowlb, const double* rowub);
-      /** */
-      virtual void addRows(const int numrows,
-			   const CoinPackedVectorBase * const * rows,
-    			   const char* rowsen, const double* rowrhs,   
-    			   const double* rowrng);
-      /** */
-      virtual void deleteRows(const int num, const int * rowIndices);
-    
+  using OsiSolverInterface::addRow;
+  /** */
+  virtual void addRow(const CoinPackedVectorBase &vec,
+    const double rowlb, const double rowub);
+  /** */
+  virtual void addRow(const CoinPackedVectorBase &vec,
+    const char rowsen, const double rowrhs,
+    const double rowrng);
+
+  using OsiSolverInterface::addRows;
+  /** */
+  virtual void addRows(const int numrows,
+    const CoinPackedVectorBase *const *rows,
+    const double *rowlb, const double *rowub);
+  /** */
+  virtual void addRows(const int numrows,
+    const CoinPackedVectorBase *const *rows,
+    const char *rowsen, const double *rowrhs,
+    const double *rowrng);
+  /** */
+  virtual void deleteRows(const int num, const int *rowIndices);
+
 #if 0
   // ??? implemented in OsiSolverInterface
       //-----------------------------------------------------------------------
@@ -496,14 +495,14 @@ public:
       virtual ApplyCutsReturnCode applyCuts(const OsiCuts & cs,
     					    double effectivenessLb = 0.0);
 #endif
-    //@}
+  //@}
   //@}
 
   //---------------------------------------------------------------------------
 
   /**@name Methods to input a problem */
   //@{
-    /** Load in an problem by copying the arguments (the constraints on the
+  /** Load in an problem by copying the arguments (the constraints on the
         rows are given by lower and upper bounds). If a pointer is 0 then the
         following values are the default:
         <ul>
@@ -514,23 +513,23 @@ public:
 	  <li> <code>obj</code>: all variables have 0 objective coefficient
         </ul>
     */
-    virtual void loadProblem(const CoinPackedMatrix& matrix,
-			     const double* collb, const double* colub,   
-			     const double* obj,
-			     const double* rowlb, const double* rowub);
-			    
-    /** Load in an problem by assuming ownership of the arguments (the
+  virtual void loadProblem(const CoinPackedMatrix &matrix,
+    const double *collb, const double *colub,
+    const double *obj,
+    const double *rowlb, const double *rowub);
+
+  /** Load in an problem by assuming ownership of the arguments (the
         constraints on the rows are given by lower and upper bounds). For
         default values see the previous method. <br>
 	<strong>WARNING</strong>: The arguments passed to this method will be
 	freed using the C++ <code>delete</code> and <code>delete[]</code>
 	functions. 
     */
-    virtual void assignProblem(CoinPackedMatrix*& matrix,
-			       double*& collb, double*& colub, double*& obj,
-			       double*& rowlb, double*& rowub);
+  virtual void assignProblem(CoinPackedMatrix *&matrix,
+    double *&collb, double *&colub, double *&obj,
+    double *&rowlb, double *&rowub);
 
-    /** Load in an problem by copying the arguments (the constraints on the
+  /** Load in an problem by copying the arguments (the constraints on the
 	rows are given by sense/rhs/range triplets). If a pointer is 0 then the
 	following values are the default:
 	<ul>
@@ -542,67 +541,67 @@ public:
           <li> <code>rowrng</code>: 0 for the ranged rows
         </ul>
     */
-    virtual void loadProblem(const CoinPackedMatrix& matrix,
-			     const double* collb, const double* colub,
-			     const double* obj,
-			     const char* rowsen, const double* rowrhs,   
-			     const double* rowrng);
+  virtual void loadProblem(const CoinPackedMatrix &matrix,
+    const double *collb, const double *colub,
+    const double *obj,
+    const char *rowsen, const double *rowrhs,
+    const double *rowrng);
 
-    /** Load in an problem by assuming ownership of the arguments (the
+  /** Load in an problem by assuming ownership of the arguments (the
         constraints on the rows are given by sense/rhs/range triplets). For
         default values see the previous method. <br>
 	<strong>WARNING</strong>: The arguments passed to this method will be
 	freed using the C++ <code>delete</code> and <code>delete[]</code>
 	functions. 
     */
-    virtual void assignProblem(CoinPackedMatrix*& matrix,
-			       double*& collb, double*& colub, double*& obj,
-			       char*& rowsen, double*& rowrhs,
-			       double*& rowrng);
+  virtual void assignProblem(CoinPackedMatrix *&matrix,
+    double *&collb, double *&colub, double *&obj,
+    char *&rowsen, double *&rowrhs,
+    double *&rowrng);
 
-    /** Just like the other loadProblem() methods except that the matrix is
+  /** Just like the other loadProblem() methods except that the matrix is
 	given in a standard column major ordered format (without gaps). */
-    virtual void loadProblem(const int numcols, const int numrows,
-			     const int* start, const int* index,
-			     const double* value,
-			     const double* collb, const double* colub,   
-			     const double* obj,
-			     const double* rowlb, const double* rowub);
+  virtual void loadProblem(const int numcols, const int numrows,
+    const int *start, const int *index,
+    const double *value,
+    const double *collb, const double *colub,
+    const double *obj,
+    const double *rowlb, const double *rowub);
 
-    /** Just like the other loadProblem() methods except that the matrix is
+  /** Just like the other loadProblem() methods except that the matrix is
 	given in a standard column major ordered format (without gaps). */
-    virtual void loadProblem(const int numcols, const int numrows,
-			     const int* start, const int* index,
-			     const double* value,
-			     const double* collb, const double* colub,   
-			     const double* obj,
-			     const char* rowsen, const double* rowrhs,   
-			     const double* rowrng);
+  virtual void loadProblem(const int numcols, const int numrows,
+    const int *start, const int *index,
+    const double *value,
+    const double *collb, const double *colub,
+    const double *obj,
+    const char *rowsen, const double *rowrhs,
+    const double *rowrng);
 
-    using OsiSolverInterface::readMps ;
-    /** Read an mps file from the given filename */
-    virtual int readMps(const char *filename,
-			 const char *extension = "mps");
+  using OsiSolverInterface::readMps;
+  /** Read an mps file from the given filename */
+  virtual int readMps(const char *filename,
+    const char *extension = "mps");
 
-    /** Write the problem into an mps file of the given filename.
+  /** Write the problem into an mps file of the given filename.
 	If objSense is non zero then -1.0 forces the code to write a
 	maximization objective and +1.0 to write a minimization one.
 	If 0.0 then solver can do what it wants */
-    virtual void writeMps(const char *filename,
-			  const char *extension = "mps",
-                          double objSense=0.0) const;
+  virtual void writeMps(const char *filename,
+    const char *extension = "mps",
+    double objSense = 0.0) const;
 
   //@}
-    
-    /**@name Message handling */
-    //@{
-    /** Pass in a message handler
+
+  /**@name Message handling */
+  //@{
+  /** Pass in a message handler
         It is the client's responsibility to destroy a message handler installed
         by this routine; it will not be destroyed when the solver interface is
         destroyed. 
      */
-    void passInMessageHandler(CoinMessageHandler * handler);
-    //@}
+  void passInMessageHandler(CoinMessageHandler *handler);
+  //@}
 
   //---------------------------------------------------------------------------
 
@@ -611,63 +610,62 @@ public:
   /** Get pointer to CPLEX model and free all specified cached data entries
       (combined with logical or-operator '|' ):
   */
-  enum keepCachedFlag
-  {
+  enum keepCachedFlag {
     /// discard all cached data (default)
-    KEEPCACHED_NONE    = 0,
+    KEEPCACHED_NONE = 0,
     /// column information: objective values, lower and upper bounds, variable types
-    KEEPCACHED_COLUMN  = 1,
+    KEEPCACHED_COLUMN = 1,
     /// row information: right hand sides, ranges and senses, lower and upper bounds for row
-    KEEPCACHED_ROW     = 2,
+    KEEPCACHED_ROW = 2,
     /// problem matrix: matrix ordered by column and by row
-    KEEPCACHED_MATRIX  = 4,
+    KEEPCACHED_MATRIX = 4,
     /// LP solution: primal and dual solution, reduced costs, row activities
     KEEPCACHED_RESULTS = 8,
     /// only discard cached LP solution
     KEEPCACHED_PROBLEM = KEEPCACHED_COLUMN | KEEPCACHED_ROW | KEEPCACHED_MATRIX,
     /// keep all cached data (similar to getMutableLpPtr())
-    KEEPCACHED_ALL     = KEEPCACHED_PROBLEM | KEEPCACHED_RESULTS,
+    KEEPCACHED_ALL = KEEPCACHED_PROBLEM | KEEPCACHED_RESULTS,
     /// free only cached column and LP solution information
-    FREECACHED_COLUMN  = KEEPCACHED_PROBLEM & ~KEEPCACHED_COLUMN,
+    FREECACHED_COLUMN = KEEPCACHED_PROBLEM & ~KEEPCACHED_COLUMN,
     /// free only cached row and LP solution information
-    FREECACHED_ROW     = KEEPCACHED_PROBLEM & ~KEEPCACHED_ROW,
+    FREECACHED_ROW = KEEPCACHED_PROBLEM & ~KEEPCACHED_ROW,
     /// free only cached matrix and LP solution information
-    FREECACHED_MATRIX  = KEEPCACHED_PROBLEM & ~KEEPCACHED_MATRIX,
+    FREECACHED_MATRIX = KEEPCACHED_PROBLEM & ~KEEPCACHED_MATRIX,
     /// free only cached LP solution information
     FREECACHED_RESULTS = KEEPCACHED_ALL & ~KEEPCACHED_RESULTS
   };
-  CPXLPptr getLpPtr( int keepCached = KEEPCACHED_NONE );
-  
+  CPXLPptr getLpPtr(int keepCached = KEEPCACHED_NONE);
+
   //@{
   /// Method to access CPLEX environment pointer
   CPXENVptr getEnvironmentPtr();
-  //@}  
+  //@}
 
   /// return a vector of variable types (continous, binary, integer)
-  const char* getCtype() const;
-  
+  const char *getCtype() const;
+
   /**@name Constructors and destructor */
   //@{
   /// Default Constructor
-  OsiCpxSolverInterface(); 
-  
+  OsiCpxSolverInterface();
+
   /// Clone
-  virtual OsiSolverInterface * clone(bool copyData = true) const;
-  
-  /// Copy constructor 
-  OsiCpxSolverInterface( const OsiCpxSolverInterface& );
-  
-  /// Assignment operator 
-  OsiCpxSolverInterface& operator=( const OsiCpxSolverInterface& rhs );
-  
-  /// Destructor 
+  virtual OsiSolverInterface *clone(bool copyData = true) const;
+
+  /// Copy constructor
+  OsiCpxSolverInterface(const OsiCpxSolverInterface &);
+
+  /// Assignment operator
+  OsiCpxSolverInterface &operator=(const OsiCpxSolverInterface &rhs);
+
+  /// Destructor
   virtual ~OsiCpxSolverInterface();
 
   /// Resets as if default constructor
   virtual void reset();
   //@}
-  
-/***************************************************************************/
+
+  /***************************************************************************/
   /**@name OsiSimplexInterface methods 
     Cplex adds a slack with coeff +1 in "<=" and "=" constraints, 
     with coeff -1 in ">=", 
@@ -693,7 +691,7 @@ public:
       and 0 if it has none */
   virtual int canDoSimplexInterface() const;
 
-  using OsiSolverInterface::enableSimplexInterface ;
+  using OsiSolverInterface::enableSimplexInterface;
   /** Useless function, defined only for compatibility with 
      OsiSimplexInterface
   */
@@ -720,26 +718,26 @@ public:
   /** Returns a basis status of the structural/artificial variables 
      At present as warm start i.e 0: free, 1: basic, 2: upper, 3: lower
   */
-   virtual void getBasisStatus(int* cstat, int* rstat) const;
+  virtual void getBasisStatus(int *cstat, int *rstat) const;
 
   ///Get a row of the tableau (slack part in slack if not NULL)
-  virtual void getBInvARow(int row, double* z, double * slack=NULL) const;
+  virtual void getBInvARow(int row, double *z, double *slack = NULL) const;
 
   ///Get a row of the basis inverse
-  virtual void getBInvRow(int row, double* z) const;
+  virtual void getBInvRow(int row, double *z) const;
 
   ///Get a column of the tableau
-  virtual void getBInvACol(int col, double* vec) const;
+  virtual void getBInvACol(int col, double *vec) const;
 
   ///Get a column of the basis inverse
-  virtual void getBInvCol(int col, double* vec) const;
+  virtual void getBInvCol(int col, double *vec) const;
 
   /**  Get indices of the pivot variable in each row
       (order of indices corresponds to the
       order of elements in a vector retured by getBInvACol() and
       getBInvCol()).
   */
-  virtual void getBasics(int* index) const;
+  virtual void getBasics(int *index) const;
   /// switches CPLEX to prob type LP
   void switchToLP();
 
@@ -747,10 +745,9 @@ public:
   void switchToMIP();
 
   //@}
-/***************************************************************************/
+  /***************************************************************************/
 
 protected:
-  
   /// Get LP Pointer for const methods
   CPXLPptr getMutableLpPtr() const;
 
@@ -760,34 +757,33 @@ protected:
   /**@name Protected methods */
   //@{
   /// Apply a row cut. Return true if cut was applied.
-  virtual void applyRowCut( const OsiRowCut & rc );
-  
+  virtual void applyRowCut(const OsiRowCut &rc);
+
   /** Apply a column cut (bound adjustment). 
       Return true if cut was applied.
   */
-  virtual void applyColCut( const OsiColCut & cc );
+  virtual void applyColCut(const OsiColCut &cc);
   //@}
-  
+
 private:
   /**@name Private static class functions  */
   //@{
   /// resizes coltype_ vector to be able to store at least minsize elements
-  void resizeColType( int minsize );
+  void resizeColType(int minsize);
 
   /// frees colsize_ vector
   void freeColType();
   //@}
 
-  
   /**@name Private methods */
   //@{
-    
+
   /// The real work of a copy constructor (used by copy and assignment)
-  void gutsOfCopy( const OsiCpxSolverInterface & source );
-  
+  void gutsOfCopy(const OsiCpxSolverInterface &source);
+
   /// The real work of the constructor
   void gutsOfConstructor();
-  
+
   /// The real work of the destructor
   void gutsOfDestructor();
 
@@ -799,19 +795,18 @@ private:
 
   /// free cached result vectors
   void freeCachedResults();
-  
+
   /// free cached matrices
   void freeCachedMatrix();
 
   /// free all cached data (except specified entries, see getLpPtr())
-  void freeCachedData( int keepCached = KEEPCACHED_NONE );
+  void freeCachedData(int keepCached = KEEPCACHED_NONE);
 
   /// free all allocated memory
   void freeAllMemory();
-  
+
   //@}
-  
-  
+
   /**@name Private member data */
   //@{
   /// CPLEX environment used in this class instance
@@ -829,70 +824,73 @@ private:
   /**@name Cached information derived from the CPLEX model */
   //@{
   /// Pointer to objective vector
-  mutable double  *obj_;
-  
+  mutable double *obj_;
+
   /// Pointer to dense vector of variable lower bounds
-  mutable double  *collower_;
-  
+  mutable double *collower_;
+
   /// Pointer to dense vector of variable lower bounds
-  mutable double  *colupper_;
-  
+  mutable double *colupper_;
+
   /// Pointer to dense vector of row sense indicators
-  mutable char    *rowsense_;
-  
+  mutable char *rowsense_;
+
   /// Pointer to dense vector of row right-hand side values
-  mutable double  *rhs_;
-  
+  mutable double *rhs_;
+
   /// Pointer to dense vector of slack upper bounds for range constraints (undefined for non-range rows)
-  mutable double  *rowrange_;
-  
+  mutable double *rowrange_;
+
   /// Pointer to dense vector of row lower bounds
-  mutable double  *rowlower_;
-  
+  mutable double *rowlower_;
+
   /// Pointer to dense vector of row upper bounds
-  mutable double  *rowupper_;
-  
+  mutable double *rowupper_;
+
   /// Pointer to primal solution vector
-  mutable double  *colsol_;
-  
+  mutable double *colsol_;
+
   /// Pointer to dual solution vector
-  mutable double  *rowsol_;
+  mutable double *rowsol_;
 
   /// Pointer to reduced cost vector
-  mutable double  *redcost_;
+  mutable double *redcost_;
 
   /// Pointer to row activity (slack) vector
-  mutable double  *rowact_;
+  mutable double *rowact_;
 
   /// Pointer to row-wise copy of problem matrix coefficients.
-  mutable CoinPackedMatrix *matrixByRow_;  
-  
+  mutable CoinPackedMatrix *matrixByRow_;
+
   /// Pointer to row-wise copy of problem matrix coefficients.
-  mutable CoinPackedMatrix *matrixByCol_;  
+  mutable CoinPackedMatrix *matrixByCol_;
   //@}
 
   /**@name Additional information needed for storing MIP problems */
   //@{
   /// Pointer to dense vector of variable types (continous, binary, integer)
-  char            *coltype_;
+  char *coltype_;
 
   /// Size of allocated memory for coltype_
-  int             coltypesize_;
-  
+  int coltypesize_;
+
   /// Stores whether CPLEX' prob type is currently set to MIP
-  mutable bool    probtypemip_;
+  mutable bool probtypemip_;
 
   /// Whether to pass a column solution to CPLEX before starting MIP solve (copymipstart)
-  bool            domipstart;
+  bool domipstart;
 
   /// Whether to disable use of advanced basis (if given)
-  bool            disableadvbasis;
+  bool disableadvbasis;
 
   //@}
 };
 
 //#############################################################################
 /** A function that tests the methods in the OsiCpxSolverInterface class. */
-void OsiCpxSolverInterfaceUnitTest(const std::string & mpsDir, const std::string & netlibDir);
+void OsiCpxSolverInterfaceUnitTest(const std::string &mpsDir, const std::string &netlibDir);
 
 #endif
+
+/* vi: softtabstop=2 shiftwidth=2 expandtab tabstop=2
+*/

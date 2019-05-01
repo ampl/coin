@@ -1,4 +1,4 @@
-// $Id: CglClique.cpp 1330 2016-01-26 19:35:16Z forrest $
+// $Id: CglClique.cpp 1434 2018-11-03 13:02:36Z unxusr $
 // Copyright (C) 2000, International Business Machines
 // Corporation and others.  All Rights Reserved.
 // This code is licensed under the terms of the Eclipse Public License (EPL).
@@ -10,6 +10,12 @@
 #include "OsiCuts.hpp"
 #include "OsiRowCut.hpp"
 #include "CglClique.hpp"
+
+/* to prevent the creation of very
+ * large incidence matrixes */
+#ifndef MAX_CGLCLIQUE_COLS
+#define MAX_CGLCLIQUE_COLS 10000
+#endif
 
 /*****************************************************************************/
 
@@ -115,27 +121,29 @@ CglClique::generateCuts(const OsiSolverInterface& si, OsiCuts & cs,
 #ifndef MAX_CGLCLIQUE_ROWS
 #define MAX_CGLCLIQUE_ROWS 100000
 #endif
-   if (sp_numrows > MAX_CGLCLIQUE_ROWS) {
+   if (sp_numrows > MAX_CGLCLIQUE_ROWS || sp_numcols < 2 || sp_numcols>MAX_CGLCLIQUE_COLS) {
      //printf("sp_numrows is %d\n",sp_numrows);
      deleteSetPackingSubMatrix();
-     return; // too many
+     return; // too many rows or too few columns!
    }
 
    createSetPackingSubMatrix(si);
    fgraph.edgenum = createNodeNode();
    createFractionalGraph();
 
-   cl_indices = new int[sp_numcols];
-   cl_del_indices = new int[sp_numcols];
-
-   if (do_row_clique)
-      find_rcl(cs);
-   if (do_star_clique)
-      find_scl(cs);
-   if (!info.inTree&&((info.options&4)==4||((info.options&8)&&!info.pass))) {
-     int numberRowCutsAfter = cs.sizeRowCuts();
-     for (int i=numberRowCutsBefore;i<numberRowCutsAfter;i++)
-       cs.rowCutPtr(i)->setGloballyValid();
+   if (sp_numcols>1) {
+     cl_indices = new int[sp_numcols];
+     cl_del_indices = new int[sp_numcols];
+     
+     if (do_row_clique)
+       find_rcl(cs);
+     if (do_star_clique)
+       find_scl(cs);
+     if (!info.inTree&&((info.options&4)==4||((info.options&8)&&!info.pass))) {
+       int numberRowCutsAfter = cs.sizeRowCuts();
+       for (int i=numberRowCutsBefore;i<numberRowCutsAfter;i++)
+	 cs.rowCutPtr(i)->setGloballyValid();
+     }
    }
 
    delete[] cl_indices;     cl_indices = 0;
@@ -235,7 +243,6 @@ CglClique::find_rcl(OsiCuts& cs)
 	 }
       }
    }
-
    if (rcl_report_result) {
       printf("\nrcl Found %i new violated cliques with the row-clique method",
 	     clique_count);
@@ -278,8 +285,9 @@ CglClique::find_scl(OsiCuts& cs)
    const fnode *nodes = fgraph.nodes;
 
    // Return at once if no nodes - otherwise we get invalid reads
-   if (!nodenum)
-     return;
+   assert (nodenum>1);
+   //if (!nodenum)
+   //return;
    int *current_indices = new int[nodenum];
    int *current_degrees = new int[nodenum];
    double *current_values = new double[nodenum];
@@ -391,6 +399,7 @@ CglClique::find_scl(OsiCuts& cs)
    }
 
    const int clique_cnt = clique_cnt_e + clique_cnt_g;
+   assert (nodenum>1||!clique_cnt);
 
    if (scl_report_result) {
       printf("\nscl Found %i new violated cliques with the star-clique method",

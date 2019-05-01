@@ -1,4 +1,4 @@
-// $Id: CglKnapsackCoverTest.cpp 1120 2013-04-06 20:34:40Z stefan $
+// $Id: CglKnapsackCoverTest.cpp 1387 2017-09-29 11:02:03Z forrest $
 // Copyright (C) 2000, International Business Machines
 // Corporation and others.  All Rights Reserved.
 // This code is licensed under the terms of the Eclipse Public License (EPL).
@@ -567,10 +567,10 @@ CglKnapsackCoverUnitTest(
       double lo=-1.0e30;
       double * upper = new double[ncol];
       start[ncol]=nel;
-      int last=0;
+      CoinBigIndex last=0;
       for (i=0;i<ncol;i++) {
 	upper[i]=1.0;
-	int marked=start[i];
+	CoinBigIndex marked=start[i];
 	start[i]=last;
 	if (marked)
 	  last++;

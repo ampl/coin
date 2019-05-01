@@ -2,7 +2,7 @@
 # All Rights Reserved.
 # This file is distributed under the Eclipse Public License.
 
-## $Id: Makefile.am 1800 2011-08-14 10:37:34Z stefan $
+## $Id: Makefile.am 2111 2017-11-07 03:40:06Z tkr $
 
 AUTOMAKE_OPTIONS = foreign
 
@@ -15,6 +15,11 @@ lib_LTLIBRARIES = libOsiSpx.la
 
 # List all source files for this library, including headers
 libOsiSpx_la_SOURCES = OsiSpxSolverInterface.cpp OsiSpxSolverInterface.hpp
+
+# List all additionally required libraries
+if DEPENDENCY_LINKING
+libOsiSpx_la_LIBADD = $(OSILIB_LIBS) ../Osi/libOsi.la
+endif
 
 # This is for libtool
 libOsiSpx_la_LDFLAGS = $(LT_LDFLAGS)

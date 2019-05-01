@@ -1,4 +1,4 @@
-/* $Id: MyEventHandler.hpp 1665 2011-01-04 17:55:54Z lou $ */
+/* $Id: MyEventHandler.hpp 2385 2019-01-06 19:43:06Z unxusr $ */
 // Copyright (C) 2004, International Business Machines
 // Corporation and others.  All Rights Reserved.
 // This code is licensed under the terms of the Eclipse Public License (EPL).
@@ -18,30 +18,32 @@
 class MyEventHandler : public ClpEventHandler {
 
 public:
-     /**@name Overrides */
-     //@{
-     virtual int event(Event whichEvent);
-     //@}
+  /**@name Overrides */
+  //@{
+  virtual int event(Event whichEvent);
+  //@}
 
-     /**@name Constructors, destructor etc*/
-     //@{
-     /** Default constructor. */
-     MyEventHandler();
-     /// Constructor with pointer to model (redundant as setEventHandler does)
-     MyEventHandler(ClpSimplex * model);
-     /** Destructor */
-     virtual ~MyEventHandler();
-     /** The copy constructor. */
-     MyEventHandler(const MyEventHandler & rhs);
-     /// Assignment
-     MyEventHandler& operator=(const MyEventHandler & rhs);
-     /// Clone
-     virtual ClpEventHandler * clone() const ;
-     //@}
-
+  /**@name Constructors, destructor etc*/
+  //@{
+  /** Default constructor. */
+  MyEventHandler();
+  /// Constructor with pointer to model (redundant as setEventHandler does)
+  MyEventHandler(ClpSimplex *model);
+  /** Destructor */
+  virtual ~MyEventHandler();
+  /** The copy constructor. */
+  MyEventHandler(const MyEventHandler &rhs);
+  /// Assignment
+  MyEventHandler &operator=(const MyEventHandler &rhs);
+  /// Clone
+  virtual ClpEventHandler *clone() const;
+  //@}
 
 protected:
-     // data goes here
+  // data goes here
 };
 
 #endif
+
+/* vi: softtabstop=2 shiftwidth=2 expandtab tabstop=2
+*/

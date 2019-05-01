@@ -2,7 +2,6 @@
 // Corporation and others.  All Rights Reserved.
 // This code is licensed under the terms of the Eclipse Public License (EPL).
 
-
 /* OPEN: have a look at the OPEN tags */
 /* OPEN: read/set more controls ... */
 
@@ -14,7 +13,7 @@
 
 #define __ANSIC_
 #include <xprs.h>
-#undef  __ANSIC_
+#undef __ANSIC_
 
 #include "OsiXprSolverInterface.hpp"
 
@@ -28,102 +27,95 @@
 
 //#define DEBUG
 
-static
-void XPRS_CC OsiXprMessageCallback(XPRSprob prob, void *vUserDat, const char *msg, int msgLen, int msgType)
-{ 
-	if (vUserDat) {
-		if (msgType < 0 ) {
-			((CoinMessageHandler*)vUserDat)->finish();
-		} else {
-			/* CoinMessageHandler does not recognize that a "\0" string means that a newline should be printed.
+static void XPRS_CC OsiXprMessageCallback(XPRSprob prob, void *vUserDat, const char *msg, int msgLen, int msgType)
+{
+  if (vUserDat) {
+    if (msgType < 0) {
+      ((CoinMessageHandler *)vUserDat)->finish();
+    } else {
+      /* CoinMessageHandler does not recognize that a "\0" string means that a newline should be printed.
 			 * So we let it print a space (followed by a newline).
 			 */
-			if (((CoinMessageHandler*)vUserDat)->logLevel() > 0)
-			  ((CoinMessageHandler*)vUserDat)->message(0, "XPRS", *msg ? msg : " ", ' ') << CoinMessageEol;
-		}
-	} else {
-		if (msgType < 0) {
-			fflush(stdout); 
-		} else {
-			printf("%.*s\n", msgLen, msg); 
-			fflush(stdout); 
-		}
-	}
+      if (((CoinMessageHandler *)vUserDat)->logLevel() > 0)
+        ((CoinMessageHandler *)vUserDat)->message(0, "XPRS", *msg ? msg : " ", ' ') << CoinMessageEol;
+    }
+  } else {
+    if (msgType < 0) {
+      fflush(stdout);
+    } else {
+      printf("%.*s\n", msgLen, msg);
+      fflush(stdout);
+    }
+  }
 }
 
-static
-void reporterror(const char *fname, int iline, int ierr)
+static void reporterror(const char *fname, int iline, int ierr)
 {
-  fprintf( stdout, "ERROR: %s in line %d error %d occured\n",
-	   fname, iline, ierr );
+  fprintf(stdout, "ERROR: %s in line %d error %d occured\n",
+    fname, iline, ierr);
 }
 
-#define XPRS_CHECKED(function, args) do { 		\
-      int _nReturn;					\
-      if( (_nReturn = function args ) !=0 ) {		\
-	 reporterror (#function,__LINE__,_nReturn);	\
-      }							\
-   } while (0)
-
-
-
+#define XPRS_CHECKED(function, args)              \
+  do {                                            \
+    int _nReturn;                                 \
+    if ((_nReturn = function args) != 0) {        \
+      reporterror(#function, __LINE__, _nReturn); \
+    }                                             \
+  } while (0)
 
 //#############################################################################
 // Solve methods
 //#############################################################################
 
-void
-OsiXprSolverInterface::initialSolve() {
+void OsiXprSolverInterface::initialSolve()
+{
 
   freeSolution();
 
 #if XPVERSION <= 20
-   if ( objsense_ == 1.0 ) {
-       XPRS_CHECKED( XPRSminim, (prob_,"l") );
-   }
-   else if ( objsense_ == -1.0 ) {
-     XPRS_CHECKED( XPRSmaxim, (prob_,"l"));
-   }
+  if (objsense_ == 1.0) {
+    XPRS_CHECKED(XPRSminim, (prob_, "l"));
+  } else if (objsense_ == -1.0) {
+    XPRS_CHECKED(XPRSmaxim, (prob_, "l"));
+  }
 #else
 
-   XPRS_CHECKED( XPRSlpoptimize, (prob_, "l") );
+  XPRS_CHECKED(XPRSlpoptimize, (prob_, "l"));
 #endif
 
-   lastsolvewasmip = false;
+  lastsolvewasmip = false;
 }
 
 //-----------------------------------------------------------------------------
 
-void
-OsiXprSolverInterface::resolve() {
+void OsiXprSolverInterface::resolve()
+{
 
-   freeSolution();
+  freeSolution();
 
 #if XPVERSION <= 20
-   if ( objsense_ == 1.0 ) {
-       XPRS_CHECKED( XPRSminim, (prob_,"dl") );
-   }
-   else if ( objsense_ == -1.0 ) {
-       XPRS_CHECKED( XPRSmaxim, (prob_,"dl") ) ;
-   }
+  if (objsense_ == 1.0) {
+    XPRS_CHECKED(XPRSminim, (prob_, "dl"));
+  } else if (objsense_ == -1.0) {
+    XPRS_CHECKED(XPRSmaxim, (prob_, "dl"));
+  }
 #else
 
-   XPRS_CHECKED( XPRSlpoptimize, (prob_, "dl") );
+  XPRS_CHECKED(XPRSlpoptimize, (prob_, "dl"));
 #endif
 
-   lastsolvewasmip = false;
+  lastsolvewasmip = false;
 }
 
 //-----------------------------------------------------------------------------
 
-void
-OsiXprSolverInterface::branchAndBound(){
+void OsiXprSolverInterface::branchAndBound()
+{
   int status;
 
-  if( colsol_ != NULL && domipstart )
-  {
-  	XPRS_CHECKED( XPRSloadmipsol, (prob_, colsol_, &status) );
-  	/* status = 0 .. accepted
+  if (colsol_ != NULL && domipstart) {
+    XPRS_CHECKED(XPRSloadmipsol, (prob_, colsol_, &status));
+    /* status = 0 .. accepted
   	 *        = 1 .. infeasible
   	 *        = 2 .. cutoff
   	 *        = 3 .. LP reoptimization interrupted
@@ -135,18 +127,18 @@ OsiXprSolverInterface::branchAndBound(){
 #if XPVERSION <= 20
   /* XPRSglobal cannot be called if there is no LP relaxation available yet
    * -> solve LP relaxation first, if no LP solution available */
-  XPRS_CHECKED( XPRSgetintattrib, (prob_,XPRS_LPSTATUS, &status) );
+  XPRS_CHECKED(XPRSgetintattrib, (prob_, XPRS_LPSTATUS, &status));
   if (status != XPRS_LP_OPTIMAL)
-  	initialSolve();
+    initialSolve();
 
-  XPRS_CHECKED( XPRSgetintattrib, (prob_,XPRS_LPSTATUS, &status) );
+  XPRS_CHECKED(XPRSgetintattrib, (prob_, XPRS_LPSTATUS, &status));
   if (status != XPRS_LP_OPTIMAL) {
-  	messageHandler()->message(0, "XPRS", "XPRESS failed to solve LP relaxation; cannot call XPRSglobal", ' ') << CoinMessageEol;
-  	return;
+    messageHandler()->message(0, "XPRS", "XPRESS failed to solve LP relaxation; cannot call XPRSglobal", ' ') << CoinMessageEol;
+    return;
   }
 #else
 
-  XPRS_CHECKED( XPRSmipoptimize, (prob_, "") );
+  XPRS_CHECKED(XPRSmipoptimize, (prob_, ""));
 #endif
 
   lastsolvewasmip = true;
@@ -155,24 +147,23 @@ OsiXprSolverInterface::branchAndBound(){
 //#############################################################################
 // Parameter related methods
 //#############################################################################
-bool
-OsiXprSolverInterface::setIntParam(OsiIntParam key, int value)
+bool OsiXprSolverInterface::setIntParam(OsiIntParam key, int value)
 {
   bool retval = false;
-  
+
   switch (key) {
-      case OsiMaxNumIteration:
-	  retval = XPRSsetintcontrol(prob_,XPRS_LPITERLIMIT, value) == 0;
-	  break;
-      case OsiMaxNumIterationHotStart:
-	  retval = false;
-	  break;
-      case OsiLastIntParam:
-	 retval = false;
-	 break;
-      case OsiNameDiscipline:
-         retval = false;
-	 break;
+  case OsiMaxNumIteration:
+    retval = XPRSsetintcontrol(prob_, XPRS_LPITERLIMIT, value) == 0;
+    break;
+  case OsiMaxNumIterationHotStart:
+    retval = false;
+    break;
+  case OsiLastIntParam:
+    retval = false;
+    break;
+  case OsiNameDiscipline:
+    retval = false;
+    break;
   }
   return retval;
 }
@@ -180,24 +171,23 @@ OsiXprSolverInterface::setIntParam(OsiIntParam key, int value)
 //-----------------------------------------------------------------------------
 
 /* OPEN: more dbl parameters ... */
-bool
-OsiXprSolverInterface::setDblParam(OsiDblParam key, double value)
+bool OsiXprSolverInterface::setDblParam(OsiDblParam key, double value)
 {
   bool retval = false;
   switch (key) {
   case OsiDualObjectiveLimit:
-    retval = XPRSsetdblcontrol(prob_,XPRS_MIPABSCUTOFF, value) == 0;
+    retval = XPRSsetdblcontrol(prob_, XPRS_MIPABSCUTOFF, value) == 0;
     break;
   case OsiPrimalObjectiveLimit:
-    retval = false;	
+    retval = false;
     break;
   case OsiDualTolerance:
-    retval = XPRSsetdblcontrol(prob_, XPRS_FEASTOL, value) == 0;	
+    retval = XPRSsetdblcontrol(prob_, XPRS_FEASTOL, value) == 0;
     break;
   case OsiPrimalTolerance:
-    retval = XPRSsetdblcontrol(prob_, XPRS_FEASTOL, value) == 0;	
+    retval = XPRSsetdblcontrol(prob_, XPRS_FEASTOL, value) == 0;
     break;
-  case OsiObjOffset: 
+  case OsiObjOffset:
     return OsiSolverInterface::setDblParam(key, value);
   case OsiLastDblParam:
     retval = false;
@@ -207,83 +197,79 @@ OsiXprSolverInterface::setDblParam(OsiDblParam key, double value)
 }
 //-----------------------------------------------------------------------------
 
-bool
-OsiXprSolverInterface::setStrParam(OsiStrParam key, const std::string & value)
+bool OsiXprSolverInterface::setStrParam(OsiStrParam key, const std::string &value)
 {
-    bool retval=false;
-    switch (key) {
-	
-	case OsiProbName:
-/* OPEN: what does this mean */
-	    OsiSolverInterface::setStrParam(key,value);
-	    return retval = true;
-	    
-	case OsiLastStrParam:
-	    return false;
-	case OsiSolverName:
-	    return false;
-    }
+  bool retval = false;
+  switch (key) {
+
+  case OsiProbName:
+    /* OPEN: what does this mean */
+    OsiSolverInterface::setStrParam(key, value);
+    return retval = true;
+
+  case OsiLastStrParam:
     return false;
+  case OsiSolverName:
+    return false;
+  }
+  return false;
 }
 //-----------------------------------------------------------------------------
 
-bool
-OsiXprSolverInterface::getIntParam(OsiIntParam key, int& value) const
-{
-    bool retval = false;
-    
-    switch (key) {
-	case OsiMaxNumIteration:
-	    /* OPEN: the return value was logically wrong */
-	    retval = XPRSgetintcontrol(prob_,XPRS_LPITERLIMIT, &value) == 0;
-	    break;
-	case OsiMaxNumIterationHotStart:
-	    retval = false;
-	    break;
-	case OsiLastIntParam:
-	    retval = false;
-	    break;
-        case OsiNameDiscipline:
-	    retval = false;
-	    break;
-    }
-    return retval;
-}
-
-//-----------------------------------------------------------------------------
-
-bool
-OsiXprSolverInterface::getDblParam(OsiDblParam key, double& value) const
+bool OsiXprSolverInterface::getIntParam(OsiIntParam key, int &value) const
 {
   bool retval = false;
 
   switch (key) {
-      case OsiDualObjectiveLimit:
-	  retval = XPRSgetdblcontrol(prob_,XPRS_MIPABSCUTOFF, &value) == 0;
-	  break;
-      case OsiPrimalObjectiveLimit:
-	  retval = false;
-	  break;
-      case OsiDualTolerance:
-	  retval = XPRSgetdblcontrol(prob_, XPRS_FEASTOL, &value) == 0;
-	  break;
-      case OsiPrimalTolerance:
-	  retval = XPRSgetdblcontrol(prob_, XPRS_FEASTOL, &value) == 0;
-	  break;
-      case OsiObjOffset:
-	  retval = OsiSolverInterface::getDblParam(key, value);
-	  break;
-      case OsiLastDblParam:
-	  retval = false;
-	  break;
+  case OsiMaxNumIteration:
+    /* OPEN: the return value was logically wrong */
+    retval = XPRSgetintcontrol(prob_, XPRS_LPITERLIMIT, &value) == 0;
+    break;
+  case OsiMaxNumIterationHotStart:
+    retval = false;
+    break;
+  case OsiLastIntParam:
+    retval = false;
+    break;
+  case OsiNameDiscipline:
+    retval = false;
+    break;
   }
   return retval;
 }
 
 //-----------------------------------------------------------------------------
 
-bool
-OsiXprSolverInterface::getStrParam(OsiStrParam key, std::string & value) const
+bool OsiXprSolverInterface::getDblParam(OsiDblParam key, double &value) const
+{
+  bool retval = false;
+
+  switch (key) {
+  case OsiDualObjectiveLimit:
+    retval = XPRSgetdblcontrol(prob_, XPRS_MIPABSCUTOFF, &value) == 0;
+    break;
+  case OsiPrimalObjectiveLimit:
+    retval = false;
+    break;
+  case OsiDualTolerance:
+    retval = XPRSgetdblcontrol(prob_, XPRS_FEASTOL, &value) == 0;
+    break;
+  case OsiPrimalTolerance:
+    retval = XPRSgetdblcontrol(prob_, XPRS_FEASTOL, &value) == 0;
+    break;
+  case OsiObjOffset:
+    retval = OsiSolverInterface::getDblParam(key, value);
+    break;
+  case OsiLastDblParam:
+    retval = false;
+    break;
+  }
+  return retval;
+}
+
+//-----------------------------------------------------------------------------
+
+bool OsiXprSolverInterface::getStrParam(OsiStrParam key, std::string &value) const
 {
   bool retval = false;
   switch (key) {
@@ -307,33 +293,33 @@ OsiXprSolverInterface::getStrParam(OsiStrParam key, std::string & value) const
 
 bool OsiXprSolverInterface::isAbandoned() const
 {
-  int  status, glstat;
+  int status, glstat;
 
-  XPRS_CHECKED( XPRSgetintattrib, (prob_,XPRS_LPSTATUS, &status) );
-  XPRS_CHECKED( XPRSgetintattrib, (prob_,XPRS_MIPSTATUS, &glstat) );
+  XPRS_CHECKED(XPRSgetintattrib, (prob_, XPRS_LPSTATUS, &status));
+  XPRS_CHECKED(XPRSgetintattrib, (prob_, XPRS_MIPSTATUS, &glstat));
 
-  return status == XPRS_LP_UNFINISHED	  // LP unfinished
-      || glstat == XPRS_MIP_NO_SOL_FOUND  // global search incomplete -- no int sol
-      || glstat == XPRS_MIP_SOLUTION;	  // global search incomplete -- int sol found
+  return status == XPRS_LP_UNFINISHED // LP unfinished
+    || glstat == XPRS_MIP_NO_SOL_FOUND // global search incomplete -- no int sol
+    || glstat == XPRS_MIP_SOLUTION; // global search incomplete -- int sol found
 }
 
 bool OsiXprSolverInterface::isProvenOptimal() const
 {
-  int  status, glstat;
+  int status, glstat;
 
-  XPRS_CHECKED( XPRSgetintattrib, (prob_,XPRS_LPSTATUS, &status) );
-  XPRS_CHECKED( XPRSgetintattrib, (prob_,XPRS_MIPSTATUS, &glstat) );
+  XPRS_CHECKED(XPRSgetintattrib, (prob_, XPRS_LPSTATUS, &status));
+  XPRS_CHECKED(XPRSgetintattrib, (prob_, XPRS_MIPSTATUS, &glstat));
 
-  return status == XPRS_LP_OPTIMAL   // LP optimal
-      || status == XPRS_LP_CUTOFF    // LP obj worse than cutoff
-      || glstat == XPRS_MIP_OPTIMAL; // global search complete -- int found
+  return status == XPRS_LP_OPTIMAL // LP optimal
+    || status == XPRS_LP_CUTOFF // LP obj worse than cutoff
+    || glstat == XPRS_MIP_OPTIMAL; // global search complete -- int found
 }
 
 bool OsiXprSolverInterface::isProvenPrimalInfeasible() const
 {
   int status;
 
-  XPRS_CHECKED( XPRSgetintattrib, (prob_,XPRS_LPSTATUS, &status) );
+  XPRS_CHECKED(XPRSgetintattrib, (prob_, XPRS_LPSTATUS, &status));
 
   return status == XPRS_LP_INFEAS; // LP infeasible
 }
@@ -342,7 +328,7 @@ bool OsiXprSolverInterface::isProvenDualInfeasible() const
 {
   int status;
 
-   XPRS_CHECKED( XPRSgetintattrib, (prob_,XPRS_LPSTATUS, &status) );
+  XPRS_CHECKED(XPRSgetintattrib, (prob_, XPRS_LPSTATUS, &status));
 
   return status == XPRS_LP_UNBOUNDED; // LP Unbounded
 }
@@ -350,45 +336,45 @@ bool OsiXprSolverInterface::isProvenDualInfeasible() const
 bool OsiXprSolverInterface::isPrimalObjectiveLimitReached() const
 {
   /* OPEN: what does that mean	*/
-  return false;			// N/A in XOSL
+  return false; // N/A in XOSL
 }
 
 bool OsiXprSolverInterface::isDualObjectiveLimitReached() const
 {
   int status;
 
-   XPRS_CHECKED( XPRSgetintattrib, (prob_,XPRS_LPSTATUS, &status) );
+  XPRS_CHECKED(XPRSgetintattrib, (prob_, XPRS_LPSTATUS, &status));
 
   return status == XPRS_LP_CUTOFF_IN_DUAL; // LP cut off in dual
 }
 
 bool OsiXprSolverInterface::isIterationLimitReached() const
 {
-    int itrlim, itcnt;
-    
-    XPRS_CHECKED( XPRSgetintcontrol, (prob_,XPRS_LPITERLIMIT, &itrlim) );
-    XPRS_CHECKED( XPRSgetintattrib, (prob_,XPRS_SIMPLEXITER, &itcnt) );
-    
-    return itcnt >= itrlim;
+  int itrlim, itcnt;
+
+  XPRS_CHECKED(XPRSgetintcontrol, (prob_, XPRS_LPITERLIMIT, &itrlim));
+  XPRS_CHECKED(XPRSgetintattrib, (prob_, XPRS_SIMPLEXITER, &itcnt));
+
+  return itcnt >= itrlim;
 }
 
 //#############################################################################
 // WarmStart related methods
 //#############################################################################
 
-CoinWarmStart* OsiXprSolverInterface::getEmptyWarmStart () const
+CoinWarmStart *OsiXprSolverInterface::getEmptyWarmStart() const
 {
-	return (dynamic_cast<CoinWarmStart *>(new CoinWarmStartBasis()));
+  return (dynamic_cast< CoinWarmStart * >(new CoinWarmStartBasis()));
 }
 
-CoinWarmStart* OsiXprSolverInterface::getWarmStart() const
+CoinWarmStart *OsiXprSolverInterface::getWarmStart() const
 {
   int pstat, retstat;
 
-  
   /* OPEN: what does this mean */
-  XPRS_CHECKED( XPRSgetintattrib, (prob_,XPRS_PRESOLVESTATE, &pstat) );
-  if ( (pstat & 128) == 0 ) return NULL;
+  XPRS_CHECKED(XPRSgetintattrib, (prob_, XPRS_PRESOLVESTATE, &pstat));
+  if ((pstat & 128) == 0)
+    return NULL;
 
   CoinWarmStartBasis *ws = NULL;
   int numcols = getNumCols();
@@ -398,61 +384,61 @@ CoinWarmStart* OsiXprSolverInterface::getWarmStart() const
   int *rstatus = new int[numrows];
   int *cstatus = new int[numcols];
 
-  retstat = XPRSgetbasis(prob_,rstatus, cstatus);
+  retstat = XPRSgetbasis(prob_, rstatus, cstatus);
 
-  if ( retstat == 0 ) {
+  if (retstat == 0) {
     int i;
 
     ws = new CoinWarmStartBasis;
-    ws->setSize( numcols, numrows );
-      
-    for( i = 0;	 i < numrows;  i++ ) {
-      switch( rstatus[i] ) {
+    ws->setSize(numcols, numrows);
+
+    for (i = 0; i < numrows; i++) {
+      switch (rstatus[i]) {
       case 0:
-	ws->setArtifStatus(i, CoinWarmStartBasis::atLowerBound);
-	break;
+        ws->setArtifStatus(i, CoinWarmStartBasis::atLowerBound);
+        break;
       case 1:
-	ws->setArtifStatus(i, CoinWarmStartBasis::basic);
-	break;
+        ws->setArtifStatus(i, CoinWarmStartBasis::basic);
+        break;
       case 2:
-	ws->setArtifStatus(i, CoinWarmStartBasis::atUpperBound);
-	break;
+        ws->setArtifStatus(i, CoinWarmStartBasis::atUpperBound);
+        break;
       case 3:
- 	ws->setArtifStatus(i, CoinWarmStartBasis::isFree);
- 	break;
-      default:	// unknown row status
-	delete ws;
-	ws = NULL;
-	goto TERMINATE;
+        ws->setArtifStatus(i, CoinWarmStartBasis::isFree);
+        break;
+      default: // unknown row status
+        delete ws;
+        ws = NULL;
+        goto TERMINATE;
       }
     }
 
-    for( i = 0;	 i < numcols;  i++ ) {
-      switch( cstatus[i] ) {
+    for (i = 0; i < numcols; i++) {
+      switch (cstatus[i]) {
       case 0:
-	if ( lb[i] <= -infty )
-	  ws->setStructStatus(i, CoinWarmStartBasis::isFree);
-	else
-	  ws->setStructStatus(i, CoinWarmStartBasis::atLowerBound);
-	break;
+        if (lb[i] <= -infty)
+          ws->setStructStatus(i, CoinWarmStartBasis::isFree);
+        else
+          ws->setStructStatus(i, CoinWarmStartBasis::atLowerBound);
+        break;
       case 1:
-	ws->setStructStatus( i, CoinWarmStartBasis::basic );
-	break;
+        ws->setStructStatus(i, CoinWarmStartBasis::basic);
+        break;
       case 2:
-	ws->setStructStatus( i, CoinWarmStartBasis::atUpperBound );
-	break;
+        ws->setStructStatus(i, CoinWarmStartBasis::atUpperBound);
+        break;
       case 3:
-  ws->setStructStatus(i, CoinWarmStartBasis::isFree);
-  break;
-      default:	// unknown column status
-	delete ws;
-	ws = NULL;
-	goto TERMINATE;
+        ws->setStructStatus(i, CoinWarmStartBasis::isFree);
+        break;
+      default: // unknown column status
+        delete ws;
+        ws = NULL;
+        goto TERMINATE;
       }
     }
   }
 
- TERMINATE:
+TERMINATE:
   delete[] cstatus;
   delete[] rstatus;
 
@@ -461,16 +447,17 @@ CoinWarmStart* OsiXprSolverInterface::getWarmStart() const
 
 //-----------------------------------------------------------------------------
 
-bool OsiXprSolverInterface::setWarmStart(const CoinWarmStart* warmstart)
+bool OsiXprSolverInterface::setWarmStart(const CoinWarmStart *warmstart)
 {
-  const CoinWarmStartBasis* ws = dynamic_cast<const CoinWarmStartBasis*>(warmstart);
+  const CoinWarmStartBasis *ws = dynamic_cast< const CoinWarmStartBasis * >(warmstart);
 
-  if ( !ws ) return false;
+  if (!ws)
+    return false;
 
   int numcols = ws->getNumStructural();
   int numrows = ws->getNumArtificial();
 
-  if ( numcols != getNumCols() || numrows != getNumRows() )
+  if (numcols != getNumCols() || numrows != getNumRows())
     return false;
 
   bool retval;
@@ -479,8 +466,8 @@ bool OsiXprSolverInterface::setWarmStart(const CoinWarmStart* warmstart)
   int *rstatus = new int[numrows];
   int i;
 
-  for ( i = 0;	i < numrows;  i++ ) {
-    switch( ws->getArtifStatus(i) ) {
+  for (i = 0; i < numrows; i++) {
+    switch (ws->getArtifStatus(i)) {
     case CoinWarmStartBasis::atLowerBound:
       rstatus[i] = 0;
       break;
@@ -490,15 +477,15 @@ bool OsiXprSolverInterface::setWarmStart(const CoinWarmStart* warmstart)
     case CoinWarmStartBasis::atUpperBound:
       rstatus[i] = 2;
       break;
-    default:  // unknown row status
+    default: // unknown row status
       retval = false;
       goto TERMINATE;
     }
   }
 
-  for( i = 0;  i < numcols;  i++ ) {
-    switch( ws->getStructStatus(i) ) {
-    case CoinWarmStartBasis::atLowerBound: 
+  for (i = 0; i < numcols; i++) {
+    switch (ws->getStructStatus(i)) {
+    case CoinWarmStartBasis::atLowerBound:
     case CoinWarmStartBasis::isFree:
       cstatus[i] = 0;
       break;
@@ -508,20 +495,19 @@ bool OsiXprSolverInterface::setWarmStart(const CoinWarmStart* warmstart)
     case CoinWarmStartBasis::atUpperBound:
       cstatus[i] = 2;
       break;
-    default:  // unknown row status
+    default: // unknown row status
       retval = false;
       goto TERMINATE;
     }
   }
 
-  retstat = XPRSloadbasis(prob_,rstatus, cstatus);
+  retstat = XPRSloadbasis(prob_, rstatus, cstatus);
   retval = (retstat == 0);
 
- TERMINATE:
+TERMINATE:
   delete[] cstatus;
   delete[] rstatus;
   return retval;
-  
 }
 
 //#############################################################################
@@ -553,229 +539,232 @@ void OsiXprSolverInterface::unmarkHotStart()
 //------------------------------------------------------------------
 // Get number of rows and columns
 //------------------------------------------------------------------
-int
-OsiXprSolverInterface::getNumCols() const
+int OsiXprSolverInterface::getNumCols() const
 {
-  if ( !isDataLoaded() ) return 0;
+  if (!isDataLoaded())
+    return 0;
 
-  int	  ncols;
-  XPRS_CHECKED( XPRSgetintattrib, (prob_,XPRS_ORIGINALCOLS, &ncols) );
+  int ncols;
+  XPRS_CHECKED(XPRSgetintattrib, (prob_, XPRS_ORIGINALCOLS, &ncols));
 
   return ncols;
 }
 //-----------------------------------------------------------------------------
-int
-OsiXprSolverInterface::getNumRows() const
+int OsiXprSolverInterface::getNumRows() const
 {
-   if ( !isDataLoaded() ) return 0;
+  if (!isDataLoaded())
+    return 0;
 
-   int	   nrows;
+  int nrows;
 
-   XPRS_CHECKED( XPRSgetintattrib, (prob_,XPRS_ORIGINALROWS, &nrows) );
+  XPRS_CHECKED(XPRSgetintattrib, (prob_, XPRS_ORIGINALROWS, &nrows));
 
-   return nrows;
+  return nrows;
 }
 //-----------------------------------------------------------------------------
-int
-OsiXprSolverInterface::getNumElements() const
+int OsiXprSolverInterface::getNumElements() const
 {
-   if ( !isDataLoaded() ) return 0;
+  if (!isDataLoaded())
+    return 0;
 
-   int	   retVal;
+  int retVal;
 
-   XPRS_CHECKED( XPRSgetintattrib, (prob_,XPRS_ELEMS, &retVal) );
+  XPRS_CHECKED(XPRSgetintattrib, (prob_, XPRS_ELEMS, &retVal));
 
-   return retVal;
+  return retVal;
 }
 
 //------------------------------------------------------------------
 // Get pointer to rim vectors
-//------------------------------------------------------------------  
+//------------------------------------------------------------------
 const double *
 OsiXprSolverInterface::getColLower() const
 {
-    if ( collower_ == NULL ) {
-	if ( isDataLoaded() ) {
-	    int	    ncols = getNumCols();
-	    
-	    if ( ncols > 0 ) {
-	       collower_ = new double[ncols];
-	       XPRS_CHECKED( XPRSgetlb, (prob_,collower_, 0, ncols - 1) );
-	    }
-	}
+  if (collower_ == NULL) {
+    if (isDataLoaded()) {
+      int ncols = getNumCols();
+
+      if (ncols > 0) {
+        collower_ = new double[ncols];
+        XPRS_CHECKED(XPRSgetlb, (prob_, collower_, 0, ncols - 1));
+      }
     }
-    
-    return collower_;
+  }
+
+  return collower_;
 }
 
 //-----------------------------------------------------------------------------
 const double *
 OsiXprSolverInterface::getColUpper() const
 {
-   if ( colupper_ == NULL ) {
-      if ( isDataLoaded() ) {
-	 int	 ncols = getNumCols();	 
-	 
-	 if ( ncols > 0 ) {
-	    colupper_ = new double[ncols];
-	    XPRS_CHECKED( XPRSgetub, (prob_,colupper_, 0, ncols - 1) );
-	 }
-      }
-   }
+  if (colupper_ == NULL) {
+    if (isDataLoaded()) {
+      int ncols = getNumCols();
 
-   return colupper_;
+      if (ncols > 0) {
+        colupper_ = new double[ncols];
+        XPRS_CHECKED(XPRSgetub, (prob_, colupper_, 0, ncols - 1));
+      }
+    }
+  }
+
+  return colupper_;
 }
 //-----------------------------------------------------------------------------
 const char *
 OsiXprSolverInterface::getRowSense() const
 {
-    if ( rowsense_ == NULL ) {
-	if ( isDataLoaded() ) {
-	    int nrows = getNumRows();
+  if (rowsense_ == NULL) {
+    if (isDataLoaded()) {
+      int nrows = getNumRows();
 
-	    if ( nrows > 0 ) {
-	       rowsense_ = new char[nrows];
-	       XPRS_CHECKED( XPRSgetrowtype, (prob_,rowsense_, 0, nrows - 1) );
-	    }
-	}
+      if (nrows > 0) {
+        rowsense_ = new char[nrows];
+        XPRS_CHECKED(XPRSgetrowtype, (prob_, rowsense_, 0, nrows - 1));
+      }
     }
+  }
 
-   return rowsense_;
+  return rowsense_;
 }
 //-----------------------------------------------------------------------------
 const double *
 OsiXprSolverInterface::getRightHandSide() const
 {
-   if ( rhs_ == NULL ) {
-      if ( isDataLoaded() ) {
-	 int	 nrows = getNumRows();	
+  if (rhs_ == NULL) {
+    if (isDataLoaded()) {
+      int nrows = getNumRows();
 
-	 if ( nrows > 0 ) {
-	    rhs_ = new double[nrows];
-	    XPRS_CHECKED( XPRSgetrhs, (prob_,rhs_, 0, nrows - 1) );
+      if (nrows > 0) {
+        rhs_ = new double[nrows];
+        XPRS_CHECKED(XPRSgetrhs, (prob_, rhs_, 0, nrows - 1));
 
-	    // Make sure free rows have rhs of zero
-	    const char * rs = getRowSense();
-	    int nr = getNumRows();
-	    int i;
-	    for ( i = 0;  i < nr;	i++ ) {
-	       if ( rs[i] == 'N' ) rhs_[i]=0.0;
-	    }
-	 }
+        // Make sure free rows have rhs of zero
+        const char *rs = getRowSense();
+        int nr = getNumRows();
+        int i;
+        for (i = 0; i < nr; i++) {
+          if (rs[i] == 'N')
+            rhs_[i] = 0.0;
+        }
       }
-   }
+    }
+  }
 
-   return rhs_;
+  return rhs_;
 }
 //-----------------------------------------------------------------------------
 const double *
 OsiXprSolverInterface::getRowRange() const
 {
-   if ( rowrange_ == NULL ) {
-      if ( isDataLoaded() ) {
-	 int	 nrows = getNumRows();
+  if (rowrange_ == NULL) {
+    if (isDataLoaded()) {
+      int nrows = getNumRows();
 
-	 if ( nrows > 0 ) {
-	    rowrange_ = new double[nrows];
-	    XPRS_CHECKED( XPRSgetrhsrange, (prob_,rowrange_, 0, nrows - 1) );
+      if (nrows > 0) {
+        rowrange_ = new double[nrows];
+        XPRS_CHECKED(XPRSgetrhsrange, (prob_, rowrange_, 0, nrows - 1));
 
-	    // Make sure non-R rows have range of 0.0
-	    // XPRESS seems to set N and L rows to a range of Infinity
-	    const char * rs = getRowSense();
-	    int nr = getNumRows();
-	    int i;
-	    for ( i = 0;  i < nr;	i++ ) {
-	       if ( rs[i] != 'R' ) rowrange_[i] = 0.0;
-	    }
-	 }
+        // Make sure non-R rows have range of 0.0
+        // XPRESS seems to set N and L rows to a range of Infinity
+        const char *rs = getRowSense();
+        int nr = getNumRows();
+        int i;
+        for (i = 0; i < nr; i++) {
+          if (rs[i] != 'R')
+            rowrange_[i] = 0.0;
+        }
       }
-   }
+    }
+  }
 
-   return rowrange_;
+  return rowrange_;
 }
 //-----------------------------------------------------------------------------
 const double *
 OsiXprSolverInterface::getRowLower() const
 {
-   if ( rowlower_ == NULL ) {
-      int     nrows = getNumRows();
-      const   char    *rowsense = getRowSense();
-      const   double  *rhs	= getRightHandSide();
-      const   double  *rowrange = getRowRange();
+  if (rowlower_ == NULL) {
+    int nrows = getNumRows();
+    const char *rowsense = getRowSense();
+    const double *rhs = getRightHandSide();
+    const double *rowrange = getRowRange();
 
-      if ( nrows > 0 ) {
-	 rowlower_ = new double[nrows];
+    if (nrows > 0) {
+      rowlower_ = new double[nrows];
 
-	 double dum1;
-	 for ( int i = 0;  i < nrows;  i++ ) {
-	   convertSenseToBound(rowsense[i], rhs[i], rowrange[i],
-			       rowlower_[i], dum1);
-	 }
+      double dum1;
+      for (int i = 0; i < nrows; i++) {
+        convertSenseToBound(rowsense[i], rhs[i], rowrange[i],
+          rowlower_[i], dum1);
       }
-   }
+    }
+  }
 
-   return rowlower_;
+  return rowlower_;
 }
 //-----------------------------------------------------------------------------
 const double *
 OsiXprSolverInterface::getRowUpper() const
 {
-   if ( rowupper_ == NULL ) {
-      int     nrows = getNumRows();
-      const   char    *rowsense = getRowSense();
-      const   double  *rhs	= getRightHandSide();
-      const   double  *rowrange = getRowRange();
+  if (rowupper_ == NULL) {
+    int nrows = getNumRows();
+    const char *rowsense = getRowSense();
+    const double *rhs = getRightHandSide();
+    const double *rowrange = getRowRange();
 
-      if ( nrows > 0 ) {
-	 rowupper_ = new double[nrows];
+    if (nrows > 0) {
+      rowupper_ = new double[nrows];
 
-	 double dum1;
-	 for ( int i = 0;  i < nrows;  i++ ) {
-	   convertSenseToBound(rowsense[i], rhs[i], rowrange[i],
-			       dum1, rowupper_[i]);
-	 }
+      double dum1;
+      for (int i = 0; i < nrows; i++) {
+        convertSenseToBound(rowsense[i], rhs[i], rowrange[i],
+          dum1, rowupper_[i]);
       }
-   }
+    }
+  }
 
-   return rowupper_;
+  return rowupper_;
 }
 //-----------------------------------------------------------------------------
 const double *
 OsiXprSolverInterface::getObjCoefficients() const
 {
-   if ( objcoeffs_ == NULL ) {
-      if ( isDataLoaded() ) {
-	 int	 ncols = getNumCols();
+  if (objcoeffs_ == NULL) {
+    if (isDataLoaded()) {
+      int ncols = getNumCols();
 
-	 if ( ncols > 0 ) {
-	    objcoeffs_ = new double[ncols];
-	    XPRS_CHECKED( XPRSgetobj, (prob_,objcoeffs_, 0, ncols - 1) );
-	 }
+      if (ncols > 0) {
+        objcoeffs_ = new double[ncols];
+        XPRS_CHECKED(XPRSgetobj, (prob_, objcoeffs_, 0, ncols - 1));
       }
-   }
+    }
+  }
 
-   return objcoeffs_;
+  return objcoeffs_;
 }
 //-----------------------------------------------------------------------------
 double
 OsiXprSolverInterface::getObjSense() const
 {
-   return objsense_;
+  return objsense_;
 }
 
 //-----------------------------------------------------------------------------
 // Return information on integrality
 //-----------------------------------------------------------------------------
 
-bool
-OsiXprSolverInterface::isContinuous(int colNumber) const
+bool OsiXprSolverInterface::isContinuous(int colNumber) const
 {
-   getVarTypes();
+  getVarTypes();
 
-   //std::cerr <<"OsiXprSolverInterface::isContinuous " <<vartype_[colNumber] <<std::endl;
-   if ( vartype_ == NULL ) return true;
-   if ( vartype_[colNumber] == 'C' ) return true;
-   return false;
+  //std::cerr <<"OsiXprSolverInterface::isContinuous " <<vartype_[colNumber] <<std::endl;
+  if (vartype_ == NULL)
+    return true;
+  if (vartype_[colNumber] == 'C')
+    return true;
+  return false;
 }
 //-----------------------------------------------------------------------------
 #if 0
@@ -828,48 +817,48 @@ OsiXprSolverInterface::isFreeBinary( int colNumber ) const
 const CoinPackedMatrix *
 OsiXprSolverInterface::getMatrixByRow() const
 {
-  if ( matrixByRow_ == NULL ) {
-    if ( isDataLoaded() ) {
+  if (matrixByRow_ == NULL) {
+    if (isDataLoaded()) {
 
-      int     nrows = getNumRows();
-      int     ncols = getNumCols();
-      int     nelems;
+      int nrows = getNumRows();
+      int ncols = getNumCols();
+      int nelems;
 
-      XPRS_CHECKED( XPRSgetrows, (prob_,NULL, NULL, NULL, 0, &nelems, 0, nrows - 1) );
-	 
-      int     *start   = new int   [nrows + 1];
-      int     *length  = new int   [nrows];
-      int     *index   = new int   [nelems];
-      double  *element = new double[nelems];
+      XPRS_CHECKED(XPRSgetrows, (prob_, NULL, NULL, NULL, 0, &nelems, 0, nrows - 1));
 
-      XPRS_CHECKED( XPRSgetrows, (prob_,start, index, element, nelems, &nelems, 0, nrows - 1) );
+      int *start = new int[nrows + 1];
+      int *length = new int[nrows];
+      int *index = new int[nelems];
+      double *element = new double[nelems];
 
-      std::adjacent_difference(start + 1, start + (nrows+1), length);
-      
-      matrixByRow_ = new CoinPackedMatrix(true,0,0);	// (mjs) No gaps!
-							// Gaps =><= presolve.
+      XPRS_CHECKED(XPRSgetrows, (prob_, start, index, element, nelems, &nelems, 0, nrows - 1));
+
+      std::adjacent_difference(start + 1, start + (nrows + 1), length);
+
+      matrixByRow_ = new CoinPackedMatrix(true, 0, 0); // (mjs) No gaps!
+        // Gaps =><= presolve.
       matrixByRow_->assignMatrix(false /* not column ordered */,
-				 ncols, nrows, nelems,
-				 element, index, start, length);
+        ncols, nrows, nelems,
+        element, index, start, length);
     } else {
-       matrixByRow_ = new CoinPackedMatrix(true,0,0);	// (mjs) No gaps!
+      matrixByRow_ = new CoinPackedMatrix(true, 0, 0); // (mjs) No gaps!
       matrixByRow_->reverseOrdering();
     }
   }
 
   return matrixByRow_;
-} 
+}
 
 //-----------------------------------------------------------------------------
 const CoinPackedMatrix *
 OsiXprSolverInterface::getMatrixByCol() const
 {
-   if ( matrixByCol_ == NULL ) {
-      matrixByCol_ = new CoinPackedMatrix(*getMatrixByRow());
-      matrixByCol_->reverseOrdering();
-   }
+  if (matrixByCol_ == NULL) {
+    matrixByCol_ = new CoinPackedMatrix(*getMatrixByRow());
+    matrixByCol_->reverseOrdering();
+  }
 
-   return matrixByCol_;
+  return matrixByCol_;
 }
 
 //------------------------------------------------------------------
@@ -878,7 +867,7 @@ OsiXprSolverInterface::getMatrixByCol() const
 double
 OsiXprSolverInterface::getInfinity() const
 {
-   return XPRS_PLUSINFINITY;
+  return XPRS_PLUSINFINITY;
 }
 
 //#############################################################################
@@ -888,34 +877,34 @@ OsiXprSolverInterface::getInfinity() const
 const double *
 OsiXprSolverInterface::getColSolution() const
 {
-	if ( colsol_ == NULL ) {
-		if ( isDataLoaded() ) {
-			int status;
-			int nc = getNumCols();
+  if (colsol_ == NULL) {
+    if (isDataLoaded()) {
+      int status;
+      int nc = getNumCols();
 
-			if ( nc > 0 ) {
-				colsol_ = new double[nc];
-				if( lastsolvewasmip ) {
+      if (nc > 0) {
+        colsol_ = new double[nc];
+        if (lastsolvewasmip) {
 
-				  XPRS_CHECKED( XPRSgetintattrib, (prob_,XPRS_MIPSTATUS, &status) );
-				  if( status == XPRS_MIP_SOLUTION || status == XPRS_MIP_OPTIMAL )
-				  	XPRS_CHECKED( XPRSgetmipsol, (prob_,colsol_, NULL) );
-				  else
-				  	XPRS_CHECKED( XPRSgetlb, (prob_,colsol_, 0, nc-1) );
+          XPRS_CHECKED(XPRSgetintattrib, (prob_, XPRS_MIPSTATUS, &status));
+          if (status == XPRS_MIP_SOLUTION || status == XPRS_MIP_OPTIMAL)
+            XPRS_CHECKED(XPRSgetmipsol, (prob_, colsol_, NULL));
+          else
+            XPRS_CHECKED(XPRSgetlb, (prob_, colsol_, 0, nc - 1));
 
-				} else {
+        } else {
 
-				  XPRS_CHECKED( XPRSgetintattrib, (prob_,XPRS_LPSTATUS, &status) );
-				  if( status == XPRS_LP_OPTIMAL )
-				  	XPRS_CHECKED( XPRSgetlpsol, (prob_,colsol_, NULL, NULL, NULL) );
-				  else
-				  	XPRS_CHECKED( XPRSgetlb, (prob_,colsol_, 0, nc-1) );
-				}
-			}
-		}
-	}
+          XPRS_CHECKED(XPRSgetintattrib, (prob_, XPRS_LPSTATUS, &status));
+          if (status == XPRS_LP_OPTIMAL)
+            XPRS_CHECKED(XPRSgetlpsol, (prob_, colsol_, NULL, NULL, NULL));
+          else
+            XPRS_CHECKED(XPRSgetlb, (prob_, colsol_, 0, nc - 1));
+        }
+      }
+    }
+  }
 
-   return colsol_;
+  return colsol_;
 }
 
 //-----------------------------------------------------------------------------
@@ -923,43 +912,43 @@ OsiXprSolverInterface::getColSolution() const
 const double *
 OsiXprSolverInterface::getRowPrice() const
 {
-	if ( rowprice_ == NULL ) {
-		if ( isDataLoaded() ) {
-			int nr = getNumRows();
+  if (rowprice_ == NULL) {
+    if (isDataLoaded()) {
+      int nr = getNumRows();
 
-			if ( nr > 0 ) {
-	    	int status;
+      if (nr > 0) {
+        int status;
 
-				rowprice_ = new double[nr];
+        rowprice_ = new double[nr];
 
-			  XPRS_CHECKED( XPRSgetintattrib, (prob_,XPRS_LPSTATUS, &status) );
-			  if( status == XPRS_LP_OPTIMAL )
-			  	XPRS_CHECKED( XPRSgetlpsol, (prob_,NULL, NULL, rowprice_, NULL) );
-			  else
-			  	memset(rowprice_, 0, nr * sizeof(double));
-			}
-		}
-	}
+        XPRS_CHECKED(XPRSgetintattrib, (prob_, XPRS_LPSTATUS, &status));
+        if (status == XPRS_LP_OPTIMAL)
+          XPRS_CHECKED(XPRSgetlpsol, (prob_, NULL, NULL, rowprice_, NULL));
+        else
+          memset(rowprice_, 0, nr * sizeof(double));
+      }
+    }
+  }
 
-	return rowprice_;
+  return rowprice_;
 }
 
 //-----------------------------------------------------------------------------
 
-const double * OsiXprSolverInterface::getReducedCost() const
+const double *OsiXprSolverInterface::getReducedCost() const
 {
-  if ( colprice_ == NULL ) {
-    if ( isDataLoaded() ) {
-    	int status;
+  if (colprice_ == NULL) {
+    if (isDataLoaded()) {
+      int status;
       int nc = getNumCols();
 
       colprice_ = new double[nc];
 
-		  XPRS_CHECKED( XPRSgetintattrib, (prob_,XPRS_LPSTATUS, &status) );
-		  if( status == XPRS_LP_OPTIMAL )
-		  	XPRS_CHECKED( XPRSgetlpsol, (prob_,NULL, NULL,NULL, colprice_) );
-		  else
-		  	memset(colprice_, 0, nc * sizeof(double));
+      XPRS_CHECKED(XPRSgetintattrib, (prob_, XPRS_LPSTATUS, &status));
+      if (status == XPRS_LP_OPTIMAL)
+        XPRS_CHECKED(XPRSgetlpsol, (prob_, NULL, NULL, NULL, colprice_));
+      else
+        memset(colprice_, 0, nc * sizeof(double));
     }
   }
   return colprice_;
@@ -967,38 +956,38 @@ const double * OsiXprSolverInterface::getReducedCost() const
 
 //-----------------------------------------------------------------------------
 
-const double * OsiXprSolverInterface::getRowActivity() const
+const double *OsiXprSolverInterface::getRowActivity() const
 {
-	if( rowact_ == NULL ) {
-		if ( isDataLoaded() ) {
-			int nrows = getNumRows();
-			if( nrows > 0 ) {
-				int status;
-				int i;
-				const double* rhs = getRightHandSide();
+  if (rowact_ == NULL) {
+    if (isDataLoaded()) {
+      int nrows = getNumRows();
+      if (nrows > 0) {
+        int status;
+        int i;
+        const double *rhs = getRightHandSide();
 
-				rowact_ = new double[nrows];
+        rowact_ = new double[nrows];
 
-				if( lastsolvewasmip ) {
+        if (lastsolvewasmip) {
 
-					XPRS_CHECKED( XPRSgetintattrib, (prob_,XPRS_MIPSTATUS, &status) );
-					if( status == XPRS_MIP_SOLUTION || status == XPRS_MIP_OPTIMAL ) {
-						XPRS_CHECKED( XPRSgetmipsol, (prob_,NULL,rowact_) );
-						for ( i = 0;	i < nrows;  i++ )
-							rowact_[i] = rhs[i] - rowact_[i];
-					} else
-						memset(rowact_, 0, nrows * sizeof(double));
+          XPRS_CHECKED(XPRSgetintattrib, (prob_, XPRS_MIPSTATUS, &status));
+          if (status == XPRS_MIP_SOLUTION || status == XPRS_MIP_OPTIMAL) {
+            XPRS_CHECKED(XPRSgetmipsol, (prob_, NULL, rowact_));
+            for (i = 0; i < nrows; i++)
+              rowact_[i] = rhs[i] - rowact_[i];
+          } else
+            memset(rowact_, 0, nrows * sizeof(double));
 
-				} else {
+        } else {
 
-					XPRS_CHECKED( XPRSgetintattrib, (prob_,XPRS_LPSTATUS, &status) );
-					if( status == XPRS_LP_OPTIMAL ) {
-						XPRS_CHECKED( XPRSgetlpsol, (prob_,NULL, rowact_, NULL, NULL) );
-						for ( i = 0;	i < nrows;  i++ )
-							rowact_[i] = rhs[i] - rowact_[i];
-					} else
-						memset(rowact_, 0, nrows * sizeof(double));
-				}
+          XPRS_CHECKED(XPRSgetintattrib, (prob_, XPRS_LPSTATUS, &status));
+          if (status == XPRS_LP_OPTIMAL) {
+            XPRS_CHECKED(XPRSgetlpsol, (prob_, NULL, rowact_, NULL, NULL));
+            for (i = 0; i < nrows; i++)
+              rowact_[i] = rhs[i] - rowact_[i];
+          } else
+            memset(rowact_, 0, nrows * sizeof(double));
+        }
 
 #if 0
 				/* OPEN: why do we need the presolve state here ??? */
@@ -1015,11 +1004,11 @@ const double * OsiXprSolverInterface::getRowActivity() const
 					CoinFillN(rowact_, nrows, 0.0);
 				}
 #endif
-			}
-		}
-	}
+      }
+    }
+  }
 
-	return rowact_;
+  return rowact_;
 }
 
 //-----------------------------------------------------------------------------
@@ -1027,36 +1016,35 @@ const double * OsiXprSolverInterface::getRowActivity() const
 double
 OsiXprSolverInterface::getObjValue() const
 {
-	double  objvalue = 0;
-	double  objconstant = 0;
+  double objvalue = 0;
+  double objconstant = 0;
 
-	if ( isDataLoaded() ) {
-		int status;
+  if (isDataLoaded()) {
+    int status;
 
-		if( lastsolvewasmip ) {
+    if (lastsolvewasmip) {
 
-			XPRS_CHECKED( XPRSgetintattrib, (prob_,XPRS_MIPSTATUS, &status) );
-			if( status == XPRS_MIP_SOLUTION || status == XPRS_MIP_OPTIMAL )
-				XPRS_CHECKED( XPRSgetdblattrib, (prob_, XPRS_MIPOBJVAL, &objvalue) );
-			else
-				objvalue = CoinPackedVector(getNumCols(), getObjCoefficients()).dotProduct(getColSolution());
+      XPRS_CHECKED(XPRSgetintattrib, (prob_, XPRS_MIPSTATUS, &status));
+      if (status == XPRS_MIP_SOLUTION || status == XPRS_MIP_OPTIMAL)
+        XPRS_CHECKED(XPRSgetdblattrib, (prob_, XPRS_MIPOBJVAL, &objvalue));
+      else
+        objvalue = CoinPackedVector(getNumCols(), getObjCoefficients()).dotProduct(getColSolution());
 
-		} else {
+    } else {
 
-			XPRS_CHECKED( XPRSgetintattrib, (prob_,XPRS_LPSTATUS, &status) );
-			if( status == XPRS_LP_OPTIMAL )
-				XPRS_CHECKED( XPRSgetdblattrib, (prob_, XPRS_LPOBJVAL, &objvalue) );
-			else
-				objvalue = CoinPackedVector(getNumCols(), getObjCoefficients()).dotProduct(getColSolution());
+      XPRS_CHECKED(XPRSgetintattrib, (prob_, XPRS_LPSTATUS, &status));
+      if (status == XPRS_LP_OPTIMAL)
+        XPRS_CHECKED(XPRSgetdblattrib, (prob_, XPRS_LPOBJVAL, &objvalue));
+      else
+        objvalue = CoinPackedVector(getNumCols(), getObjCoefficients()).dotProduct(getColSolution());
+    }
 
-		}
+    OsiSolverInterface::getDblParam(OsiObjOffset, objconstant);
+    // Constant offset is not saved with the xpress representation,
+    // but it has to be returned from here anyway.
+  }
 
-		OsiSolverInterface::getDblParam(OsiObjOffset, objconstant);
-		// Constant offset is not saved with the xpress representation,
-		// but it has to be returned from here anyway.
-	}
-
-	return objvalue - objconstant;
+  return objvalue - objconstant;
 }
 
 //-----------------------------------------------------------------------------
@@ -1065,25 +1053,25 @@ int OsiXprSolverInterface::getIterationCount() const
 {
   int itcnt;
 
-  XPRS_CHECKED( XPRSgetintattrib, (prob_,XPRS_SIMPLEXITER, &itcnt) );
+  XPRS_CHECKED(XPRSgetintattrib, (prob_, XPRS_SIMPLEXITER, &itcnt));
 
   return itcnt;
 }
 
 //-----------------------------------------------------------------------------
 
-std::vector<double*> OsiXprSolverInterface::getDualRays(int maxNumRays,
-							bool fullRay) const
+std::vector< double * > OsiXprSolverInterface::getDualRays(int maxNumRays,
+  bool fullRay) const
 {
   // *FIXME* : must write the method -LL
   throw CoinError("method is not yet written", "getDualRays",
-		 "OsiXprSolverInterface");
-  return std::vector<double*>();
+    "OsiXprSolverInterface");
+  return std::vector< double * >();
 }
 
 //-----------------------------------------------------------------------------
 
-std::vector<double*> OsiXprSolverInterface::getPrimalRays(int maxNumRays) const
+std::vector< double * > OsiXprSolverInterface::getPrimalRays(int maxNumRays) const
 {
 #if 0
   // *FIXME* : Still need to expand column into full ncols-length vector
@@ -1146,8 +1134,8 @@ std::vector<double*> OsiXprSolverInterface::getPrimalRays(int maxNumRays) const
 
   // *FIXME* : must write the method -LL
   throw CoinError("method is not yet written", "getPrimalRays",
-		 "OsiXprSolverInterface");
-  return std::vector<double*>();
+    "OsiXprSolverInterface");
+  return std::vector< double * >();
 }
 
 //-----------------------------------------------------------------------------
@@ -1180,117 +1168,105 @@ OsiXprSolverInterface::getFractionalIndices(const double etol) const
 // Problem modifying methods (rim vectors)
 //#############################################################################
 
-void
-OsiXprSolverInterface::setObjCoeff( int elementIndex, double elementValue )
+void OsiXprSolverInterface::setObjCoeff(int elementIndex, double elementValue)
 {
-   if ( isDataLoaded() ) {
-       XPRS_CHECKED( XPRSchgobj, (prob_,1, &elementIndex, &elementValue) );
-      freeCachedResults();
-   }
+  if (isDataLoaded()) {
+    XPRS_CHECKED(XPRSchgobj, (prob_, 1, &elementIndex, &elementValue));
+    freeCachedResults();
+  }
 }
 
 //-----------------------------------------------------------------------------
 
-void
-OsiXprSolverInterface::setColLower( int elementIndex, double elementValue )
+void OsiXprSolverInterface::setColLower(int elementIndex, double elementValue)
 {
-   if ( isDataLoaded() ) {
-      char boundType = 'L';
+  if (isDataLoaded()) {
+    char boundType = 'L';
 
-      getVarTypes();
-      
-      if ( vartype_ &&
-	   vartype_[elementIndex] == 'B' && 
-	   (elementValue != 0.0 && elementValue != 1.0) ) {
-	char elementType = 'I';
-	
-	XPRS_CHECKED( XPRSchgcoltype, (prob_,1, &elementIndex, &elementType) );
-      }
-      XPRS_CHECKED( XPRSchgbounds, (prob_,1, &elementIndex, &boundType, &elementValue) );
+    getVarTypes();
 
-      freeCachedResults();
-      //    delete [] collower_;
-      //    collower_ = NULL;
-   }
+    if (vartype_ && vartype_[elementIndex] == 'B' && (elementValue != 0.0 && elementValue != 1.0)) {
+      char elementType = 'I';
+
+      XPRS_CHECKED(XPRSchgcoltype, (prob_, 1, &elementIndex, &elementType));
+    }
+    XPRS_CHECKED(XPRSchgbounds, (prob_, 1, &elementIndex, &boundType, &elementValue));
+
+    freeCachedResults();
+    //    delete [] collower_;
+    //    collower_ = NULL;
+  }
 }
 
 //-----------------------------------------------------------------------------
 
-void
-OsiXprSolverInterface::setColUpper( int elementIndex, double elementValue )
+void OsiXprSolverInterface::setColUpper(int elementIndex, double elementValue)
 {
-   if ( isDataLoaded() ) {
-      char boundType = 'U';
+  if (isDataLoaded()) {
+    char boundType = 'U';
 
-      getVarTypes();	  
-      
-      XPRS_CHECKED( XPRSchgbounds, (prob_,1, &elementIndex, &boundType, &elementValue) );
-      if ( vartype_ &&
-	   vartype_[elementIndex] == 'B' && 
-	   (elementValue != 0.0 && elementValue != 1.0) ) {
-	 char elementType = 'I';  
-	 
-	 XPRS_CHECKED( XPRSchgcoltype, (prob_,1, &elementIndex, &elementType) );
-      }
-      freeCachedResults();
-      //    delete [] colupper_;
-      //    colupper_ = NULL;
-   } 
+    getVarTypes();
+
+    XPRS_CHECKED(XPRSchgbounds, (prob_, 1, &elementIndex, &boundType, &elementValue));
+    if (vartype_ && vartype_[elementIndex] == 'B' && (elementValue != 0.0 && elementValue != 1.0)) {
+      char elementType = 'I';
+
+      XPRS_CHECKED(XPRSchgcoltype, (prob_, 1, &elementIndex, &elementType));
+    }
+    freeCachedResults();
+    //    delete [] colupper_;
+    //    colupper_ = NULL;
+  }
 }
 
 //-----------------------------------------------------------------------------
 
-void OsiXprSolverInterface::setColBounds(const int elementIndex, double lower, double upper )
+void OsiXprSolverInterface::setColBounds(const int elementIndex, double lower, double upper)
 {
-   if ( isDataLoaded() ) {
-     char qbtype[2] = { 'L', 'U' };
-     int mindex[2];
-     double bnd[2];
+  if (isDataLoaded()) {
+    char qbtype[2] = { 'L', 'U' };
+    int mindex[2];
+    double bnd[2];
 
-     getVarTypes();
-     mindex[0] = elementIndex;
-     mindex[1] = elementIndex;
-     bnd[0] = lower;
-     bnd[1] = upper;
+    getVarTypes();
+    mindex[0] = elementIndex;
+    mindex[1] = elementIndex;
+    bnd[0] = lower;
+    bnd[1] = upper;
 
-     XPRS_CHECKED( XPRSchgbounds, (prob_,2, mindex, qbtype, bnd) );
-       
-     if ( vartype_ && 
-	  vartype_[mindex[0]] == 'B' && 
-	  !((lower == 0.0 && upper == 0.0) ||
-	    (lower == 1.0 && upper == 1.0) ||
-	    (lower == 0.0 && upper == 1.0)) ) {
-       char elementType = 'I';	
-	 
-       XPRS_CHECKED( XPRSchgcoltype, (prob_,1, &mindex[0], &elementType) );
-     }
-     freeCachedResults();
-     //	   delete [] colupper_;
-     //	   colupper_ = NULL;
-   }
+    XPRS_CHECKED(XPRSchgbounds, (prob_, 2, mindex, qbtype, bnd));
+
+    if (vartype_ && vartype_[mindex[0]] == 'B' && !((lower == 0.0 && upper == 0.0) || (lower == 1.0 && upper == 1.0) || (lower == 0.0 && upper == 1.0))) {
+      char elementType = 'I';
+
+      XPRS_CHECKED(XPRSchgcoltype, (prob_, 1, &mindex[0], &elementType));
+    }
+    freeCachedResults();
+    //	   delete [] colupper_;
+    //	   colupper_ = NULL;
+  }
 }
 
 //-----------------------------------------------------------------------------
 
-void OsiXprSolverInterface::setColSetBounds(const int* indexFirst,
-					    const int* indexLast,
-					    const double* boundList)
+void OsiXprSolverInterface::setColSetBounds(const int *indexFirst,
+  const int *indexLast,
+  const double *boundList)
 {
   OsiSolverInterface::setColSetBounds(indexFirst, indexLast, boundList);
 }
 
 //-----------------------------------------------------------------------------
 
-void
-OsiXprSolverInterface::setRowLower( int elementIndex, double elementValue )
+void OsiXprSolverInterface::setRowLower(int elementIndex, double elementValue)
 {
-  double rhs   = getRightHandSide()[elementIndex];
+  double rhs = getRightHandSide()[elementIndex];
   double range = getRowRange()[elementIndex];
-  char	 sense = getRowSense()[elementIndex];
+  char sense = getRowSense()[elementIndex];
   double lower = 0, upper = 0;
 
   convertSenseToBound(sense, rhs, range, lower, upper);
-  if( lower != elementValue ) {
+  if (lower != elementValue) {
     convertBoundToSense(elementValue, upper, sense, rhs, range);
     setRowType(elementIndex, sense, rhs, range);
     // freeCachedResults(); --- invoked in setRowType()
@@ -1299,16 +1275,15 @@ OsiXprSolverInterface::setRowLower( int elementIndex, double elementValue )
 
 //-----------------------------------------------------------------------------
 
-void
-OsiXprSolverInterface::setRowUpper( int elementIndex, double elementValue )
+void OsiXprSolverInterface::setRowUpper(int elementIndex, double elementValue)
 {
-  double rhs   = getRightHandSide()[elementIndex];
+  double rhs = getRightHandSide()[elementIndex];
   double range = getRowRange()[elementIndex];
-  char	 sense = getRowSense()[elementIndex];
+  char sense = getRowSense()[elementIndex];
   double lower = 0, upper = 0;
 
-  convertSenseToBound( sense, rhs, range, lower, upper );
-  if( upper != elementValue ) {
+  convertSenseToBound(sense, rhs, range, lower, upper);
+  if (upper != elementValue) {
     convertBoundToSense(lower, elementValue, sense, rhs, range);
     setRowType(elementIndex, sense, rhs, range);
     // freeCachedResults(); --- invoked in setRowType()
@@ -1317,34 +1292,32 @@ OsiXprSolverInterface::setRowUpper( int elementIndex, double elementValue )
 
 //-----------------------------------------------------------------------------
 
-void
-OsiXprSolverInterface::setRowBounds( int elementIndex, double lower, double upper )
+void OsiXprSolverInterface::setRowBounds(int elementIndex, double lower, double upper)
 {
   double rhs, range;
   char sense;
-  
-  convertBoundToSense( lower, upper, sense, rhs, range );
-  setRowType( elementIndex, sense, rhs, range );
+
+  convertBoundToSense(lower, upper, sense, rhs, range);
+  setRowType(elementIndex, sense, rhs, range);
   // freeCachedRowRim(); --- invoked in setRowType()
 }
 
 //-----------------------------------------------------------------------------
 
-void
-OsiXprSolverInterface::setRowType(int index, char sense, double rightHandSide,
-				  double range)
+void OsiXprSolverInterface::setRowType(int index, char sense, double rightHandSide,
+  double range)
 {
-  if ( isDataLoaded() ) {
-    int mindex[1] = {index};
-    char qrtype[1] = {sense}; 
-    double rhs[1] = {rightHandSide};
-    double rng[1] = {range};
+  if (isDataLoaded()) {
+    int mindex[1] = { index };
+    char qrtype[1] = { sense };
+    double rhs[1] = { rightHandSide };
+    double rng[1] = { range };
 
-    XPRS_CHECKED( XPRSchgrowtype, (prob_,1, mindex, qrtype) );
-    XPRS_CHECKED( XPRSchgrhs, (prob_,1, mindex, rhs) );
-  	// range is properly defined only for range-type rows, so we call XPRSchgrhsrange only for ranged rows
+    XPRS_CHECKED(XPRSchgrowtype, (prob_, 1, mindex, qrtype));
+    XPRS_CHECKED(XPRSchgrhs, (prob_, 1, mindex, rhs));
+    // range is properly defined only for range-type rows, so we call XPRSchgrhsrange only for ranged rows
     if (sense == 'R')
-    	XPRS_CHECKED( XPRSchgrhsrange, (prob_,1, mindex, rng) );
+      XPRS_CHECKED(XPRSchgrhsrange, (prob_, 1, mindex, rng));
 
     freeCachedResults();
   }
@@ -1352,106 +1325,100 @@ OsiXprSolverInterface::setRowType(int index, char sense, double rightHandSide,
 
 //-----------------------------------------------------------------------------
 
-void OsiXprSolverInterface::setRowSetBounds(const int* indexFirst,
-					    const int* indexLast,
-					    const double* boundList)
+void OsiXprSolverInterface::setRowSetBounds(const int *indexFirst,
+  const int *indexLast,
+  const double *boundList)
 {
   OsiSolverInterface::setRowSetBounds(indexFirst, indexLast, boundList);
 }
 
 //-----------------------------------------------------------------------------
 
-void
-OsiXprSolverInterface::setRowSetTypes(const int* indexFirst,
-				      const int* indexLast,
-				      const char* senseList,
-				      const double* rhsList,
-				      const double* rangeList)
+void OsiXprSolverInterface::setRowSetTypes(const int *indexFirst,
+  const int *indexLast,
+  const char *senseList,
+  const double *rhsList,
+  const double *rangeList)
 {
   OsiSolverInterface::setRowSetTypes(indexFirst, indexLast, senseList, rhsList, rangeList);
 }
 
 //#############################################################################
-void 
-OsiXprSolverInterface::setContinuous(int index) 
+void OsiXprSolverInterface::setContinuous(int index)
 {
-  if ( isDataLoaded() ) {
+  if (isDataLoaded()) {
     int pstat;
 
-    XPRS_CHECKED( XPRSgetintattrib, (prob_,XPRS_PRESOLVESTATE, &pstat) );
+    XPRS_CHECKED(XPRSgetintattrib, (prob_, XPRS_PRESOLVESTATE, &pstat));
 
-    if ( (pstat & 6) == 0 ) {		// not presolved
+    if ((pstat & 6) == 0) { // not presolved
       char qctype = 'C';
 
-      XPRS_CHECKED( XPRSchgcoltype, (prob_,1, &index, &qctype) );
+      XPRS_CHECKED(XPRSchgcoltype, (prob_, 1, &index, &qctype));
       freeCachedResults();
     }
   }
 }
 
-void 
-OsiXprSolverInterface::setInteger(int index) 
+void OsiXprSolverInterface::setInteger(int index)
 {
-  if ( isDataLoaded() ) {
+  if (isDataLoaded()) {
     int pstat;
 
-    XPRS_CHECKED( XPRSgetintattrib, (prob_,XPRS_PRESOLVESTATE, &pstat) );
+    XPRS_CHECKED(XPRSgetintattrib, (prob_, XPRS_PRESOLVESTATE, &pstat));
 
-    if ( (pstat & 6) == 0 ) {		// not presolved
+    if ((pstat & 6) == 0) { // not presolved
       char qctype;
 
-      if ( getColLower()[index] == 0.0 && 
-	   getColUpper()[index] == 1.0 ) 
-	qctype = 'B';
+      if (getColLower()[index] == 0.0 && getColUpper()[index] == 1.0)
+        qctype = 'B';
       else
-	qctype = 'I';
-      XPRS_CHECKED( XPRSchgcoltype, (prob_,1, &index, &qctype) );
+        qctype = 'I';
+      XPRS_CHECKED(XPRSchgcoltype, (prob_, 1, &index, &qctype));
       freeCachedResults();
     }
   }
 }
 
-void 
-OsiXprSolverInterface::setContinuous(const int* indices, int len) 
+void OsiXprSolverInterface::setContinuous(const int *indices, int len)
 {
-  if ( isDataLoaded() ) {
+  if (isDataLoaded()) {
     int pstat;
 
-    XPRS_CHECKED( XPRSgetintattrib, (prob_,XPRS_PRESOLVESTATE, &pstat) );
+    XPRS_CHECKED(XPRSgetintattrib, (prob_, XPRS_PRESOLVESTATE, &pstat));
 
-    if ( (pstat & 6) == 0 ) {		// not presolved
+    if ((pstat & 6) == 0) { // not presolved
       char *qctype = new char[len];
 
       CoinFillN(qctype, len, 'C');
-      
-      XPRS_CHECKED( XPRSchgcoltype, (prob_,len, const_cast<int *>(indices), qctype) );
+
+      XPRS_CHECKED(XPRSchgcoltype, (prob_, len, const_cast< int * >(indices), qctype));
       freeCachedResults();
       delete[] qctype;
     }
   }
 }
 
-void 
-OsiXprSolverInterface::setInteger(const int* indices, int len) 
+void OsiXprSolverInterface::setInteger(const int *indices, int len)
 {
-  if ( isDataLoaded() ) {
+  if (isDataLoaded()) {
     int pstat;
 
-    XPRS_CHECKED( XPRSgetintattrib, (prob_,XPRS_PRESOLVESTATE, &pstat) );
+    XPRS_CHECKED(XPRSgetintattrib, (prob_, XPRS_PRESOLVESTATE, &pstat));
 
-    if ( (pstat & 6) == 0 ) {		// not presolved
+    if ((pstat & 6) == 0) { // not presolved
       char *qctype = new char[len];
-      const double* clb = getColLower();
-      const double* cub = getColUpper();
+      const double *clb = getColLower();
+      const double *cub = getColUpper();
 
-      for ( int i = 0;	i < len;  i++ ) {
-	if ( clb[indices[i]] == 0.0 && cub[indices[i]] == 1.0 )
-	  qctype[i] = 'B';
-	else 
-	  qctype[i] = 'I';
+      for (int i = 0; i < len; i++) {
+        if (clb[indices[i]] == 0.0 && cub[indices[i]] == 1.0)
+          qctype[i] = 'B';
+        else
+          qctype[i] = 'I';
       }
 
-      XPRS_CHECKED( XPRSchgcoltype, (prob_,len, const_cast<int *>(indices), qctype) );
+      XPRS_CHECKED(XPRSchgcoltype, (prob_, len, const_cast< int * >(indices), qctype));
       freeCachedResults();
       delete[] qctype;
     }
@@ -1460,87 +1427,75 @@ OsiXprSolverInterface::setInteger(const int* indices, int len)
 
 //#############################################################################
 
-void
-OsiXprSolverInterface::setObjSense(double s) 
+void OsiXprSolverInterface::setObjSense(double s)
 {
-   assert(s == 1.0 || s == -1.0);
+  assert(s == 1.0 || s == -1.0);
 
-   objsense_ = s;
+  objsense_ = s;
 
-   XPRS_CHECKED( XPRSchgobjsense, (prob_, (int)s) );
+  XPRS_CHECKED(XPRSchgobjsense, (prob_, (int)s));
 }
 
 //-----------------------------------------------------------------------------
 
-void
-OsiXprSolverInterface::setColSolution(const double *colsol)
+void OsiXprSolverInterface::setColSolution(const double *colsol)
 {
-   freeSolution();
+  freeSolution();
 
-   colsol_ = new double[getNumCols()];
+  colsol_ = new double[getNumCols()];
 
-   for ( int i = 0;  i < getNumCols();	i++ )
-      colsol_[i] = colsol[i];
+  for (int i = 0; i < getNumCols(); i++)
+    colsol_[i] = colsol[i];
 }
 
 //-----------------------------------------------------------------------------
 
-void
-OsiXprSolverInterface::setRowPrice(const double *rowprice)
+void OsiXprSolverInterface::setRowPrice(const double *rowprice)
 {
-   freeSolution();
+  freeSolution();
 
-   rowprice_ = new double[getNumRows()];
+  rowprice_ = new double[getNumRows()];
 
-   for ( int i = 0;  i < getNumRows();	i++ )
-      rowprice_[i] = rowprice[i];
+  for (int i = 0; i < getNumRows(); i++)
+    rowprice_[i] = rowprice[i];
 }
 
 //#############################################################################
 // Problem modifying methods (matrix)
 //#############################################################################
 
-void 
-OsiXprSolverInterface::addCol(const CoinPackedVectorBase& vec,
-			      const double collb, const double colub,	
-			      const double obj)
+void OsiXprSolverInterface::addCol(const CoinPackedVectorBase &vec,
+  const double collb, const double colub,
+  const double obj)
 {
-  if ( isDataLoaded() ) {
+  if (isDataLoaded()) {
     freeCachedResults();
 
     int mstart = 0;
 
-    XPRS_CHECKED( XPRSaddcols, (prob_,1, vec.getNumElements(), const_cast<double*>(&obj),
-	    &mstart,
-	    const_cast<int*>(vec.getIndices()),
-	    const_cast<double*>(vec.getElements()),
-	    const_cast<double*>(&collb),
-	    const_cast<double*>(&colub)) );
+    XPRS_CHECKED(XPRSaddcols, (prob_, 1, vec.getNumElements(), const_cast< double * >(&obj), &mstart, const_cast< int * >(vec.getIndices()), const_cast< double * >(vec.getElements()), const_cast< double * >(&collb), const_cast< double * >(&colub)));
   }
 }
 //-----------------------------------------------------------------------------
-void 
-OsiXprSolverInterface::addCols(const int numcols,
-			       const CoinPackedVectorBase * const * cols,
-			       const double* collb, const double* colub,   
-			       const double* obj)
+void OsiXprSolverInterface::addCols(const int numcols,
+  const CoinPackedVectorBase *const *cols,
+  const double *collb, const double *colub,
+  const double *obj)
 {
   // freeCachedResults();
 
-  for( int i = 0;  i < numcols;	 i++ )
-      addCol( *(cols[i]), collb[i], colub[i], obj[i] );
+  for (int i = 0; i < numcols; i++)
+    addCol(*(cols[i]), collb[i], colub[i], obj[i]);
 }
 //-----------------------------------------------------------------------------
-void 
-OsiXprSolverInterface::deleteCols(const int num, const int *columnIndices)
+void OsiXprSolverInterface::deleteCols(const int num, const int *columnIndices)
 {
   freeCachedResults();
-  XPRS_CHECKED( XPRSdelcols, (prob_,num, const_cast<int *>(columnIndices)) );
+  XPRS_CHECKED(XPRSdelcols, (prob_, num, const_cast< int * >(columnIndices)));
 }
 //-----------------------------------------------------------------------------
-void 
-OsiXprSolverInterface::addRow(const CoinPackedVectorBase& vec,
-			      const double rowlb, const double rowub)
+void OsiXprSolverInterface::addRow(const CoinPackedVectorBase &vec,
+  const double rowlb, const double rowub)
 {
   // freeCachedResults(); -- will be invoked
 
@@ -1551,83 +1506,74 @@ OsiXprSolverInterface::addRow(const CoinPackedVectorBase& vec,
   addRow(vec, sense, rhs, range);
 }
 //-----------------------------------------------------------------------------
-void 
-OsiXprSolverInterface::addRow(const CoinPackedVectorBase& vec,
-			      const char rowsen, const double rowrhs,	
-			      const double rowrng)
+void OsiXprSolverInterface::addRow(const CoinPackedVectorBase &vec,
+  const char rowsen, const double rowrhs,
+  const double rowrng)
 {
   freeCachedResults();
 
-   int mstart[2] = {0, vec.getNumElements()};
+  int mstart[2] = { 0, vec.getNumElements() };
 
-  XPRS_CHECKED( XPRSaddrows, (prob_,1, vec.getNumElements(), 
-	  const_cast<char *>(&rowsen), const_cast<double *>(&rowrhs), 
-	  const_cast<double *>(&rowrng), mstart,
-	  const_cast<int *>(vec.getIndices()),
-	  const_cast<double *>(vec.getElements())) );
+  XPRS_CHECKED(XPRSaddrows, (prob_, 1, vec.getNumElements(), const_cast< char * >(&rowsen), const_cast< double * >(&rowrhs), const_cast< double * >(&rowrng), mstart, const_cast< int * >(vec.getIndices()), const_cast< double * >(vec.getElements())));
 }
 //-----------------------------------------------------------------------------
-void 
-OsiXprSolverInterface::addRows(const int numrows,
-			       const CoinPackedVectorBase * const * rows,
-			       const double* rowlb, const double* rowub)
+void OsiXprSolverInterface::addRows(const int numrows,
+  const CoinPackedVectorBase *const *rows,
+  const double *rowlb, const double *rowub)
 {
   // *FIXME* : must write the method -LL
   throw CoinError("method is not yet written", "addRows",
-		 "OsiXprSolverInterface");
+    "OsiXprSolverInterface");
 }
 //-----------------------------------------------------------------------------
-void 
-OsiXprSolverInterface::addRows(const int numrows,
-			       const CoinPackedVectorBase * const * rows,
-			       const char* rowsen, const double* rowrhs,   
-			       const double* rowrng)
+void OsiXprSolverInterface::addRows(const int numrows,
+  const CoinPackedVectorBase *const *rows,
+  const char *rowsen, const double *rowrhs,
+  const double *rowrng)
 {
   // *FIXME* : must write the method -LL
   throw CoinError("method is not yet written", "addRows",
-		 "OsiXprSolverInterface");
+    "OsiXprSolverInterface");
 }
 //-----------------------------------------------------------------------------
-void 
-OsiXprSolverInterface::deleteRows(const int num, const int * rowIndices)
+void OsiXprSolverInterface::deleteRows(const int num, const int *rowIndices)
 {
   freeCachedResults();
 
-  XPRS_CHECKED( XPRSdelrows, (prob_,num, const_cast<int *>(rowIndices)) );
+  XPRS_CHECKED(XPRSdelrows, (prob_, num, const_cast< int * >(rowIndices)));
 }
 
 //#############################################################################
 // Methods to input a problem
 //#############################################################################
 
-void
-OsiXprSolverInterface::loadProblem(const CoinPackedMatrix& matrix,
-				   const double* collb, const double* colub,   
-				   const double* obj,
-				   const double* rowlb, const double* rowub)
+void OsiXprSolverInterface::loadProblem(const CoinPackedMatrix &matrix,
+  const double *collb, const double *colub,
+  const double *obj,
+  const double *rowlb, const double *rowub)
 {
   const double inf = getInfinity();
-  
-  char	 * rowSense = new char	[matrix.getNumRows()];
-  double * rowRhs   = new double[matrix.getNumRows()];
-  double * rowRange = new double[matrix.getNumRows()];
-  
+
+  char *rowSense = new char[matrix.getNumRows()];
+  double *rowRhs = new double[matrix.getNumRows()];
+  double *rowRange = new double[matrix.getNumRows()];
+
   int i;
-  for ( i = matrix.getNumRows() - 1; i >= 0; --i) {
-    
+  for (i = matrix.getNumRows() - 1; i >= 0; --i) {
+
     double rlb;
-    if ( rowlb!=NULL )
+    if (rowlb != NULL)
       rlb = rowlb[i];
     else
       rlb = -inf;
-    
-     double rub;
-     if ( rowub!=NULL )
-       rub = rowub[i];
-     else
-       rub = inf;
-     
-     convertBoundToSense(rlb,rub,rowSense[i],rowRhs[i],rowRange[i]);
+
+    double rub;
+    if (rowub != NULL)
+      rub = rowub[i];
+    else
+      rub = inf;
+
+    convertBoundToSense(rlb, rub, rowSense[i], rowRhs[i], rowRange[i]);
 #if 0
      if ( rlb==rub ) {
        rowSense[i]='E';
@@ -1660,180 +1606,192 @@ OsiXprSolverInterface::loadProblem(const CoinPackedMatrix& matrix,
        continue;
      }
 #endif
-   }
-  
-   loadProblem(matrix, collb, colub, obj, rowSense, rowRhs, rowRange ); 
-   
-   delete [] rowSense;
-   delete [] rowRhs;
-   delete [] rowRange;
+  }
+
+  loadProblem(matrix, collb, colub, obj, rowSense, rowRhs, rowRange);
+
+  delete[] rowSense;
+  delete[] rowRhs;
+  delete[] rowRange;
 }
 
 //-----------------------------------------------------------------------------
 
-void
-OsiXprSolverInterface::assignProblem(CoinPackedMatrix*& matrix,
-				     double*& collb, double*& colub,
-				     double*& obj,
-				     double*& rowlb, double*& rowub)
+void OsiXprSolverInterface::assignProblem(CoinPackedMatrix *&matrix,
+  double *&collb, double *&colub,
+  double *&obj,
+  double *&rowlb, double *&rowub)
 {
-   loadProblem(*matrix, collb, colub, obj, rowlb, rowub);
-   delete matrix;   matrix = 0;
-   delete[] collb;  collb = 0;
-   delete[] colub;  colub = 0;
-   delete[] obj;    obj = 0;
-   delete[] rowlb;  rowlb = 0;
-   delete[] rowub;  rowub = 0;
+  loadProblem(*matrix, collb, colub, obj, rowlb, rowub);
+  delete matrix;
+  matrix = 0;
+  delete[] collb;
+  collb = 0;
+  delete[] colub;
+  colub = 0;
+  delete[] obj;
+  obj = 0;
+  delete[] rowlb;
+  rowlb = 0;
+  delete[] rowub;
+  rowub = 0;
 }
 
 //-----------------------------------------------------------------------------
 
 // #define OSIXPR_ADD_OBJ_ROW
 
-void
-OsiXprSolverInterface::loadProblem(const CoinPackedMatrix& matrix,
-				   const double* collb, const double* colub,
-				   const double* obj,
-				   const char* rowsen, const double* rowrhs,   
-				   const double* rowrng)
+void OsiXprSolverInterface::loadProblem(const CoinPackedMatrix &matrix,
+  const double *collb, const double *colub,
+  const double *obj,
+  const char *rowsen, const double *rowrhs,
+  const double *rowrng)
 {
   freeCachedResults();
   int i;
 
-  char*   rsen;
-  double* rrhs;
- 
+  char *rsen;
+  double *rrhs;
+
   // Set column values to defaults if NULL pointer passed
-  int nc=matrix.getNumCols();
-  int nr=matrix.getNumRows();
-  double * clb;	 
-  double * cub;
-  double * ob;
-  if ( collb!=NULL ) {
-    clb=const_cast<double*>(collb);
-  }
-  else {
+  int nc = matrix.getNumCols();
+  int nr = matrix.getNumRows();
+  double *clb;
+  double *cub;
+  double *ob;
+  if (collb != NULL) {
+    clb = const_cast< double * >(collb);
+  } else {
     clb = new double[nc];
-    for( i=0; i<nc; i++ ) clb[i]=0.0;
+    for (i = 0; i < nc; i++)
+      clb[i] = 0.0;
   }
-  if ( colub!=NULL ) 
-    cub=const_cast<double*>(colub);
+  if (colub != NULL)
+    cub = const_cast< double * >(colub);
   else {
     cub = new double[nc];
-    for( i=0; i<nc; i++ ) cub[i]=XPRS_PLUSINFINITY;
+    for (i = 0; i < nc; i++)
+      cub[i] = XPRS_PLUSINFINITY;
   }
-  if ( obj!=NULL ) 
-    ob=const_cast<double*>(obj);
+  if (obj != NULL)
+    ob = const_cast< double * >(obj);
   else {
     ob = new double[nc];
-    for( i=0; i<nc; i++ ) ob[i]=0.0;
+    for (i = 0; i < nc; i++)
+      ob[i] = 0.0;
   }
-  if ( rowsen != NULL )
-  	rsen = const_cast<char*>(rowsen);
+  if (rowsen != NULL)
+    rsen = const_cast< char * >(rowsen);
   else {
-  	rsen = new char[nr];
-  	for( i = 0; i < nr; ++i ) rsen[i] = 'G';
+    rsen = new char[nr];
+    for (i = 0; i < nr; ++i)
+      rsen[i] = 'G';
   }
-  if ( rowrhs != NULL )
-  	rrhs = const_cast<double*>(rowrhs);
+  if (rowrhs != NULL)
+    rrhs = const_cast< double * >(rowrhs);
   else {
-  	rrhs = new double[nr];
-  	for( i = 0; i < nr; ++i ) rrhs[i] = 0.0;
+    rrhs = new double[nr];
+    for (i = 0; i < nr; ++i)
+      rrhs[i] = 0.0;
   }
 
   bool freeMatrixRequired = false;
-  CoinPackedMatrix * m = NULL;
-  if ( !matrix.isColOrdered() ) {
-     m = new CoinPackedMatrix(true,0,0);	// (mjs) No gaps!
+  CoinPackedMatrix *m = NULL;
+  if (!matrix.isColOrdered()) {
+    m = new CoinPackedMatrix(true, 0, 0); // (mjs) No gaps!
     m->reverseOrderedCopyOf(matrix);
     freeMatrixRequired = true;
   } else {
-    m = const_cast<CoinPackedMatrix *>(&matrix);
+    m = const_cast< CoinPackedMatrix * >(&matrix);
   }
-  
+
   // Generate a problem name
   char probName[256];
   sprintf(probName, "Prob%i", osiSerial_);
-  
+
   nc = m->getNumCols();
   nr = m->getNumRows();
-  
-  if ( getLogFilePtr()!=NULL ) {   
-    fprintf(getLogFilePtr(),"{\n"); 
 
-    fprintf(getLogFilePtr(),"  char rowsen[%d];\n",nr);
-    for ( i=0; i<nr; i++ )
-      fprintf(getLogFilePtr(),"  rowsen[%d]='%c';\n",i,rsen[i]);
+  if (getLogFilePtr() != NULL) {
+    fprintf(getLogFilePtr(), "{\n");
 
-    fprintf(getLogFilePtr(),"  double rowrhs[%d];\n",nr);
-    for ( i=0; i<nr; i++ )
-      fprintf(getLogFilePtr(),"  rowrhs[%d]=%f;\n",i,rrhs[i]);
-    
-    fprintf(getLogFilePtr(),"  double rowrng[%d];\n",nr);
-    for ( i=0; i<nr; i++ )
-      fprintf(getLogFilePtr(),"  rowrng[%d]=%f;\n",i,rowrng ? rowrng[i] : 0.0);
+    fprintf(getLogFilePtr(), "  char rowsen[%d];\n", nr);
+    for (i = 0; i < nr; i++)
+      fprintf(getLogFilePtr(), "  rowsen[%d]='%c';\n", i, rsen[i]);
 
-    fprintf(getLogFilePtr(),"  double ob[%d];\n",nc);
-    for ( i=0; i<nc; i++ )
-      fprintf(getLogFilePtr(),"  ob[%d]=%f;\n",i,ob[i]);
+    fprintf(getLogFilePtr(), "  double rowrhs[%d];\n", nr);
+    for (i = 0; i < nr; i++)
+      fprintf(getLogFilePtr(), "  rowrhs[%d]=%f;\n", i, rrhs[i]);
 
-    fprintf(getLogFilePtr(),"  double clb[%d];\n",nc);
-    for ( i=0; i<nc; i++ )
-      fprintf(getLogFilePtr(),"  clb[%d]=%f;\n",i,clb[i]);
+    fprintf(getLogFilePtr(), "  double rowrng[%d];\n", nr);
+    for (i = 0; i < nr; i++)
+      fprintf(getLogFilePtr(), "  rowrng[%d]=%f;\n", i, rowrng ? rowrng[i] : 0.0);
 
-    fprintf(getLogFilePtr(),"  double cub[%d];\n",nc);
-    for ( i=0; i<nc; i++ )
-      fprintf(getLogFilePtr(),"  cub[%d]=%f;\n",i,cub[i]);
+    fprintf(getLogFilePtr(), "  double ob[%d];\n", nc);
+    for (i = 0; i < nc; i++)
+      fprintf(getLogFilePtr(), "  ob[%d]=%f;\n", i, ob[i]);
 
-    fprintf(getLogFilePtr(),"  int vectorStarts[%d];\n",nc+1);
-    for ( i=0; i<=nc; i++ )
-      fprintf(getLogFilePtr(),"  vectorStarts[%d]=%d;\n",i,m->getVectorStarts()[i]);
+    fprintf(getLogFilePtr(), "  double clb[%d];\n", nc);
+    for (i = 0; i < nc; i++)
+      fprintf(getLogFilePtr(), "  clb[%d]=%f;\n", i, clb[i]);
 
-    fprintf(getLogFilePtr(),"  int vectorLengths[%d];\n",nc);
-    for ( i=0; i<nc; i++ )
-      fprintf(getLogFilePtr(),"  vectorLengths[%d]=%d;\n",i,m->getVectorLengths()[i]);
-    
-    fprintf(getLogFilePtr(),"  int indices[%d];\n",m->getVectorStarts()[nc]);
-    for ( i=0; i<m->getVectorStarts()[nc]; i++ )
-      fprintf(getLogFilePtr(),"  indices[%d]=%d;\n",i,m->getIndices()[i]);
+    fprintf(getLogFilePtr(), "  double cub[%d];\n", nc);
+    for (i = 0; i < nc; i++)
+      fprintf(getLogFilePtr(), "  cub[%d]=%f;\n", i, cub[i]);
 
-    fprintf(getLogFilePtr(),"  double elements[%d];\n",m->getVectorStarts()[nc]);
-    for ( i=0; i<m->getVectorStarts()[nc]; i++ )
-      fprintf(getLogFilePtr(),"  elements[%d]=%f;\n",i,m->getElements()[i]);
+    fprintf(getLogFilePtr(), "  int vectorStarts[%d];\n", nc + 1);
+    for (i = 0; i <= nc; i++)
+      fprintf(getLogFilePtr(), "  vectorStarts[%d]=%d;\n", i, m->getVectorStarts()[i]);
 
-    fprintf(getLogFilePtr(),"}\n");
+    fprintf(getLogFilePtr(), "  int vectorLengths[%d];\n", nc);
+    for (i = 0; i < nc; i++)
+      fprintf(getLogFilePtr(), "  vectorLengths[%d]=%d;\n", i, m->getVectorLengths()[i]);
+
+    fprintf(getLogFilePtr(), "  int indices[%d];\n", m->getVectorStarts()[nc]);
+    for (i = 0; i < m->getVectorStarts()[nc]; i++)
+      fprintf(getLogFilePtr(), "  indices[%d]=%d;\n", i, m->getIndices()[i]);
+
+    fprintf(getLogFilePtr(), "  double elements[%d];\n", m->getVectorStarts()[nc]);
+    for (i = 0; i < m->getVectorStarts()[nc]; i++)
+      fprintf(getLogFilePtr(), "  elements[%d]=%f;\n", i, m->getElements()[i]);
+
+    fprintf(getLogFilePtr(), "}\n");
   }
-  int iret = XPRSloadlp( prob_,
-			 probName,
-			 nc,
-			 nr,
-			 const_cast<char*>(rsen),
-			 const_cast<double*>(rrhs),
-			 const_cast<double*>(rowrng),
-			 ob,
-			 const_cast<int*>(m->getVectorStarts()),
-			 const_cast<int*>(m->getVectorLengths()),
-			 const_cast<int*>(m->getIndices()),
-			 const_cast<double*>(m->getElements()),
-			 clb,
-			 cub );
-  setStrParam(OsiProbName,probName);
-  
-  if ( iret != 0 )
-      XPRSgetintattrib(prob_,XPRS_ERRORCODE, &iret);
-  assert( iret == 0 );
-  
-   
-  char pname[256];      // Problem names can be 200 chars in XPRESS 12
-  XPRS_CHECKED( XPRSgetprobname,(prob_,pname) );
+  int iret = XPRSloadlp(prob_,
+    probName,
+    nc,
+    nr,
+    const_cast< char * >(rsen),
+    const_cast< double * >(rrhs),
+    const_cast< double * >(rowrng),
+    ob,
+    const_cast< int * >(m->getVectorStarts()),
+    const_cast< int * >(m->getVectorLengths()),
+    const_cast< int * >(m->getIndices()),
+    const_cast< double * >(m->getElements()),
+    clb,
+    cub);
+  setStrParam(OsiProbName, probName);
+
+  if (iret != 0)
+    XPRSgetintattrib(prob_, XPRS_ERRORCODE, &iret);
+  assert(iret == 0);
+
+  char pname[256]; // Problem names can be 200 chars in XPRESS 12
+  XPRS_CHECKED(XPRSgetprobname, (prob_, pname));
   xprProbname_ = pname;
-  
-  if ( collb==NULL ) delete[] clb;
-  if ( colub==NULL ) delete[] cub;
-  if ( obj  ==NULL ) delete[] ob;
-  if ( rowsen==NULL ) delete[] rsen;
-  if ( rowrhs==NULL ) delete[] rrhs;
-  
+
+  if (collb == NULL)
+    delete[] clb;
+  if (colub == NULL)
+    delete[] cub;
+  if (obj == NULL)
+    delete[] ob;
+  if (rowsen == NULL)
+    delete[] rsen;
+  if (rowrhs == NULL)
+    delete[] rrhs;
+
   if (freeMatrixRequired) {
     delete m;
   }
@@ -1841,199 +1799,208 @@ OsiXprSolverInterface::loadProblem(const CoinPackedMatrix& matrix,
 
 //-----------------------------------------------------------------------------
 
-void
-OsiXprSolverInterface::assignProblem(CoinPackedMatrix*& matrix,
-				     double*& collb, double*& colub,
-				     double*& obj,
-				     char*& rowsen, double*& rowrhs,
-				     double*& rowrng)
+void OsiXprSolverInterface::assignProblem(CoinPackedMatrix *&matrix,
+  double *&collb, double *&colub,
+  double *&obj,
+  char *&rowsen, double *&rowrhs,
+  double *&rowrng)
 {
-   loadProblem(*matrix, collb, colub, obj, rowsen, rowrhs, rowrng);
-   delete matrix;   matrix = 0;
-   delete[] collb;  collb = 0;
-   delete[] colub;  colub = 0;
-   delete[] obj;    obj = 0;
-   delete[] rowsen; rowsen = 0;
-   delete[] rowrhs; rowrhs = 0;
-   delete[] rowrng; rowrng = 0;
+  loadProblem(*matrix, collb, colub, obj, rowsen, rowrhs, rowrng);
+  delete matrix;
+  matrix = 0;
+  delete[] collb;
+  collb = 0;
+  delete[] colub;
+  colub = 0;
+  delete[] obj;
+  obj = 0;
+  delete[] rowsen;
+  rowsen = 0;
+  delete[] rowrhs;
+  rowrhs = 0;
+  delete[] rowrng;
+  rowrng = 0;
 }
 
 //-----------------------------------------------------------------------------
 
-void
-OsiXprSolverInterface::loadProblem(const int numcols, const int numrows,
-				   const int* start, const int* index,
-				   const double* value,
-				   const double* collb, const double* colub,   
-				   const double* obj,
-				   const double* rowlb, const double* rowub )
+void OsiXprSolverInterface::loadProblem(const int numcols, const int numrows,
+  const int *start, const int *index,
+  const double *value,
+  const double *collb, const double *colub,
+  const double *obj,
+  const double *rowlb, const double *rowub)
 {
   const double inf = getInfinity();
-  
-  char   * rowSense = new char  [numrows];
-  double * rowRhs   = new double[numrows];
-  double * rowRange = new double[numrows];
-  
-  for ( int i = numrows - 1; i >= 0; --i ) {
+
+  char *rowSense = new char[numrows];
+  double *rowRhs = new double[numrows];
+  double *rowRange = new double[numrows];
+
+  for (int i = numrows - 1; i >= 0; --i) {
     const double lower = rowlb ? rowlb[i] : -inf;
     const double upper = rowub ? rowub[i] : inf;
-    convertBoundToSense( lower, upper, rowSense[i], rowRhs[i], rowRange[i] );
+    convertBoundToSense(lower, upper, rowSense[i], rowRhs[i], rowRange[i]);
   }
 
   loadProblem(numcols, numrows, start, index, value, collb, colub, obj,
-	      rowSense, rowRhs, rowRange);
-  delete [] rowSense;
-  delete [] rowRhs;
-  delete [] rowRange;
-
+    rowSense, rowRhs, rowRange);
+  delete[] rowSense;
+  delete[] rowRhs;
+  delete[] rowRange;
 }
 
 //-----------------------------------------------------------------------------
 
-void
-OsiXprSolverInterface::loadProblem(const int numcols, const int numrows,
-				   const int* start, const int* index,
-				   const double* value,
-				   const double* collb, const double* colub,   
-				   const double* obj,
-				   const char* rowsen, const double* rowrhs,
-				   const double* rowrng )
+void OsiXprSolverInterface::loadProblem(const int numcols, const int numrows,
+  const int *start, const int *index,
+  const double *value,
+  const double *collb, const double *colub,
+  const double *obj,
+  const char *rowsen, const double *rowrhs,
+  const double *rowrng)
 {
   freeCachedResults();
   int i;
- 
+
   // Set column values to defaults if NULL pointer passed
   int nc = numcols;
   int nr = numrows;
-  int * len = new int[nc+1];
-  double * clb;  
-  double * cub;
-  double * ob;
-  char*   rsen;
-  double* rrhs;
+  int *len = new int[nc + 1];
+  double *clb;
+  double *cub;
+  double *ob;
+  char *rsen;
+  double *rrhs;
 
-  std::adjacent_difference(start, start + (nc+1), len);
-  
-  if ( collb!=NULL ) {
-    clb=const_cast<double*>(collb);
-  }
-  else {
+  std::adjacent_difference(start, start + (nc + 1), len);
+
+  if (collb != NULL) {
+    clb = const_cast< double * >(collb);
+  } else {
     clb = new double[nc];
-    for( i=0; i<nc; i++ ) clb[i]=0.0;
+    for (i = 0; i < nc; i++)
+      clb[i] = 0.0;
   }
-  if ( colub!=NULL ) 
-    cub=const_cast<double*>(colub);
+  if (colub != NULL)
+    cub = const_cast< double * >(colub);
   else {
     cub = new double[nc];
-    for( i=0; i<nc; i++ ) cub[i]=XPRS_PLUSINFINITY;
+    for (i = 0; i < nc; i++)
+      cub[i] = XPRS_PLUSINFINITY;
   }
-  if ( obj!=NULL ) 
-    ob=const_cast<double*>(obj);
+  if (obj != NULL)
+    ob = const_cast< double * >(obj);
   else {
     ob = new double[nc];
-    for( i=0; i<nc; i++ ) ob[i]=0.0;
+    for (i = 0; i < nc; i++)
+      ob[i] = 0.0;
   }
-  if ( rowsen != NULL )
-  	rsen = const_cast<char*>(rowsen);
+  if (rowsen != NULL)
+    rsen = const_cast< char * >(rowsen);
   else {
-  	rsen = new char[nr];
-  	for( i = 0; i < nr; ++i ) rsen[i] = 'G';
+    rsen = new char[nr];
+    for (i = 0; i < nr; ++i)
+      rsen[i] = 'G';
   }
-  if ( rowrhs != NULL )
-  	rrhs = const_cast<double*>(rowrhs);
+  if (rowrhs != NULL)
+    rrhs = const_cast< double * >(rowrhs);
   else {
-  	rrhs = new double[nr];
-  	for( i = 0; i < nr; ++i ) rrhs[i] = 0.0;
+    rrhs = new double[nr];
+    for (i = 0; i < nr; ++i)
+      rrhs[i] = 0.0;
   }
 
   // Generate a problem name
   char probName[256];
   sprintf(probName, "Prob%i", osiSerial_);
 
-  if ( getLogFilePtr()!=NULL ) {   
-    fprintf(getLogFilePtr(),"{\n"); 
+  if (getLogFilePtr() != NULL) {
+    fprintf(getLogFilePtr(), "{\n");
 
-    fprintf(getLogFilePtr(),"  char rowsen[%d];\n",nr);
-    for ( i=0; i<nr; i++ )
-      fprintf(getLogFilePtr(),"  rowsen[%d]='%c';\n",i,rsen[i]);
+    fprintf(getLogFilePtr(), "  char rowsen[%d];\n", nr);
+    for (i = 0; i < nr; i++)
+      fprintf(getLogFilePtr(), "  rowsen[%d]='%c';\n", i, rsen[i]);
 
-    fprintf(getLogFilePtr(),"  double rowrhs[%d];\n",nr);
-    for ( i=0; i<nr; i++ )
-      fprintf(getLogFilePtr(),"  rowrhs[%d]=%f;\n",i,rrhs[i]);
-    
-    fprintf(getLogFilePtr(),"  double rowrng[%d];\n",nr);
-    for ( i=0; i<nr; i++ )
-      fprintf(getLogFilePtr(),"  rowrng[%d]=%f;\n",i,rowrng ? rowrng[i] : 0.0);
+    fprintf(getLogFilePtr(), "  double rowrhs[%d];\n", nr);
+    for (i = 0; i < nr; i++)
+      fprintf(getLogFilePtr(), "  rowrhs[%d]=%f;\n", i, rrhs[i]);
 
-    fprintf(getLogFilePtr(),"  double ob[%d];\n",nc);
-    for ( i=0; i<nc; i++ )
-      fprintf(getLogFilePtr(),"  ob[%d]=%f;\n",i,ob[i]);
+    fprintf(getLogFilePtr(), "  double rowrng[%d];\n", nr);
+    for (i = 0; i < nr; i++)
+      fprintf(getLogFilePtr(), "  rowrng[%d]=%f;\n", i, rowrng ? rowrng[i] : 0.0);
 
-    fprintf(getLogFilePtr(),"  double clb[%d];\n",nc);
-    for ( i=0; i<nc; i++ )
-      fprintf(getLogFilePtr(),"  clb[%d]=%f;\n",i,clb[i]);
+    fprintf(getLogFilePtr(), "  double ob[%d];\n", nc);
+    for (i = 0; i < nc; i++)
+      fprintf(getLogFilePtr(), "  ob[%d]=%f;\n", i, ob[i]);
 
-    fprintf(getLogFilePtr(),"  double cub[%d];\n",nc);
-    for ( i=0; i<nc; i++ )
-      fprintf(getLogFilePtr(),"  cub[%d]=%f;\n",i,cub[i]);
+    fprintf(getLogFilePtr(), "  double clb[%d];\n", nc);
+    for (i = 0; i < nc; i++)
+      fprintf(getLogFilePtr(), "  clb[%d]=%f;\n", i, clb[i]);
 
-    fprintf(getLogFilePtr(),"  int vectorStarts[%d];\n",nc+1);
-    for ( i=0; i<=nc; i++ )
-      fprintf(getLogFilePtr(),"  vectorStarts[%d]=%d;\n",i,start[i]);
+    fprintf(getLogFilePtr(), "  double cub[%d];\n", nc);
+    for (i = 0; i < nc; i++)
+      fprintf(getLogFilePtr(), "  cub[%d]=%f;\n", i, cub[i]);
 
-    fprintf(getLogFilePtr(),"  int vectorLengths[%d];\n",nc);
-    for ( i=0; i<nc; i++ )
-      fprintf(getLogFilePtr(),"  vectorLengths[%d]=%d;\n",i,len[i+1]);
-    
-    fprintf(getLogFilePtr(),"  int indices[%d];\n",start[nc]);
-    for ( i=0; i<start[nc]; i++ )
-      fprintf(getLogFilePtr(),"  indices[%d]=%d;\n",i,index[i]);
+    fprintf(getLogFilePtr(), "  int vectorStarts[%d];\n", nc + 1);
+    for (i = 0; i <= nc; i++)
+      fprintf(getLogFilePtr(), "  vectorStarts[%d]=%d;\n", i, start[i]);
 
-    fprintf(getLogFilePtr(),"  double elements[%d];\n",start[nc]);
-    for ( i=0; i<start[nc]; i++ )
-      fprintf(getLogFilePtr(),"  elements[%d]=%f;\n",i,value[i]);
+    fprintf(getLogFilePtr(), "  int vectorLengths[%d];\n", nc);
+    for (i = 0; i < nc; i++)
+      fprintf(getLogFilePtr(), "  vectorLengths[%d]=%d;\n", i, len[i + 1]);
 
-    fprintf(getLogFilePtr(),"}\n");
+    fprintf(getLogFilePtr(), "  int indices[%d];\n", start[nc]);
+    for (i = 0; i < start[nc]; i++)
+      fprintf(getLogFilePtr(), "  indices[%d]=%d;\n", i, index[i]);
+
+    fprintf(getLogFilePtr(), "  double elements[%d];\n", start[nc]);
+    for (i = 0; i < start[nc]; i++)
+      fprintf(getLogFilePtr(), "  elements[%d]=%f;\n", i, value[i]);
+
+    fprintf(getLogFilePtr(), "}\n");
   }
-  int iret = XPRSloadlp(prob_,probName,
-			nc,
-			nr,
-			const_cast<char*>(rsen),
-			const_cast<double*>(rrhs),
-			const_cast<double*>(rowrng),
-			ob,
-			const_cast<int*>(start),
-			const_cast<int*>(len+1),
-			const_cast<int*>(index),
-			const_cast<double*>(value),
-			clb,
-			cub );
-  setStrParam(OsiProbName,probName);
-  
-  if ( iret != 0 )
-    XPRSgetintattrib(prob_,XPRS_ERRORCODE, &iret);
-  assert( iret == 0 );
-  
-  char pname[256];      // Problem names can be 200 chars in XPRESS 12
-  XPRS_CHECKED( XPRSgetprobname, (prob_,pname) );
+  int iret = XPRSloadlp(prob_, probName,
+    nc,
+    nr,
+    const_cast< char * >(rsen),
+    const_cast< double * >(rrhs),
+    const_cast< double * >(rowrng),
+    ob,
+    const_cast< int * >(start),
+    const_cast< int * >(len + 1),
+    const_cast< int * >(index),
+    const_cast< double * >(value),
+    clb,
+    cub);
+  setStrParam(OsiProbName, probName);
+
+  if (iret != 0)
+    XPRSgetintattrib(prob_, XPRS_ERRORCODE, &iret);
+  assert(iret == 0);
+
+  char pname[256]; // Problem names can be 200 chars in XPRESS 12
+  XPRS_CHECKED(XPRSgetprobname, (prob_, pname));
   xprProbname_ = pname;
-  
-  if ( collb == NULL ) delete[] clb;
-  if ( colub == NULL ) delete[] cub;
-  if ( obj   == NULL ) delete[] ob;
-  if ( rowsen== NULL ) delete[] rsen;
-  if ( rowrhs== NULL ) delete[] rrhs;
+
+  if (collb == NULL)
+    delete[] clb;
+  if (colub == NULL)
+    delete[] cub;
+  if (obj == NULL)
+    delete[] ob;
+  if (rowsen == NULL)
+    delete[] rsen;
+  if (rowrhs == NULL)
+    delete[] rrhs;
   delete[] len;
 }
-
-
 
 //-----------------------------------------------------------------------------
 // Read mps files
 //-----------------------------------------------------------------------------
 
-int
-OsiXprSolverInterface::readMps(const char *filename, const char *extension) 
+int OsiXprSolverInterface::readMps(const char *filename, const char *extension)
 {
 #if 0
   if (getLogFilePtr()!=NULL) {
@@ -2132,32 +2099,31 @@ OsiXprSolverInterface::readMps(const char *filename, const char *extension)
   xprProbname_ = pname;
   return 0;
 #else
-  int retVal = OsiSolverInterface::readMps(filename,extension);
-  getStrParam(OsiProbName,xprProbname_);
+  int retVal = OsiSolverInterface::readMps(filename, extension);
+  getStrParam(OsiProbName, xprProbname_);
   return retVal;
 #endif
 }
-
 
 //-----------------------------------------------------------------------------
 // Write mps files
 //-----------------------------------------------------------------------------
 void OsiXprSolverInterface::writeMps(const char *filename,
-				     const char *extension,
-				     double objSense) const
+  const char *extension,
+  double objSense) const
 {
-	// Note: XPRESS insists on ignoring the extension and
+  // Note: XPRESS insists on ignoring the extension and
   // adding ".mat" instead.  Forewarned is forearmed.  NOTE: that does not happen for me (Xpress 21).
   // Note: Passing an empty filename produces a file named after
   // the problem.
 
-	assert(filename != NULL);
-	assert(extension != NULL);
+  assert(filename != NULL);
+  assert(extension != NULL);
 
-	char* fullname = new char[strlen(filename) + strlen(extension) + 2];
-	sprintf(fullname, "%s.%s", filename, extension);
+  char *fullname = new char[strlen(filename) + strlen(extension) + 2];
+  sprintf(fullname, "%s.%s", filename, extension);
 
-  XPRS_CHECKED( XPRSwriteprob, (prob_,fullname, "") );
+  XPRS_CHECKED(XPRSwriteprob, (prob_, fullname, ""));
 
   delete[] fullname;
 }
@@ -2165,55 +2131,54 @@ void OsiXprSolverInterface::writeMps(const char *filename,
 //-----------------------------------------------------------------------------
 // Message Handling
 //-----------------------------------------------------------------------------
-void OsiXprSolverInterface::passInMessageHandler(CoinMessageHandler * handler)
+void OsiXprSolverInterface::passInMessageHandler(CoinMessageHandler *handler)
 {
-	OsiSolverInterface::passInMessageHandler(handler);
-	
-  XPRS_CHECKED( XPRSsetcbmessage, (prob_, OsiXprMessageCallback, messageHandler()) );
-}
+  OsiSolverInterface::passInMessageHandler(handler);
 
+  XPRS_CHECKED(XPRSsetcbmessage, (prob_, OsiXprMessageCallback, messageHandler()));
+}
 
 //#############################################################################
 // Static data and methods
 //#############################################################################
 
-void
-OsiXprSolverInterface::incrementInstanceCounter()
+void OsiXprSolverInterface::incrementInstanceCounter()
 {
 #ifdef DEBUG
-    fprintf( stdout, "incrementInstanceCounter:: numInstances %d\n", 
-	     numInstances_);
+  fprintf(stdout, "incrementInstanceCounter:: numInstances %d\n",
+    numInstances_);
 #endif
-    if ( numInstances_ == 0 ) {          
+  if (numInstances_ == 0) {
 
-       if( XPRSinit(NULL) != 0 ) {
-         throw CoinError("failed to init XPRESS, maybe no license", "incrementInstanceCounter", "OsiXprSolverInterface");
-       }
+    if (XPRSinit(NULL) != 0) {
+      char longbuf[2048] = "failed to init XPRESS, maybe no license";
+      XPRSgetlicerrmsg(longbuf, sizeof(longbuf));
+      throw CoinError(longbuf, "incrementInstanceCounter", "OsiXprSolverInterface");
     }
+  }
 
-    numInstances_++;
-    osiSerial_++;
-    
-    //  cout << "Instances = " << numInstances_ << "; Serial = " << osiSerial_ << endl;
+  numInstances_++;
+  osiSerial_++;
+
+  //  cout << "Instances = " << numInstances_ << "; Serial = " << osiSerial_ << endl;
 }
 
 //-----------------------------------------------------------------------------
 
-void
-OsiXprSolverInterface::decrementInstanceCounter()
+void OsiXprSolverInterface::decrementInstanceCounter()
 {
 #ifdef DEBUG
-    fprintf( stdout, "decrementInstanceCounter:: numInstances %d\n", 
-	     numInstances_);
+  fprintf(stdout, "decrementInstanceCounter:: numInstances %d\n",
+    numInstances_);
 #endif
-  assert( numInstances_ != 0 );
+  assert(numInstances_ != 0);
 
   numInstances_--;
- 
+
   //  cout << "Instances = " << numInstances_ << endl;
-  
-  if ( numInstances_ == 0 ) {
-      XPRSfree();
+
+  if (numInstances_ == 0) {
+    XPRSfree();
   }
 }
 
@@ -2223,10 +2188,10 @@ unsigned int
 OsiXprSolverInterface::getNumInstances()
 {
 #ifdef DEBUG
-    fprintf( stdout, "getNumInstances:: numInstances %d\n", 
-	     numInstances_);
+  fprintf(stdout, "getNumInstances:: numInstances %d\n",
+    numInstances_);
 #endif
-   return numInstances_;
+  return numInstances_;
 }
 
 //-----------------------------------------------------------------------------
@@ -2234,9 +2199,9 @@ OsiXprSolverInterface::getNumInstances()
 // Return XPRESS-MP Version number
 int OsiXprSolverInterface::version()
 {
-/* OPEN: handle version properly !!! */
+  /* OPEN: handle version properly !!! */
 
-/*
+  /*
     int retVal;
     XPRSprob p;
     incrementInstanceCounter();
@@ -2246,22 +2211,25 @@ int OsiXprSolverInterface::version()
     decrementInstanceCounter();
 */
 
-    return XPVERSION;
-
+  return XPVERSION;
 }
 
 //-----------------------------------------------------------------------------
 
-FILE * OsiXprSolverInterface::getLogFilePtr()
+FILE *OsiXprSolverInterface::getLogFilePtr()
 {
-  if (logFilePtr_!=NULL){fclose(logFilePtr_);logFilePtr_=NULL;}
-  if (logFileName_!=NULL) logFilePtr_ = fopen(logFileName_,"a+");
+  if (logFilePtr_ != NULL) {
+    fclose(logFilePtr_);
+    logFilePtr_ = NULL;
+  }
+  if (logFileName_ != NULL)
+    logFilePtr_ = fopen(logFileName_, "a+");
   return logFilePtr_;
 }
 
 //-----------------------------------------------------------------------------
 
-void OsiXprSolverInterface::setLogFileName( const char * filename )
+void OsiXprSolverInterface::setLogFileName(const char *filename)
 {
   logFileName_ = filename;
 }
@@ -2272,56 +2240,56 @@ int OsiXprSolverInterface::iXprCallCount_ = 1;
 
 unsigned int OsiXprSolverInterface::numInstances_ = 0;
 
-unsigned int OsiXprSolverInterface::osiSerial_ = 0;  
+unsigned int OsiXprSolverInterface::osiSerial_ = 0;
 
-FILE * OsiXprSolverInterface::logFilePtr_ = NULL;  
+FILE *OsiXprSolverInterface::logFilePtr_ = NULL;
 
-const char * OsiXprSolverInterface::logFileName_ = NULL;
+const char *OsiXprSolverInterface::logFileName_ = NULL;
 
 //#############################################################################
 // Constructors, destructors clone and assignment
 //#############################################################################
 
 //-------------------------------------------------------------------
-// Default Constructor 
+// Default Constructor
 //-------------------------------------------------------------------
-OsiXprSolverInterface::OsiXprSolverInterface (int newrows, int newnz) :
-OsiSolverInterface(),
-prob_(NULL),
-matrixByRow_(NULL),
-matrixByCol_(NULL),
-colupper_(NULL),
-collower_(NULL),
-rowupper_(NULL),
-rowlower_(NULL),
-rowsense_(NULL),
-rhs_(NULL),
-rowrange_(NULL),
-objcoeffs_(NULL),
-objsense_(1),
-colsol_(NULL),
-rowsol_(NULL),
-rowact_(NULL),
-rowprice_(NULL),
-colprice_(NULL),
-ivarind_(NULL),
-ivartype_(NULL),
-vartype_(NULL),
-domipstart(false)
+OsiXprSolverInterface::OsiXprSolverInterface(int newrows, int newnz)
+  : OsiSolverInterface()
+  , prob_(NULL)
+  , matrixByRow_(NULL)
+  , matrixByCol_(NULL)
+  , colupper_(NULL)
+  , collower_(NULL)
+  , rowupper_(NULL)
+  , rowlower_(NULL)
+  , rowsense_(NULL)
+  , rhs_(NULL)
+  , rowrange_(NULL)
+  , objcoeffs_(NULL)
+  , objsense_(1)
+  , colsol_(NULL)
+  , rowsol_(NULL)
+  , rowact_(NULL)
+  , rowprice_(NULL)
+  , colprice_(NULL)
+  , ivarind_(NULL)
+  , ivartype_(NULL)
+  , vartype_(NULL)
+  , domipstart(false)
 {
-    incrementInstanceCounter();
-    
-    xprProbname_ = "";
+  incrementInstanceCounter();
 
-    gutsOfConstructor();
-  
+  xprProbname_ = "";
+
+  gutsOfConstructor();
+
   // newrows and newnz specify room to leave in the solver's matrix
   // structure for cuts.  Note that this is a *global* parameter.
   // The value in effect when the problem is loaded pertains.
-  
-  if ( newrows > 0 && newnz > 0 ) {         
-      XPRS_CHECKED( XPRSsetintcontrol,(prob_,XPRS_EXTRAROWS, newrows) );
-      XPRS_CHECKED( XPRSsetintcontrol, (prob_,XPRS_EXTRAELEMS, newnz) );
+
+  if (newrows > 0 && newnz > 0) {
+    XPRS_CHECKED(XPRSsetintcontrol, (prob_, XPRS_EXTRAROWS, newrows));
+    XPRS_CHECKED(XPRSsetintcontrol, (prob_, XPRS_EXTRAELEMS, newnz));
   }
 }
 
@@ -2330,359 +2298,355 @@ domipstart(false)
 //----------------------------------------------------------------
 OsiSolverInterface *
 OsiXprSolverInterface::clone(bool copyData) const
-{  
-   return (new OsiXprSolverInterface(*this));
+{
+  return (new OsiXprSolverInterface(*this));
 }
 
 //-------------------------------------------------------------------
-// Copy constructor 
+// Copy constructor
 //-------------------------------------------------------------------
 OsiXprSolverInterface::
-OsiXprSolverInterface (const OsiXprSolverInterface & source) :
-    OsiSolverInterface(source),
-    prob_(NULL),
-   matrixByRow_(NULL),
-   matrixByCol_(NULL),
-   colupper_(NULL),
-   collower_(NULL),
-   rowupper_(NULL),
-   rowlower_(NULL),
-   rowsense_(NULL),
-   rhs_(NULL),
-   rowrange_(NULL),
-   objcoeffs_(NULL),
-   objsense_(source.objsense_),
-   colsol_(NULL),
-   rowsol_(NULL),
-   rowact_(NULL),
-   rowprice_(NULL),
-   colprice_(NULL),
-   ivarind_(NULL),
-   ivartype_(NULL),
-   vartype_(NULL),
-   domipstart(false)
+  OsiXprSolverInterface(const OsiXprSolverInterface &source)
+  : OsiSolverInterface(source)
+  , prob_(NULL)
+  , matrixByRow_(NULL)
+  , matrixByCol_(NULL)
+  , colupper_(NULL)
+  , collower_(NULL)
+  , rowupper_(NULL)
+  , rowlower_(NULL)
+  , rowsense_(NULL)
+  , rhs_(NULL)
+  , rowrange_(NULL)
+  , objcoeffs_(NULL)
+  , objsense_(source.objsense_)
+  , colsol_(NULL)
+  , rowsol_(NULL)
+  , rowact_(NULL)
+  , rowprice_(NULL)
+  , colprice_(NULL)
+  , ivarind_(NULL)
+  , ivartype_(NULL)
+  , vartype_(NULL)
+  , domipstart(false)
 {
-    incrementInstanceCounter();
-    xprProbname_ = "";
-    gutsOfConstructor();
-    
-    gutsOfCopy(source);
-    
-    // Other values remain NULL until requested
+  incrementInstanceCounter();
+  xprProbname_ = "";
+  gutsOfConstructor();
+
+  gutsOfCopy(source);
+
+  // Other values remain NULL until requested
 }
 
 //-------------------------------------------------------------------
-// Destructor 
+// Destructor
 //-------------------------------------------------------------------
-OsiXprSolverInterface::~OsiXprSolverInterface ()
+OsiXprSolverInterface::~OsiXprSolverInterface()
 {
-   gutsOfDestructor();
-   XPRSdestroyprob(prob_);
-   decrementInstanceCounter();
+  gutsOfDestructor();
+  XPRSdestroyprob(prob_);
+  decrementInstanceCounter();
 }
 
 //-------------------------------------------------------------------
-// Assignment operator 
+// Assignment operator
 //-------------------------------------------------------------------
 OsiXprSolverInterface &
-OsiXprSolverInterface::operator=(const OsiXprSolverInterface& rhs)
+OsiXprSolverInterface::operator=(const OsiXprSolverInterface &rhs)
 {
-   if ( this != &rhs ) {    
-      OsiSolverInterface::operator=(rhs);
-      osiSerial_++;       // even though numInstances_ doesn't change
-      gutsOfDestructor();
-      gutsOfCopy(rhs);
-   }
-   return *this;
+  if (this != &rhs) {
+    OsiSolverInterface::operator=(rhs);
+    osiSerial_++; // even though numInstances_ doesn't change
+    gutsOfDestructor();
+    gutsOfCopy(rhs);
+  }
+  return *this;
 }
 
 //#############################################################################
 // Applying cuts
 //#############################################################################
 
-void
-OsiXprSolverInterface::applyColCut( const OsiColCut & cc )
+void OsiXprSolverInterface::applyColCut(const OsiColCut &cc)
 {
-   const double  *collower = getColLower();
-   const double  *colupper = getColUpper();
-   const CoinPackedVector & lbs = cc.lbs();
-   const CoinPackedVector & ubs = cc.ubs();
+  const double *collower = getColLower();
+  const double *colupper = getColUpper();
+  const CoinPackedVector &lbs = cc.lbs();
+  const CoinPackedVector &ubs = cc.ubs();
 
-   int     *index = new int   [lbs.getNumElements() + ubs.getNumElements()];
-   char    *btype = new char  [lbs.getNumElements() + ubs.getNumElements()];
-   double  *value = new double[lbs.getNumElements() + ubs.getNumElements()];
+  int *index = new int[lbs.getNumElements() + ubs.getNumElements()];
+  char *btype = new char[lbs.getNumElements() + ubs.getNumElements()];
+  double *value = new double[lbs.getNumElements() + ubs.getNumElements()];
 
-   int     i, nbds;
+  int i, nbds;
 
-   for ( i = nbds = 0;  i < lbs.getNumElements();  i++, nbds++ ) {
-      index[nbds] = lbs.getIndices()[i];
-      btype[nbds] = 'L';
-      value[nbds] = (collower[index[nbds]] > lbs.getElements()[i]) ?
-	 collower[index[nbds]] : lbs.getElements()[i];
-   }
+  for (i = nbds = 0; i < lbs.getNumElements(); i++, nbds++) {
+    index[nbds] = lbs.getIndices()[i];
+    btype[nbds] = 'L';
+    value[nbds] = (collower[index[nbds]] > lbs.getElements()[i]) ? collower[index[nbds]] : lbs.getElements()[i];
+  }
 
-   for ( i = 0;  i < ubs.getNumElements();  i++, nbds++ ) {
-      index[nbds] = ubs.getIndices()[i];
-      btype[nbds] = 'U';
-      value[nbds] = (colupper[index[nbds]] < ubs.getElements()[i]) ?
-	 colupper[index[nbds]] : ubs.getElements()[i];
-   }
-   
-    if (getLogFilePtr()!=NULL) {
-      fprintf(getLogFilePtr(),"{\n");
-      fprintf(getLogFilePtr(),"   int index[%d];\n",nbds);
-      fprintf(getLogFilePtr(),"   char btype[%d];\n",nbds);
-      fprintf(getLogFilePtr(),"   double value[%d];\n",nbds);
-      for ( i=0; i<nbds; i++ ) {
-        fprintf(getLogFilePtr(),"   index[%d]=%d;\n",i,index[i]);
-        fprintf(getLogFilePtr(),"   btype[%d]='%c';\n",i,btype[i]);
-        fprintf(getLogFilePtr(),"   value[%d]=%f;\n",i,value[i]);
-      }
-      fprintf(getLogFilePtr(),"}\n");
+  for (i = 0; i < ubs.getNumElements(); i++, nbds++) {
+    index[nbds] = ubs.getIndices()[i];
+    btype[nbds] = 'U';
+    value[nbds] = (colupper[index[nbds]] < ubs.getElements()[i]) ? colupper[index[nbds]] : ubs.getElements()[i];
+  }
+
+  if (getLogFilePtr() != NULL) {
+    fprintf(getLogFilePtr(), "{\n");
+    fprintf(getLogFilePtr(), "   int index[%d];\n", nbds);
+    fprintf(getLogFilePtr(), "   char btype[%d];\n", nbds);
+    fprintf(getLogFilePtr(), "   double value[%d];\n", nbds);
+    for (i = 0; i < nbds; i++) {
+      fprintf(getLogFilePtr(), "   index[%d]=%d;\n", i, index[i]);
+      fprintf(getLogFilePtr(), "   btype[%d]='%c';\n", i, btype[i]);
+      fprintf(getLogFilePtr(), "   value[%d]=%f;\n", i, value[i]);
     }
+    fprintf(getLogFilePtr(), "}\n");
+  }
 
-    XPRS_CHECKED( XPRSchgbounds, (prob_,nbds, index, btype, value) );
+  XPRS_CHECKED(XPRSchgbounds, (prob_, nbds, index, btype, value));
 
-   delete [] index;
-   delete [] btype;
-   delete [] value;
+  delete[] index;
+  delete[] btype;
+  delete[] value;
 
-   freeCachedResults();
-   //  delete [] colupper_;      colupper_ = NULL;
-   //  delete [] collower_;      collower_ = NULL;
+  freeCachedResults();
+  //  delete [] colupper_;      colupper_ = NULL;
+  //  delete [] collower_;      collower_ = NULL;
 }
 
 //-----------------------------------------------------------------------------
 
-void
-OsiXprSolverInterface::applyRowCut( const OsiRowCut & rowCut )
+void OsiXprSolverInterface::applyRowCut(const OsiRowCut &rowCut)
 {
-   const   CoinPackedVector & row=rowCut.row();
-   int     start[2] = {0, row.getNumElements()};
-   char    sense = rowCut.sense();
-   double  rhs   = rowCut.rhs();
+  const CoinPackedVector &row = rowCut.row();
+  int start[2] = { 0, row.getNumElements() };
+  char sense = rowCut.sense();
+  double rhs = rowCut.rhs();
 
-   double  r = rowCut.range();
+  double r = rowCut.range();
 
-   if (getLogFilePtr()!=NULL) {
-       int i;
-       fprintf(getLogFilePtr(),"{\n");
-       fprintf(getLogFilePtr(),"  char sense = '%c';\n",sense);
-       fprintf(getLogFilePtr(),"  double rhs = '%f';\n",rhs);
-       fprintf(getLogFilePtr(),"  double r = '%f';\n",r);
-       fprintf(getLogFilePtr(),"  int start[2] = {0,%d};\n",start[1]);
-       fprintf(getLogFilePtr(),"  int indices[%d];\n",row.getNumElements());
-       fprintf(getLogFilePtr(),"  double elements[%d];\n",row.getNumElements());
-       for ( i=0; i<row.getNumElements(); i++ ) {
-	   fprintf(getLogFilePtr(),"  indices[%d]=%d;\n",i,row.getIndices()[i]);
-	   fprintf(getLogFilePtr(),"  elements[%d]=%f;\n",i,row.getElements()[i]);
-       }
-       fprintf(getLogFilePtr(),"\n");
-   }
+  if (getLogFilePtr() != NULL) {
+    int i;
+    fprintf(getLogFilePtr(), "{\n");
+    fprintf(getLogFilePtr(), "  char sense = '%c';\n", sense);
+    fprintf(getLogFilePtr(), "  double rhs = '%f';\n", rhs);
+    fprintf(getLogFilePtr(), "  double r = '%f';\n", r);
+    fprintf(getLogFilePtr(), "  int start[2] = {0,%d};\n", start[1]);
+    fprintf(getLogFilePtr(), "  int indices[%d];\n", row.getNumElements());
+    fprintf(getLogFilePtr(), "  double elements[%d];\n", row.getNumElements());
+    for (i = 0; i < row.getNumElements(); i++) {
+      fprintf(getLogFilePtr(), "  indices[%d]=%d;\n", i, row.getIndices()[i]);
+      fprintf(getLogFilePtr(), "  elements[%d]=%f;\n", i, row.getElements()[i]);
+    }
+    fprintf(getLogFilePtr(), "\n");
+  }
 
-   // In XPRESS XPRSaddrows(prob_) prototype, indices and elements should be const, but
-   // they're not. 
-   int rc;
+  // In XPRESS XPRSaddrows(prob_) prototype, indices and elements should be const, but
+  // they're not.
+  XPRS_CHECKED(XPRSaddrows, (prob_, 1, row.getNumElements(), &sense, &rhs, &r,
+    start, const_cast< int * >(row.getIndices()),
+    const_cast< double * >(row.getElements())));
 
-   rc = XPRSaddrows(prob_,1, row.getNumElements(), &sense, &rhs, &r,
-			start, const_cast<int *>(row.getIndices()),
-			const_cast<double *>(row.getElements())); 
-   assert( rc == 0 );
-   
-   freeCachedResults();
+  freeCachedResults();
 }
 
 //#############################################################################
 // Private methods
 //#############################################################################
 
-void
-OsiXprSolverInterface::gutsOfCopy( const OsiXprSolverInterface & source )
+void OsiXprSolverInterface::gutsOfCopy(const OsiXprSolverInterface &source)
 {
-   if ( source.xprProbname_ != "" ) {    // source has data
-     std::ostringstream pname;
-     pname << xprProbname_ << "#" << osiSerial_ <<'\0';
-     xprProbname_ = pname.str();
-     //     sprintf(xprProbname_, "%s#%d", source.xprProbname_, osiSerial_);
-     
-     //     std::cout << "Problem " << xprProbname_ << " copied to matrix ";
-     
+  if (source.xprProbname_ != "") { // source has data
+    std::ostringstream pname;
+    pname << xprProbname_ << "#" << osiSerial_ << '\0';
+    xprProbname_ = pname.str();
+    //     sprintf(xprProbname_, "%s#%d", source.xprProbname_, osiSerial_);
 
-     XPRS_CHECKED( XPRScopyprob, ( prob_, source.prob_, xprProbname_.c_str() ) );
-     XPRS_CHECKED( XPRScopycontrols, ( prob_, source.prob_ ) );
-     /* if the callbacks are used, a XPRScopycallbacks needs to be added */
-   }
+    //     std::cout << "Problem " << xprProbname_ << " copied to matrix ";
+
+    XPRS_CHECKED(XPRScopyprob, (prob_, source.prob_, xprProbname_.c_str()));
+    XPRS_CHECKED(XPRScopycontrols, (prob_, source.prob_));
+    /* if the callbacks are used, a XPRScopycallbacks needs to be added */
+  }
 }
 
-
 //-------------------------------------------------------------------
-void
-OsiXprSolverInterface::gutsOfConstructor()
+void OsiXprSolverInterface::gutsOfConstructor()
 {
-    
-    XPRS_CHECKED( XPRScreateprob, (&prob_) );  
 
-    XPRS_CHECKED( XPRSsetcbmessage, (prob_, OsiXprMessageCallback, messageHandler()) );
+  XPRS_CHECKED(XPRScreateprob, (&prob_));
 
-    /* always create an empty problem to initialize all data structures
+  XPRS_CHECKED(XPRSsetcbmessage, (prob_, OsiXprMessageCallback, messageHandler()));
+
+  /* always create an empty problem to initialize all data structures
      * since the user had no chance to pass in his own message handler, we turn off the output for the following operation
      */
 
-    int outputlog;
-    XPRS_CHECKED( XPRSgetintcontrol, (prob_, XPRS_OUTPUTLOG, &outputlog) );
-    XPRS_CHECKED( XPRSsetintcontrol, (prob_, XPRS_OUTPUTLOG, 0) );
-    
-    int istart = 0;
-    XPRS_CHECKED( XPRSloadlp, ( prob_, "empty", 0, 0, NULL, NULL, NULL, NULL,
-				&istart,
-				NULL, NULL, NULL, NULL, NULL) );
-    XPRS_CHECKED( XPRSchgobjsense, (prob_, (int)objsense_) );
+  int outputlog;
+  XPRS_CHECKED(XPRSgetintcontrol, (prob_, XPRS_OUTPUTLOG, &outputlog));
+  XPRS_CHECKED(XPRSsetintcontrol, (prob_, XPRS_OUTPUTLOG, 0));
 
-    XPRS_CHECKED( XPRSsetintcontrol, (prob_, XPRS_OUTPUTLOG, outputlog) );
+  int istart = 0;
+  XPRS_CHECKED(XPRSloadlp, (prob_, "empty", 0, 0, NULL, NULL, NULL, NULL, &istart, NULL, NULL, NULL, NULL, NULL));
+  XPRS_CHECKED(XPRSchgobjsense, (prob_, (int)objsense_));
 
-    //OPEN: only switched off for debugging
-    //XPRS_CHECKED( XPRSsetlogfile, (prob_,"xpress.log") );
-    // **FIXME** (mjs) Integer problems require solution file or callback to save 
-    // optimal solution.  The quick fix is to leave the default solutionfile setting,
-    // but implementing a callback would be better.
-    //    XPRS_CHECKED( XPRSsetintcontrol, (prob_, XPRS_SOLUTIONFILE,0) );
-    
-    //    XPRS_CHECKED( XPRSsetintcontrol, ( prob_, XPRS_PRESOLVE, 0) );
+  XPRS_CHECKED(XPRSsetintcontrol, (prob_, XPRS_OUTPUTLOG, outputlog));
 
-    lastsolvewasmip = false;
+  //OPEN: only switched off for debugging
+  //XPRS_CHECKED( XPRSsetlogfile, (prob_,"xpress.log") );
+  // **FIXME** (mjs) Integer problems require solution file or callback to save
+  // optimal solution.  The quick fix is to leave the default solutionfile setting,
+  // but implementing a callback would be better.
+  //    XPRS_CHECKED( XPRSsetintcontrol, (prob_, XPRS_SOLUTIONFILE,0) );
 
+  //    XPRS_CHECKED( XPRSsetintcontrol, ( prob_, XPRS_PRESOLVE, 0) );
+
+  lastsolvewasmip = false;
 }
 //-------------------------------------------------------------------
-void
-OsiXprSolverInterface::gutsOfDestructor()
+void OsiXprSolverInterface::gutsOfDestructor()
 {
-   freeCachedResults();
+  freeCachedResults();
 
-   assert(matrixByRow_ == NULL);
-   assert(matrixByCol_ == NULL);
-   assert(colupper_    == NULL);
-   assert(collower_    == NULL);
-   assert(rowupper_    == NULL);
-   assert(rowlower_    == NULL);
-                    
-   assert(rowsense_    == NULL);
-   assert(rhs_         == NULL);
-   assert(rowrange_    == NULL);
-                    
-   assert(objcoeffs_   == NULL);
-                    
-   assert(colsol_      == NULL);
-   assert(rowsol_      == NULL);
-   assert(rowprice_    == NULL);
-   assert(colprice_    == NULL);
-   assert(rowact_      == NULL);
-   assert(vartype_     == NULL);
+  assert(matrixByRow_ == NULL);
+  assert(matrixByCol_ == NULL);
+  assert(colupper_ == NULL);
+  assert(collower_ == NULL);
+  assert(rowupper_ == NULL);
+  assert(rowlower_ == NULL);
 
+  assert(rowsense_ == NULL);
+  assert(rhs_ == NULL);
+  assert(rowrange_ == NULL);
+
+  assert(objcoeffs_ == NULL);
+
+  assert(colsol_ == NULL);
+  assert(rowsol_ == NULL);
+  assert(rowprice_ == NULL);
+  assert(colprice_ == NULL);
+  assert(rowact_ == NULL);
+  assert(vartype_ == NULL);
 }
 
 //-------------------------------------------------------------------
 
-void
-OsiXprSolverInterface::freeSolution()
+void OsiXprSolverInterface::freeSolution()
 {
-   delete [] colsol_;	    colsol_      = NULL;
-   delete [] rowsol_;       rowsol_      = NULL;
-   delete [] rowact_;       rowact_      = NULL;
-   delete [] rowprice_;	    rowprice_    = NULL;
-   delete [] colprice_;	    colprice_    = NULL;
+  delete[] colsol_;
+  colsol_ = NULL;
+  delete[] rowsol_;
+  rowsol_ = NULL;
+  delete[] rowact_;
+  rowact_ = NULL;
+  delete[] rowprice_;
+  rowprice_ = NULL;
+  delete[] colprice_;
+  colprice_ = NULL;
 }
 
 //-------------------------------------------------------------------
 
-void
-OsiXprSolverInterface::freeCachedResults()
+void OsiXprSolverInterface::freeCachedResults()
 {
-   delete matrixByRow_;     matrixByRow_ = NULL;
-   delete matrixByCol_;     matrixByCol_ = NULL;
-   delete [] colupper_;     colupper_    = NULL;
-   delete [] collower_;	    collower_    = NULL;
-   delete [] rowupper_;	    rowupper_    = NULL;
-   delete [] rowlower_;	    rowlower_    = NULL;
+  delete matrixByRow_;
+  matrixByRow_ = NULL;
+  delete matrixByCol_;
+  matrixByCol_ = NULL;
+  delete[] colupper_;
+  colupper_ = NULL;
+  delete[] collower_;
+  collower_ = NULL;
+  delete[] rowupper_;
+  rowupper_ = NULL;
+  delete[] rowlower_;
+  rowlower_ = NULL;
 
-   delete [] rowsense_;	    rowsense_    = NULL;
-   delete [] rhs_;	    rhs_         = NULL;
-   delete [] rowrange_;	    rowrange_    = NULL;
+  delete[] rowsense_;
+  rowsense_ = NULL;
+  delete[] rhs_;
+  rhs_ = NULL;
+  delete[] rowrange_;
+  rowrange_ = NULL;
 
-   delete [] objcoeffs_;    objcoeffs_   = NULL;
+  delete[] objcoeffs_;
+  objcoeffs_ = NULL;
 
-   freeSolution();
+  freeSolution();
 
-   delete [] ivarind_;      ivarind_     = NULL;
-   delete [] ivartype_;     ivartype_    = NULL;
-   delete [] vartype_;      vartype_     = NULL;
+  delete[] ivarind_;
+  ivarind_ = NULL;
+  delete[] ivartype_;
+  ivartype_ = NULL;
+  delete[] vartype_;
+  vartype_ = NULL;
 }
 
 //-------------------------------------------------------------------
 // Set up lists of integer variables
 //-------------------------------------------------------------------
-int
-OsiXprSolverInterface::getNumIntVars() const
+int OsiXprSolverInterface::getNumIntVars() const
 {
-  int     nintvars = 0, nsets = 0;
-  
-  if ( isDataLoaded() ) {  
-    
-      XPRS_CHECKED( XPRSgetglobal, (prob_,&nintvars, &nsets, 
-      NULL, NULL, NULL, NULL, NULL, NULL, NULL) );
+  int nintvars = 0, nsets = 0;
+
+  if (isDataLoaded()) {
+
+    XPRS_CHECKED(XPRSgetglobal, (prob_, &nintvars, &nsets, NULL, NULL, NULL, NULL, NULL, NULL, NULL));
   }
-  
+
   return nintvars;
 }
 
-void
-OsiXprSolverInterface::getVarTypes() const
+void OsiXprSolverInterface::getVarTypes() const
 {
-   int     nintvars = getNumIntVars();
-   int     nsets;
-   int     ncols = getNumCols();
+  int nintvars = getNumIntVars();
+  int nsets;
+  int ncols = getNumCols();
 
-   if ( vartype_ == NULL && nintvars > 0 ) {
-   
-    if (getLogFilePtr()!=NULL) {
-      fprintf(getLogFilePtr(),"{\n");
-      fprintf(getLogFilePtr(),"   int nintvars = %d;\n",nintvars);
-      fprintf(getLogFilePtr(),"   int nsets;\n");
-      fprintf(getLogFilePtr(),"   char ivartype[%d];\n",nintvars);
-      fprintf(getLogFilePtr(),"   char ivarind[%d];\n",nintvars);
-      fprintf(getLogFilePtr(),"}\n");
+  if (vartype_ == NULL && nintvars > 0) {
+
+    if (getLogFilePtr() != NULL) {
+      fprintf(getLogFilePtr(), "{\n");
+      fprintf(getLogFilePtr(), "   int nintvars = %d;\n", nintvars);
+      fprintf(getLogFilePtr(), "   int nsets;\n");
+      fprintf(getLogFilePtr(), "   char ivartype[%d];\n", nintvars);
+      fprintf(getLogFilePtr(), "   char ivarind[%d];\n", nintvars);
+      fprintf(getLogFilePtr(), "}\n");
     }
 
-      ivartype_ = new char[nintvars];
-      ivarind_  = new int[nintvars];
+    ivartype_ = new char[nintvars];
+    ivarind_ = new int[nintvars];
 
-      XPRS_CHECKED( XPRSgetglobal, (prob_,&nintvars, &nsets, 
-		ivartype_, ivarind_, NULL, NULL, NULL, NULL, NULL) );
-      // Currently, only binary and integer vars are supported.
+    XPRS_CHECKED(XPRSgetglobal, (prob_, &nintvars, &nsets, ivartype_, ivarind_, NULL, NULL, NULL, NULL, NULL));
+    // Currently, only binary and integer vars are supported.
 
-      vartype_  = new char[ncols];
+    vartype_ = new char[ncols];
 
-      int     i, j;
-      for ( i = j = 0;  j < ncols;  j++ ) {
-	 if ( i < nintvars && j == ivarind_[i] ) {
-	    vartype_[j] = ivartype_[i];
-	    i++;
-	 } else 
-	    vartype_[j] = 'C';
-      }
-   }
+    int i, j;
+    for (i = j = 0; j < ncols; j++) {
+      if (i < nintvars && j == ivarind_[i]) {
+        vartype_[j] = ivartype_[i];
+        i++;
+      } else
+        vartype_[j] = 'C';
+    }
+  }
 }
 
-
-bool
-OsiXprSolverInterface::isDataLoaded() const
+bool OsiXprSolverInterface::isDataLoaded() const
 {
   int istatus;
 
-  XPRS_CHECKED( XPRSgetintattrib, ( prob_, XPRS_MIPSTATUS, &istatus ) );
+  XPRS_CHECKED(XPRSgetintattrib, (prob_, XPRS_MIPSTATUS, &istatus));
   istatus &= XPRS_MIP_NOT_LOADED;
 
   return istatus == 0;
-
 }
 
 //#############################################################################
+
+/* vi: softtabstop=2 shiftwidth=2 expandtab tabstop=2
+*/

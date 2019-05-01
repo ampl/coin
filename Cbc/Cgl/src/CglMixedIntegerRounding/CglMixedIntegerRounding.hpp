@@ -245,12 +245,12 @@ private:
 			const double* LHS,
 			const double* coefByRow,
 			const int* colInds,
-			const int* rowStarts,
+			const CoinBigIndex* rowStarts,
 			const int* rowLengths,
 			//const CoinPackedMatrix& matrixByCol,
 			const double* coefByCol,
 			const int* rowInds,
-			const int* colStarts,
+			const CoinBigIndex* colStarts,
 			const int* colLengths,
 			OsiCuts& cs ) const;
 
@@ -274,7 +274,7 @@ private:
 			     const double* colLowerBound,
 			     const std::set<int>& setRowsAggregated,
 			     const double* xlp, const double* coefByCol,
-			     const int* rowInds, const int* colStarts,
+			     const int* rowInds, const CoinBigIndex* colStarts,
 			     const int* colLengths,
 			     int& rowSelected,
 			     int& colSelected ) const;
