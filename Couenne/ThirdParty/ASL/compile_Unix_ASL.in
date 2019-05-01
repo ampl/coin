@@ -47,7 +47,7 @@ sed -e "/sysdetails_ASL/s/System_details/$sys_details/" details.c0 > details.c
 # flags. makefile.u hardwires `ar' and sets ARFLAGS = ruv. Since we trash the
 # entire build and start from scratch, the `u' in ruv stands for `useless'.
 
-sed -e 's/ ar / @AR@ /g' \
+sed -e 's# ar # @AR@ #g' \
     -e 's/^ARFLAGS =/# ARFLAGS =/' < makefile.u > makefile.coin
 
 # If we're in a fake unix environment on a Windows box, the default compiler

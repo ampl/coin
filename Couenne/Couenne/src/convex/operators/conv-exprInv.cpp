@@ -1,4 +1,4 @@
-/* $Id: conv-exprInv.cpp 577 2011-05-21 20:38:48Z pbelotti $
+/* $Id: conv-exprInv.cpp 1248 2018-03-18 17:54:11Z pbelotti $
  *
  * Name:    conv-exprInv.cpp
  * Author:  Pietro Belotti
@@ -58,7 +58,7 @@ void exprInv::getBounds (CouNumber &lb, CouNumber &ub) {
 
   argument_ -> getBounds (lba, uba);
 
-  if ((uba < 0) || (lba > 0)) {
+  if ((uba < -COUENNE_EPS) || (lba > COUENNE_EPS)) {
     lb = 1./uba;
     ub = 1./lba;
   } else {

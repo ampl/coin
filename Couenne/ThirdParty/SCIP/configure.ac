@@ -10,7 +10,7 @@
 
 AC_PREREQ(2.59)
 
-AC_INIT([ThirdPartyScip],[1.3.0],[http://projects.coin-or.org/BuildTools/newticket])
+AC_INIT([ThirdPartyScip],[1.8.0],[http://projects.coin-or.org/BuildTools/newticket])
 
 AC_COPYRIGHT([
 Copyright 2011-2012 Stefan Vigerske and others.
@@ -28,7 +28,7 @@ AC_CONFIG_SRCDIR(scip/src/scip/scip.h)
 # /usr/local.
 AC_PREFIX_DEFAULT([`pwd`])
 
-AC_COIN_PROJECTDIR_INIT(SCIP,4:0:3)
+AC_COIN_PROJECTDIR_INIT(SCIP,9:0:8)
 
 #############################################################################
 #                         Standard build tool stuff                         #
@@ -57,8 +57,8 @@ AC_MSG_CHECKING([SCIP version])
 scipver=`awk '/define SCIP_VERSION/ {print $3}' ${srcdir}/scip/src/scip/def.h`
 scipsubver=`awk '/define SCIP_SUBVERSION/ {print $3}' ${srcdir}/scip/src/scip/def.h`
 AC_MSG_RESULT([${scipver}.${scipsubver}])
-if test $scipver -lt 310 -o $scipver -ge 320 ; then
-  AC_MSG_ERROR(["Incorrect SCIP version. This build system is made for SCIP 3.1.x"])
+if test $scipver -lt 600 -o $scipver -ge 610 ; then
+  AC_MSG_ERROR(["Incorrect SCIP version. This build system is made for SCIP 5.0.x"])
 fi
 
 #############################################################################
@@ -106,7 +106,7 @@ case "$scip_lpsolver" in
     if test "$coin_has_soplex" = no ; then
       AC_MSG_ERROR(["LP solver SoPlex not available.])
     fi
-    AC_DEFINE(SCIP_LPISW_LPDEFAULT, SCIP_LPISW_SOPLEX, [Default LP solver in SCIP])
+    AC_DEFINE(SCIP_LPISW_LPDEFAULT, SCIP_LPISW_SOPLEX2, [Default LP solver in SCIP])
   ;;
   soplex2)
     if test "$coin_has_soplex" = no ; then
@@ -166,7 +166,7 @@ AC_COIN_CHECK_PACKAGE(Ipopt, ipopt, SCIPLib)
 #                       Check for system header and libraries               #
 #############################################################################
 
-EXTRAFLAGS="-DWITH_SCIPDEF"
+EXTRAFLAGS="-DWITH_SCIPDEF -DNO_CONFIG_HEADER"
 
 AC_ARG_ENABLE([scip-threadsafe],
   AS_HELP_STRING([--disable-scip-threadsafe],[do not build SCIP threadsafe (default=auto)]),
@@ -191,40 +191,72 @@ fi
 
 AC_COIN_CHECK_GNU_ZLIB(SCIPlib)
 if test $coin_has_zlib = "yes"; then
-  EXTRAFLAGS="$EXTRAFLAGS -DWITH_ZLIB"  
+  EXTRAFLAGS="$EXTRAFLAGS -DWITH_ZLIB -DSCIP_WITH_ZLIB"  
 fi
 
 AC_COIN_CHECK_GMP(SCIPLib)
 if test $coin_has_gmp = yes; then
-  EXTRAFLAGS="$EXTRAFLAGS -DWITH_GMP"  
+  EXTRAFLAGS="$EXTRAFLAGS -DWITH_GMP -DSCIP_WITH_GMP"  
 fi
 
 AC_COIN_CHECK_GNU_READLINE(SCIPLib)
 if test $coin_has_readline = yes; then
-  EXTRAFLAGS="$EXTRAFLAGS -DWITH_READLINE"  
+  EXTRAFLAGS="$EXTRAFLAGS -DWITH_READLINE -DSCIP_WITH_READLINE"
 fi
 
 AC_CHECK_MEMBER(struct sigaction.sa_handler,,
-  [EXTRAFLAGS="$EXTRAFLAGS -DNO_SIGACTION"],
+  [EXTRAFLAGS="$EXTRAFLAGS -DNO_SIGACTION -DSCIP_NO_SIGACTION"],
   [#include <signal.h>])
     
 AC_CHECK_FUNC(rand_r,,
   [EXTRAFLAGS="$EXTRAFLAGS -DNO_RAND_R"])
     
 AC_CHECK_FUNC(strtok_r,,
-  [EXTRAFLAGS="$EXTRAFLAGS -DNO_STRTOK_R"])
+  [EXTRAFLAGS="$EXTRAFLAGS -DNO_STRTOK_R -DSCIP_NO_STRTOK_R"])
 
 AC_CHECK_FUNC(strerror_r,,
   [EXTRAFLAGS="$EXTRAFLAGS -DNO_STRERROR_R"])
     
-AC_CHECK_HEADER([fenv.h],[EXTRAFLAGS="$EXTRAFLAGS -DROUNDING_FE"],
-  [AC_CHECK_HEADER([float.h],[EXTRAFLAGS="$EXTRAFLAGS -DROUNDING_MS"])])
+AC_CHECK_HEADER([fenv.h],[EXTRAFLAGS="$EXTRAFLAGS -DSCIP_ROUNDING_FE"],
+  [AC_CHECK_HEADER([float.h],[EXTRAFLAGS="$EXTRAFLAGS -DSCIP_ROUNDING_MS"])])
+
+# check if user specifies bliss
+AC_LANG_PUSH(C++)
+AC_COIN_CHECK_USER_LIBRARY([Bliss],[BLISS],[bliss/graph.hh],[bliss_new],,[SCIPLib])
+AC_LANG_POP
+
+# check for bliss system installation
+if test $coin_has_bliss = false ; then
+  AC_LANG_PUSH(C++)
+  AC_CHECK_LIB(bliss, bliss_new,
+    [SCIPLIB_LIBS="$SCIPLIB_LIBS -lbliss"
+     SCIPLIB_PCLIBS="$SCIPLIB_PCLIBS -lbliss"
+     coin_has_bliss=true
+    ])
+  AC_CHECK_HEADER([bliss/orbit.hh],[have_bliss=yes],[have_bliss=no])
+  AC_LANG_POP
+fi
+AM_CONDITIONAL(COIN_HAS_BLISS, [test $coin_has_bliss = true])
+AM_CONDITIONAL(COIN_HAS_BLISSINCDIR, [test -n "$BLISSINCDIR"])
+AC_ARG_ENABLE([bliss-gmp],
+  AS_HELP_STRING([--enable-bliss-gmp],[indicate whether to assume that Bliss was build with GMP (default=yes, if GMP available, otherwise no)]),
+  [bliss_has_gmp=$enableval],
+  [bliss_has_gmp=$coin_has_gmp])
+if test $bliss_has_gmp = yes ;
+then
+  EXTRAFLAGS="$EXTRAFLAGS -DBLISS_USE_GMP"
+fi
 
 case "$CC" in
   *gcc* )
     EXTRAFLAGS="$EXTRAFLAGS -Wno-overlength-strings"
     ;;
 esac
+
+# recent autotools versions can recognize OpenMP with the following macro
+# this would be useful to set TPI
+# AC_OPENMP
+EXTRAFLAGS="$EXTRAFLAGS -DTPI_NONE"
 
 CFLAGS="$CFLAGS $EXTRAFLAGS"
 CXXFLAGS="$CXXFLAGS $EXTRAFLAGS"

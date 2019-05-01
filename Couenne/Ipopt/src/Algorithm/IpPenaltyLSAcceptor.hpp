@@ -2,7 +2,7 @@
 // All Rights Reserved.
 // This code is published under the Eclipse Public License.
 //
-// $Id: IpPenaltyLSAcceptor.hpp 1861 2010-12-21 21:34:47Z andreasw $
+// $Id: IpPenaltyLSAcceptor.hpp 2613 2015-11-04 14:42:02Z stefan $
 //
 // Authors:  Andreas Waechter                 IBM    2008-04-04
 //               derived file from IpFilterLSAcceptor.hpp
@@ -157,6 +157,8 @@ namespace Ipopt
      *  multiple second order correction steps \f$ \kappa_{soc}\f$.
      */
     Number kappa_soc_;
+    /** Second method correction method */
+    Index soc_method_;
     //@}
 
     /** @name Information related to watchdog procedure */

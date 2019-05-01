@@ -2,7 +2,7 @@
  * All Rights Reserved.
  * This code is published under the Eclipse Public License.
  *
- * $Id: CbcConfig.h 1854 2013-01-28 00:02:55Z stefan $
+ * $Id: CbcConfig.h 2465 2019-01-03 19:26:52Z unxusr $
  *
  * Include file for the configuration of Cbc.
  *
@@ -43,3 +43,6 @@
 #endif /* HAVE_CONFIG_H */
 
 #endif /*__CBCCONFIG_H__*/
+
+/* vi: softtabstop=2 shiftwidth=2 expandtab tabstop=2
+*/

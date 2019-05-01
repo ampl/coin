@@ -2,7 +2,7 @@
 // All Rights Reserved.
 // This code is published under the Eclipse Public License.
 //
-// $Id: IpOptionsList.hpp 1861 2010-12-21 21:34:47Z andreasw $
+// $Id: IpOptionsList.hpp 2613 2015-11-04 14:42:02Z stefan $
 //
 // Authors:  Carl Laird, Andreas Waechter     IBM    2004-08-13
 
@@ -232,7 +232,7 @@ namespace Ipopt
 
     /** Read options from the stream is.  Returns false if
      *  an error was encountered. */
-    virtual bool ReadFromStream(const Journalist& jnlst, std::istream& is);
+    virtual bool ReadFromStream(const Journalist& jnlst, std::istream& is, bool allow_clobber = false);
 
   private:
     /**@name Default Compiler Generated Methods

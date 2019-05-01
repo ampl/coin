@@ -2,7 +2,7 @@
 // All Rights Reserved.
 // This code is published under the Eclipse Public License.
 //
-// $Id: CoinSmartPtr.hpp 1520 2012-01-29 00:43:31Z tkr $
+// $Id: CoinSmartPtr.hpp 2083 2019-01-06 19:38:09Z unxusr $
 //
 // Authors:  Carl Laird, Andreas Waechter     IBM    2004-08-13
 // Removed lots of debugging stuff and reformatted: Laszlo Ladanyi, IBM
@@ -16,9 +16,9 @@
 
 namespace Coin {
 
-    //#########################################################################
+//#########################################################################
 
-    /** ReferencedObject class.
+/** ReferencedObject class.
      * This is part of the implementation of an intrusive smart pointer 
      * design. This class stores the reference count of all the smart
      * pointers that currently reference it. See the documentation for
@@ -154,30 +154,32 @@ namespace Coin {
      * technique where the reference count is stored in the object being
      * referenced. 
      */
-    class ReferencedObject {
-    public:
-	ReferencedObject() : reference_count_(0) {}
-	virtual ~ReferencedObject()       { assert(reference_count_ == 0); }
-	inline int ReferenceCount() const { return reference_count_; }
-	inline void AddRef() const        { ++reference_count_; }
-	inline void ReleaseRef() const    { --reference_count_; }
+class ReferencedObject {
+public:
+  ReferencedObject()
+    : reference_count_(0)
+  {
+  }
+  virtual ~ReferencedObject() { assert(reference_count_ == 0); }
+  inline int ReferenceCount() const { return reference_count_; }
+  inline void AddRef() const { ++reference_count_; }
+  inline void ReleaseRef() const { --reference_count_; }
 
-    private:
-	mutable int reference_count_;
-    };
+private:
+  mutable int reference_count_;
+};
 
-    //#########################################################################
-
+//#########################################################################
 
 //#define IP_DEBUG_SMARTPTR
 #if COIN_IPOPT_CHECKLEVEL > 2
-# define IP_DEBUG_SMARTPTR
+#define IP_DEBUG_SMARTPTR
 #endif
 #ifdef IP_DEBUG_SMARTPTR
-# include "IpDebug.hpp"
+#include "IpDebug.hpp"
 #endif
 
-    /** Template class for Smart Pointers.
+/** Template class for Smart Pointers.
      * A SmartPtr behaves much like a raw pointer, but manages the lifetime 
      * of an object, deleting the object automatically. This class implements
      * a reference-counting, intrusive smart pointer design, where all
@@ -315,173 +317,182 @@ namespace Coin {
      * technique where the reference count is stored in the object being
      * referenced. 
      */
-    template <class T>
-    class SmartPtr {
-    public:
-	/** Returns the raw pointer contained.  Use to get the value of the
+template < class T >
+class SmartPtr {
+public:
+  /** Returns the raw pointer contained.  Use to get the value of the
 	 * raw ptr (i.e. to pass to other methods/functions, etc.)  Note: This
 	 * method does NOT copy, therefore, modifications using this value
 	 * modify the underlying object contained by the SmartPtr, NEVER
 	 * delete this returned value.
 	 */
-	T* GetRawPtr() const { return ptr_; }
+  T *GetRawPtr() const { return ptr_; }
 
-	/** Returns true if the SmartPtr is NOT NULL.
+  /** Returns true if the SmartPtr is NOT NULL.
 	 * Use this to check if the SmartPtr is not null
 	 * This is preferred to if(GetRawPtr(sp) != NULL)
 	 */
-	bool IsValid() const { return ptr_ != NULL; }
+  bool IsValid() const { return ptr_ != NULL; }
 
-	/** Returns true if the SmartPtr is NULL.
+  /** Returns true if the SmartPtr is NULL.
 	 * Use this to check if the SmartPtr IsNull.
 	 * This is preferred to if(GetRawPtr(sp) == NULL)
 	 */
-	bool IsNull() const { return ptr_ == NULL; }
+  bool IsNull() const { return ptr_ == NULL; }
 
-    private:
-	/**@name Private Data/Methods */
-	//@{
-	/** Actual raw pointer to the object. */
-	T* ptr_;
+private:
+  /**@name Private Data/Methods */
+  //@{
+  /** Actual raw pointer to the object. */
+  T *ptr_;
 
-	/** Release the currently referenced object. */
-	void ReleasePointer_() {
-	    if (ptr_) {
-		ptr_->ReleaseRef();
-		if (ptr_->ReferenceCount() == 0) {
-		    delete ptr_;
-		}
-		ptr_ = NULL;
-	    }
-	}
+  /** Release the currently referenced object. */
+  void ReleasePointer_()
+  {
+    if (ptr_) {
+      ptr_->ReleaseRef();
+      if (ptr_->ReferenceCount() == 0) {
+        delete ptr_;
+      }
+      ptr_ = NULL;
+    }
+  }
 
-	/** Set the value of the internal raw pointer from another raw
+  /** Set the value of the internal raw pointer from another raw
 	 * pointer, releasing the previously referenced object if necessary. */
-	SmartPtr<T>& SetFromRawPtr_(T* rhs){
-	    ReleasePointer_(); // Release any old pointer
-	    if (rhs != NULL) {
-		rhs->AddRef();
-		ptr_ = rhs;
-	    }
-	    return *this;
-	}
+  SmartPtr< T > &SetFromRawPtr_(T *rhs)
+  {
+    ReleasePointer_(); // Release any old pointer
+    if (rhs != NULL) {
+      rhs->AddRef();
+      ptr_ = rhs;
+    }
+    return *this;
+  }
 
-	/** Set the value of the internal raw pointer from a SmartPtr,
+  /** Set the value of the internal raw pointer from a SmartPtr,
 	 * releasing the previously referenced object if necessary. */
-	inline SmartPtr<T>& SetFromSmartPtr_(const SmartPtr<T>& rhs) {
-	    SetFromRawPtr_(rhs.GetRawPtr());
-	    return (*this);
-	}
-	    
-	//@}
+  inline SmartPtr< T > &SetFromSmartPtr_(const SmartPtr< T > &rhs)
+  {
+    SetFromRawPtr_(rhs.GetRawPtr());
+    return (*this);
+  }
 
-    public:
+  //@}
+
+public:
 #define dbg_smartptr_verbosity 0
 
-	/**@name Constructors/Destructors */
-	//@{
-	/** Default constructor, initialized to NULL */
-	SmartPtr() : ptr_(NULL) {}
+  /**@name Constructors/Destructors */
+  //@{
+  /** Default constructor, initialized to NULL */
+  SmartPtr()
+    : ptr_(NULL)
+  {
+  }
 
-	/** Copy constructor, initialized from copy */
-	SmartPtr(const SmartPtr<T>& copy) : ptr_(NULL) {
-	    (void) SetFromSmartPtr_(copy);
-	}
+  /** Copy constructor, initialized from copy */
+  SmartPtr(const SmartPtr< T > &copy)
+    : ptr_(NULL)
+  {
+    (void)SetFromSmartPtr_(copy);
+  }
 
-	/** Constructor, initialized from T* ptr */
-	SmartPtr(T* ptr) :  ptr_(NULL) {
-	    (void) SetFromRawPtr_(ptr);
-	}
+  /** Constructor, initialized from T* ptr */
+  SmartPtr(T *ptr)
+    : ptr_(NULL)
+  {
+    (void)SetFromRawPtr_(ptr);
+  }
 
-	/** Destructor, automatically decrements the reference count, deletes
+  /** Destructor, automatically decrements the reference count, deletes
 	 * the object if necessary.*/
-	~SmartPtr() {
-	    ReleasePointer_();
-	}
-	//@}
+  ~SmartPtr()
+  {
+    ReleasePointer_();
+  }
+  //@}
 
-	/**@name Overloaded operators. */
-	//@{
-	/** Overloaded arrow operator, allows the user to call
+  /**@name Overloaded operators. */
+  //@{
+  /** Overloaded arrow operator, allows the user to call
 	 * methods using the contained pointer. */
-	T* operator->() const {
+  T *operator->() const
+  {
 #if COIN_COINUTILS_CHECKLEVEL > 0
-	    assert(ptr_);
+    assert(ptr_);
 #endif
-	    return ptr_;
-	}
+    return ptr_;
+  }
 
-	/** Overloaded dereference operator, allows the user
+  /** Overloaded dereference operator, allows the user
 	 * to dereference the contained pointer. */
-	T& operator*() const {
+  T &operator*() const
+  {
 #if COIN_IPOPT_CHECKLEVEL > 0
-	    assert(ptr_);
+    assert(ptr_);
 #endif
-	    return *ptr_;
-	}
+    return *ptr_;
+  }
 
-	/** Overloaded equals operator, allows the user to
+  /** Overloaded equals operator, allows the user to
 	 * set the value of the SmartPtr from a raw pointer */
-	SmartPtr<T>& operator=(T* rhs) {
-	    return SetFromRawPtr_(rhs);
-	}
+  SmartPtr< T > &operator=(T *rhs)
+  {
+    return SetFromRawPtr_(rhs);
+  }
 
-	/** Overloaded equals operator, allows the user to
+  /** Overloaded equals operator, allows the user to
 	 * set the value of the SmartPtr from another 
 	 * SmartPtr */
-	SmartPtr<T>& operator=(const SmartPtr<T>& rhs) {
-	     return SetFromSmartPtr_(rhs);
-	}
+  SmartPtr< T > &operator=(const SmartPtr< T > &rhs)
+  {
+    return SetFromSmartPtr_(rhs);
+  }
 
-	/** Overloaded equality comparison operator, allows the
+  /** Overloaded equality comparison operator, allows the
 	 * user to compare the value of two SmartPtrs */
-	template <class U1, class U2>
-	friend
-	bool operator==(const SmartPtr<U1>& lhs, const SmartPtr<U2>& rhs);
+  template < class U1, class U2 >
+  friend bool operator==(const SmartPtr< U1 > &lhs, const SmartPtr< U2 > &rhs);
 
-	/** Overloaded equality comparison operator, allows the
+  /** Overloaded equality comparison operator, allows the
 	 * user to compare the value of a SmartPtr with a raw pointer. */
-	template <class U1, class U2>
-	friend
-	bool operator==(const SmartPtr<U1>& lhs, U2* raw_rhs);
+  template < class U1, class U2 >
+  friend bool operator==(const SmartPtr< U1 > &lhs, U2 *raw_rhs);
 
-	/** Overloaded equality comparison operator, allows the
+  /** Overloaded equality comparison operator, allows the
 	 * user to compare the value of a raw pointer with a SmartPtr. */
-	template <class U1, class U2>
-	friend
-	bool operator==(U1* lhs, const SmartPtr<U2>& raw_rhs);
+  template < class U1, class U2 >
+  friend bool operator==(U1 *lhs, const SmartPtr< U2 > &raw_rhs);
 
-	/** Overloaded in-equality comparison operator, allows the
+  /** Overloaded in-equality comparison operator, allows the
 	 * user to compare the value of two SmartPtrs */
-	template <class U1, class U2>
-	friend
-	bool operator!=(const SmartPtr<U1>& lhs, const SmartPtr<U2>& rhs);
+  template < class U1, class U2 >
+  friend bool operator!=(const SmartPtr< U1 > &lhs, const SmartPtr< U2 > &rhs);
 
-	/** Overloaded in-equality comparison operator, allows the
+  /** Overloaded in-equality comparison operator, allows the
 	 * user to compare the value of a SmartPtr with a raw pointer. */
-	template <class U1, class U2>
-	friend
-	bool operator!=(const SmartPtr<U1>& lhs, U2* raw_rhs);
+  template < class U1, class U2 >
+  friend bool operator!=(const SmartPtr< U1 > &lhs, U2 *raw_rhs);
 
-	/** Overloaded in-equality comparison operator, allows the
+  /** Overloaded in-equality comparison operator, allows the
 	 * user to compare the value of a SmartPtr with a raw pointer. */
-	template <class U1, class U2>
-	friend
-	bool operator!=(U1* lhs, const SmartPtr<U2>& raw_rhs);
-	//@}
+  template < class U1, class U2 >
+  friend bool operator!=(U1 *lhs, const SmartPtr< U2 > &raw_rhs);
+  //@}
+};
 
-    };
-
-    template <class U1, class U2>
-    bool ComparePointers(const U1* lhs, const U2* rhs) {
-	if (lhs == rhs) {
-	    return true;
-	}
-	// If lhs and rhs point to the same object with different interfaces
-	// U1 and U2, we cannot guarantee that the value of the pointers will
-	// be equivalent. We can guarantee this if we convert to void*.
-	return static_cast<const void*>(lhs) == static_cast<const void*>(rhs);
-    }
+template < class U1, class U2 >
+bool ComparePointers(const U1 *lhs, const U2 *rhs)
+{
+  if (lhs == rhs) {
+    return true;
+  }
+  // If lhs and rhs point to the same object with different interfaces
+  // U1 and U2, we cannot guarantee that the value of the pointers will
+  // be equivalent. We can guarantee this if we convert to void*.
+  return static_cast< const void * >(lhs) == static_cast< const void * >(rhs);
+}
 
 } // namespace Coin
 
@@ -490,39 +501,48 @@ namespace Coin {
 /**@name SmartPtr friends that are overloaded operators, so they are not in
    the Coin namespace. */
 //@{
-template <class U1, class U2>
-bool operator==(const Coin::SmartPtr<U1>& lhs, const Coin::SmartPtr<U2>& rhs) {
-    return Coin::ComparePointers(lhs.GetRawPtr(), rhs.GetRawPtr());
+template < class U1, class U2 >
+bool operator==(const Coin::SmartPtr< U1 > &lhs, const Coin::SmartPtr< U2 > &rhs)
+{
+  return Coin::ComparePointers(lhs.GetRawPtr(), rhs.GetRawPtr());
 }
 
-template <class U1, class U2>
-bool operator==(const Coin::SmartPtr<U1>& lhs, U2* raw_rhs) {
-    return Coin::ComparePointers(lhs.GetRawPtr(), raw_rhs);
+template < class U1, class U2 >
+bool operator==(const Coin::SmartPtr< U1 > &lhs, U2 *raw_rhs)
+{
+  return Coin::ComparePointers(lhs.GetRawPtr(), raw_rhs);
 }
 
-template <class U1, class U2>
-bool operator==(U1* raw_lhs, const Coin::SmartPtr<U2>& rhs) {
-    return Coin::ComparePointers(raw_lhs, rhs.GetRawPtr());
+template < class U1, class U2 >
+bool operator==(U1 *raw_lhs, const Coin::SmartPtr< U2 > &rhs)
+{
+  return Coin::ComparePointers(raw_lhs, rhs.GetRawPtr());
 }
 
-template <class U1, class U2>
-bool operator!=(const Coin::SmartPtr<U1>& lhs, const Coin::SmartPtr<U2>& rhs) {
-    return ! operator==(lhs, rhs);
+template < class U1, class U2 >
+bool operator!=(const Coin::SmartPtr< U1 > &lhs, const Coin::SmartPtr< U2 > &rhs)
+{
+  return !operator==(lhs, rhs);
 }
 
-template <class U1, class U2>
-bool operator!=(const Coin::SmartPtr<U1>& lhs, U2* raw_rhs) {
-    return ! operator==(lhs, raw_rhs);
+template < class U1, class U2 >
+bool operator!=(const Coin::SmartPtr< U1 > &lhs, U2 *raw_rhs)
+{
+  return !operator==(lhs, raw_rhs);
 }
 
-template <class U1, class U2>
-bool operator!=(U1* raw_lhs, const Coin::SmartPtr<U2>& rhs) {
-    return ! operator==(raw_lhs, rhs);
+template < class U1, class U2 >
+bool operator!=(U1 *raw_lhs, const Coin::SmartPtr< U2 > &rhs)
+{
+  return !operator==(raw_lhs, rhs);
 }
 //@}
 
 #define CoinReferencedObject Coin::ReferencedObject
-#define CoinSmartPtr         Coin::SmartPtr
-#define CoinComparePointers  Coin::ComparePointers
+#define CoinSmartPtr Coin::SmartPtr
+#define CoinComparePointers Coin::ComparePointers
 
 #endif
+
+/* vi: softtabstop=2 shiftwidth=2 expandtab tabstop=2
+*/

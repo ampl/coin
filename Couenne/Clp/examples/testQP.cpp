@@ -1,4 +1,4 @@
-/* $Id: testQP.cpp 2001 2013-11-30 13:13:58Z stefan $ */
+/* $Id: testQP.cpp 2278 2017-10-02 09:51:14Z forrest $ */
 // Copyright (C) 2005, International Business Machines
 // Corporation and others.  All Rights Reserved.
 // This code is licensed under the terms of the Eclipse Public License (EPL).
@@ -37,14 +37,14 @@ int main(int argc, const char *argv[])
                             m.getObjCoefficients(),
                             m.getRowLower(), m.getRowUpper());
           // get quadratic part
-          int * start = NULL;
+          CoinBigIndex * start = NULL;
           int * column = NULL;
           double * element = NULL;
           m.readQuadraticMps(NULL, start, column, element, 2);
           int j;
           for (j = 0; j < 79; j++) {
                if (start[j] < start[j+1]) {
-                    int i;
+                    CoinBigIndex i;
                     printf("Column %d ", j);
                     for (i = start[j]; i < start[j+1]; i++) {
                          printf("( %d, %g) ", column[i], element[i]);

@@ -1,4 +1,4 @@
-/* $Id: sprint.cpp 1937 2013-04-09 10:32:15Z forrest $ */
+/* $Id: sprint.cpp 2278 2017-10-02 09:51:14Z forrest $ */
 // Copyright (C) 2003, International Business Machines
 // Corporation and others.  All Rights Reserved.
 // This code is licensed under the terms of the Eclipse Public License (EPL).
@@ -65,7 +65,7 @@ int main(int argc, const char *argv[])
           memset(rowSolution, 0, numberRows * sizeof(double));
           model.times(1.0, columnSolution, rowSolution);
 
-          int * addStarts = new int [numberRows+1];
+          CoinBigIndex * addStarts = new CoinBigIndex [numberRows+1];
           int * addRow = new int[numberRows];
           double * addElement = new double[numberRows];
           const double * lower = model.rowLower();

@@ -1,4 +1,4 @@
-// $Id: CglOddHole.cpp 1120 2013-04-06 20:34:40Z stefan $
+// $Id: CglOddHole.cpp 1387 2017-09-29 11:02:03Z forrest $
 // Copyright (C) 2000, International Business Machines
 // Corporation and others.  All Rights Reserved.
 // This code is licensed under the terms of the Eclipse Public License (EPL).
@@ -94,7 +94,7 @@ void CglOddHole::generateCuts(const OsiSolverInterface & si, OsiCuts & cs,
   const double * rowupper = si.getRowUpper();
   for (i=0;i<nRows;i++) {
     if (suitable[i]) {
-      int k;
+      CoinBigIndex k;
       double sum=0.0;
       if (rowupper[i]>1.001) suitable[i]=-1;
       for (k=rowStart[i]; k<rowStart[i]+rowLength[i];k++) {
@@ -120,7 +120,7 @@ void CglOddHole::generateCuts(const OsiSolverInterface & si, OsiCuts & cs,
   for (i=0;i<nRows;i++) {
     suitable[i]=abs(suitable[i]);
     if (suitable[i]) {
-      int k;
+      CoinBigIndex k;
       double sum=0.0;
       if (rowlower[i]<0.999) sum=2.0;
       if (rowupper[i]>1.001) doCover=true;
@@ -214,7 +214,7 @@ void CglOddHole::generateCuts(const OsiRowCutDebugger * /*debugger*/,
     int icol=lookup[i];
     if (icol>=0) {
       // column in compressed matrix
-      int k;
+      CoinBigIndex k;
       double dd=1.0000001-solution[i];
       mark[icol]=1;
       // reallocate if matrix reached size limit
@@ -230,7 +230,7 @@ void CglOddHole::generateCuts(const OsiRowCutDebugger * /*debugger*/,
 	int jrow=mrow[irow];
 	// but only if row in compressed matrix
 	if (jrow>=0) {
-	  int j;
+	  CoinBigIndex j;
 	  for (j=rowStart[irow];j<rowStart[irow]+rowLength[irow];j++) {
 	    int jcol=column[j];
 	    int kcol=lookup[jcol];
@@ -439,7 +439,8 @@ void CglOddHole::generateCuts(const OsiRowCutDebugger * /*debugger*/,
 	if (good) {
 	  int nincut=0;
 	  for (k=0;k<nrow2;k++) {
-	    int j,irow=mrow[k];
+	    CoinBigIndex j;
+	    int irow=mrow[k];
 	    for (j=rowStart[irow];j<rowStart[irow]+rowLength[irow];j++) {
 	      int icol=column[j];
 	      if (!countcol[icol]) candidate[nincut++]=icol;
@@ -625,7 +626,7 @@ void CglOddHole::createRowList( const OsiSolverInterface & si,
     double rhs1=rowupper[rowIndex];
     double rhs2=rowlower[rowIndex];
     if (suitableRows_[rowIndex]) {
-      int i;
+      CoinBigIndex i;
       bool goodRow=true;
       for (i=rowStart[rowIndex];
 	   i<rowStart[rowIndex]+rowLength[rowIndex];i++) {

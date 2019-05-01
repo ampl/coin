@@ -865,8 +865,8 @@ distclean-generic:
 maintainer-clean-generic:
 	@echo "This command is intended for maintainers to use"
 	@echo "it deletes files that may require special tools to rebuild."
-@BUILD_COINHSL_FALSE@install-exec-local:
 @BUILD_COINHSL_FALSE@uninstall-local:
+@BUILD_COINHSL_FALSE@install-exec-local:
 clean: clean-am
 
 clean-am: clean-generic clean-libLTLIBRARIES clean-libtool \

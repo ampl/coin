@@ -1,4 +1,4 @@
-// $Id: CbcBranchDefaultDecision.hpp 1899 2013-04-09 18:12:08Z stefan $
+// $Id: CbcBranchDefaultDecision.hpp 2465 2019-01-03 19:26:52Z unxusr $
 // Copyright (C) 2002, International Business Machines
 // Corporation and others.  All Rights Reserved.
 // This code is licensed under the terms of the Eclipse Public License (EPL).
@@ -17,21 +17,21 @@
 
 class CbcBranchDefaultDecision : public CbcBranchDecision {
 public:
-    // Default Constructor
-    CbcBranchDefaultDecision ();
+  // Default Constructor
+  CbcBranchDefaultDecision();
 
-    // Copy constructor
-    CbcBranchDefaultDecision ( const CbcBranchDefaultDecision &);
+  // Copy constructor
+  CbcBranchDefaultDecision(const CbcBranchDefaultDecision &);
 
-    virtual ~CbcBranchDefaultDecision();
+  virtual ~CbcBranchDefaultDecision();
 
-    /// Clone
-    virtual CbcBranchDecision * clone() const;
+  /// Clone
+  virtual CbcBranchDecision *clone() const;
 
-    /// Initialize, <i>e.g.</i> before the start of branch selection at a node
-    virtual void initialize(CbcModel * model);
+  /// Initialize, <i>e.g.</i> before the start of branch selection at a node
+  virtual void initialize(CbcModel *model);
 
-    /** \brief Compare two branching objects. Return nonzero if \p thisOne is
+  /** \brief Compare two branching objects. Return nonzero if \p thisOne is
            better than \p bestSoFar.
 
       The routine compares branches using the values supplied in \p numInfUp and
@@ -50,51 +50,52 @@ public:
       branching candidate (#bestObject_) as well as the values used in the
       comparison, the parameter \p bestSoFar is redundant, hence unused.
     */
-    virtual int betterBranch(CbcBranchingObject * thisOne,
-                             CbcBranchingObject * bestSoFar,
-                             double changeUp, int numInfUp,
-                             double changeDn, int numInfDn);
-    /** Sets or gets best criterion so far */
-    virtual void setBestCriterion(double value);
-    virtual double getBestCriterion() const;
+  virtual int betterBranch(CbcBranchingObject *thisOne,
+    CbcBranchingObject *bestSoFar,
+    double changeUp, int numInfUp,
+    double changeDn, int numInfDn);
+  /** Sets or gets best criterion so far */
+  virtual void setBestCriterion(double value);
+  virtual double getBestCriterion() const;
 
-    /** \brief Compare N branching objects. Return index of best
+  /** \brief Compare N branching objects. Return index of best
         and sets way of branching in chosen object.
 
       This routine is used only after strong branching.
     */
 
-    virtual int
-    bestBranch (CbcBranchingObject ** objects, int numberObjects, int numberUnsatisfied,
-                double * changeUp, int * numberInfeasibilitiesUp,
-                double * changeDown, int * numberInfeasibilitiesDown,
-                double objectiveValue) ;
+  virtual int
+  bestBranch(CbcBranchingObject **objects, int numberObjects, int numberUnsatisfied,
+    double *changeUp, int *numberInfeasibilitiesUp,
+    double *changeDown, int *numberInfeasibilitiesDown,
+    double objectiveValue);
+
 private:
+  /// Illegal Assignment operator
+  CbcBranchDefaultDecision &operator=(const CbcBranchDefaultDecision &rhs);
 
-    /// Illegal Assignment operator
-    CbcBranchDefaultDecision & operator=(const CbcBranchDefaultDecision& rhs);
+  /// data
 
-    /// data
+  /// "best" so far
+  double bestCriterion_;
 
-    /// "best" so far
-    double bestCriterion_;
+  /// Change up for best
+  double bestChangeUp_;
 
-    /// Change up for best
-    double bestChangeUp_;
+  /// Number of infeasibilities for up
+  int bestNumberUp_;
 
-    /// Number of infeasibilities for up
-    int bestNumberUp_;
+  /// Change down for best
+  double bestChangeDown_;
 
-    /// Change down for best
-    double bestChangeDown_;
+  /// Pointer to best branching object
+  CbcBranchingObject *bestObject_;
 
-    /// Pointer to best branching object
-    CbcBranchingObject * bestObject_;
-
-    /// Number of infeasibilities for down
-    int bestNumberDown_;
-
+  /// Number of infeasibilities for down
+  int bestNumberDown_;
 };
 
 #endif
 
+/* vi: softtabstop=2 shiftwidth=2 expandtab tabstop=2
+*/

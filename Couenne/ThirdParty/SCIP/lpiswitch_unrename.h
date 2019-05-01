@@ -11,6 +11,10 @@
 #undef SCIPlpiGetSolverName
 #undef SCIPlpiGetSolverDesc
 #undef SCIPlpiGetSolverPointer
+#undef SCIPlpiSetIntegralityInformation
+#undef SCIPlpiHasPrimalSolve
+#undef SCIPlpiHasDualSolve
+#undef SCIPlpiHasBarrierSolve
 #undef SCIPlpiCreate
 #undef SCIPlpiFree
 #undef SCIPlpiLoadColLP

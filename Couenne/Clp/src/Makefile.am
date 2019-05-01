@@ -2,7 +2,7 @@
 # All Rights Reserved.
 # This file is distributed under the Eclipse Public License.
 
-## $Id: Makefile.am 2030 2014-04-15 15:54:11Z forrest $
+## $Id: Makefile.am 2235 2017-01-03 15:44:15Z forrest $
 
 # Author:  Andreas Waechter           IBM    2006-04-13
 
@@ -65,7 +65,13 @@ libClp_la_SOURCES = \
 	ClpSimplexPrimal.cpp ClpSimplexPrimal.hpp \
 	ClpSolve.cpp ClpSolve.hpp \
 	Idiot.cpp Idiot.hpp \
-	IdiSolve.cpp
+	IdiSolve.cpp \
+	ClpCholeskyPardiso.cpp ClpCholeskyPardiso.hpp \
+	ClpPESimplex.cpp ClpPESimplex.hpp \
+        ClpPEPrimalColumnDantzig.cpp ClpPEPrimalColumnDantzig.hpp \
+ 	ClpPEPrimalColumnSteepest.cpp ClpPEPrimalColumnSteepest.hpp \
+ 	ClpPEDualRowDantzig.cpp ClpPEDualRowDantzig.hpp \
+ 	ClpPEDualRowSteepest.cpp ClpPEDualRowSteepest.hpp
 
 if COIN_HAS_ABC
 libClp_la_SOURCES += \
@@ -236,7 +242,13 @@ includecoin_HEADERS = \
 	ClpSimplexPrimal.hpp \
 	ClpSolve.hpp \
 	CbcOrClpParam.hpp \
-	Idiot.hpp
+	Idiot.hpp \
+	ClpCholeskyPardiso.hpp \
+	ClpPESimplex.hpp \
+        ClpPEPrimalColumnDantzig.hpp \
+        ClpPEPrimalColumnSteepest.hpp \
+        ClpPEDualRowDantzig.hpp \
+        ClpPEDualRowSteepest.hpp
 
 if COIN_HAS_ABC
 includecoin_HEADERS += AbcSimplex.hpp CoinAbcCommon.hpp AbcCommon.hpp AbcNonLinearCost.hpp

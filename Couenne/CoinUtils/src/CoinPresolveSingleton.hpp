@@ -1,12 +1,12 @@
-/* $Id: CoinPresolveSingleton.hpp 1498 2011-11-02 15:25:35Z mjs $ */
+/* $Id: CoinPresolveSingleton.hpp 2083 2019-01-06 19:38:09Z unxusr $ */
 // Copyright (C) 2002, International Business Machines
 // Corporation and others.  All Rights Reserved.
 // This code is licensed under the terms of the Eclipse Public License (EPL).
 
 #ifndef CoinPresolveSingleton_H
 #define CoinPresolveSingleton_H
-#define	SLACK_DOUBLETON	2
-#define	SLACK_SINGLETON	8
+#define SLACK_DOUBLETON 2
+#define SLACK_SINGLETON 8
 
 /*!
   \file
@@ -39,14 +39,15 @@ class slack_doubleton_action : public CoinPresolveAction {
   const action *const actions_;
 
   slack_doubleton_action(int nactions,
-			 const action *actions,
-			 const CoinPresolveAction *next) :
-    CoinPresolveAction(next),
-    nactions_(nactions),
-    actions_(actions)
-{}
+    const action *actions,
+    const CoinPresolveAction *next)
+    : CoinPresolveAction(next)
+    , nactions_(nactions)
+    , actions_(actions)
+  {
+  }
 
- public:
+public:
   const char *name() const { return ("slack_doubleton_action"); }
 
   /*! \brief Convert explicit bound constraints to column bounds.
@@ -56,13 +57,12 @@ class slack_doubleton_action : public CoinPresolveAction {
     if candidates remain.
   */
   static const CoinPresolveAction *presolve(CoinPresolveMatrix *prob,
-					   const CoinPresolveAction *next,
-					bool &notFinished);
+    const CoinPresolveAction *next,
+    bool &notFinished);
 
   void postsolve(CoinPostsolveMatrix *prob) const;
 
-
-  virtual ~slack_doubleton_action() { deleteAction(actions_,action*); }
+  virtual ~slack_doubleton_action() { deleteAction(actions_, action *); }
 };
 /*! \class slack_singleton_action
     \brief For variables with one entry
@@ -90,23 +90,26 @@ class slack_singleton_action : public CoinPresolveAction {
   const action *const actions_;
 
   slack_singleton_action(int nactions,
-			 const action *actions,
-			 const CoinPresolveAction *next) :
-    CoinPresolveAction(next),
-    nactions_(nactions),
-    actions_(actions)
-{}
+    const action *actions,
+    const CoinPresolveAction *next)
+    : CoinPresolveAction(next)
+    , nactions_(nactions)
+    , actions_(actions)
+  {
+  }
 
- public:
+public:
   const char *name() const { return ("slack_singleton_action"); }
 
   static const CoinPresolveAction *presolve(CoinPresolveMatrix *prob,
-                                            const CoinPresolveAction *next,
-                                            double * rowObjective);
+    const CoinPresolveAction *next,
+    double *rowObjective);
 
   void postsolve(CoinPostsolveMatrix *prob) const;
 
-
-  virtual ~slack_singleton_action() { deleteAction(actions_,action*); }
+  virtual ~slack_singleton_action() { deleteAction(actions_, action *); }
 };
 #endif
+
+/* vi: softtabstop=2 shiftwidth=2 expandtab tabstop=2
+*/

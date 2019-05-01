@@ -2,7 +2,7 @@
 # All Rights Reserved.
 # This file is distributed under the Eclipse Public License.
 
-## $Id: Makefile.am 2206 2015-07-07 20:44:40Z stefan $
+## $Id: Makefile.am 2499 2019-02-21 21:29:20Z stefan $
 
 # Author:  Andreas Waechter           IBM    2006-04-13
 
@@ -174,7 +174,7 @@ cbc_generic_DEPENDENCIES = libCbcSolver.la libCbc.la $(CBCGENERIC_DEPENDENCIES)
 # the linker flags for all available LP solvers should already be included in $CBCGENERIC_LIBS,
 # so just add compiler flags here (all we can think of)
 
-AM_CPPFLAGS += $(DYLP_CFLAGS) $(GLPK_CFLAGS) $(MSK_CFLAGS) $(SPX_CFLAGS) $(VOL_CFLAGS) $(XPR_CFLAGS)
+AM_CPPFLAGS += $(DYLP_CFLAGS) $(GLPK_CFLAGS) $(HIGHS_CFLAGS) $(MSK_CFLAGS) $(SPX_CFLAGS) $(VOL_CFLAGS) $(XPR_CFLAGS)
 
 endif
 

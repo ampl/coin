@@ -1,4 +1,4 @@
-/* $Id: CoinAbcFactorization.hpp 1910 2013-01-27 02:00:13Z stefan $ */
+/* $Id: CoinAbcFactorization.hpp 2385 2019-01-06 19:43:06Z unxusr $ */
 // Copyright (C) 2002, International Business Machines
 // Corporation and others, Copyright (C) 2012, FasterCoin.  All Rights Reserved.
 // This code is licensed under the terms of the Eclipse Public License (EPL).
@@ -17,20 +17,20 @@
 #define ABC_SMALL -1
 #include "CoinAbcBaseFactorization.hpp"
 #undef CoinAbcTypeFactorization
-#undef ABC_SMALL 
+#undef ABC_SMALL
 #undef COIN_BIG_DOUBLE
 #define COIN_BIG_DOUBLE 1
 #define CoinAbcTypeFactorization CoinAbcLongFactorization
 #define ABC_SMALL -1
 #include "CoinAbcBaseFactorization.hpp"
 #undef CoinAbcTypeFactorization
-#undef ABC_SMALL 
+#undef ABC_SMALL
 #undef COIN_BIG_DOUBLE
 #define CoinAbcTypeFactorization CoinAbcSmallFactorization
 #define ABC_SMALL 4
 #include "CoinAbcBaseFactorization.hpp"
 #undef CoinAbcTypeFactorization
-#undef ABC_SMALL 
+#undef ABC_SMALL
 #define CoinAbcTypeFactorization CoinAbcOrderedFactorization
 #define ABC_SMALL -1
 #include "CoinAbcBaseFactorization.hpp"
@@ -40,5 +40,8 @@
 #define CoinAbcTypeFactorization CoinAbcBaseFactorization
 #define ABC_SMALL -1
 #include "CoinAbcBaseFactorization.hpp"
-#endif 
 #endif
+#endif
+
+/* vi: softtabstop=2 shiftwidth=2 expandtab tabstop=2
+*/

@@ -3,7 +3,7 @@
    All Rights Reserved.
    This code is published under the Eclipse Public License.
  
-   $Id: IpStdFInterface.c 1861 2010-12-21 21:34:47Z andreasw $
+   $Id: IpStdFInterface.c 2600 2015-08-22 14:07:08Z stefan $
  
    Authors:  Carl Laird, Andreas Waechter     IBM    2004-09-03
  ********************************************************************/
@@ -17,7 +17,11 @@
 /* ToDo: The following needs to be adapted based on configuration */
 typedef FORTRAN_INTEGER_TYPE fint;
 typedef double fdouble;
-typedef long fptr;
+/* in configure, we checked whether an int* is 32 or 64bit long to decide how much space
+ * is needed to store a pointer
+ * thus, we can use a void* here to represent a pointer for Fortran
+ */
+typedef void* fptr;
 
 /** Return value for indicating that evaluation could be done without
     problem. */

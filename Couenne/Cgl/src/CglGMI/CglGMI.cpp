@@ -290,7 +290,7 @@ inline double CglGMI::computeCutCoefficient(double rowElem, int index) {
 /************************************************************************/
 inline void CglGMI::eliminateSlack(double cutElem, int index, double* cut,
 				   double& cutRhs, const double *elements, 
-				   const int *rowStart, const int *indices, 
+				   const CoinBigIndex *rowStart, const int *indices, 
 				   const int *rowLength, const double *rhs) {
 
   // now i is where coefficients on slack variables begin;
@@ -303,8 +303,8 @@ inline void CglGMI::eliminateSlack(double cutElem, int index, double* cut,
       return;
     }
 
-    int upto = rowStart[rowpos] + rowLength[rowpos];
-    for (int j = rowStart[rowpos]; j < upto; ++j) {
+    CoinBigIndex upto = rowStart[rowpos] + rowLength[rowpos];
+    for (CoinBigIndex j = rowStart[rowpos]; j < upto; ++j) {
       cut[indices[j]] -= cutElem * elements[j];      
     }
     cutRhs -= cutElem * rhs[rowpos];
@@ -1134,7 +1134,7 @@ void CglGMI::generateCuts(OsiCuts &cs)
 
   // Matrix elements by row for slack substitution
   const double *elements = byRow->getElements();
-  const int *rowStart = byRow->getVectorStarts();
+  const CoinBigIndex *rowStart = byRow->getVectorStarts();
   const int *indices = byRow->getIndices();
   const int *rowLength = byRow->getVectorLengths(); 
 
@@ -1192,7 +1192,7 @@ void CglGMI::generateCuts(OsiCuts &cs)
 #else
       rowElem = 0.0;
       // add in row of tableau
-      for (int h = columnStart[j]; h < columnStart[j]+columnLength[j]; ++h) {
+      for (CoinBigIndex h = columnStart[j]; h < columnStart[j]+columnLength[j]; ++h) {
 	rowElem += columnElements[h]*arrayElements[row[h]];
       }
 #endif

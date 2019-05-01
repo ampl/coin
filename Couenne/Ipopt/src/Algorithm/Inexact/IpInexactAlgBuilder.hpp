@@ -2,7 +2,7 @@
 // All Rights Reserved.
 // This code is published under the Eclipse Public License.
 //
-// $Id: IpInexactAlgBuilder.hpp 1861 2010-12-21 21:34:47Z andreasw $
+// $Id: IpInexactAlgBuilder.hpp 2666 2016-07-20 16:02:55Z stefan $
 //
 // Authors:  Andreas Waechter     IBM                  2008-09-05
 //            based on IpAlgBuilder.hpp (rev 913)
@@ -17,6 +17,12 @@ namespace Ipopt
 
   /** Builder to create a complete IpoptAlg object for the inexact
    *  step computation version.
+   *
+   * TODO: The AlorithmBuilder base class has been reorganized to
+   *       allow for easier customization. This class could be
+   *       reimplemented to take advantage of that. In particular, a
+   *       substantial amount code for generating the SymLinearSolver
+   *       and AugSystemSolver is available for reuse.
    */
   class InexactAlgorithmBuilder : public AlgorithmBuilder
   {

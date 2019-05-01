@@ -10,7 +10,7 @@
 
 AC_PREREQ(2.59)
 
-AC_INIT([ThirdPartySoplex],[1.4.2],[http://projects.coin-or.org/BuildTools/newticket])
+AC_INIT([ThirdPartySoplex],[1.7.1],[http://projects.coin-or.org/BuildTools/newticket])
 
 AC_COPYRIGHT([
 Copyright 2010,2011 Stefan Vigerske and others.
@@ -28,7 +28,10 @@ AC_CONFIG_SRCDIR(soplex/src/soplex.h)
 # /usr/local.
 AC_PREFIX_DEFAULT([`pwd`])
 
-AC_COIN_PROJECTDIR_INIT(SoPlex,5:2:4)
+AC_COIN_PROJECTDIR_INIT(SoPlex,8:1:7)
+
+PACKAGE_VERSION_PC=${coin_majorver}.${coin_minorver}.${coin_releasever}
+AC_SUBST(PACKAGE_VERSION_PC)
 
 #############################################################################
 #                         Standard build tool stuff                         #
@@ -59,6 +62,7 @@ AC_COIN_INIT_AUTO_TOOLS
 AC_COIN_CHECK_GNU_ZLIB(SOPLEX)
 if test $coin_has_zlib = "yes"; then
   CXXFLAGS="$CXXFLAGS -DSOPLEX_WITH_ZLIB"
+  SOPLEX_LIBS="-lz $SOPLEX_LIBS"
 fi
 
 AC_COIN_CHECK_GMP
@@ -68,23 +72,9 @@ if test $coin_has_gmp = yes; then
   SOPLEX_PCLIBS="-lgmp $SOPLEX_PCLIBS"
   SOPLEX_LIBS_INSTALLED="-lgmp $SOPLEX_LIBS_INSTALLED"
 fi
+AC_SUBST(SOPLEX_LIBS)
 
-# SoPlex requires C++ 2011 standard (or -DSOPLEX_LEGACY)
-SOPLEX_CFLAGS=
-case "$CXX" in
-  cl* | */cl* | CL* | */CL* ) ;;
-  icl* | */icl* | ICL* | */ICL* )  # Intel on Windows
-    SOPLEX_CFLAGS="-Qstd=c++0x"
-    ;;
-  * )  # GCC, clang, Intel on Linux, ...
-    SOPLEX_CFLAGS="-std=c++0x"
-    ;;
-esac
-CXXFLAGS="$CXXFLAGS $SOPLEX_CFLAGS"
-AC_SUBST(SOPLEX_CFLAGS)
-
-# in recent SoPlex 2.0 versions, timer.cpp has been renamed to usertimer.cpp
-AM_CONDITIONAL(TIMER_IS_USERTIMER, [test -e "$srcdir/soplex/src/usertimer.cpp"])
+AM_CONDITIONAL([HAVE_STABLESUM_H], [test -e $srcdir/soplex/src/soplex/stablesum.h])
 
 # TODO SoPlex may not be threadsafe by default; adding -DDISABLE_VERBOSITY could help 
 

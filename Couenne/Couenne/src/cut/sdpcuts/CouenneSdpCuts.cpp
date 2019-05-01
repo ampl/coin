@@ -1,4 +1,4 @@
-/* $Id: CouenneSdpCuts.cpp 957 2013-05-19 17:53:48Z pbelotti $
+/* $Id: CouenneSdpCuts.cpp 1259 2018-08-28 10:34:22Z pbelotti $
  *
  * Name:    CouenneSdpCuts.cpp
  * Author:  Pietro Belotti
@@ -64,13 +64,14 @@ CouenneSdpCuts::CouenneSdpCuts (CouenneProblem *p,
 
 	if ((index0 >= 0) &&
 	    (index1 >= 0) &&
-	    ((*i) -> Index () >= 0))
+	    ((*i) -> Index () >= 0)) {
 
 	  // cauldron -> add_element (CoinMin (index0, index1),
 	  //  			      CoinMax (index0, index1), (*i));
 
 	  cauldron -> add_element (index0, index1, (*i));
 	  cauldron -> add_element (index1, index0, (*i));
+        }
       }
 
       /// or it is x_i ^ 2

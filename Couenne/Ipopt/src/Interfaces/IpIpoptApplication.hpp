@@ -2,7 +2,7 @@
 // All Rights Reserved.
 // This code is published under the Eclipse Public License.
 //
-// $Id: IpIpoptApplication.hpp 2398 2013-10-19 18:08:59Z stefan $
+// $Id: IpIpoptApplication.hpp 2690 2017-06-12 10:28:36Z stefan $
 //
 // Authors:  Carl Laird, Andreas Waechter     IBM    2004-08-13
 
@@ -69,8 +69,10 @@ namespace Ipopt
      *  problem in the initialization (such as an invalid option).
      *  You should call one of the initialization methods at some
      *  point before the first optimize call.
+     *  Set @par allow_clobber to true if you want to allow
+     *  overwriting options that are set by the input stream.
      */
-    virtual ApplicationReturnStatus Initialize(std::istream& is);
+    virtual ApplicationReturnStatus Initialize(std::istream& is, bool allow_clobber = false);
     /** Initialization method. This method reads options from the
      *  params file and initializes the journalists. It returns
      *  something other than Solve_Succeeded if there was a
@@ -79,16 +81,35 @@ namespace Ipopt
      *  point before the first optimize call.
      *  Note: You can skip the processing of a params file by
      *  setting params_file to "".
+     *  Set @par allow_clobber to true if you want to allow
+     *  overwriting options that are set by the params file.
      */
-    virtual ApplicationReturnStatus Initialize(std::string params_file);
+    virtual ApplicationReturnStatus Initialize(std::string params_file, bool allow_clobber = false);
+    /** Initialization method. This method reads options from the
+     *  params file and initializes the journalists. It returns
+     *  something other than Solve_Succeeded if there was a
+     *  problem in the initialization (such as an invalid option).
+     *  You should call one of the initialization methods at some
+     *  point before the first optimize call.
+     *  Note: You can skip the processing of a params file by
+     *  setting params_file to "".
+     *  Set @par allow_clobber to true if you want to allow
+     *  overwriting options that are set by the params file.
+     */
+    virtual ApplicationReturnStatus Initialize(const char* params_file, bool allow_clobber = false)
+    {
+       return Initialize(std::string(params_file), allow_clobber);
+    }
     /** Initialize method. This method reads the options file specified
      *  by the option_file_name option and initializes the journalists.
      *  You should call this method at some point before the first optimize
      *  call.
      *  It returns something other than Solve_Succeeded if there was a
      *  problem in the initialization (such as an invalid option).
+     *  Set @par allow_clobber to true if you want to allow
+     *  overwriting options that are set by the options file.
      */
-    virtual ApplicationReturnStatus Initialize();
+    virtual ApplicationReturnStatus Initialize(bool allow_clobber = false);
 
     /**@name Solve methods */
     //@{
@@ -176,10 +197,14 @@ namespace Ipopt
      * caught by Ipopts initialization and optimization methods
      * and the status NonIpopt_Exception_Thrown is returned.
      * This function allows to enable rethrowing of such exceptions.
+     * 
+     * @return Returns whether non-ipopt exceptions were rethrown before.
      */
-    void RethrowNonIpoptException(bool dorethrow)
+    bool RethrowNonIpoptException(bool dorethrow)
     {
+       bool oldval = rethrow_nonipoptexception_;
        rethrow_nonipoptexception_ = dorethrow;
+       return oldval;
     }
 
     /** @name Methods for IpoptTypeInfo */

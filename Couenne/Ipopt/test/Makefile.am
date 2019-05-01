@@ -2,7 +2,7 @@
 # All Rights Reserved.
 # This file is distributed under the Eclipse Public License.
 
-## $Id: Makefile.am 2005 2011-06-06 12:55:16Z stefan $
+## $Id: Makefile.am 2666 2016-07-20 16:02:55Z stefan $
 
 # Author:  Andreas Waechter           IBM    2006-04-13
 
@@ -12,7 +12,11 @@ AUTOMAKE_OPTIONS = foreign
 #                      unitTest for CoinUtils                          #
 ########################################################################
 
-noinst_PROGRAMS = hs071_cpp hs071_c hs071_f
+noinst_PROGRAMS = hs071_cpp hs071_c
+
+if COIN_HAS_F77
+noinst_PROGRAMS += hs071_f
+endif
 
 nodist_hs071_cpp_SOURCES = hs071_main.cpp hs071_nlp.cpp hs071_nlp.hpp
 hs071_cpp_LDADD = ../src/Interfaces/libipopt.la $(IPOPTLIB_LIBS)
@@ -42,7 +46,11 @@ DEFAULT_INCLUDES = -I. -I`$(CYGPATH_W) $(srcdir)` -I$(top_builddir)/src/Common
 hs071_f.f:
 	$(LN_S) ../examples/hs071_f/$@ $@
 
+if COIN_HAS_F77
 test: hs071_cpp$(EXEEXT) hs071_c$(EXEEXT) hs071_f$(EXEEXT)
+else
+test: hs071_cpp$(EXEEXT) hs071_c$(EXEEXT)
+endif
 	chmod u+x ./run_unitTests
 	./run_unitTests
 

@@ -1,11 +1,11 @@
-/* $Id: CoinPresolveUseless.hpp 1566 2012-11-29 19:33:56Z lou $ */
+/* $Id: CoinPresolveUseless.hpp 2083 2019-01-06 19:38:09Z unxusr $ */
 // Copyright (C) 2002, International Business Machines
 // Corporation and others.  All Rights Reserved.
 // This code is licensed under the terms of the Eclipse Public License (EPL).
 
 #ifndef CoinPresolveUseless_H
 #define CoinPresolveUseless_H
-#define	USELESS		20
+#define USELESS 20
 
 class useless_constraint_action : public CoinPresolveAction {
   struct action {
@@ -21,24 +21,23 @@ class useless_constraint_action : public CoinPresolveAction {
   const action *const actions_;
 
   useless_constraint_action(int nactions,
-                            const action *actions,
-                            const CoinPresolveAction *next);
+    const action *actions,
+    const CoinPresolveAction *next);
 
- public:
+public:
   const char *name() const;
 
   // These rows are asserted to be useless,
   // that is, given a solution the row activity
   // must be in range.
-  static const CoinPresolveAction *presolve(CoinPresolveMatrix * prob,
-					 const int *useless_rows,
-					 int nuseless_rows,
-					 const CoinPresolveAction *next);
+  static const CoinPresolveAction *presolve(CoinPresolveMatrix *prob,
+    const int *useless_rows,
+    int nuseless_rows,
+    const CoinPresolveAction *next);
 
   void postsolve(CoinPostsolveMatrix *prob) const;
 
   virtual ~useless_constraint_action();
-
 };
 
 /*! \relates useless_constraint_action
@@ -56,8 +55,9 @@ class useless_constraint_action : public CoinPresolveAction {
 */
 
 const CoinPresolveAction *testRedundant(CoinPresolveMatrix *prob,
-					const CoinPresolveAction *next) ;
-
-
+  const CoinPresolveAction *next);
 
 #endif
+
+/* vi: softtabstop=2 shiftwidth=2 expandtab tabstop=2
+*/

@@ -6,15 +6,15 @@
 # This file is distributed under the Eclipse Public License.
 # It is part of the BuildTools project in COIN-OR (www.coin-or.org)
 #
-## $Id: run_autotools 2365 2011-07-16 11:24:39Z stefan $
+## $Id: run_autotools 3632 2016-08-09 16:29:26Z stefan $
 #
 # Author: Andreas Waechter     IBM      2006-04-14
-# Modified: Lou Hafer	       SFU      2010-06-11
+# Modified: Lou Hafer          SFU      2010-06-11
 #      Mods to allow variations from standard package structure. Decision to
 #      process a configure.ac file is based on presence of COIN macros.
 #      Directories specified on the command line are recursively searched
 #      for configure.ac files. Install-sh signals an independent unit.
-# Modified: Lou Hafer	       SFU      2010-07-08
+# Modified: Lou Hafer          SFU      2010-07-08
 #      More mods to maintain flexibility but be a bit less aggressive about
 #      forcing installation of autotools auxilliary scripts. Also add some
 #      command line options and restore ability to specify individual
@@ -169,21 +169,21 @@ dirsToProcess=
 while test $# -gt 0 && test $printHelp = 0 ; do
   case "$1" in
     -h* | --h* )
-	 printHelp=1
-	 ;;
+      printHelp=1
+      ;;
     -nr* | --no-recursion )
-	 doRecurse=0
-	 ;;
+      doRecurse=0
+      ;;
     -i | --independent )
-	 forceScripts=1
-	 doRecurse=0
-	 ;;
+      forceScripts=1
+      doRecurse=0
+      ;;
     -* ) echo "$0: unrecognised command line switch '"$1"'."
-	 printHelp=1
-	 ;;
+      printHelp=1
+      ;;
      * ) dirsToProcess="$dirsToProcess $1"
-	 userSpecifiedDirs=1
-	 ;;
+      userSpecifiedDirs=1
+      ;;
   esac
   shift
 done
@@ -235,10 +235,10 @@ if test $doRecurse = 1 ; then
     tmp=`find $dir -name configure.ac | sed -e s%/configure.ac%%g`
     case "$candDirs" in
       *"$tmp"* )
-	  ;;
+        ;;
       * )
-	  candDirs="$candDirs $tmp"
-	  ;;
+        candDirs="$candDirs $tmp"
+        ;;
       esac
   done
 else
@@ -274,15 +274,15 @@ else
     for dir in $candDirs ; do
       skip=0
       for skipdir in $skip_dirs ; do
-	if test $dir = $skipdir ; then
-	  skip=1
-	  break
-	fi
+        if test $dir = $skipdir ; then
+          skip=1
+          break
+        fi
       done
       if test $skip = 0 ; then
-	dirs="$dirs $dir"
+        dirs="$dirs $dir"
       else
-	echo "  Skipping $dir listed in COIN_SKIP_PROJECTS."
+        echo "  Skipping $dir listed in COIN_SKIP_PROJECTS."
       fi
     done
   fi
@@ -323,45 +323,45 @@ for dir in $dirs; do
     fi
     if test -f Makefile.am || test $needScripts = 1 ; then
       if test -d BuildTools || test -L BuildTools ; then
-	createLink=0
-	toolsDir=`pwd`/BuildTools
+        createLink=0
+        toolsDir=`pwd`/BuildTools
       else
-	createLink=1
-	toolsDir=$runautotoolDir
+        createLink=1
+        toolsDir=$runautotoolDir
       fi
       echo "  BuildTools directory: $toolsDir"
 
 # Test to be sure that run_autotools is coming from the BuildTools directory.
 
       if test $createLink = 0 && test "$toolsDir" != "$runautotoolDir" ; then
-	echo "WARNING: using run_autotools from $runautotoolDir"
-	echo "         but BuildTools is $toolsDir."
-	echo "         Consider carefully if this is what you wanted to do."
+        echo "WARNING: using run_autotools from $runautotoolDir"
+        echo "         but BuildTools is $toolsDir."
+        echo "         Consider carefully if this is what you wanted to do."
       fi
 
 # coin.m4 should live in the same directory; failure is fatal.
 
       if test ! -r $toolsDir/coin.m4 ; then
-	echo "Cannot find Coin autotools macro file $toolsDir/coin.m4."
-	echo "It should be in the BuildTools directory."
-	exit 1
+        echo "Cannot find Coin autotools macro file $toolsDir/coin.m4."
+        echo "It should be in the BuildTools directory."
+        exit 1
       fi
 
 # Install a link, if needed.
 
       if test $createLink = 1 ; then
-	ln -s $toolsDir BuildTools
-	buildtoolsLinks="$buildtoolsLinks `pwd`/BuildTools"
-	echo "  creating temporary link for ./BuildTools -> $toolsDir"
+        ln -s $toolsDir BuildTools
+        buildtoolsLinks="$buildtoolsLinks `pwd`/BuildTools"
+        echo "  creating temporary link for ./BuildTools -> $toolsDir"
       fi
 
 # And refresh the autotools scripts, if needed.
 
       if test $needScripts = 1 ; then
-	echo "  refreshing autotools scripts in this directory."
-	for file in $autotoolsFiles ; do
-	  cp BuildTools/$file .
-	done
+        echo "  refreshing autotools scripts in this directory."
+        for file in $autotoolsFiles ; do
+          cp BuildTools/$file .
+        done
       fi
 
     fi

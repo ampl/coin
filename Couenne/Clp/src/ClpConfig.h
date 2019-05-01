@@ -2,7 +2,7 @@
  * All Rights Reserved.
  * This code is published under the Eclipse Public License.
  *
- * $Id: ClpConfig.h 1734 2011-06-08 17:28:29Z stefan $
+ * $Id: ClpConfig.h 2385 2019-01-06 19:43:06Z unxusr $
  *
  * Include file for the configuration of Clp.
  *
@@ -41,3 +41,6 @@
 #endif /* HAVE_CONFIG_H */
 
 #endif /*__CLPCONFIG_H__*/
+
+/* vi: softtabstop=2 shiftwidth=2 expandtab tabstop=2
+*/

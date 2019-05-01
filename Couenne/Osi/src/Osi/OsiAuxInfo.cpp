@@ -13,13 +13,13 @@
 #include "OsiAuxInfo.hpp"
 
 // Default Constructor
-OsiAuxInfo::OsiAuxInfo(void * appData) 
+OsiAuxInfo::OsiAuxInfo(void *appData)
   : appData_(appData)
 {
 }
 
-// Destructor 
-OsiAuxInfo::~OsiAuxInfo ()
+// Destructor
+OsiAuxInfo::~OsiAuxInfo()
 {
 }
 
@@ -30,10 +30,9 @@ OsiAuxInfo::clone() const
   return new OsiAuxInfo(*this);
 }
 
-// Copy constructor 
-OsiAuxInfo::OsiAuxInfo(const OsiAuxInfo & rhs)
-:
-  appData_(rhs.appData_)
+// Copy constructor
+OsiAuxInfo::OsiAuxInfo(const OsiAuxInfo &rhs)
+  : appData_(rhs.appData_)
 {
 }
 OsiAuxInfo &
@@ -45,24 +44,25 @@ OsiAuxInfo::operator=(const OsiAuxInfo &rhs)
   return *this;
 }
 // Default Constructor
-OsiBabSolver::OsiBabSolver(int solverType) 
-  :OsiAuxInfo(),
-   bestObjectiveValue_(1.0e100),
-   mipBound_(-1.0e100),
-   solver_(NULL),
-   bestSolution_(NULL),
-   beforeLower_(NULL),
-   beforeUpper_(NULL),
-   solverType_(solverType),
-   sizeSolution_(0),
-   extraCharacteristics_(0)
+OsiBabSolver::OsiBabSolver(int solverType)
+  : OsiAuxInfo()
+  , bestObjectiveValue_(1.0e100)
+  , mipBound_(-1.0e100)
+  , solver_(NULL)
+  , bestSolution_(NULL)
+  , beforeLower_(NULL)
+  , beforeUpper_(NULL)
+  , extraInfo_(NULL)
+  , solverType_(solverType)
+  , sizeSolution_(0)
+  , extraCharacteristics_(0)
 {
 }
 
-// Destructor 
-OsiBabSolver::~OsiBabSolver ()
+// Destructor
+OsiBabSolver::~OsiBabSolver()
 {
-  delete [] bestSolution_;
+  delete[] bestSolution_;
 }
 
 // Clone
@@ -72,23 +72,23 @@ OsiBabSolver::clone() const
   return new OsiBabSolver(*this);
 }
 
-// Copy constructor 
-OsiBabSolver::OsiBabSolver(const OsiBabSolver & rhs)
-:
-  OsiAuxInfo(rhs),
-  bestObjectiveValue_(rhs.bestObjectiveValue_),
-  mipBound_(rhs.mipBound_),
-  solver_(rhs.solver_),
-  bestSolution_(NULL),
-  beforeLower_(rhs.beforeLower_),
-  beforeUpper_(rhs.beforeUpper_),
-  solverType_(rhs.solverType_),
-  sizeSolution_(rhs.sizeSolution_),
-  extraCharacteristics_(rhs.extraCharacteristics_)
+// Copy constructor
+OsiBabSolver::OsiBabSolver(const OsiBabSolver &rhs)
+  : OsiAuxInfo(rhs)
+  , bestObjectiveValue_(rhs.bestObjectiveValue_)
+  , mipBound_(rhs.mipBound_)
+  , solver_(rhs.solver_)
+  , bestSolution_(NULL)
+  , beforeLower_(rhs.beforeLower_)
+  , beforeUpper_(rhs.beforeUpper_)
+  , extraInfo_(rhs.extraInfo_)
+  , solverType_(rhs.solverType_)
+  , sizeSolution_(rhs.sizeSolution_)
+  , extraCharacteristics_(rhs.extraCharacteristics_)
 {
   if (rhs.bestSolution_) {
-    assert (solver_);
-    bestSolution_ = CoinCopyOfArray(rhs.bestSolution_,sizeSolution_);
+    assert(solver_);
+    bestSolution_ = CoinCopyOfArray(rhs.bestSolution_, sizeSolution_);
   }
 }
 OsiBabSolver &
@@ -96,7 +96,7 @@ OsiBabSolver::operator=(const OsiBabSolver &rhs)
 {
   if (this != &rhs) {
     OsiAuxInfo::operator=(rhs);
-    delete [] bestSolution_;
+    delete[] bestSolution_;
     solver_ = rhs.solver_;
     solverType_ = rhs.solverType_;
     bestObjectiveValue_ = rhs.bestObjectiveValue_;
@@ -106,28 +106,28 @@ OsiBabSolver::operator=(const OsiBabSolver &rhs)
     extraCharacteristics_ = rhs.extraCharacteristics_;
     beforeLower_ = rhs.beforeLower_;
     beforeUpper_ = rhs.beforeUpper_;
+    extraInfo_ = rhs.extraInfo_;
     if (rhs.bestSolution_) {
-      assert (solver_);
-      bestSolution_ = CoinCopyOfArray(rhs.bestSolution_,sizeSolution_);
+      assert(solver_);
+      bestSolution_ = CoinCopyOfArray(rhs.bestSolution_, sizeSolution_);
     }
   }
   return *this;
 }
 // Returns 1 if solution, 0 if not
-int
-OsiBabSolver::solution(double & solutionValue,
-                       double * betterSolution,
-                       int numberColumns)
+int OsiBabSolver::solution(double &solutionValue,
+  double *betterSolution,
+  int numberColumns)
 {
   if (!solver_)
     return 0;
   //printf("getSol %x solution_address %x - value %g\n",
   //       this,bestSolution_,bestObjectiveValue_);
-  if (bestObjectiveValue_<solutionValue&&bestSolution_) {
+  if (bestObjectiveValue_ < solutionValue && bestSolution_) {
     // new solution
-    memcpy(betterSolution,bestSolution_,CoinMin(numberColumns,sizeSolution_)*sizeof(double));
-    if (sizeSolution_<numberColumns)
-      CoinZeroN(betterSolution+sizeSolution_,numberColumns-sizeSolution_);
+    memcpy(betterSolution, bestSolution_, CoinMin(numberColumns, sizeSolution_) * sizeof(double));
+    if (sizeSolution_ < numberColumns)
+      CoinZeroN(betterSolution + sizeSolution_, numberColumns - sizeSolution_);
     solutionValue = bestObjectiveValue_;
     // free up
     //delete [] bestSolution_;
@@ -139,50 +139,50 @@ OsiBabSolver::solution(double & solutionValue,
   }
 }
 
-bool
-OsiBabSolver::hasSolution(double & solutionValue, double * solution)
+bool OsiBabSolver::hasSolution(double &solutionValue, double *solution)
 {
-  if (! bestSolution_)
+  if (!bestSolution_)
     return false;
-  
+
   int numberColumns = solver_->getNumCols();
-  memcpy(solution,bestSolution_,numberColumns*sizeof(double));
+  memcpy(solution, bestSolution_, numberColumns * sizeof(double));
   solutionValue = bestObjectiveValue_;
   return true;
 }
 
 // set solution
-void
-OsiBabSolver::setSolution(const double * solution, int numberColumns, double objectiveValue)
+void OsiBabSolver::setSolution(const double *solution, int numberColumns, double objectiveValue)
 {
-  assert (solver_);
+  assert(solver_);
   // just in case size has changed
-  delete [] bestSolution_;
-  sizeSolution_ = CoinMin(solver_->getNumCols(),numberColumns);
-  bestSolution_ = new double [sizeSolution_];
-  CoinZeroN(bestSolution_,sizeSolution_);
-  CoinMemcpyN(solution,CoinMin(sizeSolution_,numberColumns),bestSolution_);
-  bestObjectiveValue_ = objectiveValue*solver_->getObjSense();
+  delete[] bestSolution_;
+  sizeSolution_ = CoinMin(solver_->getNumCols(), numberColumns);
+  bestSolution_ = new double[sizeSolution_];
+  CoinZeroN(bestSolution_, sizeSolution_);
+  CoinMemcpyN(solution, CoinMin(sizeSolution_, numberColumns), bestSolution_);
+  bestObjectiveValue_ = objectiveValue * solver_->getObjSense();
 }
 // Get objective  (well mip bound)
-double 
+double
 OsiBabSolver::mipBound() const
 {
-  assert (solver_);
-  if (solverType_!=3)
-    return solver_->getObjSense()*solver_->getObjValue();
+  assert(solver_);
+  if (solverType_ != 3)
+    return solver_->getObjSense() * solver_->getObjValue();
   else
     return mipBound_;
 }
 // Returns true if node feasible
-bool 
-OsiBabSolver::mipFeasible() const
+bool OsiBabSolver::mipFeasible() const
 {
-  assert (solver_);
-  if (solverType_==0)
+  assert(solver_);
+  if (solverType_ == 0)
     return true;
-  else if (solverType_!=3)
+  else if (solverType_ != 3)
     return solver_->isProvenOptimal();
   else
-    return mipBound_<1.0e50;
+    return mipBound_ < 1.0e50;
 }
+
+/* vi: softtabstop=2 shiftwidth=2 expandtab tabstop=2
+*/

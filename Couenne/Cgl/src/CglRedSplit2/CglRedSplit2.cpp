@@ -1425,17 +1425,16 @@ int CglRedSplit2::generate_cgcut(double *row, double *rhs) {
 /************************************************************************/
 void CglRedSplit2::eliminate_slacks(double *row, 
 				   const double *elements, 
-				   const int *rowStart,
+				   const CoinBigIndex *rowStart,
 				   const int *indices,
 				   const int *rowLength,
 				   const double *rhs, double *tabrowrhs) {
 
-  int i, j;
-  for(i=0; i<nrow; i++) {
+  for(int i=0; i<nrow; i++) {
     if(fabs(row[ncol+i]) > param.getEPS_ELIM()) {
 
-      int upto = rowStart[i] + rowLength[i];
-      for(j=rowStart[i]; j<upto; j++) {
+      CoinBigIndex upto = rowStart[i] + rowLength[i];
+      for(CoinBigIndex j=rowStart[i]; j<upto; j++) {
 	row[indices[j]] -= row[ncol+i] * elements[j];      
       }
       *tabrowrhs -= row[ncol+i] * rhs[i];
@@ -1930,7 +1929,7 @@ int CglRedSplit2::generateCuts(OsiCuts* cs, int maxNumCuts, int* lambda)
   double *rowelem = new double[ncol];
 
   const double *elements = byRow->getElements();
-  const int *rowStart = byRow->getVectorStarts();
+  const CoinBigIndex *rowStart = byRow->getVectorStarts();
   const int *indices = byRow->getIndices();
   const int *rowLength = byRow->getVectorLengths(); 
 
@@ -2807,7 +2806,7 @@ int CglRedSplit2::tiltLandPcut(const OsiSolverInterface* si,
   double *rowelem = new double[ncol];
 
   const double *elements = byRow->getElements();
-  const int *rowStart = byRow->getVectorStarts();
+  const CoinBigIndex *rowStart = byRow->getVectorStarts();
   const int *indices = byRow->getIndices();
   const int *rowLength = byRow->getVectorLengths(); 
 

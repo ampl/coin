@@ -34,7 +34,7 @@ static const char* const SCIP_LPISW_SOLVERNAMES[SCIP_LPISW_NSOLVERS] =
 
 /** gets enum of currently used LP solver */
 extern
-SCIP_LPISW_LPSOLVER SCIPlpiSwitchGetCurrentSolver();
+SCIP_LPISW_LPSOLVER SCIPlpiSwitchGetCurrentSolver(void);
 
 /** sets static function pointers to LPI functions of a particular solver */
 extern
@@ -44,7 +44,7 @@ SCIP_RETCODE SCIPlpiSwitchSetSolver(
 
 /** sets static function pointers to LPI functions of default solver (determined during configure) */
 extern
-SCIP_RETCODE SCIPlpiSwitchSetDefaultSolver();
+SCIP_RETCODE SCIPlpiSwitchSetDefaultSolver(void);
 
 #ifdef __cplusplus
 }

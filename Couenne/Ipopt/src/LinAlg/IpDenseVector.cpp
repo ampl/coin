@@ -2,7 +2,7 @@
 // All Rights Reserved.
 // This code is published under the Eclipse Public License.
 //
-// $Id: IpDenseVector.cpp 2269 2013-05-05 11:32:40Z stefan $
+// $Id: IpDenseVector.cpp 2690 2017-06-12 10:28:36Z stefan $
 //
 // Authors:  Carl Laird, Andreas Waechter     IBM    2004-08-13
 
@@ -36,13 +36,12 @@ namespace Ipopt
       owner_space_(owner_space),
       values_(NULL),
       expanded_values_(NULL),
-      initialized_(false)
+      initialized_(false),
+      homogeneous_(false)
   {
     DBG_START_METH("DenseVector::DenseVector(Index dim)", dbg_verbosity);
-    if (Dim() == 0) {
+    if (Dim() == 0)
       initialized_ = true;
-      homogeneous_ = false;
-    }
   }
 
   DenseVector::~DenseVector()

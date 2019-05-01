@@ -2,7 +2,7 @@
 # All Rights Reserved.
 # This file is distributed under the Eclipse Public License.
 
-## $Id: Makefile.am 2468 2014-03-13 13:37:20Z stefan $
+## $Id: Makefile.am 2666 2016-07-20 16:02:55Z stefan $
 
 # Authors:  Carl Laird, Andreas Waechter     IBM    2004-08-13
 
@@ -18,6 +18,14 @@ includeipopt_HEADERS = \
 	IpVector.hpp \
 	IpDenseVector.hpp \
 	IpCompoundVector.hpp \
+	IpCompoundMatrix.hpp \
+	IpCompoundSymMatrix.hpp \
+	IpSumSymMatrix.hpp \
+	IpDiagMatrix.hpp \
+	IpIdentityMatrix.hpp \
+	IpScaledMatrix.hpp \
+	IpSymScaledMatrix.hpp \
+	IpZeroSymMatrix.hpp \
 	IpBlas.hpp \
 	IpLapack.hpp
 

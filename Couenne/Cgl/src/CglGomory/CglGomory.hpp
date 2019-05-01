@@ -188,7 +188,7 @@ private:
   /// nonzero to use alternative factorization
   int alternateFactorization_;
   /// Type - 0 normal, 1 add original matrix one, 2 replace
-  int gomoryType_;
+  int gomoryType_; // note could add in cutoff as constraint
   //@}
 };
 

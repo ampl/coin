@@ -1,4 +1,4 @@
-// $Id: BonCouenne.cpp 1121 2015-03-01 15:12:50Z pbelotti $
+// $Id: BonCouenne.cpp 1270 2019-02-23 17:21:42Z stefan $
 //
 // (C) Copyright International Business Machines Corporation and Carnegie Mellon University 2006, 2007
 // All Rights Reserved.
@@ -234,6 +234,12 @@ Auxiliaries:     %8d (%d integer)\n\n",
     //   }
     // }
 
+    bool printOptions;
+
+    std::string liststr;
+    couenne.options () -> PrintUserOptions (liststr);
+    jnlst -> Printf (J_ERROR, J_MAIN, "\nList of user-set options:\n\n%s", liststr.c_str());
+
     if (!infeasible)                                //  /|-------------=
       bb (couenne); // do branch and bound          // < |             =
                                                     //  \|-------------=
@@ -255,7 +261,7 @@ Auxiliaries:     %8d (%d integer)\n\n",
 
       if (amplsol != NULL) {
 
-	fprintf (amplsol, "\n Couenne (%s %s): Infeasible\n\nOptions\n3\n0\n1\n0\n%d\n0\n%d\n0\nobjno 0 220\n", 
+	fprintf (amplsol, "Couenne (%s %s): Infeasible\n\nOptions\n3\n0\n1\n0\n%d\n0\n%d\n0\nobjno 0 220\n", 
 		 prob -> problemName (). c_str (),
 		 __DATE__, 
 		 prob -> nOrigCons (),

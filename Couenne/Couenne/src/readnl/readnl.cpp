@@ -1,4 +1,4 @@
-/* $Id: readnl.cpp 1147 2015-05-04 14:01:51Z stefan $
+/* $Id: readnl.cpp 1271 2019-02-23 17:23:59Z stefan $
  *
  * Name:    readnl.cpp
  * Author:  Pietro Belotti
@@ -9,7 +9,10 @@
  */
 
 #include "asl.h"
+
+// Added to avoid compiler issues with gcc 6.2.1 --- see https://github.com/JuliaOpt/CoinOptServices.jl/issues/27#issuecomment-290960312
 #undef strtod
+
 #include "nlp.h"
 #include "getstub.h"
 #include "opcode.hd"
@@ -391,7 +394,7 @@ int CouenneProblem::readnl (const ASL *asl) {
       case COUENNE_LE:  addLEConstraint  (body, new exprConst (ub)); break;
       case COUENNE_GE:  addGEConstraint  (body, new exprConst (lb)); break;
       case COUENNE_RNG: addRNGConstraint (body, new exprConst (lb), 
-					      new exprConst (ub)); break;
+                                                new exprConst (ub)); break;
       default: printf ("Could not recognize constraint\n"); return -1;
       }
 
@@ -448,7 +451,7 @@ int CouenneProblem::readnl (const ASL *asl) {
 
   for (register int i=n_var; i--;) 
 
-    if (X0 && havex0 [i]) X (i) = X0 [i]; 
+    if (X0 && havex0 [i]) X (i) = X0 [i];
 
     else {
 

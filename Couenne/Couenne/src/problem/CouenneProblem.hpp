@@ -1,4 +1,4 @@
-/* $Id: CouenneProblem.hpp 1083 2014-11-20 17:29:43Z pbelotti $
+/* $Id: CouenneProblem.hpp 1255 2018-08-27 22:56:09Z pbelotti $
  *
  * Name:    CouenneProblem.hpp
  * Author:  Pietro Belotti, Lehigh University
@@ -336,7 +336,11 @@ class CouenneProblem {
 
   /// Performance indicator for FBBT -- to be moved away from
   /// CouenneProblem when we do it with FBBT
-  CouenneBTPerfIndicator *perfIndicator_;
+  CouenneBTPerfIndicator *FBBTperfIndicator_;
+
+  /// Performance indicator for OBBT -- to be moved away from
+  /// CouenneProblem
+  CouenneBTPerfIndicator *OBBTperfIndicator_;
 
   /// Return particular constraint class. Classes:
   /// 

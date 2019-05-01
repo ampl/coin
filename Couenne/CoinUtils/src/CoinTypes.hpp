@@ -1,4 +1,4 @@
-/* $Id: CoinTypes.hpp 1762 2014-12-29 20:37:12Z tkr $ */
+/* $Id: CoinTypes.hpp 2083 2019-01-06 19:38:09Z unxusr $ */
 // Copyright (C) 2004, International Business Machines
 // Corporation and others.  All Rights Reserved.
 // This code is licensed under the terms of the Eclipse Public License (EPL).
@@ -24,9 +24,9 @@
 #define COIN_BIG_INDEX 0
 #endif
 
-#if COIN_BIG_INDEX==0
+#if COIN_BIG_INDEX == 0
 typedef int CoinBigIndex;
-#elif COIN_BIG_INDEX==1
+#elif COIN_BIG_INDEX == 1
 typedef long CoinBigIndex;
 #else
 typedef long long CoinBigIndex;
@@ -38,12 +38,12 @@ typedef long long CoinBigIndex;
 #endif
 
 // See if we want the ability to have long double work arrays
-#if COIN_BIG_DOUBLE==2
+#if COIN_BIG_DOUBLE == 2
 #undef COIN_BIG_DOUBLE
 #define COIN_BIG_DOUBLE 0
 #define COIN_LONG_WORK 1
 typedef long double CoinWorkDouble;
-#elif COIN_BIG_DOUBLE==3
+#elif COIN_BIG_DOUBLE == 3
 #undef COIN_BIG_DOUBLE
 #define COIN_BIG_DOUBLE 1
 #define COIN_LONG_WORK 1
@@ -53,12 +53,15 @@ typedef long double CoinWorkDouble;
 typedef double CoinWorkDouble;
 #endif
 
-#if COIN_BIG_DOUBLE==0
+#if COIN_BIG_DOUBLE == 0
 typedef double CoinFactorizationDouble;
-#elif COIN_BIG_DOUBLE==1
+#elif COIN_BIG_DOUBLE == 1
 typedef long double CoinFactorizationDouble;
 #else
 typedef double CoinFactorizationDouble;
 #endif
 
 #endif
+
+/* vi: softtabstop=2 shiftwidth=2 expandtab tabstop=2
+*/

@@ -1,4 +1,4 @@
-// $Id: CglProbing.cpp 1294 2015-05-05 16:45:29Z forrest $
+// $Id: CglProbing.cpp 1437 2018-11-23 19:53:53Z forrest $
 // Copyright (C) 2002, International Business Machines
 // Corporation and others.  All Rights Reserved.
 // This code is licensed under the terms of the Eclipse Public License (EPL).
@@ -58,14 +58,13 @@ static int hashCut (const OsiRowCut2 & x, int size)
     value += (j+1)*multiplier[k]*(xColumn+1)*xValue;
   }
   // should be compile time but too lazy for now
+  union { double d; unsigned int i[2]; } xx;
   if (sizeof(value)>sizeof(hashValue)) {
     assert (sizeof(value)==2*sizeof(hashValue));
-    union { double d; int i[2]; } xx;
     xx.d = value;
     hashValue = (xx.i[0] + xx.i[1]);
   } else {
     assert (sizeof(value)==sizeof(hashValue));
-    union { double d; unsigned int i[2]; } xx;
     xx.d = value;
     hashValue = xx.i[0];
   }
@@ -396,8 +395,8 @@ CglProbing::tighten(double *colLower, double * colUpper,
                     int nRows,int nCols,char * intVar,int maxpass,
                     double tolerance)
 {
-  int i, j, k, kre;
-  int krs;
+  int i, j;
+  CoinBigIndex k, krs, kre;
   int dolrows;
   int iflagu, iflagl;
   int ntotal=0,nchange=1,jpass=0;
@@ -429,9 +428,9 @@ CglProbing::tighten(double *colLower, double * colUpper,
 	  int iflagl = 0;
 	  double dmaxup = 0.0;
 	  double dmaxdown = 0.0;
-	  int krs = rowStart[i];
-	  int krs2 = rowStartPos[i];
-	  int kre = rowStart[i]+rowLength[i];
+	  CoinBigIndex krs = rowStart[i];
+	  CoinBigIndex krs2 = rowStartPos[i];
+	  CoinBigIndex kre = rowStart[i]+rowLength[i];
 	  
 	  /* ------------------------------------------------------------*/
 	  /* Compute L(i) and U(i) */
@@ -502,7 +501,7 @@ CglProbing::tighten(double *colLower, double * colUpper,
 		    if (dbound > colLower[j] + 1.0e-8) {
 		      /* we can tighten the lower bound */
 		      /* the paper mentions this as a possibility on p. 227 */
-		      colLower[j] = dbound;
+ 		      colLower[j] = dbound;
 		      ++nchange;
 		      
 		      /* this may have fixed the variable */
@@ -608,6 +607,11 @@ CglProbing::tighten(double *colLower, double * colUpper,
 	      /*printf("infeasible\n");*/
 	      ninfeas++;
 	    }
+	  } else {
+	    // clean
+	    colUpper[j]=floor(colUpper[j]+1.0e-4);
+	    colLower[j]=ceil(colLower[j]-1.0e-4);
+	    assert (colUpper[j]==colLower[j]);
 	  }
 	}
       }
@@ -669,7 +673,7 @@ CglProbing::tighten(double *colLower, double * colUpper,
         } else {
           // with cliques
           int nClique=0;
-          int bias = cliqueRowStart_[i]-krs;
+          CoinBigIndex bias = cliqueRowStart_[i]-krs;
           double dmaxup2=0.0;
           double dmaxdown2=0.0;
           double sumZeroFixes=0.0;
@@ -892,7 +896,7 @@ CglProbing::tighten(double *colLower, double * colUpper,
             }
           } else {
             // with cliques
-            int bias = cliqueRowStart_[i]-krs;
+            CoinBigIndex bias = cliqueRowStart_[i]-krs;
             if (iflagu == 0 && rowLower[i] > -1e15) {
               for (k = krs; k < kre; ++k) {
                 double value=rowElements[k];
@@ -1151,8 +1155,9 @@ CglProbing::tighten2(double *colLower, double * colUpper,
 		     double * minR, double * maxR, int * markR,
 		     int nRows)
 {
-  int i, j, k, kre;
-  int krs;
+  int i, j;
+  CoinBigIndex k;
+  CoinBigIndex krs, kre;
   int iflagu, iflagl;
   double dmaxup, dmaxdown;
 
@@ -1494,7 +1499,7 @@ bool analyze(const OsiSolverInterface * solverX, char * intVar,
           if (fabs(value1)==1.0&&value1*value2==-1.0&&!lower[jColumn1]
               &&!lower[jColumn2]&&columnLength[jColumn1]==1&&columnLength[jColumn2]==1) {
             int n=0;
-            int i;
+            CoinBigIndex i;
             double objChange=direction*(objective[jColumn1]+objective[jColumn2]);
             double bound = CoinMin(upper[jColumn1],upper[jColumn2]);
             bound = CoinMin(bound,1.0e20);
@@ -1812,7 +1817,7 @@ int CglProbing::gutsOfGenerateCuts(const OsiSolverInterface & si,
     int nDelete = 0;
     int nKeep=0;
     int * which = new int[nRows];
-    int nElements=rowCopy->getNumElements();
+    CoinBigIndex nElements=rowCopy->getNumElements();
     int nTotalOut=0;
     int nRealRows = si.getNumRows();
     for (i=0;i<nRows;i++) {
@@ -1911,7 +1916,7 @@ int CglProbing::gutsOfGenerateCuts(const OsiSolverInterface & si,
 	    OsiRowCut rc;
 	    rc.setLb(rowLower[i]);
 	    rc.setUb(rowUpper[i]);
-	    int start = rowStart[i];
+	    CoinBigIndex start = rowStart[i];
 	    int n = rowLength[i];
 	    rc.setRow(rowLength[i],column+start,elements+start,false);
 	    // but get rid of tinies
@@ -2040,7 +2045,7 @@ int CglProbing::gutsOfGenerateCuts(const OsiSolverInterface & si,
 	elements[newSize]=elements2[k];
 	column[newSize++]=column2[k];
       }
-      rowLength[i]=newSize-save;
+      rowLength[i]=static_cast<int>(newSize-save);
       if (offset) {
 	if (rowLower[i]>-1.0e20)
 	  rowLower[i] -= offset;
@@ -2098,14 +2103,17 @@ int CglProbing::gutsOfGenerateCuts(const OsiSolverInterface & si,
 	CoinPackedVector ubs;
 	for (i = 0; i < nCols; ++i) {
 	  if (intVar[i]) {
-	    colUpper[i] = CoinMin(upper[i],floor(colUpper[i]+1.0e-4));
+	    // check integer
+	    assert (colUpper[i]==floor(colUpper[i]+0.5));
+	    assert (colLower[i]==floor(colLower[i]+0.5));
+	    //colUpper[i] = CoinMin(upper[i],floor(colUpper[i]+1.0e-4));
 	    if (colUpper[i]<upper[i]-1.0e-8) {
 	      if (colUpper[i]<colsol[i]-1.0e-8)
 		ifCut=1;
 	      ubs.insert(i,colUpper[i]);
 	      numberChanged++;
 	    }
-	    colLower[i] = CoinMax(lower[i],ceil(colLower[i]-1.0e-4));
+	    //colLower[i] = CoinMax(lower[i],ceil(colLower[i]-1.0e-4));
 	    if (colLower[i]>lower[i]+1.0e-8) {
 	      if (colLower[i]>colsol[i]+1.0e-8)
 		ifCut=1;
@@ -3046,7 +3054,28 @@ int CglProbing::probe( const OsiSolverInterface & si,
 #define MOVE_SINGLETONS
 #ifdef MOVE_SINGLETONS
   const double * objective = si.getObjCoefficients();
-  const int * columnLength2 = si.getMatrixByCol()->getVectorLengths(); 
+  const int * columnLength2 = si.getMatrixByCol()->getVectorLengths();
+  // see whether to do
+  int moveSingletonRows=nRows;
+  if (nRows>si.getNumRows()) {
+    // skip objective constraint
+    moveSingletonRows=nRowsSafe;
+  } else if (nRows<si.getNumRows()) {
+    // some rows missing
+    moveSingletonRows=0;
+  } else {
+    // check objective constraint and one row dropped
+    double direction = si.getObjSense();
+    double cutoff;
+    bool cutoff_available = si.getDblParam(OsiDualObjectiveLimit,cutoff);
+    if (!cutoff_available||usingObjective_<1)  
+      cutoff = si.getInfinity();
+    cutoff *= direction;
+    if (cutoff<1.0e30) {
+      // switch off
+      moveSingletonRows=0;
+    }
+  }
 #endif
   bool anyColumnCuts=false;
   int ninfeas=0;
@@ -3063,7 +3092,7 @@ int CglProbing::probe( const OsiSolverInterface & si,
 #endif
   for (int i=0;i<nRows;i++) {
     assert (rowStart[i]+rowLength[i]==rowStart[i+1]);
-    int kk;
+    CoinBigIndex kk;
 #ifndef NDEBUG
     for ( kk =rowStart[i];kk<rowStart[i+1];kk++) {
       double value = rowElements[kk];
@@ -3425,7 +3454,7 @@ int CglProbing::probe( const OsiSolverInterface & si,
 	  markC[j] |= 4;
         istackC=0;
         /* update immediately */
-	int k;
+	CoinBigIndex k;
         for ( k=columnStart[j];k<columnStart[j]+columnLength[j];k++) {
           int irow = row[k];
           double value = columnElements[k];
@@ -3622,8 +3651,8 @@ int CglProbing::probe( const OsiSolverInterface & si,
               break;
             int irow = row[k];
 	    /* see if anything forced */
-	    int rStart = rowStart[irow];
-	    int rEnd = rowStartPos[irow];
+	    CoinBigIndex rStart = rowStart[irow];
+	    CoinBigIndex rEnd = rowStartPos[irow];
 	    double rowUp = rowUpper[irow];
 	    double rowUp2=0.0;
 	    bool doRowUpN;
@@ -3671,7 +3700,7 @@ int CglProbing::probe( const OsiSolverInterface & si,
 	    if (doRowUpN&&doRowLoN) {
 	      //doRowUpN=doRowLoN=false;
 	      // Start neg values loop
-	      for (int kk =rStart;kk<rEnd;kk++) {
+	      for (CoinBigIndex kk =rStart;kk<rEnd;kk++) {
 		int kcol=column[kk];
 		int markIt=markC[kcol];
 		if ((markIt&3)!=3) {
@@ -3750,8 +3779,9 @@ int CglProbing::probe( const OsiSolverInterface & si,
 		      }
 		      if (newLower>colsol[kcol]) {
 			if (djs[kcol]<0.0) {
-			  /* should be infeasible */
-			  assert (newLower>colUpper[kcol]+primalTolerance_);
+			  /* should be infeasible if integer */
+			  if (intVar[kcol])
+			    assert (newLower>colUpper[kcol]+primalTolerance_);
 			} else {
 			  objVal += moveUp*djs[kcol];
 			}
@@ -3769,7 +3799,7 @@ int CglProbing::probe( const OsiSolverInterface & si,
 		      if (colLower[kcol]<-1.0e10)
 			markC[kcol] |= 4;
 		      /* update immediately */
-		      for (int jj =columnStart[kcol];jj<columnStart[kcol]+columnLength[kcol];jj++) {
+		      for (CoinBigIndex jj =columnStart[kcol];jj<columnStart[kcol]+columnLength[kcol];jj++) {
 			int krow = row[jj];
 			double value = columnElements[jj];
 			assert (markR[krow]!=-2);
@@ -3818,8 +3848,9 @@ int CglProbing::probe( const OsiSolverInterface & si,
 		      }
 		      if (newUpper<colsol[kcol]) {
 			if (djs[kcol]>0.0) {
-			  /* should be infeasible */
-			  assert (colLower[kcol]>newUpper+primalTolerance_);
+			  /* should be infeasible if integer */
+			  if (intVar[kcol])
+			    assert (colLower[kcol]>newUpper+primalTolerance_);
 			} else {
 			  objVal += moveDown*djs[kcol];
 			}
@@ -3837,7 +3868,7 @@ int CglProbing::probe( const OsiSolverInterface & si,
 		      if (colLower[kcol]<-1.0e10)
 			markC[kcol] |= 4;
 		      /* update immediately */
-		      for (int jj =columnStart[kcol];jj<columnStart[kcol]+columnLength[kcol];jj++) {
+		      for (CoinBigIndex jj =columnStart[kcol];jj<columnStart[kcol]+columnLength[kcol];jj++) {
 			int krow = row[jj];
 			double value = columnElements[jj];
 			assert (markR[krow]!=-2);
@@ -3886,7 +3917,7 @@ int CglProbing::probe( const OsiSolverInterface & si,
 	      } // end big loop rStart->rPos
 	    } else if (doRowUpN) {
 	      // Start neg values loop
-	      for (int kk =rStart;kk<rEnd;kk++) {
+	      for (CoinBigIndex kk =rStart;kk<rEnd;kk++) {
 		int kcol =column[kk];
 		int markIt=markC[kcol];
 		if ((markIt&3)!=3) {
@@ -3933,8 +3964,9 @@ int CglProbing::probe( const OsiSolverInterface & si,
 		      }
 		      if (newLower>colsol[kcol]) {
 			if (djs[kcol]<0.0) {
-			  /* should be infeasible */
-			  assert (newLower>colUpper[kcol]+primalTolerance_);
+			  /* should be infeasible if integer */
+			  if (intVar[kcol])
+			    assert (newLower>colUpper[kcol]+primalTolerance_);
 			} else {
 			  objVal += moveUp*djs[kcol];
 			}
@@ -3952,7 +3984,7 @@ int CglProbing::probe( const OsiSolverInterface & si,
 		      if (colLower[kcol]<-1.0e10)
 			markC[kcol] |= 4;
 		      /* update immediately */
-		      for (int jj =columnStart[kcol];jj<columnStart[kcol]+columnLength[kcol];jj++) {
+		      for (CoinBigIndex jj =columnStart[kcol];jj<columnStart[kcol]+columnLength[kcol];jj++) {
 			int krow = row[jj];
 			double value = columnElements[jj];
 			assert (markR[krow]!=-2);
@@ -4001,7 +4033,7 @@ int CglProbing::probe( const OsiSolverInterface & si,
 	      } // end big loop rStart->rPos
 	    } else if (doRowLoN) {
 	      // Start neg values loop
-	      for (int kk =rStart;kk<rEnd;kk++) {
+	      for (CoinBigIndex kk =rStart;kk<rEnd;kk++) {
 		int kcol =column[kk];
 		if ((markC[kcol]&3)!=3) {
 		  double moveDown=0.0;
@@ -4048,8 +4080,9 @@ int CglProbing::probe( const OsiSolverInterface & si,
 		      }
 		      if (newUpper<colsol[kcol]) {
 			if (djs[kcol]>0.0) {
-			  /* should be infeasible */
-			  assert (colLower[kcol]>newUpper+primalTolerance_);
+			  /* should be infeasible if integer */
+			  if (intVar[kcol])
+			    assert (colLower[kcol]>newUpper+primalTolerance_);
 			} else {
 			  objVal += moveDown*djs[kcol];
 			}
@@ -4067,7 +4100,7 @@ int CglProbing::probe( const OsiSolverInterface & si,
 		      if (colLower[kcol]<-1.0e10)
 			markC[kcol] |= 4;
 		      /* update immediately */
-		      for (int jj =columnStart[kcol];jj<columnStart[kcol]+columnLength[kcol];jj++) {
+		      for (CoinBigIndex jj =columnStart[kcol];jj<columnStart[kcol]+columnLength[kcol];jj++) {
 			int krow = row[jj];
 			double value = columnElements[jj];
 			assert (markR[krow]!=-2);
@@ -4120,7 +4153,7 @@ int CglProbing::probe( const OsiSolverInterface & si,
 	    if (doRowUpP&&doRowLoP) {
 	      //doRowUpP=doRowLoP=false;
 	      // Start pos values loop
-	      for (int kk =rStart;kk<rEnd;kk++) {
+	      for (CoinBigIndex kk =rStart;kk<rEnd;kk++) {
 		int kcol=column[kk];
 		int markIt=markC[kcol];
 		if ((markIt&3)!=3) {
@@ -4192,8 +4225,9 @@ int CglProbing::probe( const OsiSolverInterface & si,
 		      }
 		      if (newLower>colsol[kcol]) {
 			if (djs[kcol]<0.0) {
-			  /* should be infeasible */
-			  assert (newLower>colUpper[kcol]+primalTolerance_);
+			  /* should be infeasible if integer */
+			  if (intVar[kcol])
+			    assert (newLower>colUpper[kcol]+primalTolerance_);
 			} else {
 			  objVal += moveUp*djs[kcol];
 			}
@@ -4211,7 +4245,7 @@ int CglProbing::probe( const OsiSolverInterface & si,
 		      if (colLower[kcol]<-1.0e10)
 			markC[kcol] |= 4;
 		      /* update immediately */
-		      for (int jj =columnStart[kcol];jj<columnStart[kcol]+columnLength[kcol];jj++) {
+		      for (CoinBigIndex jj =columnStart[kcol];jj<columnStart[kcol]+columnLength[kcol];jj++) {
 			int krow = row[jj];
 			double value = columnElements[jj];
 			assert (markR[krow]!=-2);
@@ -4262,8 +4296,9 @@ int CglProbing::probe( const OsiSolverInterface & si,
 		      }
 		      if (newUpper<colsol[kcol]) {
 			if (djs[kcol]>0.0) {
-			  /* should be infeasible */
-			  assert (colLower[kcol]>newUpper+primalTolerance_);
+			  /* should be infeasible if integer */
+			  if (intVar[kcol])
+			    assert (colLower[kcol]>newUpper+primalTolerance_);
 			} else {
 			  objVal += moveDown*djs[kcol];
 			}
@@ -4281,7 +4316,7 @@ int CglProbing::probe( const OsiSolverInterface & si,
 		      if (colLower[kcol]<-1.0e10)
 			markC[kcol] |= 4;
 		      /* update immediately */
-		      for (int jj =columnStart[kcol];jj<columnStart[kcol]+columnLength[kcol];jj++) {
+		      for (CoinBigIndex jj =columnStart[kcol];jj<columnStart[kcol]+columnLength[kcol];jj++) {
 			int krow = row[jj];
 			double value = columnElements[jj];
 			assert (markR[krow]!=-2);
@@ -4330,7 +4365,7 @@ int CglProbing::probe( const OsiSolverInterface & si,
 	      } // end big loop rPos->rEnd
 	    } else if (doRowUpP) {
 	      // Start pos values loop
-	      for (int kk =rStart;kk<rEnd;kk++) {
+	      for (CoinBigIndex kk =rStart;kk<rEnd;kk++) {
 		int kcol =column[kk];
 		int markIt=markC[kcol];
 		if ((markIt&3)!=3) {
@@ -4377,8 +4412,9 @@ int CglProbing::probe( const OsiSolverInterface & si,
 		      }
 		      if (newUpper<colsol[kcol]) {
 			if (djs[kcol]>0.0) {
-			  /* should be infeasible */
-			  assert (colLower[kcol]>newUpper+primalTolerance_);
+			  /* should be infeasible if integer */
+			  if (intVar[kcol])
+			    assert (colLower[kcol]>newUpper+primalTolerance_);
 			} else {
 			  objVal += moveDown*djs[kcol];
 			}
@@ -4396,7 +4432,7 @@ int CglProbing::probe( const OsiSolverInterface & si,
 		      if (colLower[kcol]<-1.0e10)
 			markC[kcol] |= 4;
 		      /* update immediately */
-		      for (int jj =columnStart[kcol];jj<columnStart[kcol]+columnLength[kcol];jj++) {
+		      for (CoinBigIndex jj =columnStart[kcol];jj<columnStart[kcol]+columnLength[kcol];jj++) {
 			int krow = row[jj];
 			double value = columnElements[jj];
 			assert (markR[krow]!=-2);
@@ -4445,7 +4481,7 @@ int CglProbing::probe( const OsiSolverInterface & si,
 	      } // end big loop rPos->rEnd
 	    } else if (doRowLoP) {
 	      // Start pos values loop
-	      for (int kk =rStart;kk<rEnd;kk++) {
+	      for (CoinBigIndex kk =rStart;kk<rEnd;kk++) {
 		int kcol =column[kk];
 		if ((markC[kcol]&3)!=3) {
 		  double value2=rowElements[kk];
@@ -4492,8 +4528,9 @@ int CglProbing::probe( const OsiSolverInterface & si,
 		      }
 		      if (newLower>colsol[kcol]) {
 			if (djs[kcol]<0.0) {
-			  /* should be infeasible */
-			  assert (newLower>colUpper[kcol]+primalTolerance_);
+			  /* should be infeasible if integer */
+			  if (intVar[kcol])
+			    assert (newLower>colUpper[kcol]+primalTolerance_);
 			} else {
 			  objVal += moveUp*djs[kcol];
 			}
@@ -4511,7 +4548,7 @@ int CglProbing::probe( const OsiSolverInterface & si,
 		      if (colLower[kcol]<-1.0e10)
 			markC[kcol] |= 4;
 		      /* update immediately */
-		      for (int jj =columnStart[kcol];jj<columnStart[kcol]+columnLength[kcol];jj++) {
+		      for (CoinBigIndex jj =columnStart[kcol];jj<columnStart[kcol]+columnLength[kcol];jj++) {
 			int krow = row[jj];
 			double value = columnElements[jj];
 			assert (markR[krow]!=-2);
@@ -4732,7 +4769,7 @@ int CglProbing::probe( const OsiSolverInterface & si,
                   index[0]=icol;
                   element[0]=1.0;
                   index[1]=j;
-                  element[1]= - boundChange;
+                  element[1] = -boundChange;
                   // effectiveness is how far j moves
                   double newSol = (colsol[icol]-colUpper[icol])/
                     boundChange;
@@ -4762,7 +4799,7 @@ int CglProbing::probe( const OsiSolverInterface & si,
                   index[0]=icol;
                   element[0]=1.0;
                   index[1]=j;
-                  element[1]=- boundChange;
+                  element[1] = -boundChange;
                   // effectiveness is how far j moves
                   double newSol = (colsol[icol]-colLower[icol])/
                     boundChange;
@@ -4804,9 +4841,9 @@ int CglProbing::probe( const OsiSolverInterface & si,
 		  // Taken out as should be found elsewhere
 		  // and has to be original column length
 #ifdef MOVE_SINGLETONS
-                  bool moveSingletons=true;
+                  bool moveSingletons=(irow<moveSingletonRows);
 #endif
-                  for (int kk =rowStart[irow];kk<rowStart[irow+1];
+                  for (CoinBigIndex kk =rowStart[irow];kk<rowStart[irow+1];
                        kk++) {
                     int iColumn = column[kk];
                     double value = rowElements[kk];
@@ -4824,7 +4861,7 @@ int CglProbing::probe( const OsiSolverInterface & si,
 #ifdef MOVE_SINGLETONS
                   if (moveSingletons) {
                     // can fix any with good costs
-                    for (int kk =rowStart[irow];kk<rowStart[irow+1];
+                    for (CoinBigIndex kk =rowStart[irow];kk<rowStart[irow+1];
                          kk++) {
                       int iColumn = column[kk];
                       if (j!=iColumn) {
@@ -4860,7 +4897,7 @@ int CglProbing::probe( const OsiSolverInterface & si,
                     int n=0;
                     bool coefficientExists=false;
 		    double sum2=0.0;
-                    for (int kk =rowStart[irow];kk<rowStart[irow+1];
+                    for (CoinBigIndex kk =rowStart[irow];kk<rowStart[irow+1];
                          kk++) {
 		      int kColumn = column[kk];
 		      double el = rowElements[kk];
@@ -4957,9 +4994,9 @@ int CglProbing::probe( const OsiSolverInterface & si,
                   sum =0.0;
                   // also see if singletons can go to good objective
 #ifdef MOVE_SINGLETONS
-                  bool moveSingletons=true;
+                  bool moveSingletons=(irow<moveSingletonRows);
 #endif
-                  for (int kk =rowStart[irow];kk<rowStart[irow+1];
+                  for (CoinBigIndex kk =rowStart[irow];kk<rowStart[irow+1];
                        kk++) {
                     int iColumn = column[kk];
                     double value = rowElements[kk];
@@ -4977,7 +5014,7 @@ int CglProbing::probe( const OsiSolverInterface & si,
 #ifdef MOVE_SINGLETONS
                   if (moveSingletons) {
                     // can fix any with good costs
-                    for (int kk =rowStart[irow];kk<rowStart[irow+1];
+                    for (CoinBigIndex kk =rowStart[irow];kk<rowStart[irow+1];
                          kk++) {
                       int iColumn = column[kk];
                       if (j!=iColumn) {
@@ -5013,7 +5050,7 @@ int CglProbing::probe( const OsiSolverInterface & si,
                     int n=0;
                     bool coefficientExists=false;
 		    double sum2=0.0;
-                    for (int kk =rowStart[irow];kk<rowStart[irow+1];
+                    for (CoinBigIndex kk =rowStart[irow];kk<rowStart[irow+1];
                          kk++) {
 		      int kColumn = column[kk];
 		      double el = rowElements[kk];
@@ -5111,11 +5148,13 @@ int CglProbing::probe( const OsiSolverInterface & si,
               if ((rowCuts&2)!=0&&goingToTrueBound&&info->strengthenRow) {
                 for (istackR=0;istackR<nstackR;istackR++) {
                   int irow=stackR[istackR];
+                  if(irow>=moveSingletonRows)
+		    continue;
                   double gap = rowUpper[irow]-maxR[irow];
                   if (gap>primalTolerance_) {
                     // also see if singletons can go to good objective
                     bool moveSingletons=true;
-                    for (int kk =rowStart[irow];kk<rowStart[irow+1];
+                    for (CoinBigIndex kk =rowStart[irow];kk<rowStart[irow+1];
                          kk++) {
                       int iColumn = column[kk];
                       if (moveSingletons&&j!=iColumn) {
@@ -5128,7 +5167,7 @@ int CglProbing::probe( const OsiSolverInterface & si,
                     }
                     if (moveSingletons) {
                       // can fix any with good costs
-                      for (int kk =rowStart[irow];kk<rowStart[irow+1];
+                      for (CoinBigIndex kk =rowStart[irow];kk<rowStart[irow+1];
                            kk++) {
                         int iColumn = column[kk];
                         if (j!=iColumn) {
@@ -5160,7 +5199,7 @@ int CglProbing::probe( const OsiSolverInterface & si,
                   if (gap>primalTolerance_) {
                     // also see if singletons can go to good objective
                     bool moveSingletons=true;
-                    for (int kk =rowStart[irow];kk<rowStart[irow+1];
+                    for (CoinBigIndex kk =rowStart[irow];kk<rowStart[irow+1];
                          kk++) {
                       int iColumn = column[kk];
                       if (moveSingletons&&j!=iColumn) {
@@ -5173,7 +5212,7 @@ int CglProbing::probe( const OsiSolverInterface & si,
                     }
                     if (moveSingletons) {
                       // can fix any with good costs
-                      for (int kk =rowStart[irow];kk<rowStart[irow+1];
+                      for (CoinBigIndex kk =rowStart[irow];kk<rowStart[irow+1];
                          kk++) {
                         int iColumn = column[kk];
                         if (j!=iColumn) {
@@ -5334,7 +5373,7 @@ int CglProbing::probe( const OsiSolverInterface & si,
                   index[0]=icol;
                   element[0]=1.0;
                   index[1]=j;
-                  element[1]= + boundChange;
+                  element[1] = +boundChange;
                   // effectiveness is how far j moves
                   double newSol = (colsol[icol]-colUpper[icol])/
                     boundChange;
@@ -5364,7 +5403,7 @@ int CglProbing::probe( const OsiSolverInterface & si,
                   index[0]=icol;
                   element[0]=1.0;
                   index[1]=j;
-                  element[1]= + boundChange;
+                  element[1] = +boundChange;
                   // effectiveness is how far j moves
                   double newSol = (colsol[icol]-colLower[icol])/
                     boundChange;
@@ -5402,7 +5441,7 @@ int CglProbing::probe( const OsiSolverInterface & si,
                 double sum=0.0;
                 if (!ifCut&&(gap>primalTolerance_&&gap<1.0e8)) {
                   // see if the strengthened row is a cut
-                  for (int kk =rowStart[irow];kk<rowStart[irow+1];
+                  for (CoinBigIndex kk =rowStart[irow];kk<rowStart[irow+1];
                        kk++) {
                     sum += rowElements[kk]*colsol[column[kk]];
                   }
@@ -5415,7 +5454,7 @@ int CglProbing::probe( const OsiSolverInterface & si,
                     int n=0;
                     bool coefficientExists=false;
 		    double sum2=0.0;
-                    for (int kk =rowStart[irow];kk<rowStart[irow+1];
+                    for (CoinBigIndex kk =rowStart[irow];kk<rowStart[irow+1];
                          kk++) {
 		      int kColumn = column[kk];
 		      double el = rowElements[kk];
@@ -5504,7 +5543,7 @@ int CglProbing::probe( const OsiSolverInterface & si,
                 if (!ifCut&&(gap>primalTolerance_&&gap<1.0e8)) {
                   // see if the strengthened row is a cut
                   if (!sum) {
-                    for (int kk =rowStart[irow];kk<rowStart[irow+1];
+                    for (CoinBigIndex kk =rowStart[irow];kk<rowStart[irow+1];
                          kk++) {
                       sum += rowElements[kk]*colsol[column[kk]];
                     }
@@ -5518,7 +5557,7 @@ int CglProbing::probe( const OsiSolverInterface & si,
                     int n=0;
                     bool coefficientExists=false;
 		    double sum2=0.0;
-                    for (int kk =rowStart[irow];kk<rowStart[irow+1];
+                    for (CoinBigIndex kk =rowStart[irow];kk<rowStart[irow+1];
                          kk++) {
 		      int kColumn = column[kk];
 		      double el = rowElements[kk];
@@ -5622,15 +5661,15 @@ int CglProbing::probe( const OsiSolverInterface & si,
 	int iflagl = 0;
 	double dmaxup = 0.0;
 	double dmaxdown = 0.0;
-	int krs = rowStart[i];
-	int kre = rowStart[i+1];
+	CoinBigIndex krs = rowStart[i];
+	CoinBigIndex kre = rowStart[i+1];
         int kInt = -1;
 	double rhsAdjustment=0.0;
 	int nPosInt=0;
 	int nNegInt=0;
         double valueInteger=0.0;
         // Find largest integer coefficient
-	int k;
+	CoinBigIndex k;
         for ( k = krs; k < kre; ++k) {
           int j = column[k];
           if (intVar[j]) {
@@ -5749,7 +5788,7 @@ int CglProbing::probe( const OsiSolverInterface & si,
                 rc.setUb(rowUpper[i]);
                 int n=0;
                 double sum=0.0;
-                for (int kk=rowStart[i];kk<rowStart[i+1];kk++) {
+                for (CoinBigIndex kk=rowStart[i];kk<rowStart[i+1];kk++) {
                   int j=column[kk];
                   if (j!=kInt) {
                     sum += colsol[j]*rowElements[kk];
@@ -5936,7 +5975,7 @@ int CglProbing::probeCliques( const OsiSolverInterface & si,
     cliqueCount = new int[numberCliques_];
     int i;
     for (i=0;i<numberCliques_;i++) {
-      cliqueCount[i]=cliqueStart_[i+1]-cliqueStart_[i];
+      cliqueCount[i]=static_cast<int>(cliqueStart_[i+1]-cliqueStart_[i]);
     }
     for (i=0;i<nCols;i++) 
       to_01[i]=-1;
@@ -5958,7 +5997,8 @@ int CglProbing::probeCliques( const OsiSolverInterface & si,
   const int * columnLength = columnCopy->getVectorLengths(); 
   const double * columnElements = columnCopy->getElements();
   double movement;
-  int i, j, k,kk,jj;
+  int i, j;
+  CoinBigIndex jj, k, kk;
   int kcol,krow;
   bool anyColumnCuts=false;
   double dbound, value, value2;
@@ -6215,7 +6255,7 @@ int CglProbing::probeCliques( const OsiSolverInterface & si,
 	      }
 	      for (int i=start;i<end;i++) {
 		int iClique = whichClique_[i];
-		for (int k=cliqueStart_[iClique];k<cliqueStart_[iClique+1];k++) {
+		for (CoinBigIndex k=cliqueStart_[iClique];k<cliqueStart_[iClique+1];k++) {
 		  int kcol = sequenceInCliqueEntry(cliqueEntry_[k]);
                   if (jcol==kcol)
                     continue;
@@ -6240,7 +6280,7 @@ int CglProbing::probeCliques( const OsiSolverInterface & si,
                           }
                           colLower[kcol]=1.0;
                           /* update immediately */
-                          for (int jj =columnStart[kcol];jj<columnStart[kcol]+columnLength[kcol];jj++) {
+                          for (CoinBigIndex jj =columnStart[kcol];jj<columnStart[kcol]+columnLength[kcol];jj++) {
                             krow = row[jj];
                             value = columnElements[jj];
 			    assert (markR[krow]!=-2);
@@ -6284,7 +6324,7 @@ int CglProbing::probeCliques( const OsiSolverInterface & si,
                           }
                           colUpper[kcol]=0.0;
                           /* update immediately */
-                          for (int jj =columnStart[kcol];jj<columnStart[kcol]+columnLength[kcol];jj++) {
+                          for (CoinBigIndex jj =columnStart[kcol];jj<columnStart[kcol]+columnLength[kcol];jj++) {
                             krow = row[jj];
                             value = columnElements[jj];
 			    assert (markR[krow]!=-2);
@@ -6510,8 +6550,9 @@ int CglProbing::probeCliques( const OsiSolverInterface & si,
 		      }
 		      if (newLower>colsol[kcol]) {
 			if (djs[kcol]<0.0) {
-			  /* should be infeasible */
-			  assert (newLower>colUpper[kcol]+primalTolerance_);
+			  /* should be infeasible if integer */
+			  if (intVar[kcol])
+			    assert (newLower>colUpper[kcol]+primalTolerance_);
 			} else {
 			  objVal += moveUp*djs[kcol];
 			}
@@ -6591,8 +6632,9 @@ int CglProbing::probeCliques( const OsiSolverInterface & si,
 		      }
 		      if (newUpper<colsol[kcol]) {
 			if (djs[kcol]>0.0) {
-			  /* should be infeasible */
-			  assert (colLower[kcol]>newUpper+primalTolerance_);
+			  /* should be infeasible if integer */
+			  if (intVar[kcol])
+			    assert (colLower[kcol]>newUpper+primalTolerance_);
 			} else {
 			  objVal += moveDown*djs[kcol];
 			}
@@ -6799,7 +6841,7 @@ int CglProbing::probeCliques( const OsiSolverInterface & si,
                       //     j,i_01,end-start);
                       for (int i=start;i<end;i++) {
                         int iClique = whichClique_[i];
-                        int size = cliqueStart_[iClique+1]-cliqueStart_[iClique];
+                        int size = static_cast<int>(cliqueStart_[iClique+1]-cliqueStart_[iClique]);
                         if (cliqueCount[iClique]==size) {
                           // first time
                           cliqueStack[nCliquesAffected++]=iClique;
@@ -6825,7 +6867,7 @@ int CglProbing::probeCliques( const OsiSolverInterface & si,
 		    index[0]=icol;
 		    element[0]=1.0;
 		    index[1]=j;
-		    element[1]= - boundChange;
+		    element[1] = -boundChange;
 		    // effectiveness is how far j moves
 		    double newSol = (colsol[icol]-colUpper[icol])/
 		      boundChange;
@@ -6856,7 +6898,7 @@ int CglProbing::probeCliques( const OsiSolverInterface & si,
 		    index[0]=icol;
 		    element[0]=1.0;
 		    index[1]=j;
-		    element[1]=- boundChange;
+		    element[1] = -boundChange;
 		    // effectiveness is how far j moves
 		    double newSol = (colsol[icol]-colLower[icol])/
 		      boundChange;
@@ -6886,7 +6928,7 @@ int CglProbing::probeCliques( const OsiSolverInterface & si,
                   int iClique = cliqueStack[i];
                   int size = cliqueCount[iClique];
                   // restore
-                  cliqueCount[iClique]= cliqueStart_[iClique+1]-cliqueStart_[iClique];
+                  cliqueCount[iClique]= static_cast<int>(cliqueStart_[iClique+1]-cliqueStart_[iClique]);
                   if (!size) {
 		    if (numberCliqueAdded<maxCliqueAdded) {
 		      printf("Can add %d (going to 0) to clique %d (%d entries)\n",
@@ -7170,7 +7212,7 @@ int CglProbing::probeCliques( const OsiSolverInterface & si,
                       //     j,i_01,end-start);
                       for (int i=start;i<end;i++) {
                         int iClique = whichClique_[i];
-                        int size = cliqueStart_[iClique+1]-cliqueStart_[iClique];
+                        int size = static_cast<int>(cliqueStart_[iClique+1]-cliqueStart_[iClique]);
                         if (cliqueCount[iClique]==size) {
                           // first time
                           cliqueStack[nCliquesAffected++]=iClique;
@@ -7196,7 +7238,7 @@ int CglProbing::probeCliques( const OsiSolverInterface & si,
 		    index[0]=icol;
 		    element[0]=1.0;
 		    index[1]=j;
-		    element[1]= + boundChange;
+		    element[1] = +boundChange;
 		    // effectiveness is how far j moves
 		    double newSol = (colsol[icol]-colUpper[icol])/
 		      boundChange;
@@ -7227,7 +7269,7 @@ int CglProbing::probeCliques( const OsiSolverInterface & si,
 		    index[0]=icol;
 		    element[0]=1.0;
 		    index[1]=j;
-		    element[1]= + boundChange;
+		    element[1] = +boundChange;
 		    // effectiveness is how far j moves
 		    double newSol = (colsol[icol]-colLower[icol])/
 		      boundChange;
@@ -7255,7 +7297,7 @@ int CglProbing::probeCliques( const OsiSolverInterface & si,
                   int iClique = cliqueStack[i];
                   int size = cliqueCount[iClique];
                   // restore
-                  cliqueCount[iClique]= cliqueStart_[iClique+1]-cliqueStart_[iClique];
+                  cliqueCount[iClique]= static_cast<int>(cliqueStart_[iClique+1]-cliqueStart_[iClique]);
                   if (!size) {
 		    if (numberCliqueAdded<maxCliqueAdded) {
 		      printf("Can add %d (going to 1) to clique %d (%d entries)\n",
@@ -7321,33 +7363,33 @@ int CglProbing::probeCliques( const OsiSolverInterface & si,
                         //if(info->strengthenRow)
                         //printf("c point to row %d\n",irow);
 #ifdef STRENGTHEN_PRINT
-		      if (rowLower[irow]<-1.0e20) {
-			printf("7Cut %g <= ",rc.lb());
-			int k;
-			for ( k=0;k<n;k++) {
-			  int iColumn = index[k];
-			  printf("%g*",element[k]);
-			  if (si.isInteger(iColumn))
-			    printf("i%d ",iColumn);
-			  else
-			    printf("x%d ",iColumn);
+			if (rowLower[irow]<-1.0e20) {
+			  printf("7Cut %g <= ",rc.lb());
+			  int k;
+			  for ( k=0;k<n;k++) {
+			    int iColumn = index[k];
+			    printf("%g*",element[k]);
+			    if (si.isInteger(iColumn))
+			      printf("i%d ",iColumn);
+			    else
+			      printf("x%d ",iColumn);
+			  }
+			  printf("<= %g\n",rc.ub());
+			  printf("Row %g <= ",rowLower[irow]);
+			  for (k=rowStart[irow];k<rowStart[irow]+rowLength[irow];k++) {
+			    int iColumn = column[k];
+			    printf("%g*",rowElements[k]);
+			    if (si.isInteger(iColumn))
+			      printf("i%d ",iColumn);
+			    else
+			      printf("x%d ",iColumn);
+			  }
+			  printf("<= %g\n",rowUpper[irow]);
 			}
-			printf("<= %g\n",rc.ub());
-			printf("Row %g <= ",rowLower[irow]);
-			for (k=rowStart[irow];k<rowStart[irow]+rowLength[irow];k++) {
-			  int iColumn = column[k];
-			  printf("%g*",rowElements[k]);
-			  if (si.isInteger(iColumn))
-			    printf("i%d ",iColumn);
-			  else
-			    printf("x%d ",iColumn);
-			}
-			printf("<= %g\n",rowUpper[irow]);
-		      }
 #endif
-		      int realRow = (rowLower[irow]<-1.0e20) ? irow : -1;
-		      if (realRows&&realRow>0)
-			realRow=realRows[realRow];
+			int realRow = (rowLower[irow]<-1.0e20) ? irow : -1;
+			if (realRows&&realRow>0)
+			  realRow=realRows[realRow];
 			rowCut.addCutIfNotDuplicate(rc,realRow);
 		      }
 		    }
@@ -7400,33 +7442,33 @@ int CglProbing::probeCliques( const OsiSolverInterface & si,
                         //if(info->strengthenRow)
                         //printf("d point to row %d\n",irow);
 #ifdef STRENGTHEN_PRINT
-		      if (rowUpper[irow]>1.0e20) {
-			printf("8Cut %g <= ",rc.lb());
-			int k;
-			for ( k=0;k<n;k++) {
-			  int iColumn = index[k];
-			  printf("%g*",element[k]);
-			  if (si.isInteger(iColumn))
-			    printf("i%d ",iColumn);
-			  else
-			    printf("x%d ",iColumn);
+			if (rowUpper[irow]>1.0e20) {
+			  printf("8Cut %g <= ",rc.lb());
+			  int k;
+			  for ( k=0;k<n;k++) {
+			    int iColumn = index[k];
+			    printf("%g*",element[k]);
+			    if (si.isInteger(iColumn))
+			      printf("i%d ",iColumn);
+			    else
+			      printf("x%d ",iColumn);
+			  }
+			  printf("<= %g\n",rc.ub());
+			  printf("Row %g <= ",rowLower[irow]);
+			  for (k=rowStart[irow];k<rowStart[irow]+rowLength[irow];k++) {
+			    int iColumn = column[k];
+			    printf("%g*",rowElements[k]);
+			    if (si.isInteger(iColumn))
+			      printf("i%d ",iColumn);
+			    else
+			      printf("x%d ",iColumn);
+			  }
+			  printf("<= %g\n",rowUpper[irow]);
 			}
-			printf("<= %g\n",rc.ub());
-			printf("Row %g <= ",rowLower[irow]);
-			for (k=rowStart[irow];k<rowStart[irow]+rowLength[irow];k++) {
-			  int iColumn = column[k];
-			  printf("%g*",rowElements[k]);
-			  if (si.isInteger(iColumn))
-			    printf("i%d ",iColumn);
-			  else
-			    printf("x%d ",iColumn);
-			}
-			printf("<= %g\n",rowUpper[irow]);
-		      }
 #endif
-		      int realRow = (rowUpper[irow]>1.0e20) ? irow : -1;
-		      if (realRows&&realRow>0)
-			realRow=realRows[realRow];
+			int realRow = (rowUpper[irow]>1.0e20) ? irow : -1;
+			if (realRows&&realRow>0)
+			  realRow=realRows[realRow];
 			rowCut.addCutIfNotDuplicate(rc,realRow);
 		      }
 		    }
@@ -7445,7 +7487,7 @@ int CglProbing::probeCliques( const OsiSolverInterface & si,
   if (numberCliqueAdded) {
     CoinSort_2(cliqueAdd2,cliqueAdd2+numberCliqueAdded,cliqueAdd);
     // do cliqueStart and cliqueEntry
-    int numberEntries = cliqueStart_[numberCliques_];
+    CoinBigIndex numberEntries = cliqueStart_[numberCliques_];
     numberEntries += numberCliqueAdded;
     CliqueEntry * entry = new CliqueEntry [numberEntries];
     // use cliqueCount
@@ -7454,8 +7496,8 @@ int CglProbing::probeCliques( const OsiSolverInterface & si,
       cliqueCount[cliqueAdd2[i]]++;
     }
     int nAdd2 = numberCliqueAdded;
-    int last = cliqueStart_[numberCliques_];
-    int put = last+numberCliqueAdded;
+    CoinBigIndex last = cliqueStart_[numberCliques_];
+    CoinBigIndex put = last+numberCliqueAdded;
     cliqueStart_[numberCliques_] = put;
     for (int iClique=numberCliques_-1;iClique>=0;iClique--) {
       // add in new
@@ -7469,8 +7511,8 @@ int CglProbing::probeCliques( const OsiSolverInterface & si,
 	assert(iColumn>=0 && iColumn<numberColumns_);
       }
       // move existing
-      int start = cliqueStart_[iClique];
-      for (int i=last-1;i>=start;i--) 
+      CoinBigIndex start = cliqueStart_[iClique];
+      for (CoinBigIndex i=last-1;i>=start;i--) 
 	entry[--put]=cliqueEntry_[i];
       last = start;
       cliqueStart_[iClique]=put;
@@ -7495,7 +7537,7 @@ int CglProbing::probeCliques( const OsiSolverInterface & si,
     // Now do column lists
     // First do counts
     for (int iClique=0;iClique<numberCliques_;iClique++) {
-      for (int j=cliqueStart_[iClique];j<cliqueStart_[iClique+1];j++) {
+      for (CoinBigIndex j=cliqueStart_[iClique];j<cliqueStart_[iClique+1];j++) {
 	int iColumn = sequenceInCliqueEntry(cliqueEntry_[j]);
 	if (oneFixesInCliqueEntry(cliqueEntry_[j]))
 	  oneFixStart_[iColumn]++;
@@ -7519,7 +7561,7 @@ int CglProbing::probeCliques( const OsiSolverInterface & si,
     }
     // now put in
     for (int iClique=0;iClique<numberCliques_;iClique++) {
-      for (int j=cliqueStart_[iClique];j<cliqueStart_[iClique+1];j++) {
+      for (CoinBigIndex j=cliqueStart_[iClique];j<cliqueStart_[iClique+1];j++) {
 	int iColumn = sequenceInCliqueEntry(cliqueEntry_[j]);
 	if (oneFixesInCliqueEntry(cliqueEntry_[j])) {
 	  int put = which[iColumn];
@@ -7559,6 +7601,7 @@ int CglProbing::probeCliques( const OsiSolverInterface & si,
   }
   return (ninfeas);
 }
+#if 0 // bad code
 // Does probing and adding cuts for clique slacks
 int 
 CglProbing::probeSlacks( const OsiSolverInterface & si, 
@@ -7590,7 +7633,7 @@ CglProbing::probeSlacks( const OsiSolverInterface & si,
   for (iClique=0;iClique<numberCliques_;iClique++) {
     if (!cliqueType_[iClique].equality) {
       double sum=0.0;
-      for (int j=cliqueStart_[iClique];j<cliqueStart_[iClique+1];j++) {
+      for (CoinBigIndex j=cliqueStart_[iClique];j<cliqueStart_[iClique+1];j++) {
         int iColumn = sequenceInCliqueEntry(cliqueEntry_[j]);
         double value = colsol[iColumn];
         if (oneFixesInCliqueEntry(cliqueEntry_[j]))
@@ -7633,7 +7676,8 @@ CglProbing::probeSlacks( const OsiSolverInterface & si,
   const int * columnLength = columnCopy->getVectorLengths(); 
   const double * columnElements = columnCopy->getElements();
   double movement;
-  int i, j, k,kk,jj;
+  int i, j;
+  CoinBigIndex jj, k, kk;
   int kcol,irow,krow;
   bool anyColumnCuts=false;
   double dbound, value, value2;
@@ -7677,11 +7721,11 @@ CglProbing::probeSlacks( const OsiSolverInterface & si,
       double up;
       int iClique=array[iLook].sequence;
       solval=0.0;
-      j=0;
-      for (j=cliqueStart_[iClique];j<cliqueStart_[iClique+1];j++) {
-        int iColumn = sequenceInCliqueEntry(cliqueEntry_[j]);
+      j=0; 
+      for (jj=cliqueStart_[iClique];jj<cliqueStart_[iClique+1];jj++) {
+        int iColumn = sequenceInCliqueEntry(cliqueEntry_[jj]);
         double value = colsol[iColumn];
-        if (oneFixesInCliqueEntry(cliqueEntry_[j]))
+        if (oneFixesInCliqueEntry(cliqueEntry_[jj]))
           solval += value;
         else
           solval -= value;
@@ -7812,7 +7856,7 @@ CglProbing::probeSlacks( const OsiSolverInterface & si,
             }
             for (int i=start;i<end;i++) {
               int iClique = whichClique_[i];
-              for (int k=cliqueStart_[iClique];k<cliqueStart_[iClique+1];k++) {
+              for (CoinBigIndex k=cliqueStart_[iClique];k<cliqueStart_[iClique+1];k++) {
                 int kcol = sequenceInCliqueEntry(cliqueEntry_[k]);
                 if (jcol==kcol)
                   continue;
@@ -8752,6 +8796,7 @@ CglProbing::probeSlacks( const OsiSolverInterface & si,
   abort();
   return (ninfeas);
 }
+#endif
 // Create a copy of matrix which is to be used
 // this is to speed up process and to give global cuts
 // Can give an array with 1 set to select, 0 to ignore
@@ -9200,9 +9245,9 @@ CglProbing::CglProbing (  const CglProbing & rhs)
   if (numberCliques_) {
     cliqueType_ = new CliqueType [numberCliques_];
     CoinMemcpyN(rhs.cliqueType_,numberCliques_,cliqueType_);
-    cliqueStart_ = new int [numberCliques_+1];
+    cliqueStart_ = new CoinBigIndex [numberCliques_+1];
     CoinMemcpyN(rhs.cliqueStart_,(numberCliques_+1),cliqueStart_);
-    int n = cliqueStart_[numberCliques_];
+    CoinBigIndex n = cliqueStart_[numberCliques_];
     cliqueEntry_ = new CliqueEntry [n];
     CoinMemcpyN(rhs.cliqueEntry_,n,cliqueEntry_);
     oneFixStart_ = new int [numberColumns_];
@@ -9377,9 +9422,9 @@ CglProbing::operator=(
     if (numberCliques_) {
       cliqueType_ = new CliqueType [numberCliques_];
       CoinMemcpyN(rhs.cliqueType_,numberCliques_,cliqueType_);
-      cliqueStart_ = new int [numberCliques_+1];
+      cliqueStart_ = new CoinBigIndex [numberCliques_+1];
       CoinMemcpyN(rhs.cliqueStart_,(numberCliques_+1),cliqueStart_);
-      int n = cliqueStart_[numberCliques_];
+      CoinBigIndex n = cliqueStart_[numberCliques_];
       cliqueEntry_ = new CliqueEntry [n];
       CoinMemcpyN(rhs.cliqueEntry_,n,cliqueEntry_);
       oneFixStart_ = new int [numberColumns_];
@@ -9486,7 +9531,7 @@ CglProbing::createCliques( OsiSolverInterface & si,
   int iRow;
   for (iRow=0;iRow<numberRows;iRow++) {
     int numberP1=0, numberM1=0;
-    int j;
+    CoinBigIndex j;
     double upperValue=rowUpper[iRow];
     double lowerValue=rowLower[iRow];
     bool good=true;
@@ -9599,7 +9644,7 @@ CglProbing::createCliques( OsiSolverInterface & si,
   }
   if (numberCliques_>0) {
     cliqueType_ = new CliqueType [numberCliques_];
-    cliqueStart_ = new int [numberCliques_+1];
+    cliqueStart_ = new CoinBigIndex [numberCliques_+1];
     cliqueEntry_ = new CliqueEntry [numberEntries];
     oneFixStart_ = new int [numberColumns_];
     zeroFixStart_ = new int [numberColumns_];
@@ -9620,7 +9665,7 @@ CglProbing::createCliques( OsiSolverInterface & si,
       int iRow=whichRow[iClique];
       whichRow[numberCliques_]=iRow;
       int numberP1=0, numberM1=0;
-      int j;
+      CoinBigIndex j;
       double upperValue=rowUpper[iRow];
       double lowerValue=rowLower[iRow];
       for (j=rowStart[iRow];j<rowStart[iRow]+rowLength[iRow];j++) {
@@ -9704,7 +9749,7 @@ CglProbing::createCliques( OsiSolverInterface & si,
     // Now do column lists
     // First do counts
     for (iClique=0;iClique<numberCliques_;iClique++) {
-      for (int j=cliqueStart_[iClique];j<cliqueStart_[iClique+1];j++) {
+      for (CoinBigIndex j=cliqueStart_[iClique];j<cliqueStart_[iClique+1];j++) {
 	int iColumn = sequenceInCliqueEntry(cliqueEntry_[j]);
 	if (oneFixesInCliqueEntry(cliqueEntry_[j]))
 	  oneFixStart_[iColumn]++;
@@ -9728,7 +9773,7 @@ CglProbing::createCliques( OsiSolverInterface & si,
     }
     // now put in
     for (iClique=0;iClique<numberCliques_;iClique++) {
-      for (int j=cliqueStart_[iClique];j<cliqueStart_[iClique+1];j++) {
+      for (CoinBigIndex j=cliqueStart_[iClique];j<cliqueStart_[iClique+1];j++) {
 	int iColumn = sequenceInCliqueEntry(cliqueEntry_[j]);
 	if (oneFixesInCliqueEntry(cliqueEntry_[j])) {
 	  int put = which[iColumn];
@@ -9797,7 +9842,7 @@ CglProbing::cliqueModel(const OsiSolverInterface * model,
     numberElements = 0;
     for (int iClique=0;iClique<numberCliques_;iClique++) {
       int nMinus=0;
-      for (int j=cliqueStart_[iClique];j<cliqueStart_[iClique+1];j++) {
+      for (CoinBigIndex j=cliqueStart_[iClique];j<cliqueStart_[iClique+1];j++) {
 	int iColumn = sequenceInCliqueEntry(cliqueEntry_[j]);
 	column[numberElements]=iColumn;
 	double value;
@@ -9895,13 +9940,13 @@ CglProbing::setupRowCliqueInformation(const OsiSolverInterface & si)
   const double * upper = si.getColUpper();
   int iRow;
   for (iRow=0;iRow<numberRows_;iRow++) {
-    int j;
+    CoinBigIndex j;
     int numberFree=0;
     int numberUsed=0;
     for (j=rowStart[iRow];j<rowStart[iRow]+rowLength[iRow];j++) {
       int iColumn=column[j];
       if (upper[iColumn]>lower[iColumn]) {
-        back[iColumn]=j-rowStart[iRow];
+        back[iColumn]=static_cast<int>(j-rowStart[iRow]);
         numberFree++;
         for (int k=oneFixStart_[iColumn];k<endFixStart_[iColumn];k++) {
           int iClique = whichClique_[k];
@@ -9943,7 +9988,7 @@ CglProbing::setupRowCliqueInformation(const OsiSolverInterface & si)
           int iColumn=column[j];
           if (upper[iColumn]>lower[iColumn]) {
             bool found=false;
-            int k;
+            CoinBigIndex k;
             for ( k=oneFixStart_[iColumn];k<endFixStart_[iColumn];k++) {
               int iClique = whichClique_[k];
               if (iClique==whichClique) {

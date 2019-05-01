@@ -26,80 +26,84 @@ void OsiRowCut::setUb(double ub) { ub_ = ub; }
 
 //-------------------------------------------------------------------
 // Set row elements
-//------------------------------------------------------------------- 
-void OsiRowCut::setRow(int size, 
-		       const int* colIndices, const double* elements,
-		       bool testForDuplicateIndex)
+//-------------------------------------------------------------------
+void OsiRowCut::setRow(int size,
+  const int *colIndices, const double *elements,
+  bool testForDuplicateIndex)
 {
-   row_.setVector(size, colIndices, elements, testForDuplicateIndex);
+  row_.setVector(size, colIndices, elements, testForDuplicateIndex);
 }
 
-void OsiRowCut::setRow( const CoinPackedVector & v )
+void OsiRowCut::setRow(const CoinPackedVector &v)
 {
-   row_ = v;
+  row_ = v;
 }
 
 //-------------------------------------------------------------------
 // Get the row
 //-------------------------------------------------------------------
-const CoinPackedVector & OsiRowCut::row() const 
-{ 
-   return row_; 
+const CoinPackedVector &OsiRowCut::row() const
+{
+  return row_;
 }
 
 //-------------------------------------------------------------------
 // Get the row for changing
 //-------------------------------------------------------------------
-CoinPackedVector & OsiRowCut::mutableRow()
-{ 
-   return row_; 
+CoinPackedVector &OsiRowCut::mutableRow()
+{
+  return row_;
 }
 
 //----------------------------------------------------------------
-// == operator 
+// == operator
 //-------------------------------------------------------------------
-bool
-OsiRowCut::operator==(const OsiRowCut& rhs) const
+bool OsiRowCut::operator==(const OsiRowCut &rhs) const
 {
-   if ( this->OsiCut::operator!=(rhs) ) return false;
-   if ( row() != rhs.row() )            return false;
-   if ( lb() != rhs.lb() )              return false;
-   if ( ub() != rhs.ub() )              return false;
+  if (this->OsiCut::operator!=(rhs))
+    return false;
+  if (row() != rhs.row())
+    return false;
+  if (lb() != rhs.lb())
+    return false;
+  if (ub() != rhs.ub())
+    return false;
 
-   return true;
+  return true;
 }
 
-bool
-OsiRowCut::operator!=(const OsiRowCut& rhs) const
+bool OsiRowCut::operator!=(const OsiRowCut &rhs) const
 {
-   return !( (*this)==rhs );
+  return !((*this) == rhs);
 }
-
 
 //----------------------------------------------------------------
-// consistent & infeasible 
+// consistent & infeasible
 //-------------------------------------------------------------------
 bool OsiRowCut::consistent() const
 {
-   const CoinPackedVector& r = row();
-   r.duplicateIndex("consistent", "OsiRowCut");
-   if ( r.getMinIndex() < 0 ) return false;
-   return true;
+  const CoinPackedVector &r = row();
+  r.duplicateIndex("consistent", "OsiRowCut");
+  if (r.getMinIndex() < 0)
+    return false;
+  return true;
 }
 
-bool OsiRowCut::consistent(const OsiSolverInterface& im) const
-{  
-   const CoinPackedVector& r = row();
-   if ( r.getMaxIndex() >= im.getNumCols() ) return false;
+bool OsiRowCut::consistent(const OsiSolverInterface &im) const
+{
+  const CoinPackedVector &r = row();
+  if (r.getMaxIndex() >= im.getNumCols())
+    return false;
 
-   return true;
+  return true;
 }
 
 bool OsiRowCut::infeasible(const OsiSolverInterface &) const
 {
-   if ( lb() > ub() ) return true;
+  if (lb() > ub())
+    return true;
 
-   return false;
+  return false;
 }
 
 #endif
@@ -107,24 +111,24 @@ bool OsiRowCut::infeasible(const OsiSolverInterface &) const
     passed in i.e. is positive if cuts off that solution.  
     solution is getNumCols() long..
 */
-double 
-OsiRowCut::violated(const double * solution) const
+double
+OsiRowCut::violated(const double *solution) const
 {
-   int i;
-   double sum = 0.0;
-   const int* column = row_.getIndices();
-   int number = row_.getNumElements();
-   const double* element = row_.getElements();
-   for ( i = 0;  i < number;  i++ ) {
-      int colIndx = column[i];
-      sum += solution[colIndx] * element[i];
-   }
-   if ( sum > ub_ )
-      return sum-ub_;
-   else if ( sum < lb_ )
-      return lb_-sum;
-   else
-      return 0.0;
+  int i;
+  double sum = 0.0;
+  const int *column = row_.getIndices();
+  int number = row_.getNumElements();
+  const double *element = row_.getElements();
+  for (i = 0; i < number; i++) {
+    int colIndx = column[i];
+    sum += solution[colIndx] * element[i];
+  }
+  if (sum > ub_)
+    return sum - ub_;
+  else if (sum < lb_)
+    return lb_ - sum;
+  else
+    return 0.0;
 }
 
 //-------------------------------------------------------------------
@@ -132,172 +136,191 @@ OsiRowCut::violated(const double * solution) const
 //-------------------------------------------------------------------
 char OsiRowCut::sense() const
 {
-   if      ( lb_ == ub_ )                        return 'E';
-   else if ( lb_ == -COIN_DBL_MAX && ub_ == COIN_DBL_MAX ) return 'N';
-   else if ( lb_ == -COIN_DBL_MAX )                   return 'L';
-   else if ( ub_ == COIN_DBL_MAX )                    return 'G';
-   else                                          return 'R';
+  if (lb_ == ub_)
+    return 'E';
+  else if (lb_ == -COIN_DBL_MAX && ub_ == COIN_DBL_MAX)
+    return 'N';
+  else if (lb_ == -COIN_DBL_MAX)
+    return 'L';
+  else if (ub_ == COIN_DBL_MAX)
+    return 'G';
+  else
+    return 'R';
 }
 
 double OsiRowCut::rhs() const
 {
-   if      ( lb_ == ub_ )                                  return ub_;
-   else if ( lb_ == -COIN_DBL_MAX && ub_ == COIN_DBL_MAX ) return 0.0;
-   else if ( lb_ == -COIN_DBL_MAX )                        return ub_;
-   else if ( ub_ == COIN_DBL_MAX )                         return lb_;
-   else                                                     return ub_;
+  if (lb_ == ub_)
+    return ub_;
+  else if (lb_ == -COIN_DBL_MAX && ub_ == COIN_DBL_MAX)
+    return 0.0;
+  else if (lb_ == -COIN_DBL_MAX)
+    return ub_;
+  else if (ub_ == COIN_DBL_MAX)
+    return lb_;
+  else
+    return ub_;
 }
 
 double OsiRowCut::range() const
 {
-   if      ( lb_ == ub_ )                                  return 0.0;
-   else if ( lb_ == -COIN_DBL_MAX && ub_ == COIN_DBL_MAX ) return 0.0;
-   else if ( lb_ == -COIN_DBL_MAX )                        return 0.0;
-   else if ( ub_ == COIN_DBL_MAX )                         return 0.0;
-   else                                                    return ub_ - lb_;
+  if (lb_ == ub_)
+    return 0.0;
+  else if (lb_ == -COIN_DBL_MAX && ub_ == COIN_DBL_MAX)
+    return 0.0;
+  else if (lb_ == -COIN_DBL_MAX)
+    return 0.0;
+  else if (ub_ == COIN_DBL_MAX)
+    return 0.0;
+  else
+    return ub_ - lb_;
 }
 
 //-------------------------------------------------------------------
-// Default Constructor 
+// Default Constructor
 //-------------------------------------------------------------------
-OsiRowCut::OsiRowCut () : OsiCut(),
-			  row_(),
-			  lb_(-COIN_DBL_MAX),
-			  ub_( COIN_DBL_MAX)
+OsiRowCut::OsiRowCut()
+  : OsiCut()
+  , row_()
+  , lb_(-COIN_DBL_MAX)
+  , ub_(COIN_DBL_MAX)
 {
-   //#ifdef NDEBUG
-   //row_.setTestForDuplicateIndex(false);
-   //#endif
+  //#ifdef NDEBUG
+  //row_.setTestForDuplicateIndex(false);
+  //#endif
 }
 
 //-------------------------------------------------------------------
-// Ownership constructor 
+// Ownership constructor
 //-------------------------------------------------------------------
 
 OsiRowCut::OsiRowCut(double cutlb, double cutub,
- 		     int capacity, int size,
- 		     int *&colIndices, double *&elements):
-   OsiCut(),
-   row_(capacity, size, colIndices, elements),
-   lb_(cutlb),
-   ub_(cutub)
-{}
-
-//-------------------------------------------------------------------
-// Copy constructor 
-//-------------------------------------------------------------------
-OsiRowCut::OsiRowCut (const OsiRowCut & source) :
-   OsiCut(source),
-   row_(source.row_),
-   lb_(source.lb_),
-   ub_(source.ub_)
+  int capacity, int size,
+  int *&colIndices, double *&elements)
+  : OsiCut()
+  , row_(capacity, size, colIndices, elements)
+  , lb_(cutlb)
+  , ub_(cutub)
 {
-   // Nothing to do here
 }
 
+//-------------------------------------------------------------------
+// Copy constructor
+//-------------------------------------------------------------------
+OsiRowCut::OsiRowCut(const OsiRowCut &source)
+  : OsiCut(source)
+  , row_(source.row_)
+  , lb_(source.lb_)
+  , ub_(source.ub_)
+{
+  // Nothing to do here
+}
 
 //----------------------------------------------------------------
 // Clone
 //----------------------------------------------------------------
-OsiRowCut * OsiRowCut::clone() const
-{ return (new OsiRowCut(*this)); }
-
-
-//-------------------------------------------------------------------
-// Destructor 
-//-------------------------------------------------------------------
-OsiRowCut::~OsiRowCut ()
+OsiRowCut *OsiRowCut::clone() const
 {
-   // Nothing to do here
+  return (new OsiRowCut(*this));
+}
+
+//-------------------------------------------------------------------
+// Destructor
+//-------------------------------------------------------------------
+OsiRowCut::~OsiRowCut()
+{
+  // Nothing to do here
 }
 
 //----------------------------------------------------------------
-// Assignment operator 
+// Assignment operator
 //-------------------------------------------------------------------
 OsiRowCut &
-OsiRowCut::operator=(const OsiRowCut& rhs)
+OsiRowCut::operator=(const OsiRowCut &rhs)
 {
-   if ( this != &rhs ) {
-      OsiCut::operator=(rhs);
-      row_ = rhs.row_;
-      lb_ = rhs.lb_;
-      ub_ = rhs.ub_;
-   }
-   return *this;
+  if (this != &rhs) {
+    OsiCut::operator=(rhs);
+    row_ = rhs.row_;
+    lb_ = rhs.lb_;
+    ub_ = rhs.ub_;
+  }
+  return *this;
 }
 
 //----------------------------------------------------------------
 // Print
 //-------------------------------------------------------------------
 
-void
-OsiRowCut::print() const
+void OsiRowCut::print() const
 {
-   int i;
-   std::cout << "Row cut has " << row_.getNumElements()
-	     << " elements";
-   if ( lb_ < -1.0e20 && ub_<1.0e20 ) 
-      std::cout << " with upper rhs of " << ub_;
-   else if ( lb_ > -1.0e20 && ub_ > 1.0e20 ) 
-      std::cout << " with lower rhs of " << lb_;
-   else
-      std::cout << " !!! with lower, upper rhs of " << lb_ << " and " << ub_;
-   std::cout << std::endl;
-   for ( i = 0;  i < row_.getNumElements();  i++ ) {
-      int colIndx = row_.getIndices()[i];
-      double element = row_.getElements()[i];
-      if ( i > 0 && element > 0 )
-	 std::cout << " +";
-      std::cout << element << " * x" << colIndx << " ";
-   }
-   std::cout << std::endl;
+  int i;
+  std::cout << "Row cut has " << row_.getNumElements()
+            << " elements";
+  if (lb_ < -1.0e20 && ub_ < 1.0e20)
+    std::cout << " with upper rhs of " << ub_;
+  else if (lb_ > -1.0e20 && ub_ > 1.0e20)
+    std::cout << " with lower rhs of " << lb_;
+  else
+    std::cout << " !!! with lower, upper rhs of " << lb_ << " and " << ub_;
+  std::cout << std::endl;
+  for (i = 0; i < row_.getNumElements(); i++) {
+    int colIndx = row_.getIndices()[i];
+    double element = row_.getElements()[i];
+    if (i > 0 && element > 0)
+      std::cout << " +";
+    std::cout << element << " * x" << colIndx << " ";
+  }
+  std::cout << std::endl;
 }
 
 //-------------------------------------------------------------------
-// Default Constructor 
+// Default Constructor
 //-------------------------------------------------------------------
-OsiRowCut2::OsiRowCut2(int row) :
-   OsiRowCut(),
-   whichRow_(row)
+OsiRowCut2::OsiRowCut2(int row)
+  : OsiRowCut()
+  , whichRow_(row)
 {
   // nothing to do here
 }
 
 //-------------------------------------------------------------------
-// Copy constructor 
+// Copy constructor
 //-------------------------------------------------------------------
-OsiRowCut2::OsiRowCut2(const OsiRowCut2 & source) :
-   OsiRowCut(source),
-   whichRow_(source.whichRow_)
-{  
+OsiRowCut2::OsiRowCut2(const OsiRowCut2 &source)
+  : OsiRowCut(source)
+  , whichRow_(source.whichRow_)
+{
   // Nothing to do here
 }
-
 
 //----------------------------------------------------------------
 // Clone
 //----------------------------------------------------------------
-OsiRowCut * OsiRowCut2::clone() const
-{ return (new OsiRowCut2(*this)); }
-
-
-//-------------------------------------------------------------------
-// Destructor 
-//-------------------------------------------------------------------
-OsiRowCut2::~OsiRowCut2 ()
+OsiRowCut *OsiRowCut2::clone() const
 {
-   // Nothing to do here
+  return (new OsiRowCut2(*this));
+}
+
+//-------------------------------------------------------------------
+// Destructor
+//-------------------------------------------------------------------
+OsiRowCut2::~OsiRowCut2()
+{
+  // Nothing to do here
 }
 
 //----------------------------------------------------------------
-// Assignment operator 
+// Assignment operator
 //-------------------------------------------------------------------
 OsiRowCut2 &
-OsiRowCut2::operator=(const OsiRowCut2& rhs)
+OsiRowCut2::operator=(const OsiRowCut2 &rhs)
 {
-   if ( this != &rhs ) {
-      OsiRowCut::operator = (rhs);
-      whichRow_ = rhs.whichRow_;
-   }
-   return *this;
+  if (this != &rhs) {
+    OsiRowCut::operator=(rhs);
+    whichRow_ = rhs.whichRow_;
+  }
+  return *this;
 }
+
+/* vi: softtabstop=2 shiftwidth=2 expandtab tabstop=2
+*/

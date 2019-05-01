@@ -1,4 +1,4 @@
-/* $Id: CoinPresolveDual.hpp 1510 2011-12-08 23:56:01Z lou $ */
+/* $Id: CoinPresolveDual.hpp 2083 2019-01-06 19:38:09Z unxusr $ */
 
 // Copyright (C) 2002, International Business Machines
 // Corporation and others.  All Rights Reserved.
@@ -34,13 +34,12 @@
 
 class remove_dual_action : public CoinPresolveAction {
 
-  public:
-
+public:
   /// Destructor
-  ~remove_dual_action () ;
+  ~remove_dual_action();
 
   /// Name
-  inline const char *name () const { return ("remove_dual_action") ; }
+  inline const char *name() const { return ("remove_dual_action"); }
 
   /*! \brief Attempt to fix variables by bounding reduced costs
 
@@ -48,38 +47,38 @@ class remove_dual_action : public CoinPresolveAction {
     no change or until some set of variables can be fixed.
   */
   static const CoinPresolveAction *presolve(CoinPresolveMatrix *prob,
-					    const CoinPresolveAction *next) ;
+    const CoinPresolveAction *next);
 
   /*! \brief Postsolve
 
     In addition to fixing variables (handled by make_fixed_action), we may
     need use our own postsolve to restore constraint bounds.
   */
-  void postsolve (CoinPostsolveMatrix *prob) const ;
+  void postsolve(CoinPostsolveMatrix *prob) const;
 
-  private:
-
+private:
   /// Postsolve (bound restore) instruction
   struct action {
-    double rlo_ ;  ///< restored row lower bound
-    double rup_ ;  ///< restored row upper bound
-    int ndx_ ;     ///< row index
-  } ;
+    double rlo_; ///< restored row lower bound
+    double rup_; ///< restored row upper bound
+    int ndx_; ///< row index
+  };
 
   /// Constructor with postsolve actions.
   remove_dual_action(int nactions, const action *actions,
-		     const CoinPresolveAction *next)
-    : CoinPresolveAction(next),
-      nactions_(nactions),
-      actions_(actions)
-  {}
+    const CoinPresolveAction *next)
+    : CoinPresolveAction(next)
+    , nactions_(nactions)
+    , actions_(actions)
+  {
+  }
 
   /// Count of bound restore entries
-  const int nactions_ ;
+  const int nactions_;
   /// Bound restore entries
-  const action *actions_ ;
-
-} ;
+  const action *actions_;
+};
 #endif
 
-
+/* vi: softtabstop=2 shiftwidth=2 expandtab tabstop=2
+*/

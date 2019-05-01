@@ -2,7 +2,7 @@
 # All Rights Reserved.
 # This file is distributed under the Eclipse Public License.
 
-## $Id: configure.ac 2595 2015-08-09 22:10:23Z stefan $
+## $Id: configure.ac 2760 2018-11-17 17:22:41Z stefan $
 
 # Authors:  Carl Laird, Andreas Waechter     IBM    2004-08-13
 
@@ -12,7 +12,7 @@
 
 AC_PREREQ(2.59)
 
-AC_INIT([Ipopt],[3.12.4],[http://projects.coin-or.org/Ipopt/newticket])
+AC_INIT([Ipopt],[3.12.12],[http://projects.coin-or.org/Ipopt/newticket])
 
 AC_COPYRIGHT(
 [Copyright 2004, 2011 International Business Machines and others.
@@ -41,7 +41,7 @@ AC_CANONICAL_BUILD
 # the source root directory contains definition of where to find those
 # externals.  The following macro ensures that those externals are
 # retrieved by svn if they are not there yet.
-AC_COIN_PROJECTDIR_INIT(Ipopt,11:4:10)
+AC_COIN_PROJECTDIR_INIT(Ipopt,11:12:10)
 
 # Check if user wants to produce debugging code
 AC_COIN_DEBUG_COMPILE(Ipopt)
@@ -76,9 +76,12 @@ AC_COIN_CXXLIBS
 
 # Get the name of the Fortran compiler and appropriate compiler options
 AC_COIN_PROG_F77
+AM_CONDITIONAL(COIN_HAS_F77, test "$F77" != "unavailable")
 
 # Find out how to call Fortran from C and determine Fortran runtime libraries
-AC_COIN_F77_WRAPPERS
+if test "$F77" != "unavailable" ; then
+  AC_COIN_F77_WRAPPERS
+fi
 
 # Initialize automake and libtool
 AC_COIN_INIT_AUTO_TOOLS
@@ -306,11 +309,9 @@ if test "$use_pardiso" = "no"; then
 else
   LIBS="$use_pardiso $LIBS $LAPACK_LIBS $BLAS_LIBS"
 fi
-AC_MSG_CHECKING([whether MKL is being used])
-AC_TRY_LINK([],[      call mkl_get_version_string()],
-            [AC_MSG_RESULT(yes)
-             have_mkl=yes],
-            [AC_MSG_RESULT(no)])
+AC_LANG_PUSH(C)
+AC_CHECK_FUNC([mkl_get_version_string],[have_mkl=yes])
+AC_LANG_POP(C)
 # If using MKL, always enable Pardiso
 if test "$have_mkl" = "yes" -a "$use_pardiso" = "no"; then
   use_pardiso=""
@@ -322,24 +323,30 @@ if test "$use_pardiso" != "no"; then
   PARDISO_LIB="$use_pardiso"
   LIBS="$PARDISO_LIB $LIBS $LAPACK_LIBS $BLAS_LIBS"
 
-# ToDo put this back in
-  AC_MSG_CHECKING([whether user-supplied Pardiso library \"$use_pardiso\" works])
-  AC_TRY_LINK([],[      call PARDISO()],
-              [AC_MSG_RESULT(yes)],
-              [AC_MSG_ERROR([Pardiso library $use_pardiso does not seem to work])])
-
+  if test "$F77" != unavailable ; then
+    AC_MSG_CHECKING([whether user-supplied Pardiso library \"$use_pardiso\" works])
+    AC_TRY_LINK([],[      call PARDISO()],
+                [AC_MSG_RESULT(yes)],
+                [AC_MSG_ERROR([Pardiso library $use_pardiso does not seem to work])])
+  else
+    AC_LANG_PUSH(C)
+    AC_MSG_NOTICE([checking whether user-supplied Pardiso library \"$use_pardiso\" works using C linkage])
+    AC_CHECK_FUNC([PARDISO],[],[AC_MSG_ERROR([Pardiso library $use_pardiso does not seem to work])])
+    AC_LANG_POP(C)
+  fi
   AC_DEFINE(HAVE_PARDISO,1,[Define to 1 if Pardiso is available])
 
-  AC_MSG_CHECKING([whether Pardiso library is at least version 4.0])
-  AC_TRY_LINK([],[      call pardiso_ipopt_newinterface()],
-              [AC_MSG_RESULT(yes)],
-              [AC_MSG_RESULT(no)
-               AC_DEFINE(HAVE_PARDISO_OLDINTERFACE,1,[Define to 1 if you are not using at least a 4.0 version of Pardiso])
-               if test "$have_mkl" = "yes"; then
-                 AC_DEFINE(HAVE_PARDISO_MKL,1,[Define to 1 if you are using Pardiso from MKL])
-               else
-                 have_mkl=no
-               fi])
+  if test "$have_mkl" = "yes"; then
+     AC_DEFINE(HAVE_PARDISO_MKL,1,[Define to 1 if you are using Pardiso from MKL])
+     AC_DEFINE(HAVE_PARDISO_OLDINTERFACE,1,[Define to 1 if you are not using at least a 4.0 version of Pardiso])
+  else
+    AC_MSG_CHECKING([whether Pardiso library is at least version 4.0])
+    AC_TRY_LINK([],[      call pardiso_ipopt_newinterface()],
+                [AC_MSG_RESULT(yes)],
+                [AC_MSG_RESULT(no)
+                 AC_DEFINE(HAVE_PARDISO_OLDINTERFACE,1,[Define to 1 if you are not using at least a 4.0 version of Pardiso])
+                ])
+  fi
   
 # Test if this is the parallel version of Pardiso
 # (MKL PARDISO is always parallel, even though it does not have this function implemented)
@@ -485,6 +492,9 @@ case $build in
   *-cygwin* | *-mingw*)
     JIPOPTDLL=jipopt.dll
     ;;
+  *-darwin* )
+    JIPOPTDLL=libjipopt.dylib
+    ;;  
   *)
     JIPOPTDLL=libjipopt.so
     ;;
@@ -554,6 +564,10 @@ if test x"$use_matlab_home" = x; then
     MATLAB_HOME=`echo $mexpath | sed -e "s=/bin/matlab$EXEEXT$=="`
     AC_MSG_RESULT([$MATLAB_HOME])
   fi
+elif test x"$use_matlab_home" = xno; then
+  # Matlab interface disabled by user
+  MATLAB_HOME=""
+  AC_MSG_RESULT([disabled])
 else
   MATLAB_HOME="$use_matlab_home"
   AC_MSG_RESULT([$MATLAB_HOME])
@@ -707,14 +721,14 @@ AM_CONDITIONAL([HAVE_WSMP],[test ! "$use_wsmp" = no])
 
 AC_ARG_ENABLE([linear-solver-loader],
   [AC_HELP_STRING([--enable-linear-solver-loader],
-     [compile linear solver loader (default: yes)])],
+     [compile linear solver loader (default: yes, if F77 available, otherwise no)])],
   [case "$enableval" in
      no | yes) ;;
      *)
        AC_MSG_ERROR([invalid argument for --enable-linear-solver-loader: $enableval]);;
    esac
    use_linearsolverloader=$enableval],
-  [use_linearsolverloader=yes])
+  [if test "$F77" != unavailable ; then use_linearsolverloader=yes; else use_linearsolverloader=no; fi])
 
 AC_MSG_CHECKING([whether the linear solver loader should be compiled])
 AC_MSG_RESULT([$use_linearsolverloader])

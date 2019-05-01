@@ -360,7 +360,7 @@ thirdpartyinclude_HEADERS = \
   $(MUMPSDIR)/include/dmumps_c.h \
   $(MUMPSDIR)/include/mumps_compat.h \
   $(MUMPSDIR)/include/mumps_c_types.h \
-  $(MUMPSDIR)/libseq/mpi.h
+  $(MUMPSDIR)/libseq/mumps_mpi.h
 
 pkgconfiglibdir = $(libdir)/pkgconfig
 pkgconfiglib_DATA = coinmumps.pc

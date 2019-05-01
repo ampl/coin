@@ -1,4 +1,4 @@
-// $Id: CglClique.hpp 1119 2013-04-06 20:24:18Z stefan $
+// $Id: CglClique.hpp 1331 2016-01-26 19:37:05Z forrest $
 // Copyright (C) 2000, International Business Machines
 // Corporation and others.  All Rights Reserved.
 // This code is licensed under the terms of the Eclipse Public License (EPL).
@@ -86,6 +86,8 @@ public:
 
     void setMinViolation(double minviol) { petol = minviol; }
     double getMinViolation() const { return petol; }
+    /// Maximum number of binaries for looking at all
+    inline void setMaxNumber(int value) { maxNumber_ = value; }
 
 private:
 
@@ -157,6 +159,8 @@ protected:
 
     /** The primal tolerance in the solverinterface. */
     double petol;
+    /// Maximum number of binaries for looking at all
+    int maxNumber_; 
 
     /** data for the star clique algorithm */
 

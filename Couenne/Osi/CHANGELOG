@@ -1,3 +1,25 @@
+23/01/2018 OsiMsk
+  - add compatibility with Mosek 9.0 beta
+
+20/04/2017 OsiSpx
+  - add compatibility with SoPlex 3.0
+
+31/05/2016 OsiMsk
+  - get it compiling with Mosek 8 beta (conic MIP only with Mosek 7, MSK_initenv() removed)
+
+18/05/2016 OsiCpx
+  - switch from deprecated CPXcopymipstart to CPXaddmipstarts
+
+10/03/2016 OsiMsk
+  - improved performance of frequently called checkMSKerror() and MSKassert()
+    functions (contributed by Geoff Leyland)
+
+17/02/2016 OsiCpx
+  - fixed handling of cplex message callbacks in OsiCpx::reset()
+
+15/02/2016 OsiCpx
+  - fixed OsiCpx::getRowActivity() when solved a MIP
+  
 09/06/2015 OsiSpx
   - added compatibility with SoPlex 2.2
   - added OsiSpx::getLpPtr()

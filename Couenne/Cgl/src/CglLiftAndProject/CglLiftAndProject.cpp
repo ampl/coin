@@ -62,7 +62,7 @@ void CglLiftAndProject::generateCuts(const OsiSolverInterface& si, OsiCuts& cs,
   const int * AtildeIndices =  Atilde->getIndices();
   const CoinBigIndex * AtildeStarts = Atilde->getVectorStarts();
   const int * AtildeLengths = Atilde->getVectorLengths();  
-  const int AtildeFullSize = AtildeStarts[m];
+  const CoinBigIndex AtildeFullSize = AtildeStarts[m];
   const double * btilde = si.getRowLower();
 
   // Set up memory for system (10) [BCC:307]
@@ -105,16 +105,17 @@ void CglLiftAndProject::generateCuts(const OsiSolverInterface& si, OsiCuts& cs,
   int twoM = 2*m;
   int BNumRows = n+2;
   int BNumCols = twoM+2;
-  int BFullSize = 2*AtildeFullSize+twoM+3;
+  CoinBigIndex BFullSize = 2*AtildeFullSize+twoM+3;
   double * BElements = new double[BFullSize];
   int * BIndices = new int[BFullSize];
   CoinBigIndex * BStarts = new CoinBigIndex [BNumCols+1];
   int * BLengths = new int[BNumCols];
 
 
-  int i, ij, k=0;
+  int i, k=0;
+  CoinBigIndex ij;
   int nPlus1=n+1;
-  int offset = AtildeStarts[m]+m;
+  CoinBigIndex offset = AtildeStarts[m]+m;
   for (i=0; i<m; i++){
     for (ij=AtildeStarts[i];ij<AtildeStarts[i]+AtildeLengths[i];ij++){
       BElements[k]=AtildeElements[ij];
@@ -176,7 +177,7 @@ void CglLiftAndProject::generateCuts(const OsiSolverInterface& si, OsiCuts& cs,
 
   // Number of cols and size of Elements vector
   // in B without the v_0 and u_0 cols
-  int BFullSizeLessThree = BFullSize-3;
+  CoinBigIndex BFullSizeLessThree = BFullSize-3;
 
   // Load B matrix into a column orders CoinPackedMatrix
   CoinPackedMatrix * BMatrix = new CoinPackedMatrix(true, BNumRows,

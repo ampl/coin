@@ -1,4 +1,4 @@
-// $Id: BonCouenneSetup.cpp 1177 2015-06-02 22:46:03Z pbelotti $
+// $Id: BonCouenneSetup.cpp 1273 2019-02-23 17:29:55Z stefan $
 //
 // (C) Copyright International Business Machines Corporation 2007
 // All Rights Reserved.
@@ -468,7 +468,7 @@ bool CouenneSetup::InitializeCouenne (char ** argv,
   if (freq != 0) {
 
     CuttingMethod cg;
-    cg.frequency = freq;
+    cg.frequency = (freq > 0) ? freq : 1; // Do it always if freq < 0, check within generateCuts() against tree depth
     cg.cgl = new CouenneFixPoint (couenneProb_, options ());
     cg.id = "Couenne fixed point FBBT";
     cutGenerators (). push_back (cg);

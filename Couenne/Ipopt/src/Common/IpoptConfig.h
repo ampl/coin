@@ -2,7 +2,7 @@
  * All Rights Reserved.
  * This code is published under the Eclipse Public License.
  *
- * $Id: IpoptConfig.h 2005 2011-06-06 12:55:16Z stefan $
+ * $Id: IpoptConfig.h 2666 2016-07-20 16:02:55Z stefan $
  *
  * Include file for the configuration of Ipopt.
  *
@@ -42,5 +42,20 @@
 #endif
 
 #endif /* HAVE_CONFIG_H */
+
+/* If F77_FUNC has not been defined, then because no Fortran compiler was available.
+ * However, Ipopt needs this define to call functions from library that are usually
+ * written in Fortran (Blas, Lapack). We make up some definition here, but the user
+ * may have to adapt for their system.
+ */
+#if defined(IPOPT_BUILD) && !defined(F77_FUNC)
+#if 1
+# define F77_FUNC(name,NAME) NAME
+# define F77_FUNC_(name,NAME) NAME
+#else
+# define F77_FUNC(name,NAME) name ## _
+# define F77_FUNC_(name,NAME) name ## __
+#endif
+#endif
 
 #endif /*__IPOPTCONFIG_H__*/

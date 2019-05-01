@@ -15,7 +15,7 @@
 // lpi_spx2 does not work when SOPLEX_LEGACY is set
 // to keep things simple, just fall back to use lpi_spx in this case, even though it makes the Soplex2 lpiswitch option equivalent to Soplex
 #ifdef SOPLEX_LEGACY
-#include "lpi/lpi_spx.cpp"
+#include "lpi/lpi_spx1.cpp"
 #else
 #include "lpi/lpi_spx2.cpp"
 #endif

@@ -2,7 +2,7 @@
 // All Rights Reserved.
 // This code is published under the Eclipse Public License.
 //
-// $Id: IpUtils.cpp 2594 2015-08-09 14:31:05Z stefan $
+// $Id: IpUtils.cpp 2654 2016-04-30 11:51:32Z stefan $
 //
 // Authors:  Carl Laird, Andreas Waechter    IBM       2005-08-12
 
@@ -175,7 +175,7 @@ namespace Ipopt
 #  ifdef HAVE_STD__RAND
     return Number(std::rand())/Number(RAND_MAX);
 #  else
-    /* this is a workaround for gcc 4.8.3, for which the test for rand() that our old configure sets up does not work */
+    /* this is a workaround for gcc 4.8.x, x >= 2, for which the test for rand() in our old configure does not work */
 #   if defined(__GNUC__) && __GNUC__ == 4 && __GNUC_MINOR__ == 8 && __GNUC_PATCHLEVEL__ >= 2
       return Number(rand())/Number(RAND_MAX);
 #   else

@@ -1,4 +1,4 @@
-/* $Id: obbt.cpp 698 2011-06-20 13:36:43Z pbelotti $
+/* $Id: obbt.cpp 1261 2018-09-01 19:51:25Z pbelotti $
  *
  * Name:    obbt.cpp
  * Author:  Pietro Belotti
@@ -17,6 +17,7 @@
 #include "CouenneCutGenerator.hpp"
 #include "CouenneProblem.hpp"
 #include "CouenneInfeasCut.hpp"
+#include "CouenneBTPerfIndicator.hpp"
 
 using namespace Ipopt;
 using namespace Couenne;
@@ -188,8 +189,12 @@ int CouenneProblem::obbt (const CouenneCutGenerator *cg,
   // this node is infeasible and we shouldn't take the pain of running
   // this CGL.
 
+  int retval = 0;
+
   if (isWiped (cs) || info.pass >= MAX_OBBT_ATTEMPTS)
     return 0;
+
+  double startTime = CoinCpuTime ();
 
   int nTotImproved = 0;
 
@@ -202,6 +207,8 @@ int CouenneProblem::obbt (const CouenneCutGenerator *cg,
        (info.level <= logObbtLev_) ||     //  depth is lower than COU_OBBT_CUTOFF_LEVEL, OR
                                           //  probability inversely proportional to the level)
        (CoinDrand48 () < pow (2., (double) logObbtLev_ - (info.level + 1))))) {
+
+    OBBTperfIndicator_ -> setOldBounds (Lb (), Ub ());
 
     if ((info.level <= 0 && !(info.inTree)) || 
     	jnlst_ -> ProduceOutput (J_STRONGWARNING, J_COUENNE))  {
@@ -273,9 +280,12 @@ int CouenneProblem::obbt (const CouenneCutGenerator *cg,
 
     if (nImprov < 0) {
       jnlst_->Printf(J_ITERSUMMARY, J_BOUNDTIGHTENING, "  Couenne: infeasible node after OBBT\n");
-      return -1;
+      retval = -1;
     }
+
+    OBBTperfIndicator_ -> update     (Lb (), Ub (), info.level);
+    OBBTperfIndicator_ -> addToTimer (CoinCpuTime () - startTime);
   }
 
-  return 0;
+  return retval;
 }

@@ -1,4 +1,4 @@
-/* $Id: boundTightening.cpp 1033 2013-12-14 19:34:28Z pbelotti $
+/* $Id: boundTightening.cpp 1254 2018-08-27 22:55:23Z pbelotti $
  *
  * Name:    boundTightening.cpp
  * Author:  Pietro Belotti
@@ -183,7 +183,7 @@ bool CouenneProblem::boundTightening (t_chg_bounds *chg_bds,
 
   double startTime = CoinCpuTime ();
 
-  perfIndicator_ -> setOldBounds (Lb (), Ub ());
+  FBBTperfIndicator_ -> setOldBounds (Lb (), Ub ());
 
   //
   // #define SMALL_BOUND 1e4
@@ -225,8 +225,8 @@ bool CouenneProblem::boundTightening (t_chg_bounds *chg_bds,
 
   bool retval = btCore (chg_bds);
 
-  perfIndicator_ -> update     (Lb (), Ub (), info.level);
-  perfIndicator_ -> addToTimer (CoinCpuTime () - startTime);
+  FBBTperfIndicator_ -> update     (Lb (), Ub (), info.level);
+  FBBTperfIndicator_ -> addToTimer (CoinCpuTime () - startTime);
 
   return retval;
 

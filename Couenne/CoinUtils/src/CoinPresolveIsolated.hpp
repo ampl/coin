@@ -1,4 +1,4 @@
-/* $Id: CoinPresolveIsolated.hpp 1498 2011-11-02 15:25:35Z mjs $ */
+/* $Id: CoinPresolveIsolated.hpp 2083 2019-01-06 19:38:09Z unxusr $ */
 // Copyright (C) 2002, International Business Machines
 // Corporation and others.  All Rights Reserved.
 // This code is licensed under the terms of the Eclipse Public License (EPL).
@@ -10,8 +10,8 @@
 
 class isolated_constraint_action : public CoinPresolveAction {
   isolated_constraint_action();
-  isolated_constraint_action(const isolated_constraint_action& rhs);
-  isolated_constraint_action& operator=(const isolated_constraint_action& rhs);
+  isolated_constraint_action(const isolated_constraint_action &rhs);
+  isolated_constraint_action &operator=(const isolated_constraint_action &rhs);
 
   double rlo_;
   double rup_;
@@ -23,29 +23,37 @@ class isolated_constraint_action : public CoinPresolveAction {
   const double *costs_;
 
   isolated_constraint_action(double rlo,
-			     double rup,
-			     int row,
-			     int ninrow,
-			     const int *rowcols,
-			     const double *rowels,
-			     const double *costs,
-			     const CoinPresolveAction *next) :
-    CoinPresolveAction(next),
-    rlo_(rlo), rup_(rup), row_(row), ninrow_(ninrow),
-    rowcols_(rowcols), rowels_(rowels), costs_(costs) {}
-      
- public:
+    double rup,
+    int row,
+    int ninrow,
+    const int *rowcols,
+    const double *rowels,
+    const double *costs,
+    const CoinPresolveAction *next)
+    : CoinPresolveAction(next)
+    , rlo_(rlo)
+    , rup_(rup)
+    , row_(row)
+    , ninrow_(ninrow)
+    , rowcols_(rowcols)
+    , rowels_(rowels)
+    , costs_(costs)
+  {
+  }
+
+public:
   const char *name() const;
 
-  static const CoinPresolveAction *presolve(CoinPresolveMatrix * prob,
-					 int row,
-					 const CoinPresolveAction *next);
+  static const CoinPresolveAction *presolve(CoinPresolveMatrix *prob,
+    int row,
+    const CoinPresolveAction *next);
 
   void postsolve(CoinPostsolveMatrix *prob) const;
 
   virtual ~isolated_constraint_action();
 };
 
-
-
 #endif
+
+/* vi: softtabstop=2 shiftwidth=2 expandtab tabstop=2
+*/

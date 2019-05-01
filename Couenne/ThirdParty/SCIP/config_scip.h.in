@@ -1,5 +1,8 @@
 /* config_scip.h.in.  Generated from configure.ac by autoheader.  */
 
+/* Define to 1 if the Bliss package is available */
+#undef COIN_HAS_BLISS
+
 /* Define to 1 if the Clp package is available */
 #undef COIN_HAS_CLP
 

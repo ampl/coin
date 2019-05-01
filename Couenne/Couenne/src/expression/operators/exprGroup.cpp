@@ -1,4 +1,4 @@
-/* $Id: exprGroup.cpp 1155 2015-05-05 14:04:25Z stefan $
+/* $Id: exprGroup.cpp 1273 2019-02-23 17:29:55Z stefan $
  *
  * Name:    exprGroup.cpp
  * Author:  Pietro Belotti

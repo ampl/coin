@@ -14,7 +14,13 @@
 // (This would have to be taken out for a parallel MUMPS version!)
 #define MPI_COMM_WORLD IPOPT_MPI_COMM_WORLD
 // The first header to include is the one for MPI.  
+// In newer ThirdParty/Mumps, mpi.h is renamed to mumps_mpi.h.
+// We get informed about this by having COIN_USE_MUMPS_MPI_H defined.
+#ifdef COIN_USE_MUMPS_MPI_H
+#include "mumps_mpi.h"
+#else
 #include "mpi.h"
+#endif
 
 #include "IpMumpsSolverInterface.hpp"
 
@@ -55,7 +61,7 @@ namespace Ipopt
     DBG_START_METH("MumpsSolverInterface::MumpsSolverInterface()",
                    dbg_verbosity);
     //initialize mumps
-    DMUMPS_STRUC_C* mumps_ = new DMUMPS_STRUC_C;
+    DMUMPS_STRUC_C* mumps_ = (DMUMPS_STRUC_C*)calloc(1, sizeof(DMUMPS_STRUC_C));
 #ifndef MUMPS_MPI_H
 #if defined(HAVE_MPI_INITIALIZED)
     int mpi_initialized;
@@ -112,7 +118,7 @@ namespace Ipopt
 #endif
 #endif
     delete [] mumps_->a;
-    delete mumps_;
+    free(mumps_);
   }
 
   void MumpsSolverInterface::RegisterOptions(SmartPtr<RegisteredOptions> roptions)

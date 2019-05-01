@@ -2,7 +2,7 @@
 # All Rights Reserved.
 # This file is distributed under the Eclipse Public License.
 
-## $Id: Makefile.am 1979 2013-11-21 19:57:20Z stefan $
+## $Id: Makefile.am 2499 2019-02-21 21:29:20Z stefan $
 
 # Author:  Andreas Waechter           IBM    2006-04-13
 
@@ -54,6 +54,10 @@ endif
 
 if OSICBC_DFLT_SOLVER_MSK
   AM_CPPFLAGS += ${MSK_CFLAGS}
+endif
+
+if OSICBC_DFLT_SOLVER_HIGHS
+  AM_CPPFLAGS += ${HIGHS_CFLAGS}
 endif
 
 if OSICBC_DFLT_SOLVER_SYM

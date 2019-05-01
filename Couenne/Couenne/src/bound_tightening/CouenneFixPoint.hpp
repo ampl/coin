@@ -1,4 +1,4 @@
-/* $Id: CouenneFixPoint.hpp 1004 2013-10-13 16:04:19Z pbelotti $
+/* $Id: CouenneFixPoint.hpp 1239 2018-01-11 00:09:39Z pbelotti $
  *
  * Name:    CouenneFixPoint.hpp
  * Author:  Pietro Belotti
@@ -73,6 +73,9 @@ namespace Couenne {
 
     /// Number of bounds tightened
     mutable int nTightened_;
+
+    /// Level at which to stop
+    int levelStop_;
 
     /// Create a single cut
     void createRow (int, int,

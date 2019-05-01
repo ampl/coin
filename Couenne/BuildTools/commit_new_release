@@ -5,7 +5,7 @@
 # This file is distributed under the Eclipse Public License.
 # It is part of the BuildTools project in COIN-OR (www.coin-or.org)
 #
-# $Id: commit_new_release 2070 2011-01-04 04:03:46Z lou $
+# $Id: commit_new_release 3599 2016-07-20 15:32:26Z stefan $
 #
 # Author: Andreas Waechter     IBM      2007-06-21
 # Modified by: Lou Hafer       SFU	2008-04-17
@@ -119,7 +119,7 @@ cd $coDir
 # If there are externals set on this directory, confirm that
 # .Externals.original is present so that we can restore them later.
 
-releaseExternals=`svn propget svn:externals .`
+releaseExternals=`svn propget svn:externals . || true`
 if test -n "$releaseExternals" ; then
   if test -r .Externals.original ; then
     :

@@ -165,10 +165,15 @@ am__libClp_la_SOURCES_DIST = ClpConfig.h ClpCholeskyBase.cpp \
 	ClpSimplexNonlinear.hpp ClpSimplexOther.cpp \
 	ClpSimplexOther.hpp ClpSimplexPrimal.cpp ClpSimplexPrimal.hpp \
 	ClpSolve.cpp ClpSolve.hpp Idiot.cpp Idiot.hpp IdiSolve.cpp \
-	AbcCommon.hpp AbcDualRowDantzig.cpp AbcDualRowDantzig.hpp \
-	AbcDualRowPivot.cpp AbcDualRowPivot.hpp AbcDualRowSteepest.cpp \
-	AbcDualRowSteepest.hpp AbcMatrix.cpp AbcMatrix.hpp \
-	AbcNonLinearCost.cpp AbcNonLinearCost.hpp \
+	ClpCholeskyPardiso.cpp ClpCholeskyPardiso.hpp ClpPESimplex.cpp \
+	ClpPESimplex.hpp ClpPEPrimalColumnDantzig.cpp \
+	ClpPEPrimalColumnDantzig.hpp ClpPEPrimalColumnSteepest.cpp \
+	ClpPEPrimalColumnSteepest.hpp ClpPEDualRowDantzig.cpp \
+	ClpPEDualRowDantzig.hpp ClpPEDualRowSteepest.cpp \
+	ClpPEDualRowSteepest.hpp AbcCommon.hpp AbcDualRowDantzig.cpp \
+	AbcDualRowDantzig.hpp AbcDualRowPivot.cpp AbcDualRowPivot.hpp \
+	AbcDualRowSteepest.cpp AbcDualRowSteepest.hpp AbcMatrix.cpp \
+	AbcMatrix.hpp AbcNonLinearCost.cpp AbcNonLinearCost.hpp \
 	AbcPrimalColumnDantzig.cpp AbcPrimalColumnDantzig.hpp \
 	AbcPrimalColumnPivot.cpp AbcPrimalColumnPivot.hpp \
 	AbcPrimalColumnSteepest.cpp AbcPrimalColumnSteepest.hpp \
@@ -250,9 +255,12 @@ am_libClp_la_OBJECTS = ClpCholeskyBase.lo ClpCholeskyDense.lo \
 	ClpPrimalColumnPivot.lo ClpPrimalColumnSteepest.lo \
 	ClpQuadraticObjective.lo ClpSimplex.lo ClpSimplexDual.lo \
 	ClpSimplexNonlinear.lo ClpSimplexOther.lo ClpSimplexPrimal.lo \
-	ClpSolve.lo Idiot.lo IdiSolve.lo $(am__objects_1) \
-	$(am__objects_2) $(am__objects_3) $(am__objects_4) \
-	$(am__objects_5) $(am__objects_6)
+	ClpSolve.lo Idiot.lo IdiSolve.lo ClpCholeskyPardiso.lo \
+	ClpPESimplex.lo ClpPEPrimalColumnDantzig.lo \
+	ClpPEPrimalColumnSteepest.lo ClpPEDualRowDantzig.lo \
+	ClpPEDualRowSteepest.lo $(am__objects_1) $(am__objects_2) \
+	$(am__objects_3) $(am__objects_4) $(am__objects_5) \
+	$(am__objects_6)
 libClp_la_OBJECTS = $(am_libClp_la_OBJECTS)
 @DEPENDENCY_LINKING_TRUE@libClpSolver_la_DEPENDENCIES =  \
 @DEPENDENCY_LINKING_TRUE@	$(am__DEPENDENCIES_1) libClp.la
@@ -301,6 +309,9 @@ am__includecoin_HEADERS_DIST = Clp_C_Interface.h ClpCholeskyBase.hpp \
 	ClpQuadraticObjective.hpp ClpSimplex.hpp \
 	ClpSimplexNonlinear.hpp ClpSimplexOther.hpp ClpSimplexDual.hpp \
 	ClpSimplexPrimal.hpp ClpSolve.hpp CbcOrClpParam.hpp Idiot.hpp \
+	ClpCholeskyPardiso.hpp ClpPESimplex.hpp \
+	ClpPEPrimalColumnDantzig.hpp ClpPEPrimalColumnSteepest.hpp \
+	ClpPEDualRowDantzig.hpp ClpPEDualRowSteepest.hpp \
 	AbcSimplex.hpp CoinAbcCommon.hpp AbcCommon.hpp \
 	AbcNonLinearCost.hpp ClpCholeskyUfl.hpp ClpCholeskyMumps.hpp \
 	ClpCholeskyWssmp.hpp ClpCholeskyWssmpKKT.hpp CbcOrClpParam.cpp
@@ -622,8 +633,14 @@ libClp_la_SOURCES = ClpConfig.h ClpCholeskyBase.cpp \
 	ClpSimplexNonlinear.hpp ClpSimplexOther.cpp \
 	ClpSimplexOther.hpp ClpSimplexPrimal.cpp ClpSimplexPrimal.hpp \
 	ClpSolve.cpp ClpSolve.hpp Idiot.cpp Idiot.hpp IdiSolve.cpp \
-	$(am__append_1) $(am__append_2) $(am__append_3) \
-	$(am__append_4) $(am__append_5) $(am__append_6)
+	ClpCholeskyPardiso.cpp ClpCholeskyPardiso.hpp ClpPESimplex.cpp \
+	ClpPESimplex.hpp ClpPEPrimalColumnDantzig.cpp \
+	ClpPEPrimalColumnDantzig.hpp ClpPEPrimalColumnSteepest.cpp \
+	ClpPEPrimalColumnSteepest.hpp ClpPEDualRowDantzig.cpp \
+	ClpPEDualRowDantzig.hpp ClpPEDualRowSteepest.cpp \
+	ClpPEDualRowSteepest.hpp $(am__append_1) $(am__append_2) \
+	$(am__append_3) $(am__append_4) $(am__append_5) \
+	$(am__append_6)
 libClpSolver_la_SOURCES = \
 	ClpSolver.cpp \
 	CbcOrClpParam.cpp CbcOrClpParam.hpp \
@@ -686,6 +703,9 @@ includecoin_HEADERS = Clp_C_Interface.h ClpCholeskyBase.hpp \
 	ClpQuadraticObjective.hpp ClpSimplex.hpp \
 	ClpSimplexNonlinear.hpp ClpSimplexOther.hpp ClpSimplexDual.hpp \
 	ClpSimplexPrimal.hpp ClpSolve.hpp CbcOrClpParam.hpp Idiot.hpp \
+	ClpCholeskyPardiso.hpp ClpPESimplex.hpp \
+	ClpPEPrimalColumnDantzig.hpp ClpPEPrimalColumnSteepest.hpp \
+	ClpPEDualRowDantzig.hpp ClpPEDualRowSteepest.hpp \
 	$(am__append_9) $(am__append_10) $(am__append_11) \
 	$(am__append_12) $(am__append_13) $(am__append_14) \
 	CbcOrClpParam.cpp
@@ -837,6 +857,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/ClpCholeskyBase.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/ClpCholeskyDense.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/ClpCholeskyMumps.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/ClpCholeskyPardiso.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/ClpCholeskyUfl.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/ClpCholeskyWssmp.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/ClpCholeskyWssmpKKT.Plo@am__quote@
@@ -866,6 +887,11 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/ClpNode.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/ClpNonLinearCost.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/ClpObjective.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/ClpPEDualRowDantzig.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/ClpPEDualRowSteepest.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/ClpPEPrimalColumnDantzig.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/ClpPEPrimalColumnSteepest.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/ClpPESimplex.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/ClpPackedMatrix.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/ClpPdco.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/ClpPdcoBase.Plo@am__quote@

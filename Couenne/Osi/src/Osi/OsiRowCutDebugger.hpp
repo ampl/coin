@@ -40,11 +40,10 @@
   #redoSolution().)
 */
 class OsiRowCutDebugger {
-  friend void OsiRowCutDebuggerUnitTest(const OsiSolverInterface * siP,    
-					const std::string & mpsDir);
+  friend void OsiRowCutDebuggerUnitTest(const OsiSolverInterface *siP,
+    const std::string &mpsDir);
 
 public:
-  
   /*! @name Validate Row Cuts
   
     Check that the specified cuts do not cut off the known solution.
@@ -56,14 +55,14 @@ public:
     Check if any generated cuts cut off the solution known to the debugger!
     If so then print offending cuts.  Return the number of invalid cuts.
   */
-  virtual int validateCuts(const OsiCuts & cs, int first, int last) const;
+  virtual int validateCuts(const OsiCuts &cs, int first, int last) const;
 
   /*! \brief Check that the cut does not cut off the solution known to the
   	     debugger.
   
     Return true if cut is invalid
   */
-  virtual bool invalidCut(const OsiRowCut & rowcut) const;
+  virtual bool invalidCut(const OsiRowCut &rowcut) const;
 
   /*! \brief Returns true if the solution held in the solver is compatible
   	     with the known solution.
@@ -85,7 +84,7 @@ public:
     source code for the full list.  Returns true if the debugger is
     successfully activated.
   */
-  bool activate(const OsiSolverInterface &si, const char *model) ;
+  bool activate(const OsiSolverInterface &si, const char *model);
 
   /*! \brief Activate a debugger using a full solution array.
 
@@ -98,24 +97,26 @@ public:
 
     Returns true if debugger activates successfully.
   */
-  bool activate(const OsiSolverInterface &si, const double* solution,
-  		bool keepContinuous = false) ;
+  bool activate(const OsiSolverInterface &si, const double *solution,
+    bool keepContinuous = false);
 
-  /// Returns true if the debugger is active 
+  /// Returns true if the debugger is active
   bool active() const;
   //@}
 
   /*! @name Query or Manipulate the Known Solution */
   //@{
   /// Return the known solution
-  inline const double * optimalSolution() const
-  { return knownSolution_;}
+  inline const double *optimalSolution() const
+  {
+    return knownSolution_;
+  }
 
   /// Return the number of columns in the known solution
-  inline int numberColumns() const { return (numberColumns_) ; }
+  inline int numberColumns() const { return (numberColumns_); }
 
   /// Return the value of the objective for the known solution
-  inline double optimalValue() const { return knownValue_;}
+  inline double optimalValue() const { return knownValue_; }
 
   /*! \brief Edit the known solution to reflect column changes
 
@@ -130,39 +131,38 @@ public:
   void redoSolution(int numberColumns, const int *originalColumns);
 
   /// Print optimal solution (returns -1 bad debug, 0 on optimal, 1 not)
-  int printOptimalSolution(const OsiSolverInterface & si) const;
+  int printOptimalSolution(const OsiSolverInterface &si) const;
   //@}
 
   /**@name Constructors and Destructors */
   //@{
-  /// Default constructor - no checking 
-  OsiRowCutDebugger ();
+  /// Default constructor - no checking
+  OsiRowCutDebugger();
 
   /*! \brief Constructor with name of model.
 
     See #activate(const OsiSolverInterface&,const char*).
   */
-  OsiRowCutDebugger(const OsiSolverInterface &si, const char *model) ;
+  OsiRowCutDebugger(const OsiSolverInterface &si, const char *model);
 
   /*! \brief Constructor with full solution.
 
     See #activate(const OsiSolverInterface&,const double*,bool).
   */
   OsiRowCutDebugger(const OsiSolverInterface &si, const double *solution,
-  		    bool enforceOptimality = false) ;
- 
-  /// Copy constructor 
+    bool enforceOptimality = false);
+
+  /// Copy constructor
   OsiRowCutDebugger(const OsiRowCutDebugger &);
 
-  /// Assignment operator 
-  OsiRowCutDebugger& operator=(const OsiRowCutDebugger& rhs);
-  
-  /// Destructor 
-  virtual ~OsiRowCutDebugger ();
+  /// Assignment operator
+  OsiRowCutDebugger &operator=(const OsiRowCutDebugger &rhs);
+
+  /// Destructor
+  virtual ~OsiRowCutDebugger();
   //@}
-      
+
 private:
-  
   // Private member data
 
   /**@name Private member data */
@@ -177,11 +177,14 @@ private:
   int numberColumns_;
 
   /// array specifying integer variables
-  bool * integerVariable_;
+  bool *integerVariable_;
 
   /// array specifying known solution
-  double * knownSolution_;
+  double *knownSolution_;
   //@}
 };
-  
+
 #endif
+
+/* vi: softtabstop=2 shiftwidth=2 expandtab tabstop=2
+*/

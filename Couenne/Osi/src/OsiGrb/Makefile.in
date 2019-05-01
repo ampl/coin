@@ -62,7 +62,11 @@ am__strip_dir = `echo $$p | sed -e 's|^.*/||'`;
 am__installdirs = "$(DESTDIR)$(libdir)" "$(DESTDIR)$(includecoindir)"
 libLTLIBRARIES_INSTALL = $(INSTALL)
 LTLIBRARIES = $(lib_LTLIBRARIES)
-libOsiGrb_la_LIBADD =
+am__DEPENDENCIES_1 =
+@DEPENDENCY_LINKING_TRUE@libOsiGrb_la_DEPENDENCIES =  \
+@DEPENDENCY_LINKING_TRUE@	$(am__DEPENDENCIES_1) \
+@DEPENDENCY_LINKING_TRUE@	../Osi/libOsi.la \
+@DEPENDENCY_LINKING_TRUE@	$(am__DEPENDENCIES_1)
 am_libOsiGrb_la_OBJECTS = OsiGrbSolverInterface.lo
 libOsiGrb_la_OBJECTS = $(am_libOsiGrb_la_OBJECTS)
 depcomp = $(SHELL) $(top_srcdir)/depcomp
@@ -343,6 +347,9 @@ lib_LTLIBRARIES = libOsiGrb.la
 
 # List all source files for this library, including headers
 libOsiGrb_la_SOURCES = OsiGrbSolverInterface.cpp OsiGrbSolverInterface.hpp
+
+# List all additionally required libraries
+@DEPENDENCY_LINKING_TRUE@libOsiGrb_la_LIBADD = $(OSILIB_LIBS) ../Osi/libOsi.la $(GRBLIB)
 
 # This is for libtool (on Windows)
 libOsiGrb_la_LDFLAGS = $(LT_LDFLAGS)

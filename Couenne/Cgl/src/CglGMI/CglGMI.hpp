@@ -186,7 +186,7 @@ private:
   /// on a slack variables. 
   inline void eliminateSlack(double cutElem, int cutIndex, double* cut,
 			      double& cutRhs, const double *elements, 
-			      const int *rowStart, const int *indices, 
+			      const CoinBigIndex *rowStart, const int *indices, 
 			      const int *rowLength, const double *rhs);
 
   /// Change the sign of the coefficients of the non basic

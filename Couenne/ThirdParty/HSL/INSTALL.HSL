@@ -23,11 +23,16 @@ Different ways to use the HSL routines in COIN-OR Ipopt:
    Ipopt, those files will be compiled and included into the Ipopt
    executable.
 
-2. You can also compile Ipopt without the HSL source files.  In this
-   case, Ipopt will be built without the HSL routines, but it will be
-   possible to load a shared library at runtime that contains the HSL
-   routines.  For this, you need to provide this shared library.  You
-   can use the Makefile of the coinhsl package obtained from HSL or
+2. If you download the HSL prebuild libraries, then you can use the
+   --with-hsl-incdir and --with-hsl-lib flags of Ipopts configure to
+   specify the header files directory ("include" subdir) and the linker
+   flags.
+
+3. You can also compile Ipopt without the HSL source files or library.
+   In this case, Ipopt will be built without the HSL routines, but it
+   will be possible to load a shared library at runtime that contains
+   the HSL routines.  For this, you need to provide this shared library.
+   You can use the Makefile of the coinhsl package obtained from HSL or
    the Makefiles in this ThirdParty/HSL directory to generate
    this shared library.  For details, please look at the
 

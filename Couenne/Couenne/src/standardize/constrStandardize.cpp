@@ -1,4 +1,4 @@
-/* $Id: constrStandardize.cpp 1147 2015-05-04 14:01:51Z stefan $
+/* $Id: constrStandardize.cpp 1220 2016-09-16 10:09:46Z stefan $
  *
  * Name:    constrStandardize.cpp
  * Author:  Pietro Belotti
@@ -99,15 +99,15 @@ exprAux *CouenneConstraint::standardize (CouenneProblem *p) {
       // 	rest = restSimple;
       // }
 
-      // if this is a constraint of the form x=k, reset x's bounds and
+      // if this is a constraint of the form x=k, tighten x's bounds and
       // do nothing else
 
       if (rest -> code () == COU_EXPRCONST) {
 
 	CouNumber constRHS = rest -> Value ();
 
-	if (aSign != expression::AUX_LEQ) p -> Var (wind) -> lb () = constRHS;
-	if (aSign != expression::AUX_GEQ) p -> Var (wind) -> ub () = constRHS;
+	if (aSign != expression::AUX_LEQ && constRHS > p -> Var (wind) -> lb ()) p -> Var (wind) -> lb () = constRHS;
+	if (aSign != expression::AUX_GEQ && constRHS < p -> Var (wind) -> ub ()) p -> Var (wind) -> ub () = constRHS;
 
 	//delete rest;
 	return NULL;

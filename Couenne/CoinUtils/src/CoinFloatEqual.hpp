@@ -1,4 +1,4 @@
-/* $Id: CoinFloatEqual.hpp 1416 2011-04-17 09:57:29Z stefan $ */
+/* $Id: CoinFloatEqual.hpp 2083 2019-01-06 19:38:09Z unxusr $ */
 // Copyright (C) 2000, International Business Machines
 // Corporation and others.  All Rights Reserved.
 // This code is licensed under the terms of the Eclipse Public License (EPL).
@@ -43,17 +43,19 @@
   the test does not consider the relative magnitude of the operands.
 */
 
-class CoinAbsFltEq
-{
-  public:
-
+class CoinAbsFltEq {
+public:
   //! Compare function
 
-  inline bool operator() (const double f1, const double f2) const
+  inline bool operator()(const double f1, const double f2) const
 
-  { if (CoinIsnan(f1) || CoinIsnan(f2)) return false ;
-    if (f1 == f2) return true ;
-    return (fabs(f1-f2) < epsilon_) ; } 
+  {
+    if (CoinIsnan(f1) || CoinIsnan(f2))
+      return false;
+    if (f1 == f2)
+      return true;
+    return (fabs(f1 - f2) < epsilon_);
+  }
 
   /*! \name Constructors and destructors */
   //@{
@@ -63,43 +65,51 @@ class CoinAbsFltEq
     Default tolerance is 1.0e-10.
   */
 
-  CoinAbsFltEq () : epsilon_(1.e-10) {} 
+  CoinAbsFltEq()
+    : epsilon_(1.e-10)
+  {
+  }
 
   //! Alternate constructor with epsilon as a parameter
 
-  CoinAbsFltEq (const double epsilon) : epsilon_(epsilon) {} 
+  CoinAbsFltEq(const double epsilon)
+    : epsilon_(epsilon)
+  {
+  }
 
   //! Destructor
 
-  virtual ~CoinAbsFltEq () {} 
+  virtual ~CoinAbsFltEq() {}
 
   //! Copy constructor
 
-  CoinAbsFltEq (const CoinAbsFltEq& src) : epsilon_(src.epsilon_) {} 
+  CoinAbsFltEq(const CoinAbsFltEq &src)
+    : epsilon_(src.epsilon_)
+  {
+  }
 
   //! Assignment
 
-  CoinAbsFltEq& operator= (const CoinAbsFltEq& rhs)
+  CoinAbsFltEq &operator=(const CoinAbsFltEq &rhs)
 
-  { if (this != &rhs) epsilon_ = rhs.epsilon_ ;
-    return (*this) ; } 
+  {
+    if (this != &rhs)
+      epsilon_ = rhs.epsilon_;
+    return (*this);
+  }
 
   //@}
 
-  private:  
-
+private:
   /*! \name Private member data */
   //@{
 
   //! Equality tolerance.
 
-  double epsilon_ ;
+  double epsilon_;
 
   //@}
-
-} ;
-
-
+};
 
 /*! \brief Equality to a scaled tolerance
 
@@ -107,21 +117,24 @@ class CoinAbsFltEq
   epsilon calculated as epsilon_*(1+CoinMax(|f1|,|f2|)).
 */
 
-class CoinRelFltEq
-{
-  public:
-
+class CoinRelFltEq {
+public:
   //! Compare function
 
-  inline bool operator() (const double f1, const double f2) const
+  inline bool operator()(const double f1, const double f2) const
 
-  { if (CoinIsnan(f1) || CoinIsnan(f2)) return false ;
-    if (f1 == f2) return true ;
-    if (!CoinFinite(f1) || !CoinFinite(f2)) return false ;
+  {
+    if (CoinIsnan(f1) || CoinIsnan(f2))
+      return false;
+    if (f1 == f2)
+      return true;
+    if (!CoinFinite(f1) || !CoinFinite(f2))
+      return false;
 
-    double tol = (fabs(f1)>fabs(f2))?fabs(f1):fabs(f2) ;
+    double tol = (fabs(f1) > fabs(f2)) ? fabs(f1) : fabs(f2);
 
-    return (fabs(f1-f2) <= epsilon_*(1+tol)) ; }
+    return (fabs(f1 - f2) <= epsilon_ * (1 + tol));
+  }
 
   /*! \name Constructors and destructors */
   //@{
@@ -131,47 +144,61 @@ class CoinRelFltEq
 
     Default tolerance is 1.0e-10.
   */
-  CoinRelFltEq () : epsilon_(1.e-10) {} 
+  CoinRelFltEq()
+    : epsilon_(1.e-10)
+  {
+  }
 #else
   /*! Default constructor
 
     Default tolerance is 1.0e-6.
   */
-  CoinRelFltEq () : epsilon_(1.e-6) {} ; // as float
+  CoinRelFltEq()
+    : epsilon_(1.e-6) {}; // as float
 #endif
 
   //! Alternate constructor with epsilon as a parameter
 
-  CoinRelFltEq (const double epsilon) : epsilon_(epsilon) {} 
+  CoinRelFltEq(const double epsilon)
+    : epsilon_(epsilon)
+  {
+  }
 
   //! Destructor
 
-  virtual ~CoinRelFltEq () {} 
+  virtual ~CoinRelFltEq() {}
 
   //! Copy constructor
 
-  CoinRelFltEq (const CoinRelFltEq & src) : epsilon_(src.epsilon_) {} 
+  CoinRelFltEq(const CoinRelFltEq &src)
+    : epsilon_(src.epsilon_)
+  {
+  }
 
   //! Assignment
 
-  CoinRelFltEq& operator= (const CoinRelFltEq& rhs)
+  CoinRelFltEq &operator=(const CoinRelFltEq &rhs)
 
-  { if (this != &rhs) epsilon_ = rhs.epsilon_ ;
-    return (*this) ; } 
+  {
+    if (this != &rhs)
+      epsilon_ = rhs.epsilon_;
+    return (*this);
+  }
 
   //@}
 
-private: 
-
+private:
   /*! \name Private member data */
   //@{
 
   //! Base equality tolerance
 
-  double epsilon_ ;
+  double epsilon_;
 
   //@}
-
-} ;
+};
 
 #endif
+
+/* vi: softtabstop=2 shiftwidth=2 expandtab tabstop=2
+*/

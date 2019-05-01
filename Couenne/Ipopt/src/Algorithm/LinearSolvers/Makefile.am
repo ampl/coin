@@ -2,11 +2,14 @@
 # All Rights Reserved.
 # This file is distributed under the Eclipse Public License.
 
-## $Id: Makefile.am 2159 2012-12-24 14:02:00Z stefan $
+## $Id: Makefile.am 2666 2016-07-20 16:02:55Z stefan $
 
 # Authors:  Carl Laird, Andreas Waechter     IBM    2004-08-13
 
 AUTOMAKE_OPTIONS = foreign
+
+includeipoptdir = $(includedir)/coin
+includeipopt_HEADERS = IpSymLinearSolver.hpp
 
 noinst_LTLIBRARIES = liblinsolvers.la
 

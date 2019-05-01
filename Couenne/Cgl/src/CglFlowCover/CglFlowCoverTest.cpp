@@ -1,4 +1,4 @@
-// $Id: CglFlowCoverTest.cpp 908 2010-12-30 21:54:29Z mjs $
+// $Id: CglFlowCoverTest.cpp 1372 2017-05-19 23:22:12Z lou $
 //-----------------------------------------------------------------------------
 // name:     Cgl Lifed Simple Generalized Flow Cover Cut Generator
 // author:   Yan Xu                email: Yan.Xu@sas.com
@@ -31,7 +31,7 @@ CglFlowCoverUnitTest(
   // Test default constructor
   {
     CglFlowCover aGenerator;
-    assert (aGenerator.getMaxNumCuts() == 2000);
+    assert (aGenerator.getMaxNumCuts() >= 2000);
   }
   
   // Test copy & assignment

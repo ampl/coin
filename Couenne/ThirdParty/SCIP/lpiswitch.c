@@ -103,6 +103,18 @@
 
 #define LPISW_DECL_LPIGETSOLVERPOINTER(x) void* x (SCIP_LPI* lpi)
 
+#define LPISW_DECL_LPISETINTEGRALITYINFORMATION(x) SCIP_RETCODE x ( \
+   SCIP_LPI*             lpi,       \
+   int                   ncols,     \
+   int*                  intInfo    \
+   )
+
+#define LPISW_DECL_LPIHASPRIMALSOLVE(x) SCIP_Bool x (void)
+
+#define LPISW_DECL_LPIHASDUALSOLVE(x) SCIP_Bool x (void)
+
+#define LPISW_DECL_LPIHASBARRIERSOLVE(x) SCIP_Bool x (void)
+
 #define LPISW_DECL_LPICREATE(x) SCIP_RETCODE x ( \
    SCIP_LPI**            lpi,         \
    SCIP_MESSAGEHDLR*     messagehdlr, \
@@ -210,8 +222,8 @@
 #define LPISW_DECL_LPICHGOBJ(x) SCIP_RETCODE x ( \
    SCIP_LPI*             lpi,    \
    int                   ncols,  \
-   int*                  ind,    \
-   SCIP_Real*            obj     \
+   const int*            ind,    \
+   const SCIP_Real*      obj     \
    )
 
 #define LPISW_DECL_LPISCALEROW(x) SCIP_RETCODE x ( \
@@ -513,8 +525,8 @@
 
 #define LPISW_DECL_LPISETBASE(x) SCIP_RETCODE x ( \
    SCIP_LPI*             lpi,                \
-   int*                  cstat,              \
-   int*                  rstat               \
+   const int*            cstat,              \
+   const int*            rstat               \
    )
 
 #define LPISW_DECL_LPIGETBASISIND(x) SCIP_RETCODE x ( \
@@ -525,26 +537,34 @@
 #define LPISW_DECL_LPIGETBINVROW(x) SCIP_RETCODE x ( \
    SCIP_LPI*             lpi,                \
    int                   r,                  \
-   SCIP_Real*            coef                \
+   SCIP_Real*            coef,               \
+   int*                  inds,               \
+   int*                  ninds               \
    )
 
 #define LPISW_DECL_LPIGETBINVCOL(x) SCIP_RETCODE x ( \
    SCIP_LPI*             lpi,                \
    int                   c,                  \
-   SCIP_Real*            coef                \
+   SCIP_Real*            coef,               \
+   int*                  inds,               \
+   int*                  ninds               \
    )
 
 #define LPISW_DECL_LPIGETBINVAROW(x) SCIP_RETCODE x ( \
    SCIP_LPI*             lpi,                \
    int                   r,                  \
    const SCIP_Real*      binvrow,            \
-   SCIP_Real*            coef                \
+   SCIP_Real*            coef,               \
+   int*                  inds,               \
+   int*                  ninds               \
    )
 
 #define LPISW_DECL_LPIGETBINVACOL(x) SCIP_RETCODE x ( \
    SCIP_LPI*             lpi,                \
    int                   c,                  \
-   SCIP_Real*            coef                \
+   SCIP_Real*            coef,               \
+   int*                  inds,               \
+   int*                  ninds               \
    )
 
 #define LPISW_DECL_LPIGETSTATE(x) SCIP_RETCODE x ( \
@@ -556,7 +576,7 @@
 #define LPISW_DECL_LPISETSTATE(x) SCIP_RETCODE x ( \
    SCIP_LPI*             lpi,                \
    BMS_BLKMEM*           blkmem,             \
-   SCIP_LPISTATE*        lpistate            \
+   const SCIP_LPISTATE*  lpistate            \
    )
 
 #define LPISW_DECL_LPICLEARSTATE(x) SCIP_RETCODE x ( \
@@ -593,7 +613,7 @@
 #define LPISW_DECL_LPISETNORMS(x) SCIP_RETCODE x ( \
    SCIP_LPI*             lpi,                \
    BMS_BLKMEM*           blkmem,             \
-   SCIP_LPINORMS*        lpinorms            \
+   const SCIP_LPINORMS*  lpinorms            \
    )
 
 #define LPISW_DECL_LPIFREENORMS(x) SCIP_RETCODE x ( \
@@ -652,6 +672,10 @@
 static LPISW_DECL_LPIGETSOLVERNAME((*lpiGetSolverName)) = NULL;
 static LPISW_DECL_LPIGETSOLVERDESC((*lpiGetSolverDesc)) = NULL;
 static LPISW_DECL_LPIGETSOLVERPOINTER((*lpiGetSolverPointer)) = NULL;
+static LPISW_DECL_LPISETINTEGRALITYINFORMATION((*lpiSetIntegralityInformation)) = NULL;
+static LPISW_DECL_LPIHASPRIMALSOLVE((*lpiHasPrimalSolve)) = NULL;
+static LPISW_DECL_LPIHASDUALSOLVE((*lpiHasDualSolve)) = NULL;
+static LPISW_DECL_LPIHASBARRIERSOLVE((*lpiHasBarrierSolve)) = NULL;
 static LPISW_DECL_LPICREATE((*lpiCreate)) = NULL;
 static LPISW_DECL_LPIFREE((*lpiFree)) = NULL;
 static LPISW_DECL_LPILOADCOLLP((*lpiLoadColLP)) = NULL;
@@ -746,9 +770,13 @@ static SCIP_LPISW_LPSOLVER currentsolver = SCIP_LPISW_NSOLVERS;
 /** macro to set static function pointers to LPI functions of a particular solver
  */
 #define LPISW_ASSIGN_FUNCPTRS(x) \
+   lpiHasPrimalSolve = SCIPlpiHasPrimalSolve ## x ; \
+   lpiHasDualSolve = SCIPlpiHasDualSolve ## x ; \
+   lpiHasBarrierSolve = SCIPlpiHasBarrierSolve ## x ; \
    lpiGetSolverName = SCIPlpiGetSolverName ## x ; \
    lpiGetSolverDesc = SCIPlpiGetSolverDesc ## x ; \
    lpiGetSolverPointer = SCIPlpiGetSolverPointer ## x ; \
+   lpiSetIntegralityInformation = SCIPlpiSetIntegralityInformation ## x ; \
    lpiCreate = SCIPlpiCreate ## x ; \
    lpiFree = SCIPlpiFree ## x ; \
    lpiLoadColLP = SCIPlpiLoadColLP ## x ; \
@@ -840,7 +868,7 @@ static SCIP_LPISW_LPSOLVER currentsolver = SCIP_LPISW_NSOLVERS;
    lpiWriteLP = SCIPlpiWriteLP ## x ;
 
 /** gets enum of currently used LP solver */
-SCIP_LPISW_LPSOLVER SCIPlpiSwitchGetCurrentSolver()
+SCIP_LPISW_LPSOLVER SCIPlpiSwitchGetCurrentSolver(void)
 {
    return currentsolver;
 }
@@ -954,7 +982,7 @@ SCIP_RETCODE SCIPlpiSwitchSetSolver(
 }
 
 /** sets static function pointers to LPI functions of default solver (determined during configure) */
-SCIP_RETCODE SCIPlpiSwitchSetDefaultSolver()
+SCIP_RETCODE SCIPlpiSwitchSetDefaultSolver(void)
 {
    SCIP_CALL( SCIPlpiSwitchSetSolver(SCIP_LPISW_LPDEFAULT) );
 
@@ -1007,6 +1035,31 @@ SCIP_RETCODE SCIPlpiCreate(
    )
 {
    return (*lpiCreate)(lpi, messagehdlr, name, objsen);
+}
+
+/** pass integrality information about variables to the solver */
+SCIP_RETCODE SCIPlpiSetIntegralityInformation(
+   SCIP_LPI*             lpi,                /**< pointer to an LP interface structure */
+   int                   ncols,              /**< length of integrality array */
+   int*                  intInfo             /**< integrality array (0: continuous, 1: integer) */
+   )
+{
+   return (*lpiSetIntegralityInformation)(lpi, ncols, intInfo);
+}
+
+SCIP_Bool SCIPlpiHasPrimalSolve(void)
+{
+   return (*lpiHasPrimalSolve)();
+}
+
+SCIP_Bool SCIPlpiHasDualSolve(void)
+{
+   return (*lpiHasDualSolve)();
+}
+
+SCIP_Bool SCIPlpiHasBarrierSolve(void)
+{
+   return (*lpiHasBarrierSolve)();
 }
 
 /** deletes an LP problem object */
@@ -1170,8 +1223,8 @@ SCIP_RETCODE SCIPlpiChgObjsen(
 SCIP_RETCODE SCIPlpiChgObj(
    SCIP_LPI*             lpi,                /**< LP interface structure */
    int                   ncols,              /**< number of columns to change objective value for */
-   int*                  ind,                /**< column indices to change objective value for */
-   SCIP_Real*            obj                 /**< new objective values for columns */
+   const int*            ind,                /**< column indices to change objective value for */
+   const SCIP_Real*      obj                 /**< new objective values for columns */
    )
 {
    return (*lpiChgObj)(lpi, ncols, ind, obj);
@@ -1701,8 +1754,8 @@ SCIP_RETCODE SCIPlpiGetBase(
 /** sets current basis status for columns and rows */
 SCIP_RETCODE SCIPlpiSetBase(
    SCIP_LPI*             lpi,                /**< LP interface structure */
-   int*                  cstat,              /**< array with column basis status */
-   int*                  rstat               /**< array with row basis status */
+   const int*            cstat,              /**< array with column basis status */
+   const int*            rstat               /**< array with row basis status */
    )
 {
    return (*lpiSetBase)(lpi, cstat, rstat);
@@ -1721,10 +1774,13 @@ SCIP_RETCODE SCIPlpiGetBasisInd(
 SCIP_RETCODE SCIPlpiGetBInvRow(
    SCIP_LPI*             lpi,                /**< LP interface structure */
    int                   r,                  /**< row number */
-   SCIP_Real*            coef                /**< pointer to store the coefficients of the row */
+   SCIP_Real*            coef,               /**< pointer to store the coefficients of the row */
+   int*                  inds,               /**< array to store the non-zero indices, or NULL */
+   int*                  ninds               /**< pointer to store the number of non-zero indices, or NULL
+                                               *  (-1: if we do not store sparsity informations) */
    )
 {
-   return (*lpiGetBInvRow)(lpi, r, coef);
+   return (*lpiGetBInvRow)(lpi, r, coef, inds, ninds);
 }
 
 /** get dense column of inverse basis matrix B^-1 */
@@ -1735,10 +1791,13 @@ SCIP_RETCODE SCIPlpiGetBInvCol(
                                               *   B^-1 column numbers to the row and column numbers of the LP!
                                               *   c must be between 0 and nrows-1, since the basis has the size
                                               *   nrows * nrows */
-   SCIP_Real*            coef                /**< pointer to store the coefficients of the column */
+   SCIP_Real*            coef,               /**< pointer to store the coefficients of the column */
+   int*                  inds,               /**< array to store the non-zero indices, or NULL */
+   int*                  ninds               /**< pointer to store the number of non-zero indices, or NULL
+                                               *  (-1: if we do not store sparsity informations) */
    )
 {
-   return (*lpiGetBInvCol)(lpi, c, coef);
+   return (*lpiGetBInvCol)(lpi, c, coef, inds, ninds);
 }
 
 /** get dense row of inverse basis matrix times constraint matrix B^-1 * A */
@@ -1746,20 +1805,26 @@ SCIP_RETCODE SCIPlpiGetBInvARow(
    SCIP_LPI*             lpi,                /**< LP interface structure */
    int                   r,                  /**< row number */
    const SCIP_Real*      binvrow,            /**< row in (A_B)^-1 from prior call to SCIPlpiGetBInvRow(), or NULL */
-   SCIP_Real*            coef                /**< vector to return coefficients */
+   SCIP_Real*            coef,               /**< vector to return coefficients */
+   int*                  inds,               /**< array to store the non-zero indices, or NULL */
+   int*                  ninds               /**< pointer to store the number of non-zero indices, or NULL
+                                               *  (-1: if we do not store sparsity informations) */
    )
 {
-   return (*lpiGetBInvARow)(lpi, r, binvrow, coef);
+   return (*lpiGetBInvARow)(lpi, r, binvrow, coef, inds, ninds);
 }
 
 /** get dense column of inverse basis matrix times constraint matrix B^-1 * A */
 SCIP_RETCODE SCIPlpiGetBInvACol(
    SCIP_LPI*             lpi,                /**< LP interface structure */
    int                   c,                  /**< column number */
-   SCIP_Real*            coef                /**< vector to return coefficients */
+   SCIP_Real*            coef,               /**< vector to return coefficients */
+   int*                  inds,               /**< array to store the non-zero indices, or NULL */
+   int*                  ninds               /**< pointer to store the number of non-zero indices, or NULL
+                                               *  (-1: if we do not store sparsity informations) */
    )
 {
-   return (*lpiGetBInvACol)(lpi, c, coef);
+   return (*lpiGetBInvACol)(lpi, c, coef, inds, ninds);
 }
 
 /** stores LPi state (like basis information) into lpistate object */
@@ -1778,7 +1843,7 @@ SCIP_RETCODE SCIPlpiGetState(
 SCIP_RETCODE SCIPlpiSetState(
    SCIP_LPI*             lpi,                /**< LP interface structure */
    BMS_BLKMEM*           blkmem,             /**< block memory */
-   SCIP_LPISTATE*        lpistate            /**< LPi state information (like basis information) */
+   const SCIP_LPISTATE*  lpistate            /**< LPi state information (like basis information) */
    )
 {
    return (*lpiSetState)(lpi, blkmem, lpistate);
@@ -1845,7 +1910,7 @@ SCIP_RETCODE SCIPlpiGetNorms(
 SCIP_RETCODE SCIPlpiSetNorms(
    SCIP_LPI*             lpi,                /**< LP interface structure */
    BMS_BLKMEM*           blkmem,             /**< block memory */
-   SCIP_LPINORMS*        lpinorms            /**< LPi pricing norms information */
+   const SCIP_LPINORMS*  lpinorms            /**< LPi pricing norms information */
    )
 {
    return (*lpiSetNorms)(lpi, blkmem, lpinorms);

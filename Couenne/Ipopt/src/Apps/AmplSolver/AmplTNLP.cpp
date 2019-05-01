@@ -2,7 +2,7 @@
 // All Rights Reserved.
 // This code is published under the Eclipse Public License.
 //
-// $Id: AmplTNLP.cpp 2477 2014-04-08 09:57:37Z stefan $
+// $Id: AmplTNLP.cpp 2719 2018-06-02 13:36:27Z stefan $
 //
 // Authors:  Carl Laird, Andreas Waechter     IBM    2004-08-13
 
@@ -226,7 +226,7 @@ namespace Ipopt
     }
 
     obj_sign_ = 1; // minimization
-    if (objtype[obj_no] != 0) {
+    if (n_obj > 0 && objtype[obj_no] != 0) {
       obj_sign_ = -1;
     }
 
@@ -324,7 +324,7 @@ namespace Ipopt
     Index rlen = maxrownamelen;
     Index clen = maxcolnamelen;
 
-    if (rlen > 0) {
+    if (clen > 0) {
       std::vector<std::string> var_names(n);
       for (Index i=0; i<n; i++) {
         var_names[i] = var_name(i);
@@ -332,7 +332,7 @@ namespace Ipopt
       var_string_md_["idx_names"] = var_names;
     }
 
-    if (clen > 0) {
+    if (rlen > 0) {
       std::vector<std::string> con_names(m);
       for (Index i=0; i<m; i++) {
         con_names[i] = con_name(i);

@@ -8,4 +8,4 @@
 #define LPISW_RENAME_SUFFIX Soplex
 #include "lpiswitch_rename.h"
 
-#include "lpi/lpi_spx.cpp"
+#include "lpi/lpi_spx1.cpp"

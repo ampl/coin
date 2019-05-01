@@ -8,5 +8,5 @@ Description: Solving Constraint Integer Programs
 URL: https://projects.coin-or.org/BuildTools
 Version: @PACKAGE_VERSION@
 Libs: -L${libdir} -lcoinscip -lcoinsciplpis @SCIPLIB_PCLIBS@
-Cflags: -I${includedir}
+Cflags: -I${includedir} -DNO_CONFIG_HEADER
 Requires: @SCIPLIB_PCREQUIRES@

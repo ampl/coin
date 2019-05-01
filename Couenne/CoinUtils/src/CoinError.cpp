@@ -1,4 +1,4 @@
-/* $Id: CoinError.cpp 1373 2011-01-03 23:57:44Z lou $ */
+/* $Id: CoinError.cpp 2083 2019-01-06 19:38:09Z unxusr $ */
 // Copyright (C) 2005, International Business Machines
 // Corporation and others.  All Rights Reserved.
 // This code is licensed under the terms of the Eclipse Public License (EPL).
@@ -16,5 +16,10 @@ void WindowsErrorPopupBlocker()
   SetErrorMode(SEM_FAILCRITICALERRORS | SEM_NOGPFAULTERRORBOX);
 }
 #else
-void WindowsErrorPopupBlocker() {}
+void WindowsErrorPopupBlocker()
+{
+}
 #endif
+
+/* vi: softtabstop=2 shiftwidth=2 expandtab tabstop=2
+*/

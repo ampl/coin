@@ -111,7 +111,7 @@ cd $coDir
 # If there are externals set on this directory, confirm that
 # .Externals.original is present so that we can restore them later.
 
-newStableExternals=`svn propget svn:externals .`
+newStableExternals=`svn propget svn:externals . || true`
 if test -n "$newStableExternals" ; then
   if test -r .Externals.original ; then
     :

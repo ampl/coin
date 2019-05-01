@@ -2,7 +2,7 @@
 # All Rights Reserved.
 # This file is distributed under the Eclipse Public License.
 
-## $Id: Makefile.am 2036 2011-07-02 17:21:08Z stefan $
+## $Id: Makefile.am 2666 2016-07-20 16:02:55Z stefan $
 
 # Authors:  Carl Laird, Andreas Waechter     IBM    2004-08-13
 
@@ -13,7 +13,12 @@ SUBDIRS = LinearSolvers Inexact
 includeipoptdir = $(includedir)/coin
 includeipopt_HEADERS = IpIpoptCalculatedQuantities.hpp \
 	IpIpoptData.hpp IpIteratesVector.hpp IpTimingStatistics.hpp \
-	IpIpoptNLP.hpp IpOrigIpoptNLP.hpp IpNLPScaling.hpp
+	IpIpoptNLP.hpp IpOrigIpoptNLP.hpp IpNLPScaling.hpp \
+	IpAlgBuilder.hpp IpIpoptAlg.hpp IpAlgStrategy.hpp \
+	IpSearchDirCalculator.hpp IpLineSearch.hpp IpMuUpdate.hpp \
+	IpConvCheck.hpp IpIterateInitializer.hpp IpIterationOutput.hpp \
+	IpHessianUpdater.hpp IpEqMultCalculator.hpp IpAugSystemSolver.hpp \
+	IpPDSystemSolver.hpp
 
 noinst_LTLIBRARIES = libipoptalg.la
 

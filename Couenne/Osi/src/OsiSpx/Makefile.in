@@ -62,7 +62,10 @@ am__strip_dir = `echo $$p | sed -e 's|^.*/||'`;
 am__installdirs = "$(DESTDIR)$(libdir)" "$(DESTDIR)$(includecoindir)"
 libLTLIBRARIES_INSTALL = $(INSTALL)
 LTLIBRARIES = $(lib_LTLIBRARIES)
-libOsiSpx_la_LIBADD =
+am__DEPENDENCIES_1 =
+@DEPENDENCY_LINKING_TRUE@libOsiSpx_la_DEPENDENCIES =  \
+@DEPENDENCY_LINKING_TRUE@	$(am__DEPENDENCIES_1) \
+@DEPENDENCY_LINKING_TRUE@	../Osi/libOsi.la
 am_libOsiSpx_la_OBJECTS = OsiSpxSolverInterface.lo
 libOsiSpx_la_OBJECTS = $(am_libOsiSpx_la_OBJECTS)
 depcomp = $(SHELL) $(top_srcdir)/depcomp
@@ -343,6 +346,9 @@ lib_LTLIBRARIES = libOsiSpx.la
 
 # List all source files for this library, including headers
 libOsiSpx_la_SOURCES = OsiSpxSolverInterface.cpp OsiSpxSolverInterface.hpp
+
+# List all additionally required libraries
+@DEPENDENCY_LINKING_TRUE@libOsiSpx_la_LIBADD = $(OSILIB_LIBS) ../Osi/libOsi.la
 
 # This is for libtool
 libOsiSpx_la_LDFLAGS = $(LT_LDFLAGS)

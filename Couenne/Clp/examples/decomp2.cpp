@@ -1,4 +1,4 @@
-/* $Id: decomp2.cpp 1662 2011-01-04 17:52:40Z lou $ */
+/* $Id: decomp2.cpp 2278 2017-10-02 09:51:14Z forrest $ */
 // Copyright (C) 2008, International Business Machines
 // Corporation and others.  All Rights Reserved.
 // This code is licensed under the terms of the Eclipse Public License (EPL).
@@ -9,6 +9,7 @@
 
 int main(int argc, const char *argv[])
 {
+#if COIN_BIG_INDEX<2
      /* Create a structured model by reading mps file and trying
         Dantzig-Wolfe decomposition (that's the 1 parameter)
      */
@@ -33,5 +34,8 @@ int main(int argc, const char *argv[])
      solver.solve(&model);
      // Double check
      solver.primal(1);
+#else
+     printf("decomp2 not available with COIN_BIG_INDEX=2\n");
+#endif
      return 0;
 }

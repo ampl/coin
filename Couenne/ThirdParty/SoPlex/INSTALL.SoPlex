@@ -12,7 +12,7 @@ http://soplex.zib.de
 
 and unpack it in this directory:
 
-gunzip soplex-2.0.0.tgz
-tar xf soplex-2.0.0.tar
+gunzip soplex-4.0.1.tgz
+tar xf soplex-4.0.1.tar
 
-Then you need to rename the directory soplex-2.0.0 to soplex.
+Then you need to rename the directory soplex-4.0.1 to soplex.

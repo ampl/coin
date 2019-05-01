@@ -1,4 +1,4 @@
-// $Id: ClpQuadInterface.hpp 1574 2011-01-05 01:13:55Z lou $
+// $Id: ClpQuadInterface.hpp 2469 2019-01-06 23:17:46Z unxusr $
 // Copyright (C) 2004, International Business Machines
 // Corporation and others.  All Rights Reserved.
 // This code is licensed under the terms of the Eclipse Public License (EPL).
@@ -21,34 +21,32 @@ public:
   //---------------------------------------------------------------------------
   /**@name Solve methods */
   //@{
-    /// Solve initial LP relaxation 
-    virtual void initialSolve();
+  /// Solve initial LP relaxation
+  virtual void initialSolve();
 
-    /// Resolve an LP relaxation after problem modification
-    virtual void resolve();
+  /// Resolve an LP relaxation after problem modification
+  virtual void resolve();
 
   //@}
-
 
   /**@name Constructors and destructors */
   //@{
-    /// Default Constructor
-    ClpQuadInterface ();
-    
-    /// Clone
-    virtual OsiSolverInterface * clone(bool CopyData=true) const;
-    
-    /// Copy constructor 
-    ClpQuadInterface (const ClpQuadInterface &);
-    
-    /// Assignment operator 
-    ClpQuadInterface & operator=(const ClpQuadInterface& rhs);
-    
-    /// Destructor 
-    virtual ~ClpQuadInterface ();
+  /// Default Constructor
+  ClpQuadInterface();
+
+  /// Clone
+  virtual OsiSolverInterface *clone(bool CopyData = true) const;
+
+  /// Copy constructor
+  ClpQuadInterface(const ClpQuadInterface &);
+
+  /// Assignment operator
+  ClpQuadInterface &operator=(const ClpQuadInterface &rhs);
+
+  /// Destructor
+  virtual ~ClpQuadInterface();
 
   //@}
-
 
   /**@name Sets and Getss */
   //@{
@@ -63,11 +61,10 @@ public:
   //---------------------------------------------------------------------------
 
 private:
-  
   /**@name Private member data */
   //@{
   /// True quadratic objective
-  ClpObjective * quadraticObjective_;
+  ClpObjective *quadraticObjective_;
   //@}
 };
 

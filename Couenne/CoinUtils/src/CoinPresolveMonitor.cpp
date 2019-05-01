@@ -1,4 +1,4 @@
-/* $Id: CoinPresolveMonitor.cpp 1582 2013-04-06 14:33:07Z stefan $ */
+/* $Id: CoinPresolveMonitor.cpp 2083 2019-01-06 19:38:09Z unxusr $ */
 // Copyright (C) 2011 Lou Hafer
 // This code is licensed under the terms of the Eclipse Public License (EPL).
 
@@ -23,73 +23,74 @@
 /*
   Default constructor
 */
-CoinPresolveMonitor::CoinPresolveMonitor ()
-{ }
+CoinPresolveMonitor::CoinPresolveMonitor()
+{
+}
 
 /*
   Constructor to initialise from a CoinPresolveMatrix (not threaded)
 */
-CoinPresolveMonitor::CoinPresolveMonitor (const CoinPresolveMatrix *mtx,
-					  bool isRow,
-					  int k)
+CoinPresolveMonitor::CoinPresolveMonitor(const CoinPresolveMatrix *mtx,
+  bool isRow,
+  int k)
 {
-  ndx_ = k ;
-  isRow_ = isRow ;
+  ndx_ = k;
+  isRow_ = isRow;
 
   if (isRow) {
-    origVec_ = extractRow(k,mtx) ;
-    const double *blow = mtx->getRowLower() ;
-    lb_ = blow[k] ;
-    const double *b = mtx->getRowUpper() ;
-    ub_ = b[k] ;
+    origVec_ = extractRow(k, mtx);
+    const double *blow = mtx->getRowLower();
+    lb_ = blow[k];
+    const double *b = mtx->getRowUpper();
+    ub_ = b[k];
   } else {
-    origVec_ = extractCol(k,mtx) ;
-    const double *lb = mtx->getColLower() ;
-    lb_ = lb[k] ;
-    const double *ub = mtx->getColUpper() ;
-    ub_ = ub[k] ;
+    origVec_ = extractCol(k, mtx);
+    const double *lb = mtx->getColLower();
+    lb_ = lb[k];
+    const double *ub = mtx->getColUpper();
+    ub_ = ub[k];
   }
-  origVec_->sortIncrIndex() ;
+  origVec_->sortIncrIndex();
 }
 /*
   Constructor to initialise from a CoinPostsolveMatrix
 */
-CoinPresolveMonitor::CoinPresolveMonitor (const CoinPostsolveMatrix *mtx,
-					  bool isRow,
-					  int k)
+CoinPresolveMonitor::CoinPresolveMonitor(const CoinPostsolveMatrix *mtx,
+  bool isRow,
+  int k)
 {
-  ndx_ = k ;
-  isRow_ = isRow ;
+  ndx_ = k;
+  isRow_ = isRow;
 
   if (isRow) {
-    origVec_ = extractRow(k,mtx) ;
-    const double *blow = mtx->getRowLower() ;
-    lb_ = blow[k] ;
-    const double *b = mtx->getRowUpper() ;
-    ub_ = b[k] ;
+    origVec_ = extractRow(k, mtx);
+    const double *blow = mtx->getRowLower();
+    lb_ = blow[k];
+    const double *b = mtx->getRowUpper();
+    ub_ = b[k];
   } else {
-    origVec_ = extractCol(k,mtx) ;
-    const double *lb = mtx->getColLower() ;
-    lb_ = lb[k] ;
-    const double *ub = mtx->getColUpper() ;
-    ub_ = ub[k] ;
+    origVec_ = extractCol(k, mtx);
+    const double *lb = mtx->getColLower();
+    lb_ = lb[k];
+    const double *ub = mtx->getColUpper();
+    ub_ = ub[k];
   }
-  origVec_->sortIncrIndex() ;
+  origVec_->sortIncrIndex();
 }
 
 /*
   Extract a row from a CoinPresolveMatrix. Since a CoinPresolveMatrix contains
   both row-ordered and column-ordered copies, this is relatively efficient.
 */
-CoinPackedVector *CoinPresolveMonitor::extractRow (int i,
-					const CoinPresolveMatrix *mtx) const
+CoinPackedVector *CoinPresolveMonitor::extractRow(int i,
+  const CoinPresolveMatrix *mtx) const
 {
-  const CoinBigIndex *rowStarts = mtx->getRowStarts() ;
-  const int *colIndices = mtx->getColIndicesByRow() ;
-  const double *coeffs = mtx->getElementsByRow() ;
-  const int rowLen = mtx->hinrow_[i] ;
-  const CoinBigIndex &ii = rowStarts[i] ;
-  return (new CoinPackedVector(rowLen,&colIndices[ii],&coeffs[ii])) ;
+  const CoinBigIndex *rowStarts = mtx->getRowStarts();
+  const int *colIndices = mtx->getColIndicesByRow();
+  const double *coeffs = mtx->getElementsByRow();
+  const int rowLen = mtx->hinrow_[i];
+  const CoinBigIndex &ii = rowStarts[i];
+  return (new CoinPackedVector(rowLen, &colIndices[ii], &coeffs[ii]));
 }
 
 /*
@@ -97,15 +98,15 @@ CoinPackedVector *CoinPresolveMonitor::extractRow (int i,
   contains both row-ordered and column-ordered copies, this is relatively
   efficient.
 */
-CoinPackedVector *CoinPresolveMonitor::extractCol (int j,
-					const CoinPresolveMatrix *mtx) const
+CoinPackedVector *CoinPresolveMonitor::extractCol(int j,
+  const CoinPresolveMatrix *mtx) const
 {
-  const CoinBigIndex *colStarts = mtx->getColStarts() ;
-  const int *colLens = mtx->getColLengths() ;
-  const int *rowIndices = mtx->getRowIndicesByCol() ;
-  const double *coeffs = mtx->getElementsByCol() ;
-  const CoinBigIndex &jj = colStarts[j] ;
-  return (new CoinPackedVector(colLens[j],&rowIndices[jj],&coeffs[jj])) ;
+  const CoinBigIndex *colStarts = mtx->getColStarts();
+  const int *colLens = mtx->getColLengths();
+  const int *rowIndices = mtx->getRowIndicesByCol();
+  const double *coeffs = mtx->getElementsByCol();
+  const CoinBigIndex &jj = colStarts[j];
+  return (new CoinPackedVector(colLens[j], &rowIndices[jj], &coeffs[jj]));
 }
 
 /*
@@ -113,51 +114,51 @@ CoinPackedVector *CoinPresolveMonitor::extractCol (int j,
   the matrix is threaded column-ordered only. We have to scan every entry
   in the matrix, looking for entries that match the requested row index.
 */
-CoinPackedVector *CoinPresolveMonitor::extractRow (int i,
-					const CoinPostsolveMatrix *mtx) const
+CoinPackedVector *CoinPresolveMonitor::extractRow(int i,
+  const CoinPostsolveMatrix *mtx) const
 {
-  const CoinBigIndex *colStarts = mtx->getColStarts() ;
-  const int *colLens = mtx->getColLengths() ;
-  const double *coeffs = mtx->getElementsByCol() ;
-  const int *rowIndices = mtx->getRowIndicesByCol() ;
-  const CoinBigIndex *colLinks = mtx->link_ ;
+  const CoinBigIndex *colStarts = mtx->getColStarts();
+  const int *colLens = mtx->getColLengths();
+  const double *coeffs = mtx->getElementsByCol();
+  const int *rowIndices = mtx->getRowIndicesByCol();
+  const CoinBigIndex *colLinks = mtx->link_;
 
-  int n = mtx->getNumCols() ;
+  int n = mtx->getNumCols();
 
-  CoinPackedVector *pkvec = new CoinPackedVector() ;
+  CoinPackedVector *pkvec = new CoinPackedVector();
 
-  for (int j = 0 ; j < n ; j++) {
-    const CoinBigIndex ii =
-	presolve_find_row3(i,colStarts[j],colLens[j],rowIndices,colLinks) ;
-    if (ii >= 0) pkvec->insert(j,coeffs[ii]) ;
+  for (int j = 0; j < n; j++) {
+    const CoinBigIndex ii = presolve_find_row3(i, colStarts[j], colLens[j], rowIndices, colLinks);
+    if (ii >= 0)
+      pkvec->insert(j, coeffs[ii]);
   }
 
-  return (pkvec) ;
+  return (pkvec);
 }
 
 /*
   Extract a column from a CoinPostsolveMatrix. At least here we only need to
   walk one threaded column.
 */
-CoinPackedVector *CoinPresolveMonitor::extractCol (int j,
-					const CoinPostsolveMatrix *mtx) const
+CoinPackedVector *CoinPresolveMonitor::extractCol(int j,
+  const CoinPostsolveMatrix *mtx) const
 {
-  const CoinBigIndex *colStarts = mtx->getColStarts() ;
-  const int *colLens = mtx->getColLengths() ;
-  const double *coeffs = mtx->getElementsByCol() ;
-  const int *rowIndices = mtx->getRowIndicesByCol() ;
-  const CoinBigIndex *colLinks = mtx->link_ ;
+  const CoinBigIndex *colStarts = mtx->getColStarts();
+  const int *colLens = mtx->getColLengths();
+  const double *coeffs = mtx->getElementsByCol();
+  const int *rowIndices = mtx->getRowIndicesByCol();
+  const CoinBigIndex *colLinks = mtx->link_;
 
-  CoinPackedVector *pkvec = new CoinPackedVector() ;
+  CoinPackedVector *pkvec = new CoinPackedVector();
 
-  CoinBigIndex jj = colStarts[j] ;
-  const int &lenj = colLens[j] ;
-  for (int k = 0 ; k < lenj ; k++) {
-    pkvec->insert(rowIndices[jj],coeffs[jj]) ;
-    jj = colLinks[jj] ;
+  CoinBigIndex jj = colStarts[j];
+  const int &lenj = colLens[j];
+  for (int k = 0; k < lenj; k++) {
+    pkvec->insert(rowIndices[jj], coeffs[jj]);
+    jj = colLinks[jj];
   }
-  
-  return (pkvec) ;
+
+  return (pkvec);
 }
 
 /*
@@ -165,21 +166,21 @@ CoinPackedVector *CoinPresolveMonitor::extractCol (int j,
   into a CoinPackedVector, sort it, and compare it to the stored
   CoinPackedVector. Differences are reported to std::cout.
 */
-void CoinPresolveMonitor::checkAndTell (const CoinPresolveMatrix *mtx)
+void CoinPresolveMonitor::checkAndTell(const CoinPresolveMatrix *mtx)
 {
-  CoinPackedVector *curVec = 0 ;
-  const double *lbs = 0 ;
-  const double *ubs = 0 ;
+  CoinPackedVector *curVec = 0;
+  const double *lbs = 0;
+  const double *ubs = 0;
   if (isRow_) {
-    lbs = mtx->getRowLower() ;
-    ubs = mtx->getRowUpper() ;
-    curVec = extractRow(ndx_,mtx) ;
+    lbs = mtx->getRowLower();
+    ubs = mtx->getRowUpper();
+    curVec = extractRow(ndx_, mtx);
   } else {
-    curVec = extractCol(ndx_,mtx) ;
-    lbs = mtx->getColLower() ;
-    ubs = mtx->getColUpper() ;
+    curVec = extractCol(ndx_, mtx);
+    lbs = mtx->getColLower();
+    ubs = mtx->getColUpper();
   }
-  checkAndTell(curVec,lbs[ndx_],ubs[ndx_]) ;
+  checkAndTell(curVec, lbs[ndx_], ubs[ndx_]);
 }
 
 /*
@@ -187,21 +188,21 @@ void CoinPresolveMonitor::checkAndTell (const CoinPresolveMatrix *mtx)
   into a CoinPackedVector, sort it, and compare it to the stored
   CoinPackedVector. Differences are reported to std::cout.
 */
-void CoinPresolveMonitor::checkAndTell (const CoinPostsolveMatrix *mtx)
+void CoinPresolveMonitor::checkAndTell(const CoinPostsolveMatrix *mtx)
 {
-  CoinPackedVector *curVec = 0 ;
-  const double *lbs = 0 ;
-  const double *ubs = 0 ;
+  CoinPackedVector *curVec = 0;
+  const double *lbs = 0;
+  const double *ubs = 0;
   if (isRow_) {
-    lbs = mtx->getRowLower() ;
-    ubs = mtx->getRowUpper() ;
-    curVec = extractRow(ndx_,mtx) ;
+    lbs = mtx->getRowLower();
+    ubs = mtx->getRowUpper();
+    curVec = extractRow(ndx_, mtx);
   } else {
-    curVec = extractCol(ndx_,mtx) ;
-    lbs = mtx->getColLower() ;
-    ubs = mtx->getColUpper() ;
+    curVec = extractCol(ndx_, mtx);
+    lbs = mtx->getColLower();
+    ubs = mtx->getColUpper();
   }
-  checkAndTell(curVec,lbs[ndx_],ubs[ndx_]) ;
+  checkAndTell(curVec, lbs[ndx_], ubs[ndx_]);
 }
 
 /*
@@ -215,87 +216,93 @@ void CoinPresolveMonitor::checkAndTell (const CoinPostsolveMatrix *mtx)
   Not the most efficient implementation, but it leverages existing
   capabilities.
 */
-void CoinPresolveMonitor::checkAndTell (CoinPackedVector *curVec,
-					double lb, double ub)
+void CoinPresolveMonitor::checkAndTell(CoinPackedVector *curVec,
+  double lb, double ub)
 {
-  curVec->sortIncrIndex() ;
+  curVec->sortIncrIndex();
 
   std::cout
-    << "checking " << ((isRow_)?"row ":"column ") << ndx_ << " ..." ;
+    << "checking " << ((isRow_) ? "row " : "column ") << ndx_ << " ...";
 
-  int diffcnt = 0 ;
+  int diffcnt = 0;
   if (lb_ != lb) {
-    diffcnt++ ;
+    diffcnt++;
     std::cout
-      << std::endl << "    "
-      << ((isRow_)?"blow":"lb") << " = " << lb_ << " in original, "
-      << lb << " in current." ;
+      << std::endl
+      << "    "
+      << ((isRow_) ? "blow" : "lb") << " = " << lb_ << " in original, "
+      << lb << " in current.";
   }
   if (ub_ != ub) {
-    diffcnt++ ;
+    diffcnt++;
     std::cout
-      << std::endl << "    "
-      << ((isRow_)?"b":"ub") << " = " << ub_ << " in original, "
-      << ub << " in current." ;
+      << std::endl
+      << "    "
+      << ((isRow_) ? "b" : "ub") << " = " << ub_ << " in original, "
+      << ub << " in current.";
   }
-  bool vecDiff = ((*origVec_) == (*curVec)) ;
-/*
+  bool vecDiff = ((*origVec_) == (*curVec));
+  /*
   Dispense with the easy outcomes.
 */
   if (diffcnt == 0 && !vecDiff) {
-    std::cout << " equal." << std::endl ;
-    return ;
+    std::cout << " equal." << std::endl;
+    return;
   } else if (!vecDiff) {
-    std::cout << std::endl << " coefficients equal." << std::endl ;
-    return ;
+    std::cout << std::endl
+              << " coefficients equal." << std::endl;
+    return;
   }
-/*
+  /*
   We have to compare the coefficients. Merge the index sets.
 */
-  int origLen = origVec_->getNumElements() ;
-  int curLen = curVec->getNumElements() ;
-  int mergedLen = origLen+curLen ;
-  int *mergedIndices = new int [mergedLen] ;
-  CoinCopyN(origVec_->getIndices(),origLen,mergedIndices) ;
-  CoinCopyN(curVec->getIndices(),curLen,mergedIndices+origLen) ;
-  std::inplace_merge(mergedIndices,mergedIndices+origLen,
-  		     mergedIndices+mergedLen) ;
-  int *uniqEnd = std::unique(mergedIndices,mergedIndices+mergedLen) ;
-  int uniqLen = static_cast<int>(uniqEnd-mergedIndices) ;
+  int origLen = origVec_->getNumElements();
+  int curLen = curVec->getNumElements();
+  int mergedLen = origLen + curLen;
+  int *mergedIndices = new int[mergedLen];
+  CoinCopyN(origVec_->getIndices(), origLen, mergedIndices);
+  CoinCopyN(curVec->getIndices(), curLen, mergedIndices + origLen);
+  std::inplace_merge(mergedIndices, mergedIndices + origLen,
+    mergedIndices + mergedLen);
+  int *uniqEnd = std::unique(mergedIndices, mergedIndices + mergedLen);
+  int uniqLen = static_cast< int >(uniqEnd - mergedIndices);
 
-  for (int k = 0 ; k < uniqLen ; k++) {
-    int j = mergedIndices[k] ;
-    double aij_orig = 0.0 ;
-    double aij_cur = 0.0 ;
-    bool inOrig = false ;
-    bool inCur = false ;
+  for (int k = 0; k < uniqLen; k++) {
+    int j = mergedIndices[k];
+    double aij_orig = 0.0;
+    double aij_cur = 0.0;
+    bool inOrig = false;
+    bool inCur = false;
     if (origVec_->findIndex(j) >= 0) {
-      inOrig = true ;
-      aij_orig = (*origVec_)[j] ;
+      inOrig = true;
+      aij_orig = (*origVec_)[j];
     }
     if (curVec->findIndex(j) >= 0) {
-      inCur = true ;
-      aij_cur = (*curVec)[j] ;
+      inCur = true;
+      aij_cur = (*curVec)[j];
     }
-    if (inOrig == false || inCur == false ||
-        aij_orig != aij_cur) {
-      diffcnt++ ;
-      std::cout << std::endl << "    " ;
+    if (inOrig == false || inCur == false || aij_orig != aij_cur) {
+      diffcnt++;
+      std::cout << std::endl
+                << "    ";
       if (isRow_)
-        std::cout << "coeff a(" << ndx_ << "," << j << ") " ;
+        std::cout << "coeff a(" << ndx_ << "," << j << ") ";
       else
-        std::cout << "coeff a(" << j << "," << ndx_ << ") " ;
+        std::cout << "coeff a(" << j << "," << ndx_ << ") ";
       if (inOrig == false)
-        std::cout << "= " << aij_cur << " not present in original." ;
+        std::cout << "= " << aij_cur << " not present in original.";
       else if (inCur == false)
-        std::cout << "= " << aij_orig << " not present in current." ;
+        std::cout << "= " << aij_orig << " not present in current.";
       else
         std::cout
-	  << " = " << aij_orig << " in original, "
-	  << aij_cur << " in current." ;
+          << " = " << aij_orig << " in original, "
+          << aij_cur << " in current.";
     }
   }
-  std::cout << std::endl << "  " << diffcnt << " changes." << std::endl ;
-  delete[] mergedIndices ;
+  std::cout << std::endl
+            << "  " << diffcnt << " changes." << std::endl;
+  delete[] mergedIndices;
 }
 
+/* vi: softtabstop=2 shiftwidth=2 expandtab tabstop=2
+*/

@@ -1,4 +1,4 @@
-/* $Id: network.cpp 1662 2011-01-04 17:52:40Z lou $ */
+/* $Id: network.cpp 2278 2017-10-02 09:51:14Z forrest $ */
 // Copyright (C) 2002, International Business Machines
 // Corporation and others.  All Rights Reserved.
 // This code is licensed under the terms of the Eclipse Public License (EPL).
@@ -128,7 +128,7 @@ int main(int argc, const char *argv[])
      double * upperColumn = new double[numberColumns];
 
      double * element = new double [2*numberColumns];
-     int * start = new int[numberColumns+1];
+     CoinBigIndex * start = new CoinBigIndex[numberColumns+1];
      int * row = new int[2*numberColumns];
      start[numberColumns] = 2 * numberColumns;
      for (i = 0; i < numberColumns; i++) {

@@ -1,4 +1,4 @@
-/* $Id: FixPointConstructors.cpp 1034 2013-12-15 18:05:05Z pbelotti $
+/* $Id: FixPointConstructors.cpp 1251 2018-04-02 12:14:08Z pbelotti $
  *
  * Name:    FixPointConstructors.cpp
  * Author:  Pietro Belotti
@@ -20,11 +20,13 @@ CouenneFixPoint::CouenneFixPoint (CouenneProblem *p,
   firstCall_  (true),
   CPUtime_    (0.),
   nTightened_ (0),
-  perfIndicator_ (p, "Fixed Point LP") {
+  perfIndicator_ (p, "Fixed Point LP"),
+  levelStop_  (0) {
 
   std::string s;
   options -> GetStringValue ("fixpoint_bt_model", s, "couenne."); 
   extendedModel_ = (s == "extended");
+  options -> GetIntegerValue ("fixpoint_bt", levelStop_, "couenne.");
 }
 
 
@@ -35,7 +37,8 @@ CouenneFixPoint::CouenneFixPoint (const CouenneFixPoint &rhs):
   firstCall_     (rhs.firstCall_),
   CPUtime_       (rhs.CPUtime_),
   nTightened_    (rhs.nTightened_),
-  perfIndicator_ (rhs.perfIndicator_) {}
+  perfIndicator_ (rhs.perfIndicator_),
+  levelStop_     (rhs.levelStop_) {}
 
 
 /// destructor

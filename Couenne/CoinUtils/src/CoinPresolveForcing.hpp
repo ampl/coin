@@ -1,4 +1,4 @@
-/* $Id: CoinPresolveForcing.hpp 1498 2011-11-02 15:25:35Z mjs $ */
+/* $Id: CoinPresolveForcing.hpp 2083 2019-01-06 19:38:09Z unxusr $ */
 // Copyright (C) 2002, International Business Machines
 // Corporation and others.  All Rights Reserved.
 // This code is licensed under the terms of the Eclipse Public License (EPL).
@@ -12,7 +12,7 @@
   \file
 */
 
-#define	IMPLIED_BOUND	7
+#define IMPLIED_BOUND 7
 
 /*! \class forcing_constraint_action
     \brief Detect and process forcing constraints and useless constraints
@@ -26,8 +26,9 @@
 */
 class forcing_constraint_action : public CoinPresolveAction {
   forcing_constraint_action();
-  forcing_constraint_action(const forcing_constraint_action& rhs);
-  forcing_constraint_action& operator=(const forcing_constraint_action& rhs);
+  forcing_constraint_action(const forcing_constraint_action &rhs);
+  forcing_constraint_action &operator=(const forcing_constraint_action &rhs);
+
 public:
   struct action {
     const int *rowcols;
@@ -36,6 +37,7 @@ public:
     int nlo;
     int nup;
   };
+
 private:
   const int nactions_;
   // actions_ is owned by the class and must be deleted at destruction
@@ -43,15 +45,18 @@ private:
 
 public:
   forcing_constraint_action(int nactions,
-		      const action *actions,
-		      const CoinPresolveAction *next) :
-    CoinPresolveAction(next),
-    nactions_(nactions), actions_(actions) {}
+    const action *actions,
+    const CoinPresolveAction *next)
+    : CoinPresolveAction(next)
+    , nactions_(nactions)
+    , actions_(actions)
+  {
+  }
 
   const char *name() const;
 
-  static const CoinPresolveAction *presolve(CoinPresolveMatrix * prob,
-					 const CoinPresolveAction *next);
+  static const CoinPresolveAction *presolve(CoinPresolveMatrix *prob,
+    const CoinPresolveAction *next);
 
   void postsolve(CoinPostsolveMatrix *prob) const;
 
@@ -59,3 +64,6 @@ public:
 };
 
 #endif
+
+/* vi: softtabstop=2 shiftwidth=2 expandtab tabstop=2
+*/

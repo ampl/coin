@@ -1,4 +1,4 @@
-// $Id: CglCliqueHelper.cpp 1119 2013-04-06 20:24:18Z stefan $
+// $Id: CglCliqueHelper.cpp 1388 2017-11-09 17:43:51Z forrest $
 // Copyright (C) 2000, International Business Machines
 // Corporation and others.  All Rights Reserved.
 // This code is licensed under the terms of the Eclipse Public License (EPL).
@@ -31,7 +31,7 @@ CglClique::selectFractionalBinaries(const OsiSolverInterface& si)
        if (si.isBinary(i))
 	 n++;
      }
-     if (n<5000)
+     if (n<maxNumber_)
        lclPetol=-1.0e-5;
    }
    const double* x = si.getColSolution();
@@ -90,7 +90,11 @@ void
 CglClique::selectRowCliques(const OsiSolverInterface& si,int numOriginalRows)
 {
    const int numrows = si.getNumRows();
+#ifndef INTEL_COMPILER
    std::vector<int> clique(numrows, 1);
+#else
+   std::vector<int> clique(numrows);
+#endif
 
    int i, j, k;
    
@@ -289,7 +293,7 @@ CglClique::createFractionalGraph()
       nodes[i].nbrs = all_nbr + old_total;
    }
 
-   fgraph.density = static_cast<double> (total_deg) / (sp_numcols * (sp_numcols-1));
+   // not used fgraph.density = static_cast<double> (total_deg) / (sp_numcols * (sp_numcols-1));
 
    /*========================================================================*
      Compute the min and max degree.

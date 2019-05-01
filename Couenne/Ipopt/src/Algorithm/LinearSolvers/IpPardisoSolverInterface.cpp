@@ -2,7 +2,7 @@
 // All Rights Reserved.
 // This code is published under the Eclipse Public License.
 //
-// $Id: IpPardisoSolverInterface.cpp 2594 2015-08-09 14:31:05Z stefan $
+// $Id: IpPardisoSolverInterface.cpp 2757 2018-11-17 17:07:24Z stefan $
 //
 // Authors:  Carl Laird, Andreas Waechter     IBM    2005-03-17
 //
@@ -447,7 +447,7 @@ namespace Ipopt
     IPARM_[12] = (int)match_strat_; // enable matching (recommended, as above)
     IPARM_[20] = 3; // bunch-kaufman pivoting
     IPARM_[23] = 1; // parallel fac
-    IPARM_[24] = 1; // parallel solve
+    IPARM_[24] = 0; // parallel solve
     //IPARM_[26] = 1; // matrix checker
 #else
     IPARM_[1] = order;
@@ -958,12 +958,12 @@ namespace Ipopt
         Jnlst().Printf(J_WARNING, J_LINEAR_ALGEBRA,
                        "Iterative solver in Pardiso did not converge (ERROR = %d)\n", ERROR);
         Jnlst().Printf(J_WARNING, J_LINEAR_ALGEBRA,
-                       "  Decreasing drop tolerances from DPARM_[41] = %e and DPARM_[44] = %e\n", DPARM_[41], DPARM_[44]);
+                       "  Decreasing drop tolerances from DPARM_[4] = %e and DPARM_[5] = %e\n", DPARM_[4], DPARM_[5]);
         PHASE = 23;
         DPARM_[4] /= 2.0 ;
         DPARM_[5] /= 2.0 ;
         Jnlst().Printf(J_WARNING, J_LINEAR_ALGEBRA,
-                       "                               to DPARM_[41] = %e and DPARM_[44] = %e\n", DPARM_[41], DPARM_[44]);
+                       "                               to DPARM_[4] = %e and DPARM_[5] = %e\n", DPARM_[4], DPARM_[5]);
         attempts++;
         ERROR = 0;
       }

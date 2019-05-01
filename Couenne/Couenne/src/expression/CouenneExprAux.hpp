@@ -1,4 +1,4 @@
-/* $Id: CouenneExprAux.hpp 1080 2014-10-30 20:06:40Z pbelotti $
+/* $Id: CouenneExprAux.hpp 1195 2015-11-24 23:25:31Z pbelotti $
  *
  * Name:    exprAux.hpp
  * Author:  Pietro Belotti
@@ -12,8 +12,8 @@
 #ifndef COUENNE_EXPRAUX_HPP
 #define COUENNE_EXPRAUX_HPP
 
-#include <functional>
 #include <iostream>
+#include <assert.h>
 
 #include "CouenneExprVar.hpp"
 
@@ -211,11 +211,16 @@ class exprAux: public exprVar {
 struct compExpr {
   inline bool operator () (exprAux* e0, exprAux* e1) const
   {
-    if (int result = e0 -> sign () - e1 -> sign ())
-      return result < 0;
-    if (e0 -> Image () != NULL && e1 -> Image () != NULL)
-      return e0 -> Image () -> compare (*e1 -> Image ()) < 0;
-    return std::less<expression*>()(e0 -> Image (), e1 -> Image ());
+    int signDiff = (e0 -> sign  () - e1 -> sign  ());
+
+    assert (e0 -> Image () != NULL);
+    assert (e1 -> Image () != NULL);
+
+    return ((signDiff < 0) ||
+            ((signDiff == 0) &&
+             ((e0 -> Image () != NULL) && 
+              (e1 -> Image () != NULL) &&
+              (e0 -> Image () -> compare (*(e1 -> Image ())) < 0))));
   }
 };
 

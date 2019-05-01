@@ -2,7 +2,7 @@
 // All Rights Reserved.
 // This code is published under the Eclipse Public License.
 //
-// $Id: IpFilterLSAcceptor.hpp 1861 2010-12-21 21:34:47Z andreasw $
+// $Id: IpFilterLSAcceptor.hpp 2613 2015-11-04 14:42:02Z stefan $
 //
 // Authors:  Andreas Waechter                 IBM    2005-10-13
 //               derived file from IpFilterLineSearch.hpp
@@ -194,6 +194,8 @@ namespace Ipopt
      *  increased more than this compared to the current point, the
      *  trial point is rejected. */
     Number obj_max_inc_;
+    /** Second method correction method */
+    Index soc_method_;
 
     /** enumeration for the corrector type */
     enum CorrectorTypeEnum

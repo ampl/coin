@@ -2,12 +2,17 @@
 # All Rights Reserved.
 # This file is distributed under the Eclipse Public License.
 
-## $Id: Makefile.am 2005 2011-06-06 12:55:16Z stefan $
+## $Id: Makefile.am 2666 2016-07-20 16:02:55Z stefan $
 
 # Authors:  Carl Laird, Andreas Waechter     IBM    2004-08-13
 
 AUTOMAKE_OPTIONS = foreign
 
+includeipoptdir = $(includedir)/coin
+includeipopt_HEADERS = \
+	IpGenTMatrix.hpp \
+	IpSymTMatrix.hpp \
+	IpTripletHelper.hpp
 noinst_LTLIBRARIES = libtmatrices.la
 
 libtmatrices_la_SOURCES = \
