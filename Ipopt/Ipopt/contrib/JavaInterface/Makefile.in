@@ -4,7 +4,7 @@
 #
 # Author: Andreas Waechter     2007-10-08     IBM
 
-# $Id: Makefile.in 2518 2015-01-09 10:31:20Z stefan $
+# $Id$
 
 ## Installation of JDK
 #JAVA_HOME = @JAVA_HOME@

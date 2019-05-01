@@ -3,7 +3,7 @@
 // All Rights Reserved.
 // This code is published under the Eclipse Public License.
 //
-// $Id: IpReturnCodes.hpp 1861 2010-12-21 21:34:47Z andreasw $
+// $Id$
 //
 // Authors:  Andreas Waechter               IBM    2006-03-01
 ************************************************************************/

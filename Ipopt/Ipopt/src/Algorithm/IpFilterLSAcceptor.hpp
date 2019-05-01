@@ -2,7 +2,7 @@
 // All Rights Reserved.
 // This code is published under the Eclipse Public License.
 //
-// $Id: IpFilterLSAcceptor.hpp 2613 2015-11-04 14:42:02Z stefan $
+// $Id$
 //
 // Authors:  Andreas Waechter                 IBM    2005-10-13
 //               derived file from IpFilterLineSearch.hpp

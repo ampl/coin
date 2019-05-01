@@ -2,7 +2,7 @@
 // All Rights Reserved.
 // This code is published under the Eclipse Public License.
 //
-// $Id: IpException.hpp 2023 2011-06-18 18:49:49Z stefan $
+// $Id$
 //
 // Authors:  Carl Laird, Andreas Waechter     IBM    2004-08-13
 

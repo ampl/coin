@@ -2,7 +2,7 @@
 // All Rights Reserved.
 // This code is published under the Eclipse Public License.
 //
-// $Id: IpInexactCq.cpp 1890 2011-01-28 17:09:13Z andreasw $
+// $Id$
 //
 // Authors:  Andreas Waechter             IBM    2008-08-31
 

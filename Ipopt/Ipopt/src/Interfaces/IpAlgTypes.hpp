@@ -2,7 +2,7 @@
 // All Rights Reserved.
 // This code is published under the Eclipse Public License.
 //
-// $Id: IpAlgTypes.hpp 2551 2015-02-13 02:51:47Z stefan $
+// $Id$
 //
 // Authors:  Carl Laird, Andreas Waechter     IBM    2005-07-19
 

@@ -2,7 +2,7 @@
 // All Rights Reserved.
 // This code is published under the Eclipse Public License.
 //
-// $Id: MittelmannBndryCntrlDiri3Dsin.cpp 2005 2011-06-06 12:55:16Z stefan $
+// $Id$
 //
 // Authors:  Andreas Waechter             IBM    2005-10-18
 //           Olaf Schenk   (Univ. of Basel)      2007-08-01

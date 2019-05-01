@@ -2,7 +2,7 @@
 # All Rights Reserved.
 # This file is distributed under the Eclipse Public License.
 
-## $Id: configure.ac 2691 2017-06-12 10:36:01Z stefan $
+## $Id$
 
 # Authors:  Carl Laird, Andreas Waechter     IBM    2004-08-13
 
@@ -12,7 +12,7 @@
 
 AC_PREREQ(2.59)
 
-AC_INIT([Ipopt],[3.12.8],[http://projects.coin-or.org/Ipopt/newticket])
+AC_INIT([Ipopt],[3.12.13],[http://projects.coin-or.org/Ipopt/newticket])
 
 AC_COPYRIGHT(
 [Copyright 2004, 2011 International Business Machines and others.
@@ -41,7 +41,7 @@ AC_CANONICAL_BUILD
 # the source root directory contains definition of where to find those
 # externals.  The following macro ensures that those externals are
 # retrieved by svn if they are not there yet.
-AC_COIN_PROJECTDIR_INIT(Ipopt,11:8:10)
+AC_COIN_PROJECTDIR_INIT(Ipopt,11:13:10)
 
 # Check if user wants to produce debugging code
 AC_COIN_DEBUG_COMPILE(Ipopt)
@@ -336,7 +336,8 @@ if test "$use_pardiso" != "no"; then
   fi
   AC_DEFINE(HAVE_PARDISO,1,[Define to 1 if Pardiso is available])
 
-  if test "$have_mkl" = "yes"; then
+  # if we have MKL but also --with-pardiso is set, then assume that non-MKL Pardiso is used
+  if test "$have_mkl" = "yes" && test -z "$use_pardiso" ; then
      AC_DEFINE(HAVE_PARDISO_MKL,1,[Define to 1 if you are using Pardiso from MKL])
      AC_DEFINE(HAVE_PARDISO_OLDINTERFACE,1,[Define to 1 if you are not using at least a 4.0 version of Pardiso])
   else
@@ -492,6 +493,9 @@ case $build in
   *-cygwin* | *-mingw*)
     JIPOPTDLL=jipopt.dll
     ;;
+  *-darwin* )
+    JIPOPTDLL=libjipopt.dylib
+    ;;  
   *)
     JIPOPTDLL=libjipopt.so
     ;;
@@ -561,6 +565,10 @@ if test x"$use_matlab_home" = x; then
     MATLAB_HOME=`echo $mexpath | sed -e "s=/bin/matlab$EXEEXT$=="`
     AC_MSG_RESULT([$MATLAB_HOME])
   fi
+elif test x"$use_matlab_home" = xno; then
+  # Matlab interface disabled by user
+  MATLAB_HOME=""
+  AC_MSG_RESULT([disabled])
 else
   MATLAB_HOME="$use_matlab_home"
   AC_MSG_RESULT([$MATLAB_HOME])

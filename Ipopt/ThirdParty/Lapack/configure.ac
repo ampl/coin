@@ -2,7 +2,7 @@
 # All Rights Reserved.
 # This file is distributed under the Eclipse Public License.
 
-## $Id: configure.ac 3733 2017-02-25 01:36:01Z stefan $
+## $Id$
 
 # Author:  Andreas Waechter            IBM    2006-04-13
 
@@ -12,7 +12,7 @@
 
 AC_PREREQ(2.59)
 
-AC_INIT([ThirdPartyLapack],[1.5.6],[http://projects.coin-or.org/BuildTools/newticket])
+AC_INIT([ThirdPartyLapack],[1.6.0],[http://projects.coin-or.org/BuildTools/newticket])
 
 AC_COPYRIGHT([
 Copyright 2006 International Business Machines and others.
@@ -30,7 +30,7 @@ AC_CONFIG_SRCDIR(LAPACK/SRC/dlarf.f)
 # /usr/local.
 AC_PREFIX_DEFAULT([`pwd`])
 
-AC_COIN_PROJECTDIR_INIT(Lapack,6:6:5)
+AC_COIN_PROJECTDIR_INIT(Lapack,7:0:6)
 
 #############################################################################
 #                         Standard build tool stuff                         #
@@ -61,10 +61,10 @@ fi
 # FLIBS will be needed to link against this library, so add them to LAPACKLIB_PCLIBS
 LAPACKLIB_PCLIBS="$LAPACKLIB_PCLIBS $FLIBS"
 
-# Take care that optimization is disbled for DLAMCH.F 
+# Take care that optimization is disbled for DLAMCH.F
 AC_ARG_VAR(DLAMCH_FFLAGS,[Fortran compiler options for DLAMCH.F])
 if test "x$DLAMCH_FFLAGS" = x ; then
-  #disable optimiziation for dlamch.f by adding -Od or -O0 at end of FFLAGS (hope to overwrite previous -O? option, if present) 
+  #disable optimiziation for dlamch.f by adding -Od or -O0 at end of FFLAGS (hope to overwrite previous -O? option, if present)
   case $F77 in
     ifort* | */ifort* | IFORT* | */IFORT* )
       case $build in
@@ -100,9 +100,9 @@ AC_COIN_INIT_AUTO_TOOLS
 #               Create links to the required source files                   #
 #############################################################################
 
-lapack_source_files='dbdsqr.f dgebal.f dgebak.f dgebd2.f dgebrd.f dgeev.f dgehd2.f dgehrd.f dgelq2.f dgelqf.f dgels.f dgeqr2.f dgeqrf.f dgesvd.f dgesv.f dgetf2.f dgetrf.f dgetri.f dgetrs.f dggbak.f dggbal.f dgghrd.f dggev.f dhgeqz.f dhseqr.f disnan.f dlabad.f dlabrd.f dlacpy.f dladiv.f dlaebz.f dlae2.f dlaev2.f dlaexc.f dlagtf.f dlagts.f dlag2.f dlahqr.f dlahr2.f dlaisnan.f dlaln2.f dlaneg.f dlange.f dlanhs.f dlanst.f dlansy.f dlanv2.f dlapy2.f dlapy3.f dlaqr0.f dlaqr1.f dlaqr2.f dlaqr3.f dlaqr4.f dlaqr5.f dlarf.f dlarfb.f dlarfg.f 
+lapack_source_files='dbdsqr.f dgebal.f dgebak.f dgebd2.f dgebrd.f dgeev.f dgehd2.f dgehrd.f dgelq2.f dgelqf.f dgels.f dgeqr2.f dgeqrf.f dgesvd.f dgesv.f dgetf2.f dgetrf.f dgetri.f dgetrs.f dggbak.f dggbal.f dgghrd.f dggev.f dhgeqz.f dhseqr.f disnan.f dlabad.f dlabrd.f dlacpy.f dladiv.f dlaebz.f dlae2.f dlaev2.f dlaexc.f dlagtf.f dlagts.f dlag2.f dlahqr.f dlahr2.f dlaisnan.f dlaln2.f dlaneg.f dlange.f dlanhs.f dlanst.f dlansy.f dlanv2.f dlapy2.f dlapy3.f dlaqr0.f dlaqr1.f dlaqr2.f dlaqr3.f dlaqr4.f dlaqr5.f dlarf.f dlarfb.f dlarfg.f
 dlarft.f dlarfx.f dlarnv.f dlarra.f dlarrb.f dlarrc.f dlarrd.f dlarre.f dlarrf.f dlarrj.f dlarrk.f dlarrr.f dlarrv.f dlartg.f dlartv.f dlaruv.f dlar1v.f dlas2.f dlascl.f dlaset.f dlasq1.f dlasq2.f dlasq3.f dlasq4.f dlasq5.f dlasq6.f dlasr.f dlasrt.f dlaswp.f dlassq.f dlasv2.f dlasyf.f dlasy2.f dlatrd.f dorg2l.f dorg2r.f dorgbr.f dorghr.f dorglq.f dorgl2.f dorgql.f dorgqr.f dorgtr.f dorm2r.f dormbr.f dormhr.f dorml2.f dormlq.f dormql.f dormqr.f dormtr.f dorm2l.f dpotf2.f dpotrf.f dpotrs.f dppsv.f dpptrf.f dpptrs.f dstebz.f dstein.f
-dstemr.f dsteqr.f dsterf.f dsyev.f dsyevr.f dsyevx.f dsytd2.f dsytf2.f dsytrd.f dsytrf.f dsytri.f dtgevc.f dtrevc.f dtrexc.f dtrti2.f dtrtri.f dtrtrs.f ieeeck.f iladlc.f iladlr.f ilaenv.f iparmq.f sgetf2.f sgetrf.f slaswp.f zgetf2.f zgetrf.f zlacgv.f zlacpy.f zlaev2.f zlaswp.f zpotf2.f zrot.f zsymv.f zsyr.f zsytri.f'
+dstemr.f dsteqr.f dsterf.f dsyconv.f dsyev.f dsyevr.f dsyevx.f dsysv.f dsytd2.f dsytf2.f dsytrd.f dsytrf.f dsytri.f dsytrs.f dsytrs2.f dtgevc.f dtrevc.f dtrexc.f dtrti2.f dtrtri.f dtrtrs.f ieeeck.f iladlc.f iladlr.f ilaenv.f iparmq.f sgetf2.f sgetrf.f slaswp.f xerbla.f zgetf2.f zgetrf.f zlacgv.f zlacpy.f zlaev2.f zlaswp.f zpotf2.f zrot.f zsymv.f zsyr.f zsytri.f'
 for file in $lapack_source_files; do
   AC_CONFIG_LINKS($file:LAPACK/SRC/$file)
 done

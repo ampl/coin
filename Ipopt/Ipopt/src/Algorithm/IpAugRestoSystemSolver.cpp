@@ -2,7 +2,7 @@
 // All Rights Reserved.
 // This code is published under the Eclipse Public License.
 //
-// $Id: IpAugRestoSystemSolver.cpp 2494 2014-07-03 20:22:37Z ghackebeil $
+// $Id$
 //
 // Authors:  Carl Laird, Andreas Waechter     IBM    2004-08-13
 

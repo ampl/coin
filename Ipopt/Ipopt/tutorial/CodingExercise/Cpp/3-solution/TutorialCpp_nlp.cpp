@@ -2,7 +2,7 @@
 // All Rights Reserved.
 // This code is published under the Eclipse Public License.
 //
-// $Id: TutorialCpp_nlp.cpp 2005 2011-06-06 12:55:16Z stefan $
+// $Id$
 //
 // Author:  Andreas Waechter               IBM    2009-04-02
 

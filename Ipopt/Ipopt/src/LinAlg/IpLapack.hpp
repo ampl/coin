@@ -2,7 +2,7 @@
 // All Rights Reserved.
 // This code is published under the Eclipse Public License.
 //
-// $Id: IpLapack.hpp 2449 2013-12-16 00:25:42Z ghackebeil $
+// $Id$
 //
 // Authors:  Andreas Waechter              IBM    2005-12-25
 

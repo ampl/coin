@@ -11,7 +11,7 @@
 %%     Stefan Vigerske                        GAMS
 %%
 %%
-%% $Id: documentation.tex 2617 2015-11-26 16:00:20Z stefan $
+%% $Id$
 %%
 \documentclass[10pt]{article}
 \setlength{\textwidth}{6.3in}       % Text width
@@ -42,7 +42,7 @@
 \title{Introduction to \Ipopt:\\
 A tutorial for downloading, installing, and using \Ipopt}
 
-\author{Revision number of this document: $Revision: 2617 $}
+\author{Revision number of this document: $Revision$}
 
 %\date{\today}
 \maketitle
@@ -455,7 +455,7 @@ re-implemented from scratch.
 The new C++ version of the \Ipopt optimization code (\Ipopt 3.0.0
 and beyond) was maintained at IBM Research and remains part of the
 COIN-OR initiative. The development on the Fortran version has
-ceased, but the source code can still be downloaded from \url{http://www.coin-or.org/download/source/Ipopt-Fortran}.
+ceased, but the source code can still be downloaded from \url{https://www.coin-or.org/Ipopt/ipopt-fortran.html}.
 
 \section{Installing \Ipopt}\label{Installing}
 
@@ -1656,6 +1656,20 @@ has been reported that the following configure flags should be used:
   the linear algebra routines (Blas/Lapack). On some systems, configure
   is able to find MKL automatically when looking for Blas. On other systems,
   one has to specify the MKL libraries with the \verb|--with-blas| option.
+
+  For best performance on Linux, use Pardiso from the Pardiso project website
+  together with linear algebra from Intel MKL. The configure command would
+  be something like the following (all in one line):
+  \begin{verbatim}
+  MKL_LIBS="-L${MKLROOT}/lib/intel64 -Wl,--no-as-needed -lmkl_intel_lp64
+    -lmkl_lapack95_lp64 -lmkl_sequential -lmkl_core -lgfortran -fopenmp -lpthread -lm -ldl"
+  ADD_CFLAGS="-fopenmp -fno-common -fexceptions"
+  ADD_CXXFLAGS="-fopenmp -fno-common -fexceptions"
+  ADD_FFLAGS="-fopenmp -fexceptions"
+  ./configure -C F77=gfortran CC=gcc CXX=g++
+    --with-blas-lib="${MKL_LIBS}" --with-lapack-lib="${MKL_LIBS}"
+    --with-pardiso="libpardiso600-GNU720-X86-64.so -lgfortran -lquadmath"
+  \end{verbatim}
 
 \item If you want to compile \Ipopt with the linear solver WSMP (see
   Section~\ref{sec:WSMP}), you need to specify the link flags for the

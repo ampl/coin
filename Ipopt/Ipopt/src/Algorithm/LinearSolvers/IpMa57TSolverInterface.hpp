@@ -2,7 +2,7 @@
 // All Rights Reserved.
 // This code is published under the Eclipse Public License.
 //
-// $Id: IpMa57TSolverInterface.hpp 2158 2012-12-04 19:24:42Z stefan $
+// $Id$
 //
 // Authors:  Michael Hagemann               Univ of Basel 2005-10-28
 //               original version (based on MA27TSolverInterface.hpp)

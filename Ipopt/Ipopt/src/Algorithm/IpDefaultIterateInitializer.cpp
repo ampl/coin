@@ -2,7 +2,7 @@
 // All Rights Reserved.
 // This code is published under the Eclipse Public License.
 //
-// $Id: IpDefaultIterateInitializer.cpp 2339 2013-06-22 10:21:26Z stefan $
+// $Id$
 //
 // Authors:  Carl Laird, Andreas Waechter              IBM    2004-09-23
 

@@ -2,7 +2,7 @@
 // All Rights Reserved.
 // This code is published under the Eclipse Public License.
 //
-// $Id: IpLimMemQuasiNewtonUpdater.cpp 2472 2014-04-05 17:47:20Z stefan $
+// $Id$
 //
 // Authors:  Andreas Waechter                 IBM    2005-12-26
 

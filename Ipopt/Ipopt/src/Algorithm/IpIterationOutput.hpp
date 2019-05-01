@@ -2,7 +2,7 @@
 // All Rights Reserved.
 // This code is published under the Eclipse Public License.
 //
-// $Id: IpIterationOutput.hpp 2020 2011-06-16 20:46:16Z andreasw $
+// $Id$
 //
 // Authors:  Andreas Waechter, Carl Laird       IBM    2004-09-27
 

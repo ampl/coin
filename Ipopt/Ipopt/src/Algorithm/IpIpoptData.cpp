@@ -2,7 +2,7 @@
 // All Rights Reserved.
 // This code is published under the Eclipse Public License.
 //
-// $Id: IpIpoptData.cpp 2512 2014-12-12 17:43:23Z stefan $
+// $Id$
 //
 // Authors:  Carl Laird, Andreas Waechter     IBM    2004-08-13
 
@@ -83,9 +83,8 @@ namespace Ipopt
 
     initialize_called_ = true;
 
-    if (cpu_time_start_==-1.) {
-      cpu_time_start_ = CpuTime();
-    }
+    // will be set to cputime in IpoptApplication::call_optimize()
+    cpu_time_start_ = -1.;
 
     bool retval = true;
 

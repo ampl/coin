@@ -2,7 +2,7 @@
 // All Rights Reserved.
 // This code is published under the Eclipse Public License.
 //
-// $Id: IpCGPerturbationHandler.cpp 2181 2013-03-30 20:00:54Z stefan $
+// $Id$
 //
 // Authors:  Carl Laird, Andreas Waechter              IBM    2005-08-04
 

@@ -2,7 +2,7 @@
  * All Rights Reserved.
  * This code is published under the Eclipse Public License.
  *
- * $Id: TutorialC.c 1861 2010-12-21 21:34:47Z andreasw $
+ * $Id$
  *
  * Author:  Andreas Waechter               IBM    2009-04-02
  */

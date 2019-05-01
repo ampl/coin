@@ -2,7 +2,7 @@
 // All Rights Reserved.
 // This code is published under the Eclipse Public License.
 //
-// $Id: SensRegOp.cpp 1984 2011-04-14 07:44:30Z hpirnay $
+// $Id$
 //
 // Authors:  Carl Laird, Andreas Waechter     IBM    2005-08-16
 // modified for sIPOPT by Hans Pirnay, 2009-07-22

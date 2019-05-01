@@ -3,7 +3,7 @@
    All Rights Reserved.
    This code is published under the Eclipse Public License.
  
-   $Id: IpStdFInterface.c 2600 2015-08-22 14:07:08Z stefan $
+   $Id$
  
    Authors:  Carl Laird, Andreas Waechter     IBM    2004-09-03
  ********************************************************************/

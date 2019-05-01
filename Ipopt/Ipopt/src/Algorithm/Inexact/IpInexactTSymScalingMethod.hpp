@@ -2,7 +2,7 @@
 // All Rights Reserved.
 // This code is published under the Eclipse Public License.
 //
-// $Id: IpInexactTSymScalingMethod.hpp 2206 2013-04-13 15:29:15Z stefan $
+// $Id$
 //
 // Authors:  Andreas Waechter, Frank E. Curtis         IBM    2009-06-12
 //               (based on IpMc19TSymScalingMethod.hpp rev 699)

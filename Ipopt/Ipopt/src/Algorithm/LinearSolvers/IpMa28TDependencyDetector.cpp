@@ -2,7 +2,7 @@
 // All Rights Reserved.
 // This code is published under the Eclipse Public License.
 //
-// $Id: IpMa28TDependencyDetector.cpp 2008 2011-06-11 16:23:59Z stefan $
+// $Id$
 //
 // Authors:  Andreas Waechter            IBM    2007-04-17
 

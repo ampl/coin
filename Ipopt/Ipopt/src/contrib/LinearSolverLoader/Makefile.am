@@ -2,7 +2,7 @@
 # All Rights Reserved.
 # This file is distributed under the Eclipse Public License.
 #
-## $Id: Makefile.am 2107 2012-06-12 18:23:37Z stefan $
+## $Id$
 #
 # Author: Stefan Vigerske
 

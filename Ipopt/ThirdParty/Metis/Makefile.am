@@ -2,7 +2,7 @@
 # All Rights Reserved.
 # This file is distributed under the Eclipse Public License.
 
-## $Id: Makefile.am 3103 2013-11-21 19:56:05Z stefan $
+## $Id$
 
 AUTOMAKE_OPTIONS = foreign
 

@@ -3,7 +3,7 @@
 // All Rights Reserved.
 // This code is published under the Eclipse Public License.
 //
-// $Id: IpMa77SolverInterface.hpp 2328 2013-06-13 17:24:24Z stefan $
+// $Id$
 //
 // Authors: Jonathan Hogg                    STFC   2013-30-05
 //          Jonathan Hogg                           2009-07-29

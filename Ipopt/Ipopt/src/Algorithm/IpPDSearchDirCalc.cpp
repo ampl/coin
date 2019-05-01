@@ -2,7 +2,7 @@
 // All Rights Reserved.
 // This code is published under the Eclipse Public License.
 //
-// $Id: IpPDSearchDirCalc.cpp 2127 2012-11-19 17:50:20Z stefan $
+// $Id$
 //
 // Authors:  Andreas Waechter                 IBM    2005-10-13
 //               derived from IpIpoptAlg.cpp

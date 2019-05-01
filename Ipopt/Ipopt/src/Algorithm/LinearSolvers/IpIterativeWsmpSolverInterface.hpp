@@ -2,7 +2,7 @@
 // All Rights Reserved.
 // This code is published under the Eclipse Public License.
 //
-// $Id: IpIterativeWsmpSolverInterface.hpp 1861 2010-12-21 21:34:47Z andreasw $
+// $Id$
 //
 // Authors:  Andreas Waechter              IBM    2009-09-18
 //               based on IpWsmpSolverInterface.hpp (rev 1483)

@@ -2,7 +2,7 @@
 // All Rights Reserved.
 // This code is published under the Eclipse Public License.
 //
-// $Id: IpLinearSolversRegOp.cpp 2159 2012-12-24 14:02:00Z stefan $
+// $Id$
 //
 // Authors:  Carl Laird, Andreas Waechter     IBM    2005-08-16
 

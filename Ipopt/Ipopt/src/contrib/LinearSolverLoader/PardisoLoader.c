@@ -2,7 +2,7 @@
  All Rights Reserved.
  This code is published under the Eclipse Public License.
 
- $Id: PardisoLoader.c 2014 2011-06-14 15:48:59Z stefan $
+ $Id$
 
  Author: Stefan Vigerske
 */

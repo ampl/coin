@@ -100,13 +100,13 @@ am__objects_1 = dbdsqr.lo dgebal.lo dgebak.lo dgebd2.lo dgebrd.lo \
 	dorgtr.lo dorm2r.lo dormbr.lo dormhr.lo dorml2.lo dormlq.lo \
 	dormql.lo dormqr.lo dormtr.lo dorm2l.lo dpotf2.lo dpotrf.lo \
 	dpotrs.lo dppsv.lo dpptrf.lo dpptrs.lo dstebz.lo dstein.lo \
-	dstemr.lo dsteqr.lo dsterf.lo dsyev.lo dsyevr.lo dsyevx.lo \
-	dsytd2.lo dsytf2.lo dsytrd.lo dsytrf.lo dsytri.lo dtgevc.lo \
-	dtrevc.lo dtrexc.lo dtrti2.lo dtrtri.lo dtrtrs.lo ieeeck.lo \
-	iladlc.lo iladlr.lo ilaenv.lo iparmq.lo sgetf2.lo sgetrf.lo \
-	slamch.lo slaswp.lo zgetf2.lo zgetrf.lo zlacgv.lo zlacpy.lo \
-	zlaev2.lo zlaswp.lo zpotf2.lo zrot.lo zsymv.lo zsyr.lo \
-	zsytri.lo
+	dstemr.lo dsteqr.lo dsterf.lo dsyconv.lo dsyev.lo dsyevr.lo \
+	dsyevx.lo dsysv.lo dsytd2.lo dsytf2.lo dsytrd.lo dsytrf.lo \
+	dsytri.lo dsytrs.lo dsytrs2.lo dtgevc.lo dtrevc.lo dtrexc.lo \
+	dtrti2.lo dtrtri.lo dtrtrs.lo ieeeck.lo iladlc.lo iladlr.lo \
+	ilaenv.lo iparmq.lo sgetf2.lo sgetrf.lo slamch.lo slaswp.lo \
+	xerbla.lo zgetf2.lo zgetrf.lo zlacgv.lo zlacpy.lo zlaev2.lo \
+	zlaswp.lo zpotf2.lo zrot.lo zsymv.lo zsyr.lo zsytri.lo
 am_libcoinlapack_la_OBJECTS = $(am__objects_1)
 libcoinlapack_la_OBJECTS = $(am_libcoinlapack_la_OBJECTS)
 DEFAULT_INCLUDES = -I. -I$(srcdir)
@@ -419,14 +419,18 @@ LAPACK_FILES = \
 	dstemr.f \
 	dsteqr.f \
 	dsterf.f \
+	dsyconv.f \
 	dsyev.f \
 	dsyevr.f \
 	dsyevx.f \
+	dsysv.f \
 	dsytd2.f \
 	dsytf2.f \
 	dsytrd.f \
 	dsytrf.f \
 	dsytri.f \
+	dsytrs.f \
+	dsytrs2.f \
 	dtgevc.f \
 	dtrevc.f \
 	dtrexc.f \
@@ -442,6 +446,7 @@ LAPACK_FILES = \
 	sgetrf.f \
 	slamch.f \
 	slaswp.f \
+	xerbla.f \
 	zgetf2.f \
 	zgetrf.f \
 	zlacgv.f \

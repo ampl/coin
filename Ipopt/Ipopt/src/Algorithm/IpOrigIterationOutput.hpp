@@ -2,7 +2,7 @@
 // All Rights Reserved.
 // This code is published under the Eclipse Public License.
 //
-// $Id: IpOrigIterationOutput.hpp 2167 2013-03-08 11:15:38Z stefan $
+// $Id$
 //
 // Authors:  Andreas Waechter, Carl Laird       IBM    2004-09-27
 

@@ -2,7 +2,7 @@
 # All Rights Reserved.
 # This file is distributed under the Eclipse Public License.
 
-## $Id: Makefile.am 3129 2013-12-10 14:22:43Z tkr $
+## $Id$
 
 # the idea is to use the ASL Makefiles to build a static $(AMPLSOLVER_A) library via the compile_*_ASL scripts
 # from this library, we create a libcoinasl.la libtool library

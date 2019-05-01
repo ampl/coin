@@ -2,7 +2,7 @@
 // All Rights Reserved.
 // This code is published under the Eclipse Public License.
 //
-// $Id: IpInexactNewtonNormal.cpp 1886 2011-01-27 23:11:16Z andreasw $
+// $Id$
 //
 // Authors:  Andreas Waechter            IBM    2008-08-31
 

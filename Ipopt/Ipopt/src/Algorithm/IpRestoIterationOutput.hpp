@@ -2,7 +2,7 @@
 // All Rights Reserved.
 // This code is published under the Eclipse Public License.
 //
-// $Id: IpRestoIterationOutput.hpp 2450 2013-12-16 09:28:37Z ghackebeil $
+// $Id$
 //
 // Authors:  Carl Laird, Andreas Waechter       IBM    2004-09-27
 

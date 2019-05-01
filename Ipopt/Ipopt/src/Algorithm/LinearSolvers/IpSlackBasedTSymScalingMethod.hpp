@@ -2,7 +2,7 @@
 // All Rights Reserved.
 // This code is published under the Eclipse Public License.
 //
-// $Id: IpSlackBasedTSymScalingMethod.hpp 2206 2013-04-13 15:29:15Z stefan $
+// $Id$
 //
 // Authors:  Andreas Waechter                   IBM    2009-11-13
 //               (based on IpInexactTSymScalingMethod.hpp)

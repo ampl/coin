@@ -2,7 +2,7 @@
  * All Rights Reserved.
  * This code is published under the Eclipse Public License.
  *
- * $Id: IpoptConfig.h 2666 2016-07-20 16:02:55Z stefan $
+ * $Id$
  *
  * Include file for the configuration of Ipopt.
  *

@@ -2,7 +2,7 @@
 // All Rights Reserved.
 // This code is published under the Eclipse Public License.
 //
-// $Id: IpGenAugSystemSolver.hpp 2269 2013-05-05 11:32:40Z stefan $
+// $Id$
 //
 // Authors:  Andreas Waechter     IBM    2007-03-01
 

@@ -2,7 +2,7 @@
 // All Rights Reserved.
 // This code is published under the Eclipse Public License.
 //
-// $Id: MittelmannBndryCntrlDiri3D_27.hpp 2005 2011-06-06 12:55:16Z stefan $
+// $Id$
 //
 // Authors:  Olaf Schenk   (Univ. of Basel)      2007-08-01
 //              modified MittelmannBndryCntrlDiri.hpp for 3-dim problem

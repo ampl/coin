@@ -3,7 +3,7 @@
    All Rights Reserved.
    This code is published under the Eclipse Public License.
  
-   $Id: IpStdCInterface.h 2082 2012-02-16 03:00:34Z andreasw $
+   $Id$
  
    Authors:  Carl Laird, Andreas Waechter     IBM    2004-09-02
  *************************************************************************/

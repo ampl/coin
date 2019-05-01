@@ -5,7 +5,7 @@
 # This file is distributed under the Eclipse Public License.
 # It is part of the BuildTools project in COIN-OR (www.coin-or.org)
 #
-# $Id: prepare_new_stable 2947 2013-09-13 08:36:57Z stefan $
+# $Id$
 #
 # Adapted from prepare_new_release by Lou Hafer, SFU, 100507. 
 

@@ -2,7 +2,7 @@
 # All Rights Reserved.
 # This file is distributed under the Eclipse Public License.
 
-# $Id: Makefile.in 2016 2011-06-15 08:53:32Z stefan $
+# $Id$
 
 ##########################################################################
 #    You can modify this example makefile to fit for your own program.   #

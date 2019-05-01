@@ -2,7 +2,7 @@
 // All Rights Reserved.
 // This code is published under the Eclipse Public License.
 //
-// $Id: IpSolveStatistics.hpp 1861 2010-12-21 21:34:47Z andreasw $
+// $Id$
 //
 // Authors:  Carl Laird, Andreas Waechter          IBM    2005-08-15
 

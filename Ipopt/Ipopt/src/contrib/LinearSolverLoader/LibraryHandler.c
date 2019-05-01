@@ -2,7 +2,7 @@
  All Rights Reserved.
  This code is published under the Eclipse Public License.
 
- $Id: LibraryHandler.c 2048 2011-09-09 20:39:50Z stefan $
+ $Id$
 
  Author: Stefan Vigerske
 
@@ -22,7 +22,7 @@
 # define mysnprintf _snprintf
 # else
 #  define mysnprintf snprintf
-#  error "Do not have function for save printing into a C-string (snprintf or _snprintf)"
+/*#  error "Do not have function for save printing into a C-string (snprintf or _snprintf)" */
 # endif
 #endif
 

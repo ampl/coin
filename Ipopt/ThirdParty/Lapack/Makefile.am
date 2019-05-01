@@ -2,7 +2,7 @@
 # All Rights Reserved.
 # This file is distributed under the Eclipse Public License.
 
-## $Id: Makefile.am 3098 2013-11-21 19:55:45Z stefan $
+## $Id$
 
 AUTOMAKE_OPTIONS = foreign
 
@@ -133,14 +133,18 @@ LAPACK_FILES = \
 	dstemr.f \
 	dsteqr.f \
 	dsterf.f \
+	dsyconv.f \
 	dsyev.f \
 	dsyevr.f \
 	dsyevx.f \
+	dsysv.f \
 	dsytd2.f \
 	dsytf2.f \
 	dsytrd.f \
 	dsytrf.f \
 	dsytri.f \
+	dsytrs.f \
+	dsytrs2.f \
 	dtgevc.f \
 	dtrevc.f \
 	dtrexc.f \
@@ -156,6 +160,7 @@ LAPACK_FILES = \
 	sgetrf.f \
 	slamch.f \
 	slaswp.f \
+	xerbla.f \
 	zgetf2.f \
 	zgetrf.f \
 	zlacgv.f \

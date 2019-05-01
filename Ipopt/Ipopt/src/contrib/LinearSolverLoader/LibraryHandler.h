@@ -2,7 +2,7 @@
  All Rights Reserved.
  This code is published under the Eclipse Public License.
 
- $Id: LibraryHandler.h 2105 2012-06-12 13:22:30Z stefan $
+ $Id$
 
  Author: Stefan Vigerske
 

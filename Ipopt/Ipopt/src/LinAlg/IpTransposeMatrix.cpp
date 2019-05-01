@@ -2,7 +2,7 @@
 // All Rights Reserved.
 // This code is published under the Eclipse Public License.
 //
-// $Id: IpTransposeMatrix.cpp 2269 2013-05-05 11:32:40Z stefan $
+// $Id$
 //
 // Authors:  Andreas Waechter           IBM    2008-08-25
 

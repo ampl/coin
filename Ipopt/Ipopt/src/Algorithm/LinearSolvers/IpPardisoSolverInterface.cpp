@@ -2,7 +2,7 @@
 // All Rights Reserved.
 // This code is published under the Eclipse Public License.
 //
-// $Id: IpPardisoSolverInterface.cpp 2594 2015-08-09 14:31:05Z stefan $
+// $Id$
 //
 // Authors:  Carl Laird, Andreas Waechter     IBM    2005-03-17
 //
@@ -236,7 +236,7 @@ namespace Ipopt
     roptions->AddStringOption6(
       "pardiso_order",
       "Controls the fill-in reduction ordering algorithm for the input matrix.",
-      "five",
+      "metis",
       "amd", "minimum degree algorithm",
       "one", "undocumented",
       "metis", "MeTiS nested dissection algorithm",
@@ -447,7 +447,7 @@ namespace Ipopt
     IPARM_[12] = (int)match_strat_; // enable matching (recommended, as above)
     IPARM_[20] = 3; // bunch-kaufman pivoting
     IPARM_[23] = 1; // parallel fac
-    IPARM_[24] = 1; // parallel solve
+    IPARM_[24] = 0; // parallel solve
     //IPARM_[26] = 1; // matrix checker
 #else
     IPARM_[1] = order;
@@ -467,7 +467,7 @@ namespace Ipopt
     IPARM_[23] = 1; // parallel fac
     IPARM_[24] = 1; // parallel solve
     IPARM_[28] = 0; // 32-bit factorization
-    IPARM_[29] = 1; //we need this for IPOPT interface
+    IPARM_[29] = 80; // we need this for IPOPT interface
     //IPARM_[33] = 1; // bit-by-bit identical results in parallel run
 #endif
 
@@ -958,12 +958,12 @@ namespace Ipopt
         Jnlst().Printf(J_WARNING, J_LINEAR_ALGEBRA,
                        "Iterative solver in Pardiso did not converge (ERROR = %d)\n", ERROR);
         Jnlst().Printf(J_WARNING, J_LINEAR_ALGEBRA,
-                       "  Decreasing drop tolerances from DPARM_[41] = %e and DPARM_[44] = %e\n", DPARM_[41], DPARM_[44]);
+                       "  Decreasing drop tolerances from DPARM_[4] = %e and DPARM_[5] = %e\n", DPARM_[4], DPARM_[5]);
         PHASE = 23;
         DPARM_[4] /= 2.0 ;
         DPARM_[5] /= 2.0 ;
         Jnlst().Printf(J_WARNING, J_LINEAR_ALGEBRA,
-                       "                               to DPARM_[41] = %e and DPARM_[44] = %e\n", DPARM_[41], DPARM_[44]);
+                       "                               to DPARM_[4] = %e and DPARM_[5] = %e\n", DPARM_[4], DPARM_[5]);
         attempts++;
         ERROR = 0;
       }

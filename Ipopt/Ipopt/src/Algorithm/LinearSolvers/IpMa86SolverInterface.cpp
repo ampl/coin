@@ -4,7 +4,7 @@
 // All Rights Reserved.
 // This code is published under the Eclipse Public License.
 //
-// $Id: IpMa86SolverInterface.cpp 2324 2013-06-12 18:35:05Z stefan $
+// $Id$
 //
 // Authors: Jonathan Hogg                    STFC   2011-03-15
 //          Jonathan Hogg                           2009-07-29
@@ -35,6 +35,7 @@ namespace Ipopt
   Ma86SolverInterface::~Ma86SolverInterface()
   {
     delete [] val_;
+    delete [] order_;
 
     if(keep_) ma86_finalise(&keep_, &control_);
   }

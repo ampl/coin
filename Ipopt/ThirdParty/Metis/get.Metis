@@ -7,11 +7,11 @@ wgetcount=`which wget 2>/dev/null | wc -l`
 if test ! $wgetcount = 1; then
   echo "Utility wget not found in your PATH."
   if test `uname` = Darwin; then
-    wgetcmd=ftp
-    echo "Using ftp command instead."
+    wgetcmd="curl -L -O"
+    echo "Using curl instead."
   elif test `uname` = FreeBSD; then
     wgetcmd=fetch
-    echo "Using fetch command instead."
+    echo "Using fetch instead."
   else
     exit -1
   fi
@@ -32,6 +32,9 @@ gunzip metis-4.0.3.tar.gz
 
 echo "Unpacking the source code..."
 tar xf metis-4.0.3.tar
+
+echo "Applying a patch..."
+patch -p0 < metis.patch
 
 echo "Renaming directory to match source code name..."
 mv metis-4.0.? metis-4.0

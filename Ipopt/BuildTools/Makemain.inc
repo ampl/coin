@@ -2,7 +2,7 @@
 # All Rights Reserved.
 # This file is distributed under the Eclipse Public License.
 
-## $Id: Makemain.inc 3482 2015-03-26 03:06:39Z tkr $
+## $Id$
 
 # Author:  Andreas Waechter           IBM    2006-04-13
 

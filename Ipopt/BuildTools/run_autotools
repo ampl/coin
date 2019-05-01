@@ -6,7 +6,7 @@
 # This file is distributed under the Eclipse Public License.
 # It is part of the BuildTools project in COIN-OR (www.coin-or.org)
 #
-## $Id: run_autotools 3632 2016-08-09 16:29:26Z stefan $
+## $Id$
 #
 # Author: Andreas Waechter     IBM      2006-04-14
 # Modified: Lou Hafer          SFU      2010-06-11

@@ -2,6 +2,42 @@ This file contain the log of changes for the main development branch (trunk).
 More detailed information about incremental changes can be found in the
 history management of subversion.
 
+2019-04-08 releases/3.12.13
+        - fixed Pardiso settings when using Pardiso from Pardiso project
+          website (by Olaf Schenk): the new settings should provide much
+          better performance; the default for option pardiso_order changed
+          from five to metis
+        - changed distinction of MKL and Basel Pardiso in configure: to
+          use MKL Pardiso, only specify MKL for Blas; to use Basel Pardiso,
+          use --with-pardiso
+
+2018-11-17 releases/3.12.12
+        - allow for --without-matlab-home to disable check for Matlab [r2748]
+        - add dppsv to v8-ifort [r2746]
+        - disable error in LibraryHandler.c if snprintf detection failed [r2751]
+
+2018-09-16 releases/3.12.11
+        - fill Mumps struct with zeros when allocating in Mumps interface [r2724]
+        - minor fix in build-system of ThirdParty/ASL
+
+2018-06-02 releases/3.12.10
+        - fixed setting for parallel solve when using MKL Pardiso
+          (by t1393988511) [r2711]: parallel solve was disabled (which
+          is not the default); note, that the setting for parallel
+          factorization was not affected
+        - fixed invalid read in AMPL interface for problems without
+          objective function [r2715, #305]
+        - updated ThirdParty/ASL to retrieve updated ASL (20180528) [#305]
+        - name JIpopt library libjipopt.dylib on Mac OS X [r2718, #275]
+
+2018-01-15 releases/3.12.9
+        - fixed memory leak in MA86 interface (by mhahn) [r2700,#283]
+        - fixed handling of time limit when reoptimizing: CPU time spend
+          was accumulated when reoptimizing, while it should have been
+          reset for each solve (by paul-scott) [r2702,r2703]
+        - fixed sign in Jacobian finite-difference approximation when point
+          was close to variable upper bounds (by Enrico Bertolazzi) [r2704]
+
 2017-06-12 releases/3.12.8
         - add define for FORTRAN_INTEGER_TYPE to config_ipopt_default.h
         - IpoptApplication::RethrowNonIpoptException() now returns whether

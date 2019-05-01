@@ -2,7 +2,7 @@
 // All Rights Reserved.
 // This code is published under the Eclipse Public License.
 //
-// $Id: IpGenKKTSolverInterface.hpp 2201 2013-04-13 11:58:50Z stefan $
+// $Id$
 //
 // Authors:  Andreas Waechter     IBM    2007-03-01
 

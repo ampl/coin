@@ -2,7 +2,7 @@
  * All Rights Reserved.
  * This code is published under the Eclipse Public License.
  *
- * $Id: hs071_c.c 1996 2011-05-05 19:28:44Z andreasw $
+ * $Id$
  *
  * Authors:  Carl Laird, Andreas Waechter     IBM    2005-08-17
  */
