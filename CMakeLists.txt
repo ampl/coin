@@ -614,15 +614,21 @@ if (EXISTS ${COIN_SOURCE_DIR}/Ipopt)
     enable_language(Fortran OPTIONAL)
     if (CMAKE_Fortran_COMPILER)
       set(BUILD_IPOPTFORT TRUE)
-      # # Discover and link with gfortran runtime library statically since
-      # # -static-libgfortran is not always available.
-      # if (NOT BUILD_SHARED_LIBS)
-      #   force_static_libs(Fortran gfortran quadmath)
-      # endif ()
-      # if (UNIX)
-      #   set(CMAKE_Fortran_IMPLICIT_LINK_LIBRARIES
-      #     ${CMAKE_Fortran_IMPLICIT_LINK_LIBRARIES} gcc)
-      # endif ()
+      # Discover and link with gfortran runtime library statically since
+      # -static-libgfortran is not always available.
+      # NOTE: The value of CMAKE_Fortran_IMPLICIT_LINK_LIBRARIES used to be:
+      #   "gfortran;m;quadmath;m;c"
+      # but starting from CMake version 3.9.0 it became:
+      #   "gfortran;m;gcc_s;gcc;quadmath;m;gcc_s;gcc;c;gcc_s;gcc"
+      # and leads to errors such as "/usr/bin/ld: cannot find -lgcc_s" when
+      # we use force_static_libs for Fortran. It works fine up to CMake v3.8.2.
+      if (NOT BUILD_SHARED_LIBS)
+        force_static_libs(Fortran gfortran quadmath)
+      endif ()
+      if (UNIX)
+        set(CMAKE_Fortran_IMPLICIT_LINK_LIBRARIES
+          ${CMAKE_Fortran_IMPLICIT_LINK_LIBRARIES} gcc)
+      endif ()
     endif ()
   endif ()
 endif ()
