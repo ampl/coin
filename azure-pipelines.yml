@@ -1,0 +1,47 @@
+jobs:
+- job: linux
+  pool: {vmImage: 'Ubuntu-16.04'}
+  variables:
+    upload: $(Build.ArtifactStagingDirectory)
+  steps:
+    - task: UsePythonVersion@0
+    - bash: |
+        mkdir build
+        cd build
+        cmake ..
+        cmake --build . --parallel 4
+        mkdir -p $UPLOAD/linux
+        cp -r bin/* $UPLOAD/linux
+      displayName: Build package
+    - task: PublishBuildArtifacts@1
+      inputs: {pathtoPublish: '$(Build.ArtifactStagingDirectory)'}
+- job: macos
+  pool: {vmImage: 'macOS-10.13'}
+  variables:
+    upload: $(Build.ArtifactStagingDirectory)
+  steps:
+    - bash: |
+        mkdir build
+        cd build
+        cmake ..
+        cmake --build . --parallel 4
+        mkdir -p $UPLOAD/macos
+        cp -r bin/* $UPLOAD/macos
+      displayName: Build package
+    - task: PublishBuildArtifacts@1
+      inputs: {pathtoPublish: '$(Build.ArtifactStagingDirectory)'}
+- job: windows
+  pool: {vmImage: 'vs2017-win2016'}
+  variables:
+    upload: $(Build.ArtifactStagingDirectory)
+  steps:
+    - bash: |
+        mkdir build
+        cd build
+        cmake .. -G"MinGW Makefiles" -DCMAKE_SH="CMAKE_SH-NOTFOUND"
+        cmake --build . --parallel 4
+        mkdir -p $UPLOAD/windows
+        cp -r bin/* $UPLOAD/windows
+      displayName: Build package
+    - task: PublishBuildArtifacts@1
+      inputs: {pathtoPublish: '$(Build.ArtifactStagingDirectory)'}

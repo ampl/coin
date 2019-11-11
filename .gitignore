@@ -11,3 +11,4 @@ CPackSourceConfig.cmake
 CTestTestfile.cmake
 Makefile
 /ThirdParty/lapack/bin
+build/
