@@ -4,12 +4,12 @@ jobs:
   variables:
     upload: $(Build.ArtifactStagingDirectory)
   steps:
-    - task: UsePythonVersion@0
     - bash: |
         mkdir build
         cd build
         cmake ..
         cmake --build . --parallel 4
+        ctest
         mkdir -p $UPLOAD/linux
         cp -r bin/* $UPLOAD/linux
       displayName: Build package
@@ -25,6 +25,7 @@ jobs:
         cd build
         cmake ..
         cmake --build . --parallel 4
+        ctest
         mkdir -p $UPLOAD/macos
         cp -r bin/* $UPLOAD/macos
       displayName: Build package
@@ -40,6 +41,7 @@ jobs:
         cd build
         cmake .. -G"MinGW Makefiles" -DCMAKE_SH="CMAKE_SH-NOTFOUND"
         cmake --build . --parallel 4
+        ctest
         mkdir -p $UPLOAD/windows
         cp -r bin/* $UPLOAD/windows
       displayName: Build package
