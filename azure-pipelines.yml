@@ -4,6 +4,10 @@ jobs:
   variables:
     upload: $(Build.ArtifactStagingDirectory)
   steps:
+    - script: |
+        sudo apt-get update
+        sudo apt-get install gfortran
+      displayName: Install gfortran
     - bash: |
         mkdir build
         cd build
