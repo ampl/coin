@@ -24,6 +24,9 @@ jobs:
   variables:
     upload: $(Build.ArtifactStagingDirectory)
   steps:
+    - script: |
+        brew install gcc
+      displayName: Install gcc (installs gfortran too)
     - bash: |
         mkdir build
         cd build
