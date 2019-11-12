@@ -9,13 +9,14 @@ jobs:
         sudo apt-get install gfortran
       displayName: Install gfortran
     - bash: |
+        git submodule update --init --recursive --remote
         mkdir build
         cd build
         cmake ..
-        cmake --build . --parallel 4
-        ctest
+        make all coin-versions -j4
+        make test
         mkdir -p $UPLOAD/linux
-        cp -r bin/* $UPLOAD/linux
+        cp -r * $UPLOAD/linux
       displayName: Build package
     - task: PublishBuildArtifacts@1
       inputs: {pathtoPublish: '$(Build.ArtifactStagingDirectory)'}
@@ -28,13 +29,14 @@ jobs:
         brew install gcc
       displayName: Install gcc (installs gfortran too)
     - bash: |
+        git submodule update --init --recursive --remote
         mkdir build
         cd build
         cmake ..
-        cmake --build . --parallel 4
-        ctest
+        make all coin-versions -j4
+        make test
         mkdir -p $UPLOAD/macos
-        cp -r bin/* $UPLOAD/macos
+        cp -r * $UPLOAD/macos
       displayName: Build package
     - task: PublishBuildArtifacts@1
       inputs: {pathtoPublish: '$(Build.ArtifactStagingDirectory)'}
@@ -44,13 +46,14 @@ jobs:
     upload: $(Build.ArtifactStagingDirectory)
   steps:
     - bash: |
+        git submodule update --init --recursive --remote
         mkdir build
         cd build
         cmake .. -G"MinGW Makefiles" -DCMAKE_SH="CMAKE_SH-NOTFOUND"
         cmake --build . --parallel 4
         ctest
         mkdir -p $UPLOAD/windows
-        cp -r bin/* $UPLOAD/windows
+        cp -r * $UPLOAD/windows
       displayName: Build package
     - task: PublishBuildArtifacts@1
       inputs: {pathtoPublish: '$(Build.ArtifactStagingDirectory)'}
