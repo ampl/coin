@@ -78,7 +78,7 @@ jobs:
         mkdir build
         cd build
         cmake .. -G"MinGW Makefiles" -DCMAKE_SH="CMAKE_SH-NOTFOUND"
-        cmake --build . --parallel 2
+        mingw$NBITS-make all coin-versions -j2
         ctest || true
     - bash: |
         UPLOAD_DIR=$UPLOAD/win$NBITS/
