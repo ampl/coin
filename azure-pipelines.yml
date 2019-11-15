@@ -36,16 +36,6 @@ jobs:
       inputs: {pathtoPublish: '$(Build.ArtifactStagingDirectory)'}
 - job: macos
   pool: {vmImage: 'macOS-10.13'}
-  strategy:
-    matrix:
-      x86:
-        upload: $(Build.ArtifactStagingDirectory)
-        image: 'fdabrandao/manylinux32:coin.v1'
-        nbits: 32
-      x64:
-        upload: $(Build.ArtifactStagingDirectory)
-        image: 'fdabrandao/manylinux64:coin.v1'
-        nbits: 64
   variables:
     upload: $(Build.ArtifactStagingDirectory)
   steps:
