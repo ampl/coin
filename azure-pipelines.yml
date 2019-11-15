@@ -1,23 +1,37 @@
 jobs:
 - job: linux
   pool: {vmImage: 'Ubuntu-16.04'}
-  variables:
-    upload: $(Build.ArtifactStagingDirectory)
+  strategy:
+    matrix:
+      x86:
+        upload: $(Build.ArtifactStagingDirectory)
+        image: 'fdabrandao/manylinux32:coin.v1'
+        nbits: 32
+      x64:
+        upload: $(Build.ArtifactStagingDirectory)
+        image: 'fdabrandao/manylinux64:coin.v1'
+        nbits: 64
   steps:
-    - script: |
-        sudo apt-get update
-        sudo apt-get install gfortran
-      displayName: Install gfortran
     - bash: |
+        lscpu | grep -E '^Thread|^Core|^Socket|^CPU\('
+        cat /proc/cpuinfo
+      displayName: Check CPU
+    - bash: |
+        BUILD_DIR=manylinux/linux$NBITS/
         git submodule update --init --recursive --remote
-        mkdir build
-        cd build
-        cmake ..
-        make all coin-versions -j4
-        make test
-        mkdir -p $UPLOAD/linux
-        cp -r * $UPLOAD/linux
+        mkdir -p $BUILD_DIR/*
+        rm -rf $BUILD_DIR/*
+        docker run -v `pwd`:/base --rm $IMAGE /base/manylinux/build.sh $NBITS
       displayName: Build package
+    - bash: |
+        BUILD_DIR=manylinux/linux$NBITS/
+        UPLOAD_DIR=$UPLOAD/linux$NBITS/
+        mkdir -p $UPLOAD_DIR
+        cp -r $BUILD_DIR/bin/{cbc,bonmin,couenne,ipopt} $UPLOAD_DIR
+        cp $BUILD_DIR/coin-versions.txt $UPLOAD_DIR
+        cd $UPLOAD_DIR
+        tar czvf linux$NBITS.tar.gz *
+      displayName: Upload package
     - task: PublishBuildArtifacts@1
       inputs: {pathtoPublish: '$(Build.ArtifactStagingDirectory)'}
 - job: macos
@@ -34,10 +48,16 @@ jobs:
         cd build
         cmake ..
         make all coin-versions -j4
-        make test
-        mkdir -p $UPLOAD/macos
-        cp -r * $UPLOAD/macos
+        make test || true
       displayName: Build package
+    - bash: |
+        UPLOAD_DIR=$UPLOAD/macos/
+        mkdir -p $UPLOAD_DIR
+        cp -r build/bin/{cbc,bonmin,couenne,ipopt} $UPLOAD_DIR
+        cp build/coin-versions.txt $UPLOAD_DIR
+        cd $UPLOAD_DIR
+        tar czvf macos64.tar.gz *
+      displayName: Upload package
     - task: PublishBuildArtifacts@1
       inputs: {pathtoPublish: '$(Build.ArtifactStagingDirectory)'}
 - job: windows
