@@ -73,14 +73,14 @@ jobs:
         cmake .. -G"MinGW Makefiles" -DCMAKE_SH="CMAKE_SH-NOTFOUND"
         mingw32-make all coin-versions -j2
         ctest || true
+      displayName: Build package
     - bash: |
         UPLOAD_DIR=$UPLOAD/win$NBITS/
         mkdir -p $UPLOAD_DIR
-        cp -r build $UPLOAD_DIR/
         cp build/bin/{cbc.exe,bonmin.exe,couenne.exe,ipopt.exe} $UPLOAD_DIR
         cp build/coin-versions.txt $UPLOAD_DIR
         cd $UPLOAD_DIR
-        7z a -tzip win$NBITS.zip *.exe
-      displayName: Build package
+        7z a -tzip win$NBITS.zip *
+      displayName: Upload package
     - task: PublishBuildArtifacts@1
       inputs: {pathtoPublish: '$(Build.ArtifactStagingDirectory)'}
