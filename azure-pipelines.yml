@@ -4,13 +4,13 @@ jobs:
   strategy:
     matrix:
       x86:
-        upload: $(Build.ArtifactStagingDirectory)
         image: 'fdabrandao/manylinux32:coin.v1'
         nbits: 32
       x64:
-        upload: $(Build.ArtifactStagingDirectory)
         image: 'fdabrandao/manylinux64:coin.v1'
         nbits: 64
+  variables:
+    upload: $(Build.ArtifactStagingDirectory)
   steps:
     - bash: |
         lscpu | grep -E '^Thread|^Core|^Socket|^CPU\('
@@ -27,7 +27,7 @@ jobs:
         BUILD_DIR=manylinux/linux$NBITS/
         UPLOAD_DIR=$UPLOAD/linux$NBITS/
         mkdir -p $UPLOAD_DIR
-        cp -r $BUILD_DIR/bin/{cbc,bonmin,couenne,ipopt} $UPLOAD_DIR
+        cp $BUILD_DIR/bin/{cbc,bonmin,couenne,ipopt} $UPLOAD_DIR
         cp $BUILD_DIR/coin-versions.txt $UPLOAD_DIR
         cd $UPLOAD_DIR
         tar czvf linux$NBITS.tar.gz *
@@ -36,6 +36,16 @@ jobs:
       inputs: {pathtoPublish: '$(Build.ArtifactStagingDirectory)'}
 - job: macos
   pool: {vmImage: 'macOS-10.13'}
+  strategy:
+    matrix:
+      x86:
+        upload: $(Build.ArtifactStagingDirectory)
+        image: 'fdabrandao/manylinux32:coin.v1'
+        nbits: 32
+      x64:
+        upload: $(Build.ArtifactStagingDirectory)
+        image: 'fdabrandao/manylinux64:coin.v1'
+        nbits: 64
   variables:
     upload: $(Build.ArtifactStagingDirectory)
   steps:
@@ -47,13 +57,13 @@ jobs:
         mkdir build
         cd build
         cmake ..
-        make all coin-versions -j4
+        make all coin-versions -j2
         make test || true
       displayName: Build package
     - bash: |
         UPLOAD_DIR=$UPLOAD/macos/
         mkdir -p $UPLOAD_DIR
-        cp -r build/bin/{cbc,bonmin,couenne,ipopt} $UPLOAD_DIR
+        cp build/bin/{cbc,bonmin,couenne,ipopt} $UPLOAD_DIR
         cp build/coin-versions.txt $UPLOAD_DIR
         cd $UPLOAD_DIR
         tar czvf macos64.tar.gz *
@@ -62,6 +72,14 @@ jobs:
       inputs: {pathtoPublish: '$(Build.ArtifactStagingDirectory)'}
 - job: windows
   pool: {vmImage: 'vs2017-win2016'}
+  strategy:
+    matrix:
+      x86:
+        arch: 'x86'
+        nbits: 32
+      x64:
+        arch: 'x64'
+        nbits: 64
   variables:
     upload: $(Build.ArtifactStagingDirectory)
   steps:
@@ -70,10 +88,15 @@ jobs:
         mkdir build
         cd build
         cmake .. -G"MinGW Makefiles" -DCMAKE_SH="CMAKE_SH-NOTFOUND"
-        cmake --build . --parallel 4
-        ctest
-        mkdir -p $UPLOAD/windows
-        cp -r * $UPLOAD/windows
+        cmake --build . --parallel 2
+        ctest || true
+    - bash: |
+        UPLOAD_DIR=$UPLOAD/win$NBITS/
+        mkdir -p $UPLOAD_DIR
+        cp -r build $UPLOAD_DIR/
+        cp build/bin/{cbc.exe,bonmin.exe,couenne.exe,ipopt.exe} $UPLOAD_DIR
+        cd $UPLOAD_DIR
+        zip win$NBITS.zip *.exe
       displayName: Build package
     - task: PublishBuildArtifacts@1
       inputs: {pathtoPublish: '$(Build.ArtifactStagingDirectory)'}
