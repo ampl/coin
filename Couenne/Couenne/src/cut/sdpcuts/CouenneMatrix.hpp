@@ -68,8 +68,8 @@ namespace Couenne {
   public:
 
     struct compare_scalars {
-      inline bool operator() (register CouenneScalar * const &a, 
-			      register CouenneScalar * const &b)
+      inline bool operator() (register CouenneScalar* const& a,
+        register CouenneScalar* const& b) const
       {return a -> getIndex () < b -> getIndex ();}
     };
 
