@@ -1,4 +1,4 @@
-/* $Id: ClpSimplexDual.cpp 2453 2019-04-22 03:41:45Z stefan $ */
+/* $Id: ClpSimplexDual.cpp 2468 2019-05-03 04:31:14Z stefan $ */
 // Copyright (C) 2002, International Business Machines
 // Corporation and others.  All Rights Reserved.
 // This code is licensed under the terms of the Eclipse Public License (EPL).
@@ -3556,6 +3556,8 @@ void moveAndZero(clpTempInfo *info, int type, void *extra)
 #endif
 #ifdef _MSC_VER
 #include <intrin.h>
+#elif defined(__arm__)
+#include <arm_neon.h>
 #else
 #include <immintrin.h>
 //#include <fmaintrin.h>

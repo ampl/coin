@@ -1,4 +1,4 @@
-// $Id: Cbc_C_Interface.cpp 2534 2019-03-15 16:27:39Z stefan $
+// $Id: Cbc_C_Interface.cpp 2595 2019-06-14 10:29:27Z stefan $
 // Copyright (C) 2004, International Business Machines
 // Corporation and others.  All Rights Reserved.
 // This code is licensed under the terms of the Eclipse Public License (EPL).
@@ -638,7 +638,19 @@ Cbc_setInitialSolution(Cbc_Model *model, const double *sol)
 COINLIBAPI void COINLINKAGE
 Cbc_setParameter(Cbc_Model *model, const char *name, const char *value)
 {
-  model->cmdargs_.push_back(std::string("-") + name);
+  // checking if parameter is not included with another value
+  // if this is the case just replacing this value
+  std::string argname=std::string("-")+name;
+  for ( int i=0 ; (i<((int)model->cmdargs_.size())-1) ; ++i )
+  {
+    if (argname==model->cmdargs_[i])
+    {
+      model->cmdargs_[i+1] = std::string(value);
+      return;
+    }
+  }
+  
+  model->cmdargs_.push_back(argname);
   model->cmdargs_.push_back(value);
 }
 
@@ -1254,7 +1266,6 @@ CbcGetProperty(int, getNodeCount)
 COINLIBAPI Cbc_Model *COINLINKAGE
 Cbc_clone(Cbc_Model *model)
 {
-
   const char prefix[] = "Cbc_C_Interface::Cbc_clone(): ";
   //  const int  VERBOSE = 1;
   if (VERBOSE > 0)
@@ -1264,9 +1275,21 @@ Cbc_clone(Cbc_Model *model)
   Cbc_Model *result = new Cbc_Model();
   result->model_ = new CbcModel(*(model->model_));
   result->solver_ = dynamic_cast< OsiClpSolverInterface * >(result->model_->solver());
+  result->cbcData = new CbcSolverUsefulData();
   result->handler_ = NULL;
   result->cmdargs_ = model->cmdargs_;
   result->relax_ = model->relax_;
+  result->cbcData->noPrinting_ = model->cbcData->noPrinting_;
+
+  result->colSpace = 0;
+  result->nCols = 0;
+  result->cNameSpace = 0;
+  result->cNameStart = NULL;
+  result->cInt = NULL;
+  result->cNames= NULL;
+  result->cLB = NULL;
+  result->cUB = NULL;
+  result->cObj = NULL;
 
   if (VERBOSE > 0)
     printf("%s return\n", prefix);

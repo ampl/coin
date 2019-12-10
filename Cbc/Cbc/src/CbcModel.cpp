@@ -1,4 +1,4 @@
-/* $Id: CbcModel.cpp 2550 2019-04-22 03:46:32Z stefan $ */
+/* $Id: CbcModel.cpp 2590 2019-06-13 14:44:59Z stefan $ */
 // Copyright (C) 2002, International Business Machines
 // Corporation and others.  All Rights Reserved.
 // This code is licensed under the terms of the Eclipse Public License (EPL).
@@ -5445,6 +5445,18 @@ void CbcModel::initialSolve()
   }
   solverCharacteristics_->setSolver(solver_);
   solver_->setHintParam(OsiDoInBranchAndCut, true, OsiHintDo, NULL);
+  // doesn't seem to be uniform time limit
+#ifdef COIN_HAS_CLP
+  OsiClpSolverInterface *clpSolver
+    = dynamic_cast< OsiClpSolverInterface * >(solver_);
+  if (clpSolver) {
+    double maxTime = dblParam_[CbcMaximumSeconds]-dblParam_[CbcStartSeconds];
+    if ((moreSpecialOptions_&131072)==0)
+      clpSolver->getModelPtr()->setMaximumSeconds(maxTime);
+    else
+      clpSolver->getModelPtr()->setMaximumWallSeconds(maxTime);
+  }
+#endif
   solver_->initialSolve();
   solver_->setHintParam(OsiDoInBranchAndCut, false, OsiHintDo, NULL);
   if (!solver_->isProvenOptimal())
@@ -5642,8 +5654,8 @@ CbcModel::CbcModel()
   , masterThread_(NULL)
 {
   memset(intParam_, 0, sizeof(intParam_));
-  intParam_[CbcMaxNumNode] = 2147483647;
-  intParam_[CbcMaxNumSol] = 9999999;
+  intParam_[CbcMaxNumNode] = COIN_INT_MAX;
+  intParam_[CbcMaxNumSol] = COIN_INT_MAX;
 
   memset(dblParam_, 0, sizeof(dblParam_));
   dblParam_[CbcIntegerTolerance] = 1e-7;
@@ -5813,8 +5825,8 @@ CbcModel::CbcModel(const OsiSolverInterface &rhs)
   , masterThread_(NULL)
 {
   memset(intParam_, 0, sizeof(intParam_));
-  intParam_[CbcMaxNumNode] = 2147483647;
-  intParam_[CbcMaxNumSol] = 9999999;
+  intParam_[CbcMaxNumNode] = COIN_INT_MAX;
+  intParam_[CbcMaxNumSol] = COIN_INT_MAX;
 
   memset(dblParam_, 0, sizeof(dblParam_));
   dblParam_[CbcIntegerTolerance] = 1e-7;
@@ -8471,7 +8483,7 @@ bool CbcModel::solveWithCuts(OsiCuts &cuts, int numberTries, CbcNode *node)
           End of the loop to exercise each generator - try heuristics
           - unless at root node and first pass
         */
-    if ((numberNodes_ || currentPassNumber_ != 1) && true) {
+    if ((numberNodes_ || currentPassNumber_ != 1) && (!this->maximumSecondsReached())) {
       double *newSolution = new double[numberColumns];
       double heuristicValue = getCutoff();
       int found = -1; // no solution found
@@ -8907,7 +8919,7 @@ bool CbcModel::solveWithCuts(OsiCuts &cuts, int numberTries, CbcNode *node)
         }
       }
     }
-  } while (numberTries > 0 || keepGoing);
+  } while ( (numberTries > 0 || keepGoing) && (!this->maximumSecondsReached()) );
   /*
       End cut generation loop.
     */
@@ -9798,7 +9810,7 @@ int CbcModel::serialCuts(OsiCuts &theseCuts, CbcNode *node, OsiCuts &slackCuts, 
   int switchOff = (!doCutsNow(1) && !fullScan) ? 1 : 0;
   int status = 0;
   int i;
-  for (i = 0; i < numberCutGenerators_; i++) {
+  for (i = 0; i < numberCutGenerators_ && (!this->maximumSecondsReached()) ; i++) {
     int numberRowCutsBefore = theseCuts.sizeRowCuts();
     int numberColumnCutsBefore = theseCuts.sizeColCuts();
     int numberRowCutsAfter = numberRowCutsBefore;

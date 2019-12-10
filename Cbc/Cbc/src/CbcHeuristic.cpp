@@ -1,4 +1,4 @@
-/* $Id: CbcHeuristic.cpp 2545 2019-04-08 03:49:27Z stefan $ */
+/* $Id: CbcHeuristic.cpp 2567 2019-05-03 04:43:58Z stefan $ */
 // Copyright (C) 2002, International Business Machines
 // Corporation and others.  All Rights Reserved.
 // This code is licensed under the terms of the Eclipse Public License (EPL).
@@ -577,6 +577,41 @@ CbcHeuristic::cloneBut(int type)
   if ((type & 4) != 0 && clpSolver) {
     int options = clpSolver->getModelPtr()->moreSpecialOptions();
     clpSolver->getModelPtr()->setMoreSpecialOptions(options | 64);
+  }
+  if (clpSolver) {
+    // take out zero cost integers which will be integer anyway
+    const double *rowLower = clpSolver->getRowLower();
+    const double *rowUpper = clpSolver->getRowUpper();
+    const double *objective = clpSolver->getObjCoefficients();
+    int numberRows = clpSolver->getNumRows();
+    const CoinPackedMatrix *matrixByRow = clpSolver->getMatrixByRow();
+    const double *elementByRow = matrixByRow->getElements();
+    const int *column = matrixByRow->getIndices();
+    const CoinBigIndex *rowStart = matrixByRow->getVectorStarts();
+    const int *rowLength = matrixByRow->getVectorLengths();
+    const CoinPackedMatrix *matrixByColumn = clpSolver->getMatrixByCol();
+    //const double * element = matrixByColumn->getElements();
+    //const int *row = matrixByColumn->getIndices();
+    //const CoinBigIndex *columnStart = matrixByColumn->getVectorStarts();
+    const int *columnLength = matrixByColumn->getVectorLengths();
+    for (int i = 0; i < numberRows; i++) {
+      if (rowLower[i] != floor(rowLower[i]) ||
+	  rowUpper[i] != floor(rowUpper[i]))
+	continue;
+      int jColumn = -1;
+      for (CoinBigIndex k = rowStart[i]; k < rowStart[i] + rowLength[i]; k++) {
+	int iColumn = column[k];
+	double value = elementByRow[k];
+	if (!clpSolver->isInteger(iColumn) || floor(value) != value) {
+	  jColumn = -2;
+	  break;
+	} else if (!objective[iColumn] && columnLength[iColumn] == 1) {
+	  jColumn = iColumn;
+	}
+      }
+      if (jColumn>=0)
+	clpSolver->setContinuous(jColumn);
+    }
   }
 #endif
   return solver;
@@ -1504,7 +1539,9 @@ int CbcHeuristic::smallBranchAndBound(OsiSolverInterface *solver, int numberNode
                 const CoinSet *setInfo = clpSolver->setInfo();
                 int i;
                 for (i = 0; i < numberSOS; i++) {
+#ifndef NDEBUG
                   int type = setInfo[i].setType();
+#endif
                   int n = setInfo[i].numberEntries();
                   const int *which = setInfo[i].which();
                   int first = -1;

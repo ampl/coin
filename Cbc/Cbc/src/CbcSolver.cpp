@@ -1,4 +1,4 @@
-/* $Id: CbcSolver.cpp 2550 2019-04-22 03:46:32Z stefan $ */
+/* $Id: CbcSolver.cpp 2588 2019-06-13 14:38:38Z stefan $ */
 // Copyright (C) 2007, International Business Machines
 // Corporation and others.  All Rights Reserved.
 // This code is licensed under the terms of the Eclipse Public License (EPL).
@@ -7806,6 +7806,7 @@ int CbcMain1(int argc, const char *argv[],
                   originalSolver->setBasis(*basis);
                   delete basis;
                   originalSolver->setDblParam(OsiDualObjectiveLimit, COIN_DBL_MAX);
+		  originalSolver->setHintParam(OsiDoPresolveInResolve, true, OsiHintTry);
                   originalSolver->resolve();
                   if (!originalSolver->isProvenOptimal()) {
                     // try all slack
