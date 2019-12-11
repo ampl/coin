@@ -10,7 +10,7 @@ configure_file(
 
 # Add the CMake directory for custon CMake modules
 set(CMAKE_MODULE_PATH "${LAPACK_SOURCE_DIR}/CMAKE" ${CMAKE_MODULE_PATH})
-
+ 
 if (UNIX)
    if ( "${CMAKE_Fortran_COMPILER}" MATCHES "ifort" )
   set( CMAKE_Fortran_FLAGS "${CMAKE_Fortran_FLAGS} -fltconsistency -fp_port" )
@@ -23,6 +23,8 @@ if (UNIX)
    STRING(REPLACE \;mtsk\; \; CMAKE_Fortran_IMPLICIT_LINK_LIBRARIES "${CMAKE_Fortran_IMPLICIT_LINK_LIBRARIES}")
 endif ()
 
+
+
 # Get Python
 find_package(PythonInterp)
 message(STATUS "Looking for Python found - ${PYTHONINTERP_FOUND}")
@@ -33,6 +35,9 @@ endif()
 
 # On Windows-GNU builds try to provide MS import libraries too.
 if(BUILD_SHARED_LIBS)
+# fix for newer cmake versions
+  set(CMAKE_SHARED_LINKER_FLAGS
+        "${CMAKE_SHARED_LINKER_FLAGS} -static-libgfortran -static-libgcc -static-libstdc++ -llibquadmath")
   include(GNUtoMS)
 endif()
 

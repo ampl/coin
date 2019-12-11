@@ -61,7 +61,7 @@ jobs:
     - task: PublishBuildArtifacts@1
       inputs: {pathtoPublish: '$(Build.ArtifactStagingDirectory)'}
 - job: windows
-  pool: {vmImage: 'vs2017-win2016'}
+  pool: {vmImage: 'windows-2019'}
   variables:
     upload: $(Build.ArtifactStagingDirectory)
     nbits: 64
@@ -70,14 +70,14 @@ jobs:
         git submodule update --init --recursive --remote
         mkdir build
         cd build
-        cmake .. -G"MinGW Makefiles" -DCMAKE_SH="CMAKE_SH-NOTFOUND"
-        mingw32-make all coin-versions -j2
-        ctest || true
+        cmake .. -G "Visual Studio 16 2019" -A x64 -DCOIN_DISABLE_WARNINGS=1 -DCMAKE_SH="CMAKE_SH-NOTFOUND"
+        cmake --build . -j 2 --config Release
+        ctest -C Release || true
       displayName: Build package
     - bash: |
         UPLOAD_DIR=$UPLOAD/win$NBITS/
         mkdir -p $UPLOAD_DIR
-        cp build/bin/{cbc.exe,bonmin.exe,couenne.exe,ipopt.exe} $UPLOAD_DIR
+        cp build/bin/Release/{cbc.exe,bonmin.exe,couenne.exe,ipopt.exe} $UPLOAD_DIR
         cp build/coin-versions.txt $UPLOAD_DIR
         cd $UPLOAD_DIR
         7z a -tzip win$NBITS.zip *

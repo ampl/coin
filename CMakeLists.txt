@@ -41,7 +41,6 @@ function (force_static_libs lang)
     set(result ${result} ${lib})
   endforeach ()
   set(CMAKE_${lang}_IMPLICIT_LINK_LIBRARIES ${result} PARENT_SCOPE)
-  message("CMAKE_${lang}_IMPLICIT_LINK_LIBRARIES: ${result}")
 endfunction ()
 
 # Output binaries to bin to avoid a name clash between the Cbc directory
@@ -66,7 +65,7 @@ if (COIN_DISABLE_WARNINGS)
   # Disable warnings.
   if (MSVC)
     add_definitions(-D_CRT_SECURE_NO_WARNINGS -D_SCL_SECURE_NO_WARNINGS
-                    /wd4065 /wd4101 /wd4102 /wd4244 /wd4297 /wd4355 /wd4800)
+                    /wd4065 /wd4101 /wd4102 /wd4244 /wd4297 /wd4355 /wd4800  /wd4996 /wd4309)
   else ()
     foreach (flag -Wall -Wextra -pedantic)
       string(REPLACE ${flag} "" CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS}")
@@ -104,7 +103,7 @@ elseif (WIN32 AND EXISTS ${PTHREADS_W32_DIR})
   endforeach ()
   include_directories(${PTHREADS_W32_DIR})
   add_definitions(-DPTW32_STATIC_LIB=1)
-  add_library(pthreads ${sources})
+  add_library(pthreads STATIC ${sources})
   set(CBC_THREAD 1)
   set(CBC_PTHREADS_LIB pthreads)
   set(COIN_INSTALL_TARGETS ${COIN_INSTALL_TARGETS} pthreads)
@@ -135,7 +134,6 @@ function(parse_am filename index keep)
         set(keep_then TRUE)
         set(keep_else FALSE)
       endif ()
-      #message("if (${CMAKE_MATCH_1}): ${keep_then}")
       math(EXPR index "${index} + 1")
       parse_am(${filename} ${index} ${keep_then})
       set(index ${out_index})
@@ -516,16 +514,18 @@ if (COIN_HAS_ASL)
     endif ()
   endforeach ()
 
-  if (MP_SETENV)
+  #if (MP_SETENV)
     # Create a script that sets up a build environment in Fortran subprojects.
     # It is necessary because setenv.cmd produces bogus errors
     # ERROR: The system was unable to find the specified registry key or value.
     # which cause custom build to fail.
-    file(WRITE run-setenv.bat "call \"${MP_SETENV}\" %* 2> nul")
+    #set(MP_SETENV "C:\\Program Files (x86)\\Microsoft Visual Studio\\2019\\Community\\Common7\\Tools\\VsDevCmd.bat")
+    set(MP_SETENV "")
+    file(WRITE ${CMAKE_CURRENT_BINARY_DIR}/run-setenv.bat "call \"${MP_SETENV}\" %* 2> nul")
     set(path ${CMAKE_CURRENT_BINARY_DIR}/run-setenv.bat)
     set(FORTRAN_CMAKE_FLAGS -DCMAKE_GNUtoMS_VCVARS=${path} -DVCVARS32=${path})
   endif ()
-endif ()
+#endif ()
 
 enable_testing()
 
@@ -596,21 +596,47 @@ function(add_ipopt_test name)
     PROPERTIES RUNTIME_OUTPUT_DIRECTORY ${COIN_BINARY_DIR}/bin)
 endfunction()
 
+
+# Remove linking to gcc_s, introduced after cmake 3.8.2 for CXX projects
+function(removegcc_s)
+  foreach(lang ${ARGN})
+   string(REPLACE "gcc_s" "" FILTERED "${CMAKE_${lang}_IMPLICIT_LINK_LIBRARIES}")
+    set(CMAKE_${lang}_IMPLICIT_LINK_LIBRARIES ${FILTERED} PARENT_SCOPE)
+  endforeach()
+endfunction()
+
 if (EXISTS ${COIN_SOURCE_DIR}/Ipopt)
   set(BUILD_IPOPT TRUE)
   if (MSVC)
     # Look up gfortran in the MinGW directory. This sets the MINGW_GFORTRAN
     # cache entry if gfortran is found and should be done before including
     # CMakeAddFortranSubdirectory.
+    # Find fortran compiler
     if (SIZEOF_INT_P EQUAL 8)
       set(bits 64)
     else ()
       set(bits 32)
     endif ()
-    set(COIN_MINGW_PATH C:/mingw${bits})
-    find_program(MINGW_GFORTRAN gfortran PATHS ${COIN_MINGW_PATH}/bin)
+   if(${bits} EQUAL 32)
+      set(STANDARD_MINGW_INSTALLS C:/mingw-w64/i686-8.1.0-posix-dwarf-rt_v6-rev0/mingw32)
+    else()
+      set(STANDARD_MINGW_INSTALL C:/mingw-w64/x86_64-8.1.0-posix-seh-rt_v6-rev0/mingw64)
+    endif()
+    set(CHOCO_DEFAULT_INSTALL C:/ProgramData/chocolatey/lib/mingw/tools/install/mingw64/bin)
+    set(ALTERNATIVE_INSTALL C:/mingw${ARCH})
+    find_program(MINGW_GFORTRAN gfortran PATHS
+    ${STANDARD_MINGW_INSTALL}/bin ${CHOCO_DEFAULT_INSTALL}/bin ${ALTERNATIVE_INSTALL}/bin)
     if (MINGW_GFORTRAN)
+        # Create a script that sets up a build environment in Fortran subprojects.
+      # It is necessary because setenv.cmd produces bogus errors
+      # ERROR: The system was unable to find the specified registry key or value.
+      # which cause custom build to fail.
+      file(WRITE run-setenv.bat "call \"${MP_SETENV}\" %* 2> nul")
+      set(path ${CMAKE_CURRENT_BINARY_DIR}/run-setenv.bat)
+      set(FORTRAN_CMAKE_FLAGS -DCMAKE_GNUtoMS_VCVARS=${path} -DCMAKE_GNUtoMS=ON -DBUILD_SHARED_LIBS=ON -DCMAKE_SH="CMAKE_SH-NOTFOUND")
+      set_property(GLOBAL PROPERTY CMAKE_GNU_TO_MSVC 1)
       set(BUILD_IPOPTFORT TRUE)
+      message("Found GFortran at ${MINGW_GFORTRAN}, using it for VC/gfortran build")
     endif ()
   else ()
     enable_language(Fortran OPTIONAL)
@@ -631,6 +657,7 @@ if (EXISTS ${COIN_SOURCE_DIR}/Ipopt)
         set(CMAKE_Fortran_IMPLICIT_LINK_LIBRARIES
           ${CMAKE_Fortran_IMPLICIT_LINK_LIBRARIES} gcc)
       endif ()
+      removegcc_s("CXX")
     endif ()
   endif ()
 endif ()
@@ -702,6 +729,7 @@ if (BUILD_IPOPT)
   if (COIN_HAS_ASL)
     add_ipopt_library(ipoptamplinterface Apps/AmplSolver ${ASL_LIBRARIES})
     target_link_libraries(ipopt ipoptamplinterface)
+    
     add_executable(ipopt-executable
       Ipopt/Ipopt/src/Apps/AmplSolver/ampl_ipopt.cpp ${IPOPT_EXTERNAL_LIBS})
     target_link_libraries(ipopt-executable ipopt)

@@ -29,7 +29,7 @@ set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${IPOPTFORT_BINARY_DIR}/lib)
 # Link the gfortran runtime statically if possible.
 if (NOT BUILD_SHARED_LIBS OR CMAKE_GNUtoMS)
   set(CMAKE_SHARED_LINKER_FLAGS
-      "${CMAKE_SHARED_LINKER_FLAGS} -static-libgfortran -static-libgcc")
+      "${CMAKE_SHARED_LINKER_FLAGS} -static-libgfortran -static-libgcc -static-libstdc++ -static -lwinpthread -lquadmath")
 endif ()
 
 if (CMAKE_GNUtoMS)
@@ -124,8 +124,9 @@ if (DL_LIBRARY)
   target_link_libraries(ipoptfort ${DL_LIBRARY})
 endif ()
 
+ 
 if (NOT CMAKE_GNUtoMS)
-  add_ipopt_test(hs071_f SOURCE_DIR ${COIN_BINARY_DIR} hs071_f.f)
+  #add_ipopt_test(hs071_f SOURCE_DIR ${COIN_BINARY_DIR} hs071_f.f)
 endif ()
 
 set(BUILD_SHARED_LIBS False)
