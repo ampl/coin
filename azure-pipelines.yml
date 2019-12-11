@@ -71,7 +71,7 @@ jobs:
         mkdir build
         cd build
         cmake .. -G "Visual Studio 16 2019" -A x64 -DCOIN_DISABLE_WARNINGS=1 -DCMAKE_SH="CMAKE_SH-NOTFOUND"
-        cmake --build . -j 2 --config Release
+        cmake --build . -t ALL_BUILD coin-versions -j 8 --config Release
         ctest -C Release || true
       displayName: Build package
     - bash: |
