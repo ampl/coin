@@ -77,7 +77,7 @@ jobs:
     - bash: |
         UPLOAD_DIR=$UPLOAD/win$NBITS/
         mkdir -p $UPLOAD_DIR
-        cp build/bin/Release/{cbc.exe,bonmin.exe,couenne.exe,ipopt.exe} $UPLOAD_DIR
+        cp build/bin/Release/{cbc.exe,bonmin.exe,couenne.exe,ipopt.exe,libipoptfort.dll} $UPLOAD_DIR
         cp build/coin-versions.txt $UPLOAD_DIR
         cd $UPLOAD_DIR
         7z a -tzip win$NBITS.zip *
