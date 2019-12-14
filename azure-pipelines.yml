@@ -32,10 +32,10 @@ jobs:
         cp $BUILD_DIR/coin-versions.txt $UPLOAD_DIR
         cd $UPLOAD_DIR
         tar czvf linux$NBITS.tar.gz *
-        zip cbc coin-license.txt cbc-linux$NBITS.zip
-        zip bonmin coin-license.txt bonmin-linux$NBITS.zip
-        zip couenne coin-license.txt couenne-linux$NBITS.zip
-        zip ipopt coin-license.txt ipopt-linux$NBITS.zip
+        zip cbc-linux$NBITS.zip cbc coin-license.txt
+        zip bonmin-linux$NBITS.zip bonmin coin-license.txt
+        zip couenne-linux$NBITS.zip couenne coin-license.txt
+        zip ipopt-linux$NBITS.zip ipopt coin-license.txt
       displayName: Upload package
     - task: PublishBuildArtifacts@1
       inputs: {pathtoPublish: '$(Build.ArtifactStagingDirectory)'}
@@ -63,10 +63,10 @@ jobs:
         cp build/coin-versions.txt $UPLOAD_DIR
         cd $UPLOAD_DIR
         tar czvf macos64.tar.gz *
-        zip cbc coin-license.txt cbc-osx.zip
-        zip bonmin coin-license.txt bonmin-osx.zip
-        zip couenne coin-license.txt couenne-osx.zip
-        zip ipopt coin-license.txt ipopt-osx.zip
+        zip cbc-osx.zip cbc coin-license.txt
+        zip bonmin-osx.zip bonmin coin-license.txt
+        zip couenne-osx.zip couenne coin-license.txt
+        zip ipopt-osx.zip ipopt coin-license.txt
       displayName: Upload package
     - task: PublishBuildArtifacts@1
       inputs: {pathtoPublish: '$(Build.ArtifactStagingDirectory)'}
@@ -99,10 +99,10 @@ jobs:
         cp build/coin-versions.txt $UPLOAD_DIR
         cd $UPLOAD_DIR
         7z a -tzip win$NBITS.zip *
-        7z a -tzip cbc-win$NBITS.zip cbc coin-license.txt
-        7z a -tzip bonmin-win$NBITS.zip bonmin coin-license.txt
-        7z a -tzip couenne-win$NBITS.zip couenne coin-license.txt
-        7z a -tzip ipopt-win$NBITS.zip ipopt libipoptfort.dll coin-license.txt
+        7z a -tzip cbc-win$NBITS.zip cbc.exe coin-license.txt
+        7z a -tzip bonmin-win$NBITS.zip bonmin.exe coin-license.txt
+        7z a -tzip couenne-win$NBITS.zip couenne.exe coin-license.txt
+        7z a -tzip ipopt-win$NBITS.zip ipopt.exe libipoptfort.dll coin-license.txt
       displayName: Upload package
     - task: PublishBuildArtifacts@1
       inputs: {pathtoPublish: '$(Build.ArtifactStagingDirectory)'}
