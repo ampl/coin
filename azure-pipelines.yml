@@ -27,10 +27,15 @@ jobs:
         BUILD_DIR=manylinux/linux$NBITS/
         UPLOAD_DIR=$UPLOAD/linux$NBITS/
         mkdir -p $UPLOAD_DIR
+        cp coin/Cbc/Cbc/LICENSE $UPLOAD_DIR/coin-license.txt
         cp $BUILD_DIR/bin/{cbc,bonmin,couenne,ipopt} $UPLOAD_DIR
         cp $BUILD_DIR/coin-versions.txt $UPLOAD_DIR
         cd $UPLOAD_DIR
         tar czvf linux$NBITS.tar.gz *
+        zip cbc coin-license.txt cbc-linux$NBITS.zip
+        zip bonmin coin-license.txt bonmin-linux$NBITS.zip
+        zip couenne coin-license.txt couenne-linux$NBITS.zip
+        zip ipopt coin-license.txt ipopt-linux$NBITS.zip
       displayName: Upload package
     - task: PublishBuildArtifacts@1
       inputs: {pathtoPublish: '$(Build.ArtifactStagingDirectory)'}
@@ -53,10 +58,15 @@ jobs:
     - bash: |
         UPLOAD_DIR=$UPLOAD/macos/
         mkdir -p $UPLOAD_DIR
+        cp coin/Cbc/Cbc/LICENSE $UPLOAD_DIR/coin-license.txt
         cp build/bin/{cbc,bonmin,couenne,ipopt} $UPLOAD_DIR
         cp build/coin-versions.txt $UPLOAD_DIR
         cd $UPLOAD_DIR
         tar czvf macos64.tar.gz *
+        zip cbc coin-license.txt cbc-osx.zip
+        zip bonmin coin-license.txt bonmin-osx.zip
+        zip couenne coin-license.txt couenne-osx.zip
+        zip ipopt coin-license.txt ipopt-osx.zip
       displayName: Upload package
     - task: PublishBuildArtifacts@1
       inputs: {pathtoPublish: '$(Build.ArtifactStagingDirectory)'}
@@ -71,16 +81,21 @@ jobs:
         mkdir build
         cd build
         cmake .. -G "Visual Studio 16 2019" -A x64 -DCOIN_DISABLE_WARNINGS=1 -DCMAKE_SH="CMAKE_SH-NOTFOUND"
-        cmake --build . -t ALL_BUILD coin-versions -j 8 --config Release
+        cmake --build . -t ALL_BUILD coin-versions -j 2 --config Release
         ctest -C Release || true
       displayName: Build package
     - bash: |
         UPLOAD_DIR=$UPLOAD/win$NBITS/
         mkdir -p $UPLOAD_DIR
+        cp coin/Cbc/Cbc/LICENSE $UPLOAD_DIR/coin-license.txt
         cp build/bin/Release/{cbc.exe,bonmin.exe,couenne.exe,ipopt.exe,libipoptfort.dll} $UPLOAD_DIR
         cp build/coin-versions.txt $UPLOAD_DIR
         cd $UPLOAD_DIR
         7z a -tzip win$NBITS.zip *
+        7z a -tzip cbc-win$NBITS.zip cbc coin-license.txt
+        7z a -tzip bonmin-win$NBITS.zip bonmin coin-license.txt
+        7z a -tzip couenne-win$NBITS.zip couenne coin-license.txt
+        7z a -tzip ipopt-win$NBITS.zip ipopt libipoptfort.dll coin-license.txt
       displayName: Upload package
     - task: PublishBuildArtifacts@1
       inputs: {pathtoPublish: '$(Build.ArtifactStagingDirectory)'}
