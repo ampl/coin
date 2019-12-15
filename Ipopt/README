@@ -1,7 +1,14 @@
+These directories contain the C++ reimplementation of the interior
+point NLP solver Ipopt.
 
-To install this package, please look at the INSTALL file. 
+For more inforamation, see
 
-This package contains several subdirectories corresponding to COIN-OR
-projects (www.coin-or.org). The AUTHORS, LICENSE and README files in 
-each of the subdirectories give more information about these projects.
+Docs/documentation.pdf
 
+or see the online version of it at
+
+http://www.coin-or.org/Ipopt/documentation/
+
+The project's website is at
+
+http://projects.coin-or.org/Ipopt

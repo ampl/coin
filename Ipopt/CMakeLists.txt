@@ -60,11 +60,11 @@ if (WIN32)
 endif ()
 
 include_directories(
-  ../Cbc/BuildTools/headers Ipopt/src/Common
+  ../Cbc/BuildTools/headers src/Common
   ../ThirdParty/Mumps/MUMPS/include
   ../ThirdParty/Mumps/MUMPS/libseq
   ../ThirdParty/Mumps/MUMPS/src
-  Ipopt/src/Interfaces)
+  src/Interfaces)
 
 add_definitions(-DIPOPT_BUILD -DHAVE_CONFIG_H)
 
@@ -77,7 +77,7 @@ function (prepend_dir var dir)
   set(${var} ${paths} PARENT_SCOPE)
 endfunction ()
 
-prepend_dir(LinearSolverLoader_src Ipopt/src/contrib/LinearSolverLoader
+prepend_dir(LinearSolverLoader_src src/contrib/LinearSolverLoader
   LibraryHandler.c LibraryHandler.h
   HSLLoader.c HSLLoader.h
   PardisoLoader.c PardisoLoader.h)
@@ -114,7 +114,7 @@ prepend_dir(mumps_src ../ThirdParty/Mumps/MUMPS
   libseq/elapse.c)
 
 add_library(ipoptfort ${mumps_src} ${LinearSolverLoader_src}
-  Ipopt/src/Algorithm/LinearSolvers/IpMa28Partition.F)
+  src/Algorithm/LinearSolvers/IpMa28Partition.F)
 
 find_package(Threads)
 target_link_libraries(ipoptfort lapack blas ${CMAKE_THREAD_LIBS_INIT})
