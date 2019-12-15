@@ -7,7 +7,8 @@ elif [ -d "/base/manylinux/" ]; then
     rm -rf $BUILD_DIR
     mkdir -p $BUILD_DIR
     cd $BUILD_DIR
-    cmake /base/
+    cp -r /base /tmp/coin
+    cmake /tmp/coin/
     make all coin-versions -j2
     make test || true
 else

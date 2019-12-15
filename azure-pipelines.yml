@@ -4,10 +4,10 @@ jobs:
   strategy:
     matrix:
       x86:
-        image: 'fdabrandao/manylinux32:coin.v1'
+        image: 'fdabrandao/manylinux32:coin_cmake-3.12.4'
         nbits: 32
       x64:
-        image: 'fdabrandao/manylinux64:coin.v1'
+        image: 'fdabrandao/manylinux64:coin_cmake-3.12.4'
         nbits: 64
   variables:
     upload: $(Build.ArtifactStagingDirectory)
@@ -31,7 +31,7 @@ jobs:
         cp $BUILD_DIR/bin/{cbc,bonmin,couenne,ipopt} $UPLOAD_DIR
         cp $BUILD_DIR/coin-versions.txt $UPLOAD_DIR
         cd $UPLOAD_DIR
-        tar czvf linux$NBITS.tar.gz *
+        tar czvf coin-linux$NBITS.tar.gz *
         zip cbc-linux$NBITS.zip cbc coin-license.txt
         zip bonmin-linux$NBITS.zip bonmin coin-license.txt
         zip couenne-linux$NBITS.zip couenne coin-license.txt
@@ -62,7 +62,7 @@ jobs:
         cp build/bin/{cbc,bonmin,couenne,ipopt} $UPLOAD_DIR
         cp build/coin-versions.txt $UPLOAD_DIR
         cd $UPLOAD_DIR
-        tar czvf macos64.tar.gz *
+        tar czvf coin-osx.tar.gz *
         zip cbc-osx.zip cbc coin-license.txt
         zip bonmin-osx.zip bonmin coin-license.txt
         zip couenne-osx.zip couenne coin-license.txt
@@ -74,9 +74,9 @@ jobs:
   pool: {vmImage: 'windows-2019'}
   strategy:
     matrix:
-      x86:
-        arch: 'win32'
-        nbits: 32
+#      x86:
+#        arch: 'win32'
+#        nbits: 32
       x64:
         arch: 'x64'
         nbits: 64
@@ -98,7 +98,7 @@ jobs:
         cp build/bin/Release/{cbc.exe,bonmin.exe,couenne.exe,ipopt.exe,libipoptfort.dll} $UPLOAD_DIR
         cp build/coin-versions.txt $UPLOAD_DIR
         cd $UPLOAD_DIR
-        7z a -tzip win$NBITS.zip *
+        7z a -tzip coin-win$NBITS.zip *
         7z a -tzip cbc-win$NBITS.zip cbc.exe coin-license.txt
         7z a -tzip bonmin-win$NBITS.zip bonmin.exe coin-license.txt
         7z a -tzip couenne-win$NBITS.zip couenne.exe coin-license.txt
