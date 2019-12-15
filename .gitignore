@@ -12,3 +12,4 @@ CTestTestfile.cmake
 Makefile
 /ThirdParty/lapack/bin
 build/
+tmp/
