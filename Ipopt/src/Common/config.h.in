@@ -6,19 +6,16 @@
 /* Define to be the name of C-function for Inf check */
 #undef COIN_C_FINITE
 
-/* Define to 1 if the ASL package is available */
+/* Define to 1 if ASL is available. */
 #undef COIN_HAS_ASL
 
-/* If defined, the BLAS Library is available. */
-#undef COIN_HAS_BLAS
-
-/* Define to 1 if the HSL package is available */
+/* Define to 1 if HSL is available. */
 #undef COIN_HAS_HSL
 
-/* If defined, the LAPACK Library is available. */
+/* Define to 1 if the LAPACK package is available */
 #undef COIN_HAS_LAPACK
 
-/* Define to 1 if the Mumps package is available */
+/* Define to 1 if Mumps is available. */
 #undef COIN_HAS_MUMPS
 
 /* Define to the debug sanity check level (0 is no test) */
@@ -26,6 +23,16 @@
 
 /* Define to the debug verbosity level (0 is no output) */
 #undef COIN_IPOPT_VERBOSITY
+
+/* Define to a macro mangling the given C identifier (in lower and upper
+   case). */
+#undef COIN_LAPACK_FUNC
+
+/* As COIN_LAPACK_FUNC, but for C identifiers containing underscores. */
+#undef COIN_LAPACK_FUNC_
+
+/* Define to 1 if your C++ compiler doesn't accept -c and -o together. */
+#undef CXX_NO_MINUS_C_MINUS_O
 
 /* Define to dummy `main' function (if any) required to link to the Fortran
    libraries. */
@@ -38,20 +45,14 @@
 /* As F77_FUNC, but for C identifiers containing underscores. */
 #undef F77_FUNC_
 
+/* Define to 1 if your Fortran compiler doesn't accept -c and -o together. */
+#undef F77_NO_MINUS_C_MINUS_O
+
 /* Define if F77 and FC dummy `main' functions are identical. */
 #undef FC_DUMMY_MAIN_EQ_F77
 
 /* Define to the C type corresponding to Fortran INTEGER */
 #undef FORTRAN_INTEGER_TYPE
-
-/* Define to 1 if you have the <assert.h> header file. */
-#undef HAVE_ASSERT_H
-
-/* Define to 1 if you have the <cassert> header file. */
-#undef HAVE_CASSERT
-
-/* Define to 1 if you have the <cctype> header file. */
-#undef HAVE_CCTYPE
 
 /* Define to 1 if you have the <cfloat> header file. */
 #undef HAVE_CFLOAT
@@ -61,27 +62,6 @@
 
 /* Define to 1 if you have the <cmath> header file. */
 #undef HAVE_CMATH
-
-/* Define to 1 if you have the <cstdarg> header file. */
-#undef HAVE_CSTDARG
-
-/* Define to 1 if you have the <cstddef> header file. */
-#undef HAVE_CSTDDEF
-
-/* Define to 1 if you have the <cstdio> header file. */
-#undef HAVE_CSTDIO
-
-/* Define to 1 if you have the <cstdlib> header file. */
-#undef HAVE_CSTDLIB
-
-/* Define to 1 if you have the <cstring> header file. */
-#undef HAVE_CSTRING
-
-/* Define to 1 if you have the <ctime> header file. */
-#undef HAVE_CTIME
-
-/* Define to 1 if you have the <ctype.h> header file. */
-#undef HAVE_CTYPE_H
 
 /* Define to 1 if you have the <dlfcn.h> header file. */
 #undef HAVE_DLFCN_H
@@ -117,9 +97,6 @@
 /* Define to 1 if you are using Pardiso from MKL */
 #undef HAVE_PARDISO_MKL
 
-/* Define to 1 if you are not using at least a 4.0 version of Pardiso */
-#undef HAVE_PARDISO_OLDINTERFACE
-
 /* Define to 1 if you are using the parallel version of Pardiso */
 #undef HAVE_PARDISO_PARALLEL
 
@@ -129,17 +106,8 @@
 /* Define to 1 if you have the `snprintf' function. */
 #undef HAVE_SNPRINTF
 
-/* Define to 1 if you have the <stdarg.h> header file. */
-#undef HAVE_STDARG_H
-
-/* Define to 1 if you have the <stddef.h> header file. */
-#undef HAVE_STDDEF_H
-
 /* Define to 1 if you have the <stdint.h> header file. */
 #undef HAVE_STDINT_H
-
-/* Define to 1 if you have the <stdio.h> header file. */
-#undef HAVE_STDIO_H
 
 /* Define to 1 if you have the <stdlib.h> header file. */
 #undef HAVE_STDLIB_H
@@ -159,9 +127,6 @@
 /* Define to 1 if you have the <sys/types.h> header file. */
 #undef HAVE_SYS_TYPES_H
 
-/* Define to 1 if you have the <time.h> header file. */
-#undef HAVE_TIME_H
-
 /* Define to 1 if you have the <unistd.h> header file. */
 #undef HAVE_UNISTD_H
 
@@ -170,9 +135,6 @@
 
 /* Define to 1 if you have the `vsnprintf' function. */
 #undef HAVE_VSNPRINTF
-
-/* Define to 1 if you have the <windows.h> header file. */
-#undef HAVE_WINDOWS_H
 
 /* Define to 1 if WSMP is available */
 #undef HAVE_WSMP
@@ -183,23 +145,36 @@
 /* Define to 1 if you have the `_vsnprintf' function. */
 #undef HAVE__VSNPRINTF
 
-/* SVN revision number of project */
-#undef IPOPT_SVN_REV
+/* Library Visibility Attribute */
+#undef HSLLIB_EXPORT
+
+/* Define to a macro mangling the given C identifier (in lower and upper
+   case). */
+#undef HSL_FUNC
+
+/* As m4_toupper(HSL)_FUNC, but for C identifiers containing underscores. */
+#undef HSL_FUNC_
+
+/* Library Visibility Attribute */
+#undef IPOPTAMPLINTERFACELIB_EXPORT
+
+/* Library Visibility Attribute */
+#undef IPOPTLIB_EXPORT
 
 /* Version number of project */
 #undef IPOPT_VERSION
 
-/* Major Version number of project */
+/* Major version number of project. */
 #undef IPOPT_VERSION_MAJOR
 
-/* Minor Version number of project */
+/* Minor version number of project. */
 #undef IPOPT_VERSION_MINOR
 
-/* Release Version number of project */
+/* Release version number of project. */
 #undef IPOPT_VERSION_RELEASE
 
-/* Name of package */
-#undef PACKAGE
+/* Define to the sub-directory where libtool stores uninstalled libraries. */
+#undef LT_OBJDIR
 
 /* Define to the address where bug reports for this package should be sent. */
 #undef PACKAGE_BUGREPORT
@@ -213,17 +188,34 @@
 /* Define to the one symbol short name of this package. */
 #undef PACKAGE_TARNAME
 
+/* Define to the home page for this package. */
+#undef PACKAGE_URL
+
 /* Define to the version of this package. */
 #undef PACKAGE_VERSION
+
+/* Define to a macro mangling the given C identifier (in lower and upper
+   case). */
+#undef PARDISO_FUNC
+
+/* As PARDISO_FUNC, but for C identifiers containing underscores. */
+#undef PARDISO_FUNC_
 
 /* Set to extension for shared libraries in quotes. */
 #undef SHAREDLIBEXT
 
-/* The size of a `int *', as computed by sizeof. */
+/* Library Visibility Attribute */
+#undef SIPOPTLIB_EXPORT
+
+/* The size of `int *', as computed by sizeof. */
 #undef SIZEOF_INT_P
 
 /* Define to 1 if you have the ANSI C header files. */
 #undef STDC_HEADERS
 
-/* Version number of package */
-#undef VERSION
+/* Define to a macro mangling the given C identifier (in lower and upper
+   case). */
+#undef WSMP_FUNC
+
+/* As WSMP_FUNC, but for C identifiers containing underscores. */
+#undef WSMP_FUNC_

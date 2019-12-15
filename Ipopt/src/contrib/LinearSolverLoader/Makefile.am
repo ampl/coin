@@ -2,8 +2,6 @@
 # All Rights Reserved.
 # This file is distributed under the Eclipse Public License.
 #
-## $Id$
-#
 # Author: Stefan Vigerske
 
 AUTOMAKE_OPTIONS = foreign
@@ -13,24 +11,18 @@ EXTRA_DIST =
 noinst_LTLIBRARIES = libLinearSolverLoader.la
 
 libLinearSolverLoader_la_SOURCES = \
-  LibraryHandler.c LibraryHandler.h \
-  HSLLoader.c HSLLoader.h
+  LibraryHandler.c \
+  HSLLoader.c
 
-AM_CPPFLAGS = \
-  -I`$(CYGPATH_W) $(srcdir)/../../Common` \
-  -I`$(CYGPATH_W) $(srcdir)/../../Algorithm/LinearSolvers` \
-  $(HSL_CFLAGS)
+includeipoptdir = $(includedir)/coin-or
+includeipopt_HEADERS = HSLLoader.h
 
-if BUILD_PARDISOLOADER
-  libLinearSolverLoader_la_SOURCES += PardisoLoader.c PardisoLoader.h
+AM_CPPFLAGS = -DIPOPT_BUILD \
+  -I$(srcdir)/../../Common \
+  -I$(srcdir)/../../Algorithm/LinearSolvers \
+  $(IPOPTLIB_CFLAGS)
+
+if !HAVE_PARDISO
+  libLinearSolverLoader_la_SOURCES += PardisoLoader.c
+  includeipopt_HEADERS += PardisoLoader.h
 endif
-
-libLinearSolverLoader_la_LIBADD = 
-libLinearSolverLoader_la_DEPENDENCIES =  
-
-includeipoptdir = $(includedir)/coin
-includeipopt_HEADERS = HSLLoader.h PardisoLoader.h
-
-DEFAULT_INCLUDES = -I. -I`$(CYGPATH_W) $(srcdir)` -I$(top_builddir)/src/Common
-
-DISTCLEANFILES = 

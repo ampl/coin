@@ -2,8 +2,6 @@
 // All Rights Reserved.
 // This code is published under the Eclipse Public License.
 //
-// $Id$
-//
 // Authors:  Carl Laird, Andreas Waechter     IBM    2004-08-13
 
 #ifndef __IPTYPES_HPP__
@@ -13,12 +11,12 @@
 
 namespace Ipopt
 {
-  /** Type of all numbers */
-  typedef double Number;
-  /** Type of all indices of vectors, matrices etc */
-  typedef int Index;
-  /** Type of default integer */
-  typedef int Int;
+/** Type of all numbers */
+typedef double Number;
+/** Type of all indices of vectors, matrices etc */
+typedef int Index;
+/** Type of default integer */
+typedef int Int;
 
 } // namespace Ipopt
 

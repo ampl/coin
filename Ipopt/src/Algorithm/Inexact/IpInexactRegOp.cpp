@@ -2,8 +2,6 @@
 // All Rights Reserved.
 // This code is published under the Eclipse Public License.
 //
-// $Id$
-//
 // Authors:  Andreas Waechter            IBM    2008-09-05
 
 #include "IpInexactRegOp.hpp"
@@ -23,19 +21,21 @@
 namespace Ipopt
 {
 
-  void RegisterOptions_Inexact(const SmartPtr<RegisteredOptions>& roptions)
-  {
-    roptions->SetRegisteringCategory("Inexact Step Computation");
-    InexactAlgorithmBuilder::RegisterOptions(roptions);
-    InexactSearchDirCalculator::RegisterOptions(roptions);
-    InexactDoglegNormalStep::RegisterOptions(roptions);
-    InexactNewtonNormalStep::RegisterOptions(roptions);
-    InexactPDSolver::RegisterOptions(roptions);
-    InexactLSAcceptor::RegisterOptions(roptions);
-    InexactCq::RegisterOptions(roptions);
-    IterativePardisoSolverInterface::RegisterOptions(roptions);
-    InexactNormalTerminationTester::RegisterOptions(roptions);
-    InexactPDTerminationTester::RegisterOptions(roptions);
-  }
+void RegisterOptions_Inexact(
+   const SmartPtr<RegisteredOptions>& roptions
+)
+{
+   roptions->SetRegisteringCategory("Inexact Step Computation");
+   InexactAlgorithmBuilder::RegisterOptions(roptions);
+   InexactSearchDirCalculator::RegisterOptions(roptions);
+   InexactDoglegNormalStep::RegisterOptions(roptions);
+   InexactNewtonNormalStep::RegisterOptions(roptions);
+   InexactPDSolver::RegisterOptions(roptions);
+   InexactLSAcceptor::RegisterOptions(roptions);
+   InexactCq::RegisterOptions(roptions);
+   IterativePardisoSolverInterface::RegisterOptions(roptions);
+   InexactNormalTerminationTester::RegisterOptions(roptions);
+   InexactPDTerminationTester::RegisterOptions(roptions);
+}
 
 } // namespace Ipopt

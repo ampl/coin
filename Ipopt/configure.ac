@@ -2,8 +2,6 @@
 # All Rights Reserved.
 # This file is distributed under the Eclipse Public License.
 
-## $Id$
-
 # Authors:  Carl Laird, Andreas Waechter     IBM    2004-08-13
 
 #############################################################################
@@ -12,7 +10,7 @@
 
 AC_PREREQ(2.59)
 
-AC_INIT([Ipopt],[3.12.13],[http://projects.coin-or.org/Ipopt/newticket])
+AC_INIT([Ipopt],[3.13.0],[https://github.com/coin-or/Ipopt/issues/new],,[https://github.com/coin-or/Ipopt])
 
 AC_COPYRIGHT(
 [Copyright 2004, 2011 International Business Machines and others.
@@ -24,104 +22,154 @@ under the Eclipse Public License.])
 # whether the package is actually there
 AC_CONFIG_SRCDIR(src/Common/IpDebug.hpp)
 
-# Where should everything be installed by default?  Here, we want it
-# to be installed directly in 'bin', 'lib', 'include' subdirectories
-# of the directory where configure is run.  The default would be
-# /usr/local.
-AC_PREFIX_DEFAULT([`pwd`])
+# Do some project-level initialization work (version numbers, ...)
+AC_COIN_INITIALIZE(Ipopt)
 
 #############################################################################
 #                         Standard build tool stuff                         #
 #############################################################################
 
-# Get the system type
-AC_CANONICAL_BUILD
-
-# If this project depends on external projects, the Externals file in
-# the source root directory contains definition of where to find those
-# externals.  The following macro ensures that those externals are
-# retrieved by svn if they are not there yet.
-AC_COIN_PROJECTDIR_INIT(Ipopt,11:13:10)
-
-# Check if user wants to produce debugging code
-AC_COIN_DEBUG_COMPILE(Ipopt)
-
-# Store original choice for CYGPATH_W in MATLAB_CYGPATH_W
-# Need to do this early, so I can check whether user has set CYGPATH_W
-if test -z "$CYGPATH_W" ; then
-  if (cygpath --version) >/dev/null 2>/dev/null; then
-    MATLAB_CYGPATH_W='cygpath -w'
-  else
-    MATLAB_CYGPATH_W=echo
-  fi
-else
-  MATLAB_CYGPATH_W="$CYGPATH_W"
-fi
-AC_SUBST(MATLAB_CYGPATH_W)
-
-
-# We need egrep and ln -s somewherw
-AC_PROG_EGREP
-AC_PROG_LN_S
-
-# Get the name of the C compiler and appropriate compiler options
+# Get the name of the C, C++, and Fortran compilers and appropriate compiler options.
 AC_COIN_PROG_CC
-
-# Get the name of the C++ compiler and appropriate compiler options
 AC_COIN_PROG_CXX
+AC_COIN_PROG_F77
 
-# Get the C++ runtime libraries in case we want to link with a C or
-# Fortran compiler
+# If there is a Fortran compiler, then setup everything to use it, including F77_FUNC
+if test -n "$F77" ; then
+  AC_COIN_F77_SETUP
+fi
+
+# This is a C++ package, set the language accordingly.
+#AC_LANG_PUSH(C++)
+
+# Initialize libtool
+AC_COIN_PROG_LIBTOOL
+
+# set RPATH_FLAGS to the compiler link flags required to hardcode location
+# of the shared objects (expanded_libdir is set somewhere in configure before)
+AC_COIN_RPATH_FLAGS([$expanded_libdir])
+
+# Get the C++ runtime libraries in case we want to link a static Ipopt library
+# with a C or Fortran compiler
 AC_COIN_CXXLIBS
 
-# Get the name of the Fortran compiler and appropriate compiler options
-AC_COIN_PROG_F77
-AM_CONDITIONAL(COIN_HAS_F77, test "$F77" != "unavailable")
-
-# Find out how to call Fortran from C and determine Fortran runtime libraries
-if test "$F77" != "unavailable" ; then
-  AC_COIN_F77_WRAPPERS
-fi
-
-# Initialize automake and libtool
-AC_COIN_INIT_AUTO_TOOLS
-
-# Some extra stuff for blue gene on Laci's request
-AC_SUBST(BLUEGENEEXTRA)
-BLUEGENEEXTRA="echo"
-AC_ARG_ENABLE([bg],,
-  [case "${enableval}" in
-    yes)  BLUEGENEEXTRA="chmod 644 *.o; cp ../Extern/ASL/amplsolver.a ../lib/libamplsolver.a"
-          is_bg=yes
-          ;;
-  esac],[is_bg=no])
-
-# A Fix for the AIX compiler
-AM_CONDITIONAL([AIX_FIX_COMPILER_BUG], test "x$AIX_FIX_COMPILER_BUG" != x)
-
 # Doxygen
-AC_COIN_DOXYGEN()
+AC_COIN_DOXYGEN
 
+# COIN_IPOPT_VERBOSITY and COIN_IPOPT_DEBUGLEVEL
+AC_COIN_DEBUGLEVEL(IPOPT)
 
 #############################################################################
-#                              COIN-OR components                           #
+#                                 Dependencies                              #
 #############################################################################
 
-AC_COIN_CHECK_LIBM(IpoptLib)
+AC_COIN_CHK_LIBM(IpoptLib)
 
-AC_COIN_CHECK_PACKAGE_BLAS(IpoptLib)
-if test $coin_has_blas != yes; then
-  AC_MSG_ERROR([Required package BLAS not found.])
-fi
+#AC_COIN_CHK_BLAS(IpoptLib)
+#if test $coin_has_blas != yes; then
+#  AC_MSG_ERROR([Required package BLAS not found.])
+#fi
 
-AC_COIN_CHECK_PACKAGE_LAPACK(IpoptLib)
+AC_COIN_CHK_LAPACK(IpoptLib)
 if test $coin_has_lapack != yes; then
-  AC_MSG_WARN([Compiling code without LAPACK.  Certain options (e.g., quasi-Newton) will not work.])
+  AC_MSG_ERROR([Required package LAPACK not found.])
+#  AC_MSG_WARN([Compiling code without LAPACK.  Certain options (e.g., quasi-Newton) will not work.])
 fi
 
-AC_COIN_CHECK_PACKAGE(ASL,   [coinasl],   [IpoptAmplInterfaceLib])
-AC_COIN_CHECK_PACKAGE(HSL,   [coinhsl >= 1.3],   [IpoptLib])
-AC_COIN_CHECK_PACKAGE(Mumps, [coinmumps], [IpoptLib])
+AC_COIN_CHK_PKG(ASL,[IpoptAmplInterfaceLib],[coinasl],[build])
+
+#########
+# MUMPS #
+#########
+
+AC_COIN_CHK_PKG(Mumps,[IpoptLib],[coinmumps],[build])
+
+# Check whether MPI_Initialized is available
+#   we assume that MPI_Finalized is present if MPI_Initialized is present
+AC_CHECK_FUNCS([MPI_Initialized])
+
+#######
+# HSL #
+#######
+
+AC_COIN_CHK_PKG(HSL,[IpoptLib HSLLib],[coinhsl],[build])
+
+have_ma28=no
+if test "$coin_has_hsl" = yes ; then
+  AC_COIN_FINALIZE_FLAGS([HSLLib])
+  AC_COIN_NAMEMANGLING([HSL],[ma27ad],[$HSLLIB_LFLAGS])
+
+  # extra check for MA28, since that decides whether we have to build IpMa28Partition.F
+  if test -n "$F77" ; then
+    AC_COIN_TRY_LINK([ma28ad],[$HSLLIB_LFLAGS],,[
+      if test "$ma28ad_namemangling" != "$ac_cv_f77_mangling" ; then
+        AC_MSG_WARN([Name mangling of MA28 different than Fortran. This will not link. Disabling MA28])
+      else
+        have_ma28=yes
+      fi
+    ])
+  fi
+fi
+AM_CONDITIONAL([HAVE_MA28],[test "$have_ma28" = yes])
+
+###########
+# PARDISO #
+###########
+
+AC_ARG_WITH([pardiso],
+            AC_HELP_STRING([--with-pardiso],[specify Pardiso library (>= 4.0) from pardiso-project.org]),
+            [have_pardiso_project=yes; pardiso_lflags=$withval],
+            [have_pardiso_project=no])
+
+have_pardiso_mkl=no
+if test "$have_pardiso_project" = yes ; then
+  # check whether flags from --with-pardiso work and figure out name mangling
+  # if so, define PARDISO_FUNC and keep lflags
+  AC_COIN_TRY_LINK([pardiso_ipopt_newinterface],[$pardiso_lflags $lapack_lflags],[$lapack_pcfiles],
+    [AC_COIN_DEFINENAMEMANGLING([PARDISO],[$pardiso_ipopt_newinterface_namemangling])
+     IPOPTLIB_LFLAGS="$pardiso_lflags $IPOPTLIB_LFLAGS"
+     AC_DEFINE(HAVE_PARDISO,1,[Define to 1 if Pardiso is available])
+    ],
+    [AC_MSG_ERROR([Symbol pardiso_ipopt_newinterface not found with Pardiso flags $pardiso_lflags and Lapack. Require Pardiso >= 4.0.])])
+
+  AC_COIN_TRY_LINK([pardiso_exist_parallel],[$pardiso_lflags $lapack_lflags],[$lapack_pcfiles],
+    [AC_DEFINE(HAVE_PARDISO_PARALLEL,1,[Define to 1 if you are using the parallel version of Pardiso])])
+
+else
+  # check whether Pardiso is available via Lapack, which should then be MKL
+  # figure out name mangling and define PARDISO_FUNC
+  AC_COIN_TRY_LINK([pardiso],[$lapack_lflags],[$lapack_pcfiles],
+    [AC_COIN_DEFINENAMEMANGLING([PARDISO],[$pardiso_namemangling])
+     have_pardiso_mkl=yes
+     AC_DEFINE(HAVE_PARDISO,1,[Define to 1 if Pardiso is available])
+     # assume MKL Pardiso is parallel (it never has pardiso_exist_parallel)
+     # TODO does sequential MKL also have a parallel Pardiso? do we need some check here?
+     AC_DEFINE(HAVE_PARDISO_PARALLEL,1,[Define to 1 if you are using the parallel version of Pardiso])
+     AC_DEFINE(HAVE_PARDISO_MKL,1,[Define to 1 if you are using Pardiso from MKL])
+    ])
+fi
+
+AM_CONDITIONAL([HAVE_PARDISO],[test "$have_pardiso_mkl$have_pardiso_project" != nono])
+
+########
+# WSMP #
+########
+
+AC_ARG_WITH([wsmp],
+            AC_HELP_STRING([--with-wsmp],[specify WSMP library]),
+            [have_wsmp=yes; wsmp_lflags=$withval],
+            [have_wsmp=no])
+
+if test "$have_wsmp" = "yes"; then
+  AC_COIN_TRY_LINK([wssmp],[$wsmp_lflags],[],
+    [AC_COIN_DEFINENAMEMANGLING([WSMP],[$wssmp_namemangling])
+     IPOPTLIB_LFLAGS="$wsmp_lflags $IPOPTLIB_LFLAGS"
+     AC_DEFINE(HAVE_WSMP,1,[Define to 1 if WSMP is available])
+    ],
+    [AC_MSG_ERROR([Symbol wssmp not found with WSMP flags $wsmp_lflags.])])
+fi
+
+AM_CONDITIONAL([HAVE_WSMP],[test $have_wsmp = yes])
 
 #############################################################################
 #                             Stuff for examples                            #
@@ -129,15 +177,9 @@ AC_COIN_CHECK_PACKAGE(Mumps, [coinmumps], [IpoptLib])
 
 # find out how long an int pointer is to know if we need INTEGER*4 or
 # INTEGER*8 in Fortran to capture pointers.
-#
-# This test doesn't work on BlueGene
-if test "$is_bg" = no; then
-  AC_LANG_PUSH(C)
-  AC_CHECK_SIZEOF(int *)
-  AC_LANG_POP(C)
-else
-  ac_cv_sizeof_int_p=4
-fi
+AC_LANG_PUSH(C)
+AC_CHECK_SIZEOF(int *)
+AC_LANG_POP(C)
 AC_SUBST(BITS_PER_POINTER)
 AC_SUBST(BIT32FCOMMENT)
 AC_SUBST(BIT64FCOMMENT)
@@ -151,29 +193,6 @@ case "$ac_cv_sizeof_int_p" in
   *) AC_MSG_ERROR([Unknown length of int *]);;
 esac
 
-########################################################
-## Set variables for the archiver for C++ object files #
-## (for AIX in 64bit mode also on SGI, SUN...)         #
-########################################################
-
-if test -z "$CXXAR"; then
-  if test ! "$GXX" = "yes"; then
-    case $build in
-      *-sun-*)
-        CXXAR="CC -xar -o"
-        ;;
-      *-sgi-*)
-        CXXAR="CC -ar -o"
-        ;;
-    esac
-  fi
-  if test -z "$CXXAR"; then
-    CXXAR="$AR cru"
-  fi
-fi
-AC_ARG_VAR(CXXAR,[Command for making archives from C++ objects (default is AR crv) - only needed for Example])
-AC_MSG_NOTICE([Using CXXAR=\"$CXXAR\".])
-
 ############################################################################
 ############################################################################
 #                   Stuff that we need for C++ programs                    #
@@ -182,24 +201,9 @@ AC_MSG_NOTICE([Using CXXAR=\"$CXXAR\".])
 
 AC_LANG_PUSH(C++)
 
-################
-# Header Files #
-################
-
-AC_COIN_CHECK_CXX_CHEADER(math)
-AC_COIN_CHECK_CXX_CHEADER(ctype)
-AC_COIN_CHECK_CXX_CHEADER(assert)
-AC_COIN_CHECK_CXX_CHEADER(stdio)
-AC_COIN_CHECK_CXX_CHEADER(stdlib)
-AC_COIN_CHECK_CXX_CHEADER(stdarg)
-AC_COIN_CHECK_CXX_CHEADER(string)
-AC_COIN_CHECK_CXX_CHEADER(float)
-AC_COIN_CHECK_CXX_CHEADER(time)
-AC_COIN_CHECK_CXX_CHEADER(stddef)
-
-###################
-# Function finite #
-###################
+#####################
+# Function isfinite #
+#####################
 
 AC_COIN_CHECK_ISFINITE
 
@@ -208,208 +212,23 @@ AC_COIN_CHECK_ISFINITE
 ###########
 
 AC_CHECK_DECL([va_copy],[AC_DEFINE([HAVE_VA_COPY],[1],
-                                   [Define to 1 if va_copy is available])],,[
-#ifdef HAVE_CSTDARG
-# include <cstdarg>
-#else
-# ifdef HAVE_STDARG_H
-#  include <stdarg.h>
-# endif
-#endif])
+                                   [Define to 1 if va_copy is available])],,[#include <cstdarg>])
 
 ###########################
 # Random number generator #
 ###########################
 
 AC_CHECK_DECL([drand48],[AC_DEFINE([HAVE_DRAND48],[1],
-                                   [Define to 1 if function drand48 is available])],,[
-#ifdef HAVE_CSTDLIB
-# include <cstdlib>
-#else
-# ifdef HAVE_STDLIB_H
-#  include <stdlib.h>
-# endif
-#endif
-])
+                                   [Define to 1 if function drand48 is available])],,[#include <cstdlib>])
 
 AC_CHECK_DECL([rand],[AC_DEFINE([HAVE_RAND],[1],
-                                [Define to 1 if function rand is available])],,[
-#ifdef HAVE_CSTDLIB
-# include <cstdlib>
-#else
-# ifdef HAVE_STDLIB_H
-#  include <stdlib.h>
-# endif
-#endif
-])
+                                [Define to 1 if function rand is available])],,[#include <cstdlib>])
 
-AC_CHECK_DECL([srand],[AC_DEFINE([HAVE_STD__RAND],[1],
-                                 [Define to 1 if function std::rand is available])],,[
-#ifdef HAVE_CSTDLIB
-# include <cstdlib>
-#else
-# ifdef HAVE_STDLIB_H
-#  include <stdlib.h>
-# endif
-#endif
-using namespace std;])
-
+AC_COIN_CHECK_NAMESPACE_DECL([std::srand],[1],
+  [AC_DEFINE([HAVE_STD__RAND],[1],[Define to 1 if function std::rand is available])],[],
+  [#include <cstdlib>])
 
 ##########################################################################
-
-# Additional libraries and packages
-
-###########
-#   HSL   #
-###########
-
-# some Fortran compilers do not allow preprocessor directives
-# so we check here whether the define for MA28 is set in CoinHslConfig.h
-have_ma28=no
-
-if test "$coin_has_hsl" = "yes" ; then
-  AC_LANG_PUSH(C)
-  save_CPPFLAGS="$CPPFLAGS"
-  CPPFLAGS="$CPPFLAGS $HSL_CFLAGS"
-  
-  AC_MSG_CHECKING([whether MA28 is available with HSL])
-  AC_PREPROC_IFELSE(
-    [AC_LANG_PROGRAM([
-#define HAVE_CONFIG_H
-#include "CoinHslConfig.h"
-#ifndef COINHSL_HAS_MA28
-#error "do not have MA28"
-#endif
-    ])],
-    [AC_MSG_RESULT([yes])
-     have_ma28=yes],
-    [AC_MSG_RESULT([no])])
-
-  CPPFLAGS="$save_CPPFLAGS"
-  AC_LANG_POP(C)
-fi
-
-AM_CONDITIONAL(HAVE_MA28, test $have_ma28 = yes)
-
-###########
-# PARDISO #
-###########
-
-AC_LANG_PUSH([Fortran 77])
-AC_ARG_WITH([pardiso],
-            AC_HELP_STRING([--with-pardiso],
-                           [specify Pardiso library]),
-            [use_pardiso=$withval], [use_pardiso=no])
-
-# Check whether MKL is being used
-have_mkl=no
-SAVE_LIBS="$LIBS"
-if test "$use_pardiso" = "no"; then
-  LIBS="$LIBS $LAPACK_LIBS $BLAS_LIBS"
-else
-  LIBS="$use_pardiso $LIBS $LAPACK_LIBS $BLAS_LIBS"
-fi
-AC_LANG_PUSH(C)
-AC_CHECK_FUNC([mkl_get_version_string],[have_mkl=yes])
-AC_LANG_POP(C)
-# If using MKL, always enable Pardiso
-if test "$have_mkl" = "yes" -a "$use_pardiso" = "no"; then
-  use_pardiso=""
-fi
-LIBS="$SAVE_LIBS"
-
-if test "$use_pardiso" != "no"; then
-  SAVE_LIBS="$LIBS"
-  PARDISO_LIB="$use_pardiso"
-  LIBS="$PARDISO_LIB $LIBS $LAPACK_LIBS $BLAS_LIBS"
-
-  if test "$F77" != unavailable ; then
-    AC_MSG_CHECKING([whether user-supplied Pardiso library \"$use_pardiso\" works])
-    AC_TRY_LINK([],[      call PARDISO()],
-                [AC_MSG_RESULT(yes)],
-                [AC_MSG_ERROR([Pardiso library $use_pardiso does not seem to work])])
-  else
-    AC_LANG_PUSH(C)
-    AC_MSG_NOTICE([checking whether user-supplied Pardiso library \"$use_pardiso\" works using C linkage])
-    AC_CHECK_FUNC([PARDISO],[],[AC_MSG_ERROR([Pardiso library $use_pardiso does not seem to work])])
-    AC_LANG_POP(C)
-  fi
-  AC_DEFINE(HAVE_PARDISO,1,[Define to 1 if Pardiso is available])
-
-  # if we have MKL but also --with-pardiso is set, then assume that non-MKL Pardiso is used
-  if test "$have_mkl" = "yes" && test -z "$use_pardiso" ; then
-     AC_DEFINE(HAVE_PARDISO_MKL,1,[Define to 1 if you are using Pardiso from MKL])
-     AC_DEFINE(HAVE_PARDISO_OLDINTERFACE,1,[Define to 1 if you are not using at least a 4.0 version of Pardiso])
-  else
-    AC_MSG_CHECKING([whether Pardiso library is at least version 4.0])
-    AC_TRY_LINK([],[      call pardiso_ipopt_newinterface()],
-                [AC_MSG_RESULT(yes)],
-                [AC_MSG_RESULT(no)
-                 AC_DEFINE(HAVE_PARDISO_OLDINTERFACE,1,[Define to 1 if you are not using at least a 4.0 version of Pardiso])
-                ])
-  fi
-  
-# Test if this is the parallel version of Pardiso
-# (MKL PARDISO is always parallel, even though it does not have this function implemented)
-  pardiso_parallel=no
-  if test "$have_mkl" = "yes" ; then
-    pardiso_parallel=yes
-  else
-    AC_MSG_CHECKING([whether Pardiso library is the parallel version])
-    AC_TRY_LINK([],[      call pardiso_exist_parallel()],
-                [AC_MSG_RESULT(yes)
-                 pardiso_parallel=yes],
-                [AC_MSG_RESULT(no)])
-  fi
-  if test "$pardiso_parallel" = yes ; then
-    AC_DEFINE(HAVE_PARDISO_PARALLEL,1,[Define to 1 if you are using the parallel version of Pardiso])
-  fi
-  
-  LIBS="$SAVE_LIBS"
-  IPOPTLIB_LIBS="$PARDISO_LIB $IPOPTLIB_LIBS"
-  IPOPTLIB_PCLIBS="$PARDISO_LIB $IPOPTLIB_PCLIBS"
-  IPOPTLIB_LIBS_INSTALLED="$PARDISO_LIB $IPOPTLIB_LIBS_INSTALLED"
-fi
-AC_LANG_POP([Fortran 77])
-
-########
-# WSMP #
-########
-
-AC_ARG_WITH([wsmp],
-            AC_HELP_STRING([--with-wsmp],
-                           [specify WSMP library]),
-            [use_wsmp=$withval], [use_wsmp=no])
-
-if test "$use_wsmp" != "no"; then
-  SAVE_LIBS="$LIBS"
-  LIBS="$LIBS $use_wsmp $BLAS_LIBS"
-
-  AC_LANG_PUSH([Fortran 77])
-  AC_MSG_CHECKING([whether user-supplied WSMP library \"$use_wsmp\" works])
-  AC_TRY_LINK([],[      call WSSMP()],
-              [AC_MSG_RESULT(yes)],
-              [AC_MSG_ERROR([WSMP library $use_wsmp does not seem to work])])
-  AC_LANG_POP([Fortran 77])
-
-  AC_DEFINE(HAVE_WSMP,1,
-            [Define to 1 if WSMP is available])
-  LIBS="$SAVE_LIBS"
-  IPOPTLIB_LIBS="$use_wsmp $IPOPTLIB_LIBS"
-  IPOPTLIB_PCLIBS="$use_wsmp $IPOPTLIB_PCLIBS"
-  IPOPTLIB_LIBS_INSTALLED="$use_wsmp $IPOPTLIB_LIBS_INSTALLED"
-fi
-
-# Check if at least one linear solver was found
-
-if test "$have_ma27" != "yes" -a "$have_ma57" != "yes" -a "$have_ma77" != "yes" -a "$have_ma86" != "yes" -a "$use_pardiso" = "no" -a "$use_taucs" = no -a "$use_wsmp" = no -a "$coin_has_mumps" != yes; then
-  AC_MSG_WARN("You are compiling Ipopt without any linear solver (such as MUMPS).  You will only be able to run Ipopt if you compile a shared library with a linear solver.")
-fi
-
-# Check whether MPI_Initialized is available
-#   we assume that MPI_Finalized is present if MPI_Initialized is present
-
-AC_CHECK_FUNCS([MPI_Initialized])
 
 ###################################################
 # Check if user wants inexact algorithm available #
@@ -427,33 +246,12 @@ AC_ARG_ENABLE([inexact-solver],
   [use_inexact=no])
 
 if test $use_inexact = yes; then
-  if test "$use_pardiso" = "no"; then
-    AC_MSG_ERROR([The inexact solver option is currently only available with Pardiso])
+  if test $have_pardiso_project = no; then
+    AC_MSG_ERROR([The inexact solver option is currently only available with Pardiso from pardiso-project.org])
   fi
-  # Check if the global function pointer variable is defined in the Pardiso library
-  SAVE_LIBS="$LIBS"
-  LIBS="$LIBS $PARDISO_LIB $LAPACK_LIBS $BLAS_LIBS $FLIBS"
-  AC_LANG_PUSH(C)
-  AC_MSG_CHECKING([if Pardiso library has global variable IpoptFunction])
-  AC_LINK_IFELSE(
-[extern int (*IpoptFunction)(int n, double* x,  double* r, int k, double b);
-
-int main() {
-  IpoptFunction = 0;
-  return 0;
-}],
-    [AC_MSG_RESULT(yes)],
-    [AC_MSG_RESULT(no)
-     AC_MSG_ERROR([Pardiso library not recent enough for the inexact solver option])])
-  AC_LANG_POP(C)
-  LIBS="$SAVE_LIBS"
+  AC_DEFINE([BUILD_INEXACT],[1],[Define to 1 if the inexact linear solver option is included])
 fi
-
-
-# For the remaining tests we need to include FLIBS into LIBS, so that
-# the C compiler can link programs
-#LIBS="$LIBS $FLIBS"
-# ToDo should this go into BLAS and LAPACK test????
+AM_CONDITIONAL([BUILD_INEXACT], [test $use_inexact = yes])
 
 AC_LANG_POP(C++)
 
@@ -461,7 +259,7 @@ AC_LANG_POP(C++)
 # Equivalent int Fortran and C types #
 ######################################
 
-# FIXME: The following test should be active, but this requires chance in
+# FIXME: The following test should be active, but this requires change in
 #        code to copy Index* to ipfint* arrays...
 if test "$cross_compiling" = no && test "$is_bg" != yes; then
   AC_LANG_PUSH(C)
@@ -479,232 +277,59 @@ if test "$cross_compiling" = no && test "$is_bg" != yes; then
 #  fi
   AC_LANG_POP(C)
 else
-  AC_MSG_WARN([We are cross compiling, assuming Fortran `INTEGER' type corresponds to C `int' type])
+  AC_MSG_WARN([We are cross compiling, assuming Fortran 'INTEGER' type corresponds to C 'int' type])
   AC_DEFINE([FORTRAN_INTEGER_TYPE],[int])
 fi
 
 ############# JAVA
 
-if test "${JAVA_HOME+set}" = set; then
-  AC_MSG_NOTICE([JAVA_HOME = $JAVA_HOME])
-fi
-AC_SUBST(JAVA_HOME)
-case $build in
-  *-cygwin* | *-mingw*)
-    JIPOPTDLL=jipopt.dll
-    ;;
-  *-darwin* )
-    JIPOPTDLL=libjipopt.dylib
-    ;;  
-  *)
-    JIPOPTDLL=libjipopt.so
-    ;;
-esac
-AC_SUBST(JIPOPTDLL)
+AC_ARG_ENABLE([java],
+  [AC_HELP_STRING([--disable-java],[disable building of Java interface])],
+  [enable_java="$enableval"],
+  [enable_java="$enable_shared"])
 
-# Compiler flag for linking DLLs/shared objects (not yet portable!)
-if test $coin_cxx_is_cl = true; then
-  SHARED_FLAGS=-LD
-else 
-  SHARED_FLAGS=-shared
-fi
-AC_SUBST(SHARED_FLAGS)
+if test "$enable_java" != no ; then
+  # look for javac: required to compile Java code and build C-header
+  # this is a modified version of AX_PROG_JAVAC
+  m4_define([m4_ax_prog_javac_list],["gcj -C" guavac jikes javac])dnl
+  AS_IF([test "x$JAVAPREFIX" = x],
+        [test "x$JAVAC" = x && AC_CHECK_PROGS([JAVAC], [m4_ax_prog_javac_list])],
+        [test "x$JAVAC" = x && AC_CHECK_PROGS([JAVAC], [m4_ax_prog_javac_list], [], [$JAVAPREFIX/bin])])
+  m4_undefine([m4_ax_prog_javac_list])dnl
 
-#doing this check here avoids its repetition for each file in the following loop
-AC_COIN_CHECK_VPATH
-for file in `cat $srcdir/contrib/JavaInterface/javafiles.lst`
-do
-  AC_COIN_VPATH_LINK(contrib/JavaInterface/$file)
-done
-
-############ Matlab
-
-# Try to detect if there is matlab installed on the system and set the
-# MATLAB_HOME variable
-
-AC_MSG_CHECKING([for matlab installation])
-
-AC_ARG_WITH([matlab-home],
-            AC_HELP_STRING([--with-matlab-home],
-                           [specify location of matlab installation for the matlab Ipopt interface.  The "mex" compiler should be in MATLAB_HOME/bin]),
-            [use_matlab_home=$withval], [use_matlab_home=])
-
-# check whether to build static MEX files
-AC_ARG_ENABLE([matlab-static],
-  [AC_HELP_STRING([--enable-matlab-static],
-     [enable static linking of standard libraries into Ipopt mex file (default: no)])],
-  [case "$enableval" in
-     no | yes) ;;
-     *)
-       AC_MSG_ERROR([invalid argument for --enable-matlab-static: $enableval]);;
-   esac
-   use_matlab_static=$enableval],
-  [use_matlab_static=no])
-AM_CONDITIONAL([MEX_STATIC], test x"$use_matlab_static" = xyes)
-
-# If we're in Windows, need to add .bat extension to find mex and mexext, and set conditional to modify Matlab interface Makefile
-batext=
-case $build in
-  *-cygwin* | *-mingw*)
-    batext=.bat
-    ;;
-esac
-AM_CONDITIONAL([MEX_WINDOWS], test x"$batext" != x)
-
-if test x"$use_matlab_home" = x; then
-  # Try to detect matlab home automatically
-  mexpath=`which matlab$EXEEXT 2>/dev/null`
-  if test -z "$mexpath" ||
-     expr "$mexpath" : '.*no matlab.*' >/dev/null 2>&1 ; then
-    AC_MSG_RESULT([no])
+  if test -z "$JAVAC" ; then
+    AC_MSG_NOTICE([No JAVA compiler. Disabling build of Java interface.])
+    enable_java=no
   else
-    if test -L "$mexpath"; then
-      # matlab is a symbolic link, follow it
-      mexpath=`ls -l "$mexpath" | awk '{print $NF}'`
-    fi
-    MATLAB_HOME=`echo $mexpath | sed -e "s=/bin/matlab$EXEEXT$=="`
-    AC_MSG_RESULT([$MATLAB_HOME])
-  fi
-elif test x"$use_matlab_home" = xno; then
-  # Matlab interface disabled by user
-  MATLAB_HOME=""
-  AC_MSG_RESULT([disabled])
-else
-  MATLAB_HOME="$use_matlab_home"
-  AC_MSG_RESULT([$MATLAB_HOME])
-  if test ! -x "$MATLAB_HOME/bin/mex$batext"; then
-    AC_MSG_ERROR([Matlab compiler $MATLAB_HOME/bin/mex$batext not found or not executable])
+    AX_PROG_JAVAC_WORKS
   fi
 fi
 
-MEXSUFFIX=
-MWMA57PATH=
-if test x"$MATLAB_HOME" != x; then
-  AC_MSG_CHECKING([for Matlab executable extension (MEXSUFFIX)])
-  if ! test -x "$MATLAB_HOME/bin/mexext$batext"; then
-    AC_MSG_WARN([Cannot find $MATLAB_HOME/bin/mexext$batext executable to determine MEXSUFFIX])
+if test "$enable_java" != no ; then
+  # look for jni header: required to compile C++ part of Java interface
+  AX_JNI_INCLUDE_DIR
+  if test -z "$JNI_INCLUDE_DIRS" ; then
+    AC_MSG_NOTICE([No JNI header directory. Disabling build of Java interface.])
+    enable_java=no
   else
-    case $build in
-      *-mingw*)
-        # MinGW cannot execute .bat files natively, so use cmd /c
-        MEXSUFFIX=$(cd "$MATLAB_HOME/bin"; cmd /c mexext$batext)
-        # Also get short DOS form of MATLAB_HOME to avoid spaces in paths
-        MATLAB_HOME=$(cd "$MATLAB_HOME"; cmd /c 'for %i in (.) do @echo %~fsi' | \
-          sed 's|\\|/|g') # replace backslashes with forward slashes
-        ;;
-      *-cygwin*)
-        # need to strip trailing carriage return from mexext result in Cygwin
-        MEXSUFFIX=`"$MATLAB_HOME/bin/mexext$batext" | dos2unix`
-        # Also get short DOS form of MATLAB_HOME to avoid spaces in paths
-        MATLAB_HOME=$(cygpath -u $(cygpath -d "$MATLAB_HOME"))
-        ;;
-      *)
-        MEXSUFFIX=`$MATLAB_HOME/bin/mexext`
-        ;;
-    esac
-    AC_MSG_RESULT([$MEXSUFFIX])
-  fi
-
-  # check whether to use Matlab's MA57
-  AC_ARG_ENABLE([matlab-ma57],
-    [AC_HELP_STRING([--enable-matlab-ma57],
-       [enable linking against Matlab's MA57 library (if no HSL library is available)])],
-    [enable_matlab_ma57=$enableval],
-    [enable_matlab_ma57=no])
-  if test x"$enable_matlab_ma57" = xyes && test "$coin_has_hsl" != "yes" ; then
-    case $MEXSUFFIX in
-      mexglx)
-        # not tested
-        MWMA57PATH="$MATLAB_HOME/bin/glnx86"
-        MWMA57LIB="-L$MWMA57PATH -lmwma57"
-        MWMA57PATH="$MWMA57PATH:$MATLAB_HOME/sys/os/glnx86"
-        ;;
-      mexa64)
-        MWMA57PATH="$MATLAB_HOME/bin/glnxa64"
-        MWMA57LIB="-L$MWMA57PATH -lmwma57"
-        MWMA57PATH="$MWMA57PATH:$MATLAB_HOME/sys/os/glnxa64"
-        ;;
-      mexmac)
-        # not tested
-        MWMA57PATH="$MATLAB_HOME/bin/mac"
-        MWMA57LIB="-L$MWMA57PATH -lmwma57"
-        ;;
-      mexmaci)
-        # not tested
-        MWMA57PATH="$MATLAB_HOME/bin/maci"
-        MWMA57LIB="-L$MWMA57PATH -lmwma57"
-        ;;
-      mexmaci64)
-        MWMA57PATH="$MATLAB_HOME/bin/maci64"
-        MWMA57LIB="-L$MWMA57PATH -lmwma57"
-        ;;
-      mexs64)
-        # not tested
-        MWMA57PATH="$MATLAB_HOME/bin/sol64"
-        MWMA57LIB="-L$MWMA57PATH -lmwma57"
-        ;;
-      mexw32)
-        MWMA57PATH="$MATLAB_HOME/bin/win32"
-        MWMA57LIB="-L$MWMA57PATH -lmwma57"
-        if test x"$use_matlab_static" = xyes; then
-          MWMA57LIB="-L$MWMA57PATH -Wl,-Bdynamic,-lmwma57,-Bstatic"
-        fi
-        ;;
-      mexw64)
-        MWMA57PATH="$MATLAB_HOME/bin/win64"
-        MWMA57LIB="-L$MWMA57PATH -lmwma57"
-        if test x"$use_matlab_static" = xyes; then
-          MWMA57LIB="-L$MWMA57PATH -Wl,-Bdynamic,-lmwma57,-Bstatic"
-        fi
-        ;;
-      *)
-        # something unexpected, either too old or too new?
-        ;;
-    esac
-    #TODO check whether MAMW57LIB works
-
-    IPOPTLIB_LIBS="$MWMA57LIB $IPOPTLIB_LIBS"
-    IPOPTLIB_PCLIBS="$MWMA57LIB $IPOPTLIB_PCLIBS"
-    IPOPTLIB_LIBS_INSTALLED="$MWMA57LIB $IPOPTLIB_LIBS_INSTALLED"
-
-    CXXFLAGS="$CXXFLAGS -DFUNNY_MA57_FINT"
-    mkdir -p src/Common
-    echo "#define COINHSL_HAS_MA57 1" > src/Common/CoinHslConfig.h
-    # also fix Fortran naming convention on Windows
-    # (no trailing underscores in libmwma57.dll)
-    case $MEXSUFFIX in
-      mexw32 | mexw64)
-        echo "#define ma57ad_ ma57ad" >> src/Common/CoinHslConfig.h
-        echo "#define ma57bd_ ma57bd" >> src/Common/CoinHslConfig.h
-        echo "#define ma57cd_ ma57cd" >> src/Common/CoinHslConfig.h
-        echo "#define ma57ed_ ma57ed" >> src/Common/CoinHslConfig.h
-        echo "#define ma57id_ ma57id" >> src/Common/CoinHslConfig.h
-        ;;
-    esac
-
-    AC_DEFINE(COIN_HAS_HSL,1,[Define to 1 if the HSL package is available])
+    for JNI_INCLUDE_DIR in $JNI_INCLUDE_DIRS ; do
+      CPPFLAGS="$CPPFLAGS -I$JNI_INCLUDE_DIR"
+    done
   fi
 fi
 
-# On Mac, need to move "-framework vecLib" from LIBS to LDFLAGS (if being used)
-FRAMEWORK_VECLIB=
-if test -n "`echo $BLAS_LIBS $LAPACK_LIBS | grep -e '-framework vecLib'`"; then
-  FRAMEWORK_VECLIB='-framework vecLib'
+if test "$enable_java" != no ; then
+  # the following macros can make configure stop with an error
+  # we could work around that, but having javac and no jar, java, or javadoc would be odd anyway
+  
+  # look for jar: required to pack Java interface
+  AX_PROG_JAR
+  # look for more java to run tests and examples and do documentation
+  AX_PROG_JAVA
+  AX_PROG_JAVADOC
 fi
-AC_SUBST(FRAMEWORK_VECLIB)
 
-AC_SUBST(MATLAB_HOME)
-AC_SUBST(MEXSUFFIX)
-AC_SUBST(MWMA57PATH)
-
-##########
-# ASTYLE #
-##########
-
-ASTYLE=astyle
-AC_SUBST(ASTYLE)
-ASTYLEFLAGS="--mode=c --indent=spaces=2 --indent-cases --indent-namespaces --min-conditional-indent=1 --brackets=linux --brackets=break-closing --convert-tabs"
-AC_SUBST(ASTYLEFLAGS)
+AM_CONDITIONAL([BUILD_JAVA], [test "$enable_java" != no])
 
 #########################
 # Makefile conditionals #
@@ -717,19 +342,24 @@ AC_SUBST(ASTYLEFLAGS)
 AC_SUBST(IPALLLIBS)
 IPALLLIBS="../contrib/CGPenalty/libcgpenalty.la ../Algorithm/libipoptalg.la ../Algorithm/LinearSolvers/liblinsolvers.la ../Common/libcommon.la ../LinAlg/liblinalg.la ../LinAlg/TMatrices/libtmatrices.la"
 
-AM_CONDITIONAL([HAVE_PARDISO],[test ! "$use_pardiso" = no])
-AM_CONDITIONAL([HAVE_WSMP],[test ! "$use_wsmp" = no])
+AM_CONDITIONAL([BUILD_INEXACT], [test $use_inexact = yes])
+if test $use_inexact = yes; then
+  IPALLLIBS="../Algorithm/Inexact/libinexact.la $IPALLLIBS"
+fi
+
+########################################################################
+##                      Linear solver loader                          ##
+########################################################################
 
 AC_ARG_ENABLE([linear-solver-loader],
-  [AC_HELP_STRING([--enable-linear-solver-loader],
-     [compile linear solver loader (default: yes, if F77 available, otherwise no)])],
+  [AC_HELP_STRING([--disable-linear-solver-loader],[disable build of linear solver loader])],
   [case "$enableval" in
      no | yes) ;;
      *)
        AC_MSG_ERROR([invalid argument for --enable-linear-solver-loader: $enableval]);;
    esac
    use_linearsolverloader=$enableval],
-  [if test "$F77" != unavailable ; then use_linearsolverloader=yes; else use_linearsolverloader=no; fi])
+  [use_linearsolverloader=yes])
 
 AC_MSG_CHECKING([whether the linear solver loader should be compiled])
 AC_MSG_RESULT([$use_linearsolverloader])
@@ -741,34 +371,15 @@ if test $use_linearsolverloader = yes; then
 fi
 
 AM_CONDITIONAL([BUILD_LINEARSOLVERLOADER],[test $use_linearsolverloader = yes])
-AM_CONDITIONAL([BUILD_PARDISOLOADER],[test "$use_pardiso" = no])
-
-AM_CONDITIONAL([BUILD_INEXACT], [test $use_inexact = yes])
-if test $use_inexact = yes; then
-  IPALLLIBS="../Algorithm/Inexact/libinexact.la $IPALLLIBS"
-  AC_DEFINE([BUILD_INEXACT],[1],
-            [Define to 1 if the inexact linear solver option is included])
-fi
-
-########################################################################
-##                 Linear solver loader stuff                         ##
-########################################################################
 
 AC_LANG_PUSH(C)
-AC_COIN_CHECK_HEADER([windows.h])
-AC_COIN_CHECK_HEADER([dlfcn.h])
-AC_CHECK_LIB(dl,[dlopen],[
-  IPOPTLIB_LIBS="$IPOPTLIB_LIBS -ldl"
-  IPOPTLIB_PCLIBS="$IPOPTLIB_PCLIBS -ldl"
-  IPOPTLIB_LIBS_INSTALLED="$IPOPTLIB_LIBS_INSTALLED -ldl"
- ],[])
+AC_CHECK_HEADER([windows.h])
+AC_CHECK_HEADER([dlfcn.h])
+AC_CHECK_LIB(dl,[dlopen],[IPOPTLIB_LFLAGS="$IPOPTLIB_LFLAGS -ldl"],[])
 
 case $host in
-  *-cygwin* |  *-mingw*)
+  *-cygwin* |  *-mingw* |  *-msys*)
      AC_DEFINE([SHAREDLIBEXT], ["dll"], [Set to extension for shared libraries in quotes.])
-     # Take -pedantic-errors out of CFLAGS
-     AC_MSG_NOTICE([Removing flag -pedantic-errors from CFLAGS])
-     CFLAGS=`echo $CFLAGS | sed -e s/-pedantic-errors//`
      ;;
   *-darwin*)
      AC_DEFINE([SHAREDLIBEXT], ["dylib"], [Set to extension for shared libraries in quotes.])
@@ -781,6 +392,21 @@ AC_CHECK_FUNCS([vsnprintf _vsnprintf],[break])
 AC_LANG_POP(C)
 
 ########################################################################
+##                             sIpopt                                 ##
+########################################################################
+
+AC_ARG_ENABLE([sipopt],
+  [AC_HELP_STRING([--disable-sipopt],[disable build of sIpopt])],
+  [case "$enableval" in
+     no | yes) ;;
+     *)
+       AC_MSG_ERROR([invalid argument for --enable-sipopt: $enableval]);;
+   esac
+   use_sipopt=$enableval],
+  [use_sipopt=yes])
+AM_CONDITIONAL(BUILD_SIPOPT, [test "$use_sipopt" = yes])
+
+########################################################################
 ##             Create links for the test source files                 ##
 ########################################################################
 
@@ -789,15 +415,16 @@ AC_CONFIG_LINKS([test/hs071_main.cpp:examples/hs071_cpp/hs071_main.cpp
                  test/hs071_nlp.hpp:examples/hs071_cpp/hs071_nlp.hpp
                  test/hs071_c.c:examples/hs071_c/hs071_c.c])
 
+if test "$use_sipopt" = yes ; then
+AC_CONFIG_LINKS([test/parametric_driver.cpp:contrib/sIPOPT/examples/parametric_cpp/parametric_driver.cpp
+  test/parametricTNLP.cpp:contrib/sIPOPT/examples/parametric_cpp/parametricTNLP.cpp
+  test/MySensTNLP.cpp:contrib/sIPOPT/examples/redhess_cpp/MySensTNLP.cpp
+  test/redhess_cpp.cpp:contrib/sIPOPT/examples/redhess_cpp/redhess_cpp.cpp])
+fi
+
 ########################################################################
 ##          Create links for VPATH config of certain files            ##
 ########################################################################
-
-AC_COIN_VPATH_LINK(contrib/MatlabInterface/examples/examplehs038.m)
-AC_COIN_VPATH_LINK(contrib/MatlabInterface/examples/examplehs051.m)
-AC_COIN_VPATH_LINK(contrib/MatlabInterface/examples/examplehs071.m)
-AC_COIN_VPATH_LINK(contrib/MatlabInterface/examples/examplelasso.m)
-AC_COIN_VPATH_LINK(contrib/MatlabInterface/examples/lasso.m)
 
 AC_COIN_VPATH_LINK(contrib/RInterface/DESCRIPTION)
 AC_COIN_VPATH_LINK(contrib/RInterface/NAMESPACE)
@@ -837,6 +464,9 @@ AC_COIN_VPATH_LINK(examples/hs071_cpp/hs071_main.cpp)
 AC_COIN_VPATH_LINK(examples/hs071_cpp/hs071_nlp.cpp)
 AC_COIN_VPATH_LINK(examples/hs071_cpp/hs071_nlp.hpp)
 AC_COIN_VPATH_LINK(examples/hs071_c/hs071_c.c)
+if test "$enable_java" != no ; then
+  AC_COIN_VPATH_LINK(examples/hs071_java/HS071.java)
+fi
 
 AC_COIN_VPATH_LINK(tutorial/AmplExperiments/hs71.mod)
 AC_COIN_VPATH_LINK(tutorial/AmplExperiments/infeasible.mod)
@@ -865,19 +495,23 @@ AC_COIN_VPATH_LINK(tutorial/CodingExercise/Matlab/1-skeleton/TutorialMatlab.m)
 AC_COIN_VPATH_LINK(tutorial/CodingExercise/Matlab/2-mistake/TutorialMatlab.m)
 AC_COIN_VPATH_LINK(tutorial/CodingExercise/Matlab/3-solution/TutorialMatlab.m)
 
-AC_COIN_VPATH_LINK(contrib/sIPOPT/examples/parametric_cpp/parametric_driver.cpp)
-AC_COIN_VPATH_LINK(contrib/sIPOPT/examples/parametric_cpp/parametricTNLP.cpp)
-AC_COIN_VPATH_LINK(contrib/sIPOPT/examples/parametric_cpp/parametricTNLP.hpp)
-AC_COIN_VPATH_LINK(contrib/sIPOPT/examples/parametric_dsdp_cpp/parametric_dsdp_driver.cpp)
-AC_COIN_VPATH_LINK(contrib/sIPOPT/examples/parametric_dsdp_cpp/parametricTNLP.cpp)
-AC_COIN_VPATH_LINK(contrib/sIPOPT/examples/parametric_dsdp_cpp/parametricTNLP.hpp)
-AC_COIN_VPATH_LINK(contrib/sIPOPT/examples/redhess_cpp/MySensTNLP.cpp)
-AC_COIN_VPATH_LINK(contrib/sIPOPT/examples/redhess_cpp/MySensTNLP.hpp)
-AC_COIN_VPATH_LINK(contrib/sIPOPT/examples/redhess_cpp/redhess_cpp.cpp)
+if test "$use_sipopt" = yes ; then
+  AC_COIN_VPATH_LINK(contrib/sIPOPT/examples/parametric_cpp/parametric_driver.cpp)
+  AC_COIN_VPATH_LINK(contrib/sIPOPT/examples/parametric_cpp/parametricTNLP.cpp)
+  AC_COIN_VPATH_LINK(contrib/sIPOPT/examples/parametric_cpp/parametricTNLP.hpp)
+  AC_COIN_VPATH_LINK(contrib/sIPOPT/examples/parametric_dsdp_cpp/parametric_dsdp_driver.cpp)
+  AC_COIN_VPATH_LINK(contrib/sIPOPT/examples/parametric_dsdp_cpp/parametricTNLP.cpp)
+  AC_COIN_VPATH_LINK(contrib/sIPOPT/examples/parametric_dsdp_cpp/parametricTNLP.hpp)
+  AC_COIN_VPATH_LINK(contrib/sIPOPT/examples/redhess_cpp/MySensTNLP.cpp)
+  AC_COIN_VPATH_LINK(contrib/sIPOPT/examples/redhess_cpp/MySensTNLP.hpp)
+  AC_COIN_VPATH_LINK(contrib/sIPOPT/examples/redhess_cpp/redhess_cpp.cpp)
+fi
 
 ########################################################################
 ##          Create Makefiles and other stuff                          ##
 ########################################################################
+
+AC_COIN_FINALIZE_FLAGS([IpoptLib IpoptAmplInterfaceLib])
 
 AC_CONFIG_FILES([Makefile
 		 src/Common/Makefile
@@ -891,9 +525,10 @@ AC_CONFIG_FILES([Makefile
 		 src/contrib/LinearSolverLoader/Makefile
 		 src/Apps/Makefile
 		 src/Apps/AmplSolver/Makefile
-		 src/Apps/CUTErInterface/Makefile
-		 examples/hs071_f/Makefile
-		 examples/hs071_f/hs071_f.f
+		 test/Makefile
+		 test/run_unitTests
+		 ipopt.pc
+		 doc/Doxyfile
 		 examples/Cpp_example/Makefile
 		 examples/hs071_cpp/Makefile
 		 examples/hs071_c/Makefile
@@ -907,29 +542,38 @@ AC_CONFIG_FILES([Makefile
 		 tutorial/CodingExercise/Matlab/1-skeleton/startup.m
 		 tutorial/CodingExercise/Matlab/2-mistake/startup.m
 		 tutorial/CodingExercise/Matlab/3-solution/startup.m
-		 tutorial/CodingExercise/Fortran/1-skeleton/TutorialFortran.f
-		 tutorial/CodingExercise/Fortran/2-mistake/TutorialFortran.f
-		 tutorial/CodingExercise/Fortran/3-solution/TutorialFortran.f
-		 tutorial/CodingExercise/Fortran/1-skeleton/Makefile
-		 tutorial/CodingExercise/Fortran/2-mistake/Makefile
-		 tutorial/CodingExercise/Fortran/3-solution/Makefile
-		 test/Makefile
-		 test/run_unitTests
-		 contrib/MatlabInterface/src/Makefile
-		 contrib/MatlabInterface/examples/startup.m
-		 contrib/JavaInterface/Makefile
+])
+
+if test -n "$F77" ; then
+  AC_CONFIG_FILES([examples/hs071_f/hs071_f.f examples/hs071_f/Makefile
+    tutorial/CodingExercise/Fortran/1-skeleton/TutorialFortran.f
+    tutorial/CodingExercise/Fortran/2-mistake/TutorialFortran.f
+    tutorial/CodingExercise/Fortran/3-solution/TutorialFortran.f
+    tutorial/CodingExercise/Fortran/1-skeleton/Makefile
+    tutorial/CodingExercise/Fortran/2-mistake/Makefile
+    tutorial/CodingExercise/Fortran/3-solution/Makefile])
+fi
+
+if test "$enable_java" != no ; then
+  AC_CONFIG_FILES([examples/hs071_java/Makefile examples/ScalableProblems_java/Makefile])
+fi
+
+if test "$use_sipopt" = yes ; then
+  AC_COIN_FINALIZE_FLAGS([sIpoptLib])
+  AC_CONFIG_FILES([
 		 contrib/sIPOPT/Makefile
+		 contrib/sIPOPT/src/Makefile
 		 contrib/sIPOPT/AmplSolver/Makefile
 		 contrib/sIPOPT/examples/parametric_cpp/Makefile
-		 contrib/sIPOPT/examples/parametric_dsdp_cpp/Makefile	
+		 contrib/sIPOPT/examples/parametric_dsdp_cpp/Makefile
 		 contrib/sIPOPT/examples/redhess_cpp/Makefile
-		 contrib/sIPOPT/src/Makefile
-		 ipopt.pc ipopt-uninstalled.pc
-		 doxydoc/doxygen.conf])
+  ])
+fi
+
 
 # under Windows, the Makevars file for the R Interface need to be named Makevars.win
 case $build in 
-  *-cygwin* | *-mingw*)
+  *-cygwin* | *-mingw* | *-msys* )
     AC_CONFIG_FILES([contrib/RInterface/src/Makevars.win:contrib/RInterface/src/Makevars.in])
     ;;
   *)
@@ -938,11 +582,9 @@ case $build in
 esac
 
 if test $coin_has_asl = yes ; then
-  AC_CONFIG_FILES([ipoptamplinterface.pc:src/Apps/AmplSolver/ipoptamplinterface.pc.in
-                   ipoptamplinterface-uninstalled.pc:src/Apps/AmplSolver/ipoptamplinterface-uninstalled.pc.in
-                  ])
+  AC_CONFIG_FILES([ipoptamplinterface.pc:src/Apps/AmplSolver/ipoptamplinterface.pc.in])
 fi
 
-AC_CONFIG_HEADER([src/Common/config.h src/Common/config_ipopt.h examples/ScalableProblems/config.h])
+AC_CONFIG_HEADER([src/Common/config.h src/Common/config_ipopt.h])
 
 AC_COIN_FINALIZE

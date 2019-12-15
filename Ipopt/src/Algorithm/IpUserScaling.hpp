@@ -2,8 +2,6 @@
 // All Rights Reserved.
 // This code is published under the Eclipse Public License.
 //
-// $Id$
-//
 // Authors:  Carl Laird, Andreas Waechter     IBM    2005-06-25
 
 #ifndef __IPUSERSCALING_HPP__
@@ -14,60 +12,68 @@
 
 namespace Ipopt
 {
-  /** This class does problem scaling by getting scaling parameters
-   *  from the user (through the NLP interface).
-   */
-  class UserScaling : public StandardScalingBase
-  {
-  public:
-    /**@name Constructors/Destructors */
-    //@{
-    UserScaling(const SmartPtr<const NLP>& nlp)
-        :
-        StandardScalingBase(),
+/** This class does problem scaling by getting scaling parameters
+ *  from the user (through the NLP interface).
+ */
+class UserScaling: public StandardScalingBase
+{
+public:
+   /**@name Constructors/Destructors */
+   //@{
+   UserScaling(
+      const SmartPtr<const NLP>& nlp)
+      : StandardScalingBase(),
         nlp_(nlp)
-    {}
+   { }
 
-    /** Default destructor */
-    virtual ~UserScaling()
-    {}
-    //@}
+   /** Destructor */
+   virtual ~UserScaling()
+   { }
+   //@}
 
-  protected:
-    virtual void DetermineScalingParametersImpl(
-      const SmartPtr<const VectorSpace> x_space,
-      const SmartPtr<const VectorSpace> c_space,
-      const SmartPtr<const VectorSpace> d_space,
-      const SmartPtr<const MatrixSpace> jac_c_space,
-      const SmartPtr<const MatrixSpace> jac_d_space,
+protected:
+   virtual void DetermineScalingParametersImpl(
+      const SmartPtr<const VectorSpace>    x_space,
+      const SmartPtr<const VectorSpace>    c_space,
+      const SmartPtr<const VectorSpace>    d_space,
+      const SmartPtr<const MatrixSpace>    jac_c_space,
+      const SmartPtr<const MatrixSpace>    jac_d_space,
       const SmartPtr<const SymMatrixSpace> h_space,
-      const Matrix& Px_L, const Vector& x_L,
-      const Matrix& Px_U, const Vector& x_U,
-      Number& df,
-      SmartPtr<Vector>& dx,
-      SmartPtr<Vector>& dc,
-      SmartPtr<Vector>& dd);
+      const Matrix&                        Px_L,
+      const Vector&                        x_L,
+      const Matrix&                        Px_U,
+      const Vector&                        x_U,
+      Number&                              df,
+      SmartPtr<Vector>&                    dx,
+      SmartPtr<Vector>&                    dc,
+      SmartPtr<Vector>&                    dd
+   );
 
-  private:
+private:
 
-    /**@name Default Compiler Generated Methods
-     * (Hidden to avoid implicit creation/calling).
-     * These methods are not implemented and 
-     * we do not want the compiler to implement
-     * them for us, so we declare them private
-     * and do not define them. This ensures that
-     * they will not be implicitly created/called. */
-    //@{
+   /**@name Default Compiler Generated Methods
+    * (Hidden to avoid implicit creation/calling).
+    *
+    * These methods are not implemented and
+    * we do not want the compiler to implement
+    * them for us, so we declare them private
+    * and do not define them. This ensures that
+    * they will not be implicitly created/called.
+    */
+   //@{
+   /** Copy Constructor */
+   UserScaling(
+      const UserScaling&
+   );
 
-    /** Copy Constructor */
-    UserScaling(const UserScaling&);
+   /** Default Assignment Operator */
+   void operator=(
+      const UserScaling&
+   );
+   //@}
 
-    /** Overloaded Equals Operator */
-    void operator=(const UserScaling&);
-    //@}
-
-    /** pointer to the NLP to get scaling parameters */
-    SmartPtr<const NLP> nlp_;
-  };
+   /** pointer to the NLP to get scaling parameters */
+   SmartPtr<const NLP> nlp_;
+};
 } // namespace Ipopt
 #endif

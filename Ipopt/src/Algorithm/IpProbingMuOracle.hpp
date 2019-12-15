@@ -2,8 +2,6 @@
 // All Rights Reserved.
 // This code is published under the Eclipse Public License.
 //
-// $Id$
-//
 // Authors:  Carl Laird, Andreas Waechter     IBM    2004-08-13
 
 #ifndef __IPPROBINGMUORACLE_HPP__
@@ -15,72 +13,88 @@
 namespace Ipopt
 {
 
-  /** Implementation of the probing strategy for computing the
-   *  barrier parameter.
-   */
-  class ProbingMuOracle : public MuOracle
-  {
-  public:
-    /**@name Constructors/Destructors */
-    //@{
-    /** Constructor */
-    ProbingMuOracle(const SmartPtr<PDSystemSolver>& pd_solver);
-    /** Default destructor */
-    virtual ~ProbingMuOracle();
-    //@}
+/** Implementation of the probing strategy for computing the
+ *  barrier parameter.
+ */
+class ProbingMuOracle: public MuOracle
+{
+public:
+   /**@name Constructors/Destructors */
+   //@{
+   /** Constructor */
+   ProbingMuOracle(
+      const SmartPtr<PDSystemSolver>& pd_solver
+   );
 
-    /** overloaded from AlgorithmStrategyObject */
-    virtual bool InitializeImpl(const OptionsList& options,
-                                const std::string& prefix);
+   /** Destructor */
+   virtual ~ProbingMuOracle();
+   //@}
 
-    /** Method for computing the value of the barrier parameter that
-     *  could be used in the current iteration (using Mehrotra's
-     *  probing heuristic).
-     */
-    virtual bool CalculateMu(Number mu_min, Number mu_max, Number& new_mu);
+   /** overloaded from AlgorithmStrategyObject */
+   virtual bool InitializeImpl(
+      const OptionsList& options,
+      const std::string& prefix
+   );
 
-    /** Methods for IpoptType */
-    //@{
-    static void RegisterOptions(SmartPtr<RegisteredOptions> roptions);
-    //@}
+   /** Method for computing the value of the barrier parameter that
+    *  could be used in the current iteration (using Mehrotra's
+    *  probing heuristic).
+    */
+   virtual bool CalculateMu(
+      Number  mu_min,
+      Number  mu_max,
+      Number& new_mu
+   );
 
-  private:
-    /**@name Default Compiler Generated Methods
-     * (Hidden to avoid implicit creation/calling).
-     * These methods are not implemented and 
-     * we do not want the compiler to implement
-     * them for us, so we declare them private
-     * and do not define them. This ensures that
-     * they will not be implicitly created/called. */
-    //@{
+   static void RegisterOptions(
+      SmartPtr<RegisteredOptions> roptions
+   );
 
-    /** Default Constructor */
-    ProbingMuOracle();
-    /** Copy Constructor */
-    ProbingMuOracle(const ProbingMuOracle&);
+private:
+   /**@name Default Compiler Generated Methods
+    * (Hidden to avoid implicit creation/calling).
+    *
+    * These methods are not implemented and
+    * we do not want the compiler to implement
+    * them for us, so we declare them private
+    * and do not define them. This ensures that
+    * they will not be implicitly created/called.
+    */
+   //@{
+   /** Default Constructor */
+   ProbingMuOracle();
 
-    /** Overloaded Equals Operator */
-    void operator=(const ProbingMuOracle&);
-    //@}
+   /** Copy Constructor */
+   ProbingMuOracle(
+      const ProbingMuOracle&
+   );
 
-    /** Pointer to the object that should be used to solve the
-     *  primal-dual system.
-     */
-    SmartPtr<PDSystemSolver> pd_solver_;
+   /** Default Assignment Operator */
+   void operator=(
+      const ProbingMuOracle&
+   );
+   //@}
 
-    /** Auxilliary function for computing the average complementarity
-     *  at a point, given step sizes and step
-     */
-    Number CalculateAffineMu(Number alpha_primal,
-                             Number alpha_dual,
-                             const IteratesVector& step);
+   /** Pointer to the object that should be used to solve the
+    *  primal-dual system.
+    */
+   SmartPtr<PDSystemSolver> pd_solver_;
 
-    /** @name Algorithmic parameters */
-    //@{
-    /** safeguarding upper bound on centering parameter sigma */
-    Number sigma_max_;
-    //@}
-  };
+   /** Auxiliary function for computing the average complementarity
+    *  at a point, given step sizes and step
+    */
+   Number CalculateAffineMu(
+      Number                alpha_primal,
+      Number                alpha_dual,
+      const IteratesVector& step
+   );
+
+   /** @name Algorithmic parameters */
+   //@{
+   /** safeguarding upper bound on centering parameter sigma */
+   Number sigma_max_;
+   //@}
+};
 
 } // namespace Ipopt
 

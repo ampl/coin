@@ -5,7 +5,7 @@ cd tmp
 rm -rf *
 
 CBC_VERSION=2.10.3
-IPOPT_VERSION=3.12.13
+IPOPT_VERSION=3.13.0
 BONMIN_VERSION=1.8.7
 COUENNE_VERSION=0.5.7
 
@@ -16,8 +16,10 @@ cp -r Cbc-$CBC_VERSION/* ../Cbc/
 
 curl -O https://www.coin-or.org/download/source/Ipopt/Ipopt-$IPOPT_VERSION.tgz
 tar xzvf Ipopt-$IPOPT_VERSION.tgz
+mv ../Ipopt/ThirdParty .
 find ../Ipopt/* ! -iname "*cmake*" -delete
-cp -r Ipopt-$IPOPT_VERSION/* ../Ipopt/
+mv ThirdParty ../Ipopt/
+cp -r Ipopt*-$IPOPT_VERSION/* ../Ipopt/
 
 curl -O https://www.coin-or.org/download/source/Bonmin/Bonmin-$BONMIN_VERSION.tgz
 tar xzvf Bonmin-$BONMIN_VERSION.tgz

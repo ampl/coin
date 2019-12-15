@@ -2,8 +2,6 @@
 // All Rights Reserved.
 // This code is published under the Eclipse Public License.
 //
-// $Id$
-//
 // Authors:  Andreas Waechter            IBM    2005-10-13
 
 #ifndef __IPSEARCHDIRCALCULATOR_HPP__
@@ -14,51 +12,60 @@
 namespace Ipopt
 {
 
-  /** Base class for computing the search direction for the line
-   *  search.
-   */
-  class SearchDirectionCalculator : public AlgorithmStrategyObject
-  {
-  public:
-    /**@name Constructors/Destructors */
-    //@{
-    /** Constructor */
-    SearchDirectionCalculator()
-    {}
+/** Base class for computing the search direction for the line
+ *  search.
+ */
+class IPOPTLIB_EXPORT SearchDirectionCalculator: public AlgorithmStrategyObject
+{
+public:
+   /**@name Constructors/Destructors */
+   //@{
+   /** Constructor */
+   SearchDirectionCalculator()
+   { }
 
-    /** Default destructor */
-    virtual ~SearchDirectionCalculator()
-    {}
-    //@}
+   /** Destructor */
+   virtual ~SearchDirectionCalculator()
+   { }
+   //@}
 
-    /** overloaded from AlgorithmStrategyObject */
-    virtual bool InitializeImpl(const OptionsList& options,
-                                const std::string& prefix) = 0;
+   virtual bool InitializeImpl(
+      const OptionsList& options,
+      const std::string& prefix
+   ) = 0;
 
-    /** Pure virtual method for computing the search direction. The
-     *  computed direction is stored in IpData().delta().*/
-    virtual bool ComputeSearchDirection()=0;
+   /** Pure virtual method for computing the search direction.
+    *
+    *  The computed direction is stored in IpData().delta().
+    */
+   virtual bool ComputeSearchDirection() = 0;
 
-  private:
-    /**@name Default Compiler Generated Methods
-     * (Hidden to avoid implicit creation/calling).
-     * These methods are not implemented and 
-     * we do not want the compiler to implement
-     * them for us, so we declare them private
-     * and do not define them. This ensures that
-     * they will not be implicitly created/called. */
-    //@{
-    /** Default Constructor */
-    //    SearchDirectionCalculator();
+private:
+   /**@name Default Compiler Generated Methods
+    * (Hidden to avoid implicit creation/calling).
+    *
+    * These methods are not implemented and
+    * we do not want the compiler to implement
+    * them for us, so we declare them private
+    * and do not define them. This ensures that
+    * they will not be implicitly created/called.
+    */
+   //@{
+   /** Default Constructor */
+   //    SearchDirectionCalculator();
 
-    /** Copy Constructor */
-    SearchDirectionCalculator(const SearchDirectionCalculator&);
+   /** Copy Constructor */
+   SearchDirectionCalculator(
+      const SearchDirectionCalculator&
+   );
 
-    /** Overloaded Equals Operator */
-    void operator=(const SearchDirectionCalculator&);
-    //@}
+   /** Default Assignment Operator */
+   void operator=(
+      const SearchDirectionCalculator&
+   );
+   //@}
 
-  };
+};
 
 } // namespace Ipopt
 

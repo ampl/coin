@@ -35,15 +35,19 @@ Contributors:
   Test/mytoy.nl
 
 - Peter Carbonetto (University of British Columbia)
-  Matlab interface files in directory (and subdirectories of)
+  Matlab interface
 
-  contrib/MatlabInterface
+  [removed from Ipopt source as unmaintained]
 
 - Rafael de Pelegrini Soares (VRTech Industrial Technologies)
   and Tong Kewei (Beihang University, Beijing)
-  Java interface files in directory (and subdirectories of)
+  Java interface files
 
   contrib/JavaInterface
+  src/Interfaces/IpStdJInterface.cpp
+  src/Interfaces/Ipopt.java
+  examples/hs071_java/HS071.java
+  examples/ScalableProblems_java/*.java
 
 - Lifeng Chen/Zaiwen Wen (Columbia University)
   Changes and additions to the implementation of the Chen-Goldfarb
@@ -77,7 +81,7 @@ Contributors:
 - Marcel Roelofs (AIMMS)
   MSVC project files for Intel Fortran compiler, creating a DLL
 
-  MSVisualStudio/v8-ifort
+  [removed from Ipopt source as unmaintained]
 
 - Jonathan Hogg (STFC Rutherford Appleton Laboratory)
   MA77 interface
