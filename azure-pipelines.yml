@@ -32,10 +32,11 @@ jobs:
         cp $BUILD_DIR/coin-versions.txt $UPLOAD_DIR
         cd $UPLOAD_DIR
         tar czvf coin-linux$NBITS.tar.gz *
-        zip cbc-linux$NBITS.zip cbc coin-license.txt
-        zip bonmin-linux$NBITS.zip bonmin coin-license.txt
-        zip couenne-linux$NBITS.zip couenne coin-license.txt
-        zip ipopt-linux$NBITS.zip ipopt coin-license.txt
+        mkdir -p $UPLOAD/{cbc,bonmin,couenne,ipopt}
+        zip $UPLOAD/cbc/cbc-linux$NBITS.zip cbc coin-license.txt
+        zip $UPLOAD/bonmin/bonmin-linux$NBITS.zip bonmin coin-license.txt
+        zip $UPLOAD/couenne/couenne-linux$NBITS.zip couenne coin-license.txt
+        zip $UPLOAD/ipopt/ipopt-linux$NBITS.zip ipopt coin-license.txt
       displayName: Upload package
     - task: PublishBuildArtifacts@1
       inputs: {pathtoPublish: '$(Build.ArtifactStagingDirectory)'}
@@ -63,10 +64,11 @@ jobs:
         cp build/coin-versions.txt $UPLOAD_DIR
         cd $UPLOAD_DIR
         tar czvf coin-osx.tar.gz *
-        zip cbc-osx.zip cbc coin-license.txt
-        zip bonmin-osx.zip bonmin coin-license.txt
-        zip couenne-osx.zip couenne coin-license.txt
-        zip ipopt-osx.zip ipopt coin-license.txt
+        mkdir -p $UPLOAD/{cbc,bonmin,couenne,ipopt}
+        zip $UPLOAD/cbc/cbc-osx.zip cbc coin-license.txt
+        zip $UPLOAD/bonmin/bonmin-osx.zip bonmin coin-license.txt
+        zip $UPLOAD/couenne/couenne-osx.zip couenne coin-license.txt
+        zip $UPLOAD/ipopt/ipopt-osx.zip ipopt coin-license.txt
       displayName: Upload package
     - task: PublishBuildArtifacts@1
       inputs: {pathtoPublish: '$(Build.ArtifactStagingDirectory)'}
@@ -99,10 +101,11 @@ jobs:
         cp build/coin-versions.txt $UPLOAD_DIR
         cd $UPLOAD_DIR
         7z a -tzip coin-win$NBITS.zip *
-        7z a -tzip cbc-win$NBITS.zip cbc.exe coin-license.txt
-        7z a -tzip bonmin-win$NBITS.zip bonmin.exe coin-license.txt
-        7z a -tzip couenne-win$NBITS.zip couenne.exe coin-license.txt
-        7z a -tzip ipopt-win$NBITS.zip ipopt.exe libipoptfort.dll coin-license.txt
+        mkdir -p $UPLOAD/{cbc,bonmin,couenne,ipopt}
+        7z a -tzip $UPLOAD/cbc/cbc-win$NBITS.zip cbc.exe coin-license.txt
+        7z a -tzip $UPLOAD/bonmin/bonmin-win$NBITS.zip bonmin.exe coin-license.txt
+        7z a -tzip $UPLOAD/couenne/couenne-win$NBITS.zip couenne.exe coin-license.txt
+        7z a -tzip $UPLOAD/ipopt/ipopt-win$NBITS.zip ipopt.exe libipoptfort.dll coin-license.txt
       displayName: Upload package
     - task: PublishBuildArtifacts@1
       inputs: {pathtoPublish: '$(Build.ArtifactStagingDirectory)'}
