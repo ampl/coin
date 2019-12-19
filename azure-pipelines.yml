@@ -76,15 +76,19 @@ jobs:
   pool: {vmImage: 'windows-2019'}
   strategy:
     matrix:
-#      x86:
-#        arch: 'win32'
-#        nbits: 32
+      x86:
+        arch: 'win32'
+        nbits: 32
       x64:
         arch: 'x64'
         nbits: 64
   variables:
     upload: $(Build.ArtifactStagingDirectory)
   steps:
+    - script: |
+        choco uninstall mingw
+        choco install mingw --x86 -y
+      condition: eq(variables['arch'], 'win32')
     - bash: |
         git submodule update --init --recursive --remote
         mkdir build
