@@ -1,3 +1,6 @@
 [submodule "ThirdParty/mp"]
 	path = ThirdParty/mp
 	url = https://github.com/ampl/mp.git
+[submodule "ThirdParty/asl"]
+	path = ThirdParty/asl
+	url = git@github.com:ampl/asl.git
