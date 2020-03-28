@@ -107,8 +107,8 @@ jobs:
         7z a -tzip coin-win$NBITS.zip *
         mkdir -p $UPLOAD/{cbc,bonmin,couenne,ipopt}
         7z a -tzip $UPLOAD/cbc/cbc-win$NBITS.zip cbc.exe coin-license.txt
-        7z a -tzip $UPLOAD/bonmin/bonmin-win$NBITS.zip bonmin.exe coin-license.txt
-        7z a -tzip $UPLOAD/couenne/couenne-win$NBITS.zip couenne.exe coin-license.txt
+        7z a -tzip $UPLOAD/bonmin/bonmin-win$NBITS.zip libipoptfort.dll bonmin.exe coin-license.txt
+        7z a -tzip $UPLOAD/couenne/couenne-win$NBITS.zip libipoptfort.dll couenne.exe coin-license.txt
         7z a -tzip $UPLOAD/ipopt/ipopt-win$NBITS.zip ipopt.exe libipoptfort.dll coin-license.txt
       displayName: Upload package
     - task: PublishBuildArtifacts@1
