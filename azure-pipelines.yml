@@ -1,3 +1,7 @@
+variables:
+  DECODE_PERCENTS: false
+  # Azure-pipelines: [warning]%25 detected in ##vso command. In March 2021, the agent command parser will be updated to unescape this to %. To opt out of this behavior, set a job level variable DECODE_PERCENTS to false. Setting to true will force this behavior immediately. More information can be found at https://github.com/microsoft/azure-pipelines-agent/blob/master/docs/design/percentEncoding.md
+
 jobs:
 - job: linux
   pool: {vmImage: 'Ubuntu-16.04'}
