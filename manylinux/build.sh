@@ -8,7 +8,7 @@ elif [ -d "/base/manylinux/" ]; then
     mkdir -p $BUILD_DIR
     cd $BUILD_DIR
     cp -r /base /tmp/coin
-    cmake /tmp/coin/
+    cmake /tmp/coin/ -DARCH=$1
     make all coin-versions -j2
     make test || true
 else
