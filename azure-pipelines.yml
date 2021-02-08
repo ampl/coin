@@ -21,6 +21,7 @@ jobs:
         cat /proc/cpuinfo
       displayName: Check CPU
     - bash: |
+        set -ex
         BUILD_DIR=manylinux/linux$NBITS/
         git submodule update --init --recursive --remote
         mkdir -p $BUILD_DIR/*
@@ -28,6 +29,7 @@ jobs:
         docker run -v `pwd`:/base --rm $IMAGE /base/manylinux/build.sh $NBITS
       displayName: Build package
     - bash: |
+        set -ex
         BUILD_DIR=manylinux/linux$NBITS/
         UPLOAD_DIR=$UPLOAD/linux$NBITS/
         mkdir -p $UPLOAD_DIR
@@ -54,6 +56,7 @@ jobs:
         brew install gcc
       displayName: Install gcc (installs gfortran too)
     - bash: |
+        set -ex
         git submodule update --init --recursive --remote
         mkdir build
         cd build
@@ -62,6 +65,7 @@ jobs:
         make test || true
       displayName: Build package
     - bash: |
+        set -ex
         UPLOAD_DIR=$UPLOAD/macos/
         mkdir -p $UPLOAD_DIR
         cp Cbc/Cbc/LICENSE $UPLOAD_DIR/coin-license.txt
@@ -96,6 +100,7 @@ jobs:
       condition: eq(variables['arch'], 'win32')
       displayName: Install mingw
     - bash: |
+        set -ex
         git submodule update --init --recursive --remote
         mkdir build
         cd build
@@ -105,6 +110,7 @@ jobs:
         ls -l Release
       displayName: Build package
     - bash: |
+        set -ex
         UPLOAD_DIR=$UPLOAD/win$NBITS/
         mkdir -p $UPLOAD_DIR
         cp Cbc/Cbc/LICENSE $UPLOAD_DIR/coin-license.txt
