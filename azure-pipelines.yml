@@ -97,6 +97,7 @@ jobs:
     - script: |
         choco uninstall mingw
         choco install mingw --x86 -y
+        choco install make --x86 -y
       condition: eq(variables['arch'], 'win32')
       displayName: Install mingw
     - bash: |
