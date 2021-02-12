@@ -104,7 +104,7 @@ jobs:
         git submodule update --init --recursive --remote
         mkdir build
         cd build
-        cmake .. -G "Visual Studio 16 2019" -A $ARCH -DCOIN_DISABLE_WARNINGS=1 -DCMAKE_SH="CMAKE_SH-NOTFOUND"
+        cmake .. -G "Visual Studio 16 2019" -A $ARCH -DARCH=$nbits -DCOIN_DISABLE_WARNINGS=1 -DCMAKE_SH="CMAKE_SH-NOTFOUND"
         cmake --build . -t ALL_BUILD coin-versions -j 2 --config Release
         ctest -C Release || true
         ls -l Release
