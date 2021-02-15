@@ -32,6 +32,12 @@ if (NOT BUILD_SHARED_LIBS OR CMAKE_GNUtoMS)
       "${CMAKE_SHARED_LINKER_FLAGS} -static-libgfortran -static-libgcc -static-libstdc++ -static -lwinpthread -lquadmath")
 endif ()
 
+if(CMAKE_Fortran_COMPILER MATCHES "gfortran*")
+  if(NOT ${CMAKE_Fortran_COMPILER_VERSION} VERSION_LESS 10)
+    set (CMAKE_Fortran_FLAGS "-fallow-argument-mismatch  ${CMAKE_Fortran_FLAGS}")
+  endif()
+endif()
+
 if (CMAKE_GNUtoMS)
   # Pull in additional symbols used in IpBlas and Couenne (dsyev_).
   foreach (sym ddot_ dnrm2_ dasum_ dsymv_ dsyrk_ dsyev_)

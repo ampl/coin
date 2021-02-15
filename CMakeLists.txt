@@ -5,6 +5,8 @@
 cmake_minimum_required(VERSION 2.8.12)
 cmake_policy(VERSION ${CMAKE_MINIMUM_REQUIRED_VERSION})
 
+set_property(GLOBAL PROPERTY USE_FOLDERS ON)
+
 if (BUILD_SHARED_LIBS)
   set(CMAKE_POSITION_INDEPENDENT_CODE TRUE)
 endif ()
@@ -302,6 +304,7 @@ function(add_coin_library path)
           message("Ignoring test without sources: ${test}")
         else ()
           add_executable(${test} ${sources})
+          add_to_folder(test ${test})
           set_target_properties(${test}
             PROPERTIES COMPILE_DEFINITIONS ${uppercase_name}_BUILD)
           target_link_libraries(${test} ${name})
@@ -560,15 +563,14 @@ foreach (name AllDifferent Clique DuplicateRow FlowCover GMI Gomory
   add_coin_library(Cbc/Cgl/src/Cgl${name})
   set(CGL_LIBS ${CGL_LIBS} Cgl${name})
   set_target_properties(Cgl${name} PROPERTIES COMPILE_DEFINITIONS CGL_BUILD)
+  add_to_folder(cbc/cgl Cgl${name})
 endforeach ()
 add_coin_library(Cbc/Cgl ${CGL_LIBS} OsiClp Osi)
-
 add_coin_library(Cbc/Cbc Cgl OsiClp ${CBC_PTHREADS_LIB})
 add_coin_library(Cbc/Cbc/src/OsiCbc Osi Cbc)
 target_link_libraries(Cbc-osiUnitTest OsiCbc)
 target_link_libraries(Cbc-gamsTest CbcSolver)
 target_link_libraries(Cbc-CInterfaceTest CbcSolver)
-
 add_coin_library(Cbc/Cbc NAME CbcSolver NOTESTS Cbc Cgl ${ASL_LIBRARIES})
 set_target_properties(CbcSolver PROPERTIES COMPILE_DEFINITIONS CBC_BUILD)
 
@@ -576,6 +578,10 @@ add_executable(cbc-executable Cbc/Cbc/src/CoinSolve.cpp)
 set_target_properties(cbc-executable
   PROPERTIES OUTPUT_NAME cbc IMPORT_PREFIX imp)
 target_link_libraries(cbc-executable CbcSolver)
+
+add_to_folder(cbc/cgl Cgl)
+add_to_folder(cbc CoinUtils Clp OsiClp Osi Cbc OsiCbc CbcSolver cbc-executable)
+add_to_folder(test OsiCommonTests)
 add_test(Cbc-unitTest bin/cbc -dirSample Cbc/Data/Sample -unitTest)
 
 add_definitions(-DHAVE_CONFIG_H)
@@ -592,6 +598,7 @@ configure(Cbc/Cbc src/config.h src/config_cbc.h)
 function(add_ipopt_library name path)
   add_coin_library(Ipopt/Ipopt/src/${path} NAME ${name} ${ARGN})
   set_target_properties(${name} PROPERTIES COMPILE_DEFINITIONS IPOPT_BUILD)
+  add_to_folder(ipopt ${name})
 endfunction()
 
 function(add_ipopt_test name)
@@ -609,6 +616,7 @@ function(add_ipopt_test name)
   target_link_libraries(${name} ipopt)
   set_target_properties(${name}
     PROPERTIES RUNTIME_OUTPUT_DIRECTORY ${COIN_BINARY_DIR}/bin)
+  add_to_folder(test/ipopt ${name})
 endfunction()
 
 
@@ -637,7 +645,7 @@ if (EXISTS ${COIN_SOURCE_DIR}/Ipopt)
     else()
       set(STANDARD_MINGW_INSTALL C:/mingw-w64/x86_64-8.1.0-posix-seh-rt_v6-rev0/mingw64)
     endif()
-    set(CHOCO_DEFAULT_INSTALL C:/ProgramData/chocolatey/lib/mingw/tools/install/mingw${bits})
+    set(CHOCO_DEFAULT_INSTALL C:/ProgramData/chocolatey)
     set(ALTERNATIVE_INSTALL C:/mingw${ARCH})
     set(GFORTRANPATHS  ${STANDARD_MINGW_INSTALL}/bin ${CHOCO_DEFAULT_INSTALL}/bin ${ALTERNATIVE_INSTALL}/bin)
     find_program(MINGW_GFORTRAN gfortran PATHS ${GFORTRANPATHS})
@@ -648,7 +656,15 @@ if (EXISTS ${COIN_SOURCE_DIR}/Ipopt)
       # which cause custom build to fail.
       file(WRITE run-setenv.bat "call \"${MP_SETENV}\" %* 2> nul")
       set(path ${CMAKE_CURRENT_BINARY_DIR}/run-setenv.bat)
-      set(FORTRAN_CMAKE_FLAGS -DCMAKE_GNUtoMS_VCVARS=${path} -DCMAKE_GNUtoMS=ON -DBUILD_SHARED_LIBS=ON -DCMAKE_SH="CMAKE_SH-NOTFOUND")
+
+	  # New versions of the mingw package for chocolatey do not install make where cmake expects it
+	  # therefore override it
+      find_program(MINGW_MAKE make PATHS ${GFORTRANPATHS})
+      file(TO_NATIVE_PATH "${MINGW_MAKE}" MINGW_MAKE_PATH )
+      string(REPLACE "\\" "\\\\" MINGW_MAKE_PATH "${MINGW_MAKE_PATH}")
+      set(makeline "-DCMAKE_MAKE_PROGRAM:PATH=${MINGW_MAKE_PATH}")
+
+      set(FORTRAN_CMAKE_FLAGS -DCMAKE_GNUtoMS_VCVARS=${path} -DCMAKE_GNUtoMS=ON -DBUILD_SHARED_LIBS=ON -DCMAKE_SH="CMAKE_SH-NOTFOUND" ${makeline})
       set_property(GLOBAL PROPERTY CMAKE_GNU_TO_MSVC 1)
       set(BUILD_IPOPTFORT TRUE)
       message(STATUS "Found GFortran at ${MINGW_GFORTRAN}, using it for VC/gfortran build")
@@ -757,7 +773,7 @@ if (BUILD_IPOPT)
     target_link_libraries(ipopt-executable ipopt)
     set_target_properties(ipopt-executable PROPERTIES
       COMPILE_DEFINITIONS IPOPT_BUILD OUTPUT_NAME ipopt IMPORT_PREFIX imp)
-
+    add_to_folder(ipopt ipopt-executable)
     if (NOT WIN32)
       add_test(NAME Ipopt-amplTest
         COMMAND sh -c "bin/ipopt Ipopt/Ipopt/test/mytoy.nl | grep 'EXIT: Optimal Solution Found.'")
@@ -779,8 +795,9 @@ if (BUILD_IPOPT)
     add_test(NAME Ipopt-unitTest
       WORKING_DIRECTORY ${COIN_BINARY_DIR}/bin
       COMMAND sh ../Ipopt/Ipopt/test/run_unitTests)
+    add_to_folder(ipopt/test Ipopt-unitTest)
   endif ()
-
+  
   configure(Ipopt Ipopt/src/Common/config.h Ipopt/src/Common/config_ipopt.h)
 endif()
 
@@ -793,6 +810,7 @@ function(add_coin_test name dir lib)
   target_link_libraries(${name} ${lib})
   add_test(NAME ${name} COMMAND ${CMAKE_CURRENT_BINARY_DIR}/bin/${name}
     WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/${dir})
+  add_to_folder(test ${name})
 endfunction()
 
 if (BUILD_IPOPT AND EXISTS ${COIN_SOURCE_DIR}/Bonmin)
@@ -824,11 +842,16 @@ if (BUILD_IPOPT AND EXISTS ${COIN_SOURCE_DIR}/Bonmin)
     bonmin MyBonmin.cpp MyTMINLP.cpp MyTMINLP.hpp)
 
   configure(Bonmin Bonmin/src/Interfaces/config.h Bonmin/src/Interfaces/config_bonmin.h)
+
+  add_to_folder(bonmin bonbranching bonquadcuts bonoagenerators bonalgorithms
+                       ipoptinterface bonmininterfaces bonheuristics bonamplsetup
+                       bonamplinterface bonmin-executable bonmin)
 endif ()
 
 function(add_couenne_library name path)
   add_coin_library(Couenne/Couenne/src/${path} NAME ${name})
   set_target_properties(${name} PROPERTIES COMPILE_DEFINITIONS COUENNE_BUILD)
+  add_to_folder(couenne ${name})
 endfunction()
 
 if (BUILD_IPOPT AND EXISTS ${COIN_SOURCE_DIR}/Couenne)
@@ -851,7 +874,6 @@ if (BUILD_IPOPT AND EXISTS ${COIN_SOURCE_DIR}/Couenne)
   add_couenne_library(CouenneHeuristics heuristics)
   add_couenne_library(CouenneCrossConv cut/crossconv)
   add_couenne_library(CouenneSdpCuts cut/sdpcuts)
-
   if (COIN_HAS_ASL)
     set(COUENNEINTERFACE_FROM_ASL 1)
     add_dependencies(CouenneProblem asl)
@@ -880,6 +902,8 @@ if (BUILD_IPOPT AND EXISTS ${COIN_SOURCE_DIR}/Couenne)
     WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/Couenne)
 
   configure(Couenne Couenne/src/config.h Couenne/src/config_couenne.h)
+    add_to_folder(couenne Couenne couenne-executable) 
+
 endif ()
 
 # Fix paths to libstdc++ on OS X.
