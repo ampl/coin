@@ -14,7 +14,6 @@ endif ()
 set(ASL_DIR ${CMAKE_CURRENT_SOURCE_DIR}/ThirdParty/asl)
 if (EXISTS ${ASL_DIR}/CMakeLists.txt)
   set(AMPL_CMAKE_MODULE_DIR ${ASL_DIR}/support/cmake)
-  message("AMPL_CMAKE_MODULE_DIR ${AMPL_CMAKE_MODULE_DIR}")
   set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} ${AMPL_CMAKE_MODULE_DIR})
   # Define the ARCH variable (32 or 64)
   include(initArchitecture)
@@ -762,9 +761,7 @@ if (BUILD_IPOPT)
   add_ipopt_library(ipopt Interfaces
     ipoptalg linsolvers common cgpenalty linalg tmatrices ${IPOPTFORT})
 
-    message("DO I HAVE ASL")
   if (COIN_HAS_ASL)
-  message("YES I HAVE ASL")
     add_ipopt_library(ipoptamplinterface Apps/AmplSolver ${ASL_LIBRARIES})
     target_link_libraries(ipopt ipoptamplinterface)
     

@@ -13,7 +13,6 @@ if (SH_PROGRAM)
   string(REPLACE "/" "\\" path ${path})
   string(REPLACE "${path}" "" path "$ENV{PATH}")
   set(ENV{PATH} "${path}")
-  message("PATH: $ENV{PATH}")
 endif ()
 
 project(IPOPTFORT C)
