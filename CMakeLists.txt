@@ -6,7 +6,7 @@ cmake_minimum_required(VERSION 2.8.12)
 cmake_policy(VERSION ${CMAKE_MINIMUM_REQUIRED_VERSION})
 
 set_property(GLOBAL PROPERTY USE_FOLDERS ON)
-
+message(STATUS "CMake Version: ${CMAKE_VERSION}")
 if (BUILD_SHARED_LIBS)
   set(CMAKE_POSITION_INDEPENDENT_CODE TRUE)
 endif ()
