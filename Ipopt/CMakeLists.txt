@@ -13,7 +13,6 @@ if (SH_PROGRAM)
   string(REPLACE "/" "\\" path ${path})
   string(REPLACE "${path}" "" path "$ENV{PATH}")
   set(ENV{PATH} "${path}")
-  message("PATH: $ENV{PATH}")
 endif ()
 
 project(IPOPTFORT C)
@@ -31,6 +30,12 @@ if (NOT BUILD_SHARED_LIBS OR CMAKE_GNUtoMS)
   set(CMAKE_SHARED_LINKER_FLAGS
       "${CMAKE_SHARED_LINKER_FLAGS} -static-libgfortran -static-libgcc -static-libstdc++ -static -lwinpthread -lquadmath")
 endif ()
+
+if(CMAKE_Fortran_COMPILER MATCHES "gfortran*")
+  if(NOT ${CMAKE_Fortran_COMPILER_VERSION} VERSION_LESS 10)
+    set (CMAKE_Fortran_FLAGS "-fallow-argument-mismatch  ${CMAKE_Fortran_FLAGS}")
+  endif()
+endif()
 
 if (CMAKE_GNUtoMS)
   # Pull in additional symbols used in IpBlas and Couenne (dsyev_).

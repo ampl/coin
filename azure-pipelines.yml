@@ -1,3 +1,7 @@
+variables:
+  DECODE_PERCENTS: false
+  # Azure-pipelines: [warning]%25 detected in ##vso command. In March 2021, the agent command parser will be updated to unescape this to %. To opt out of this behavior, set a job level variable DECODE_PERCENTS to false. Setting to true will force this behavior immediately. More information can be found at https://github.com/microsoft/azure-pipelines-agent/blob/master/docs/design/percentEncoding.md
+
 jobs:
 - job: linux
   pool: {vmImage: 'Ubuntu-16.04'}
@@ -17,6 +21,7 @@ jobs:
         cat /proc/cpuinfo
       displayName: Check CPU
     - bash: |
+        set -ex
         BUILD_DIR=manylinux/linux$NBITS/
         git submodule update --init --recursive --remote
         mkdir -p $BUILD_DIR/*
@@ -24,6 +29,7 @@ jobs:
         docker run -v `pwd`:/base --rm $IMAGE /base/manylinux/build.sh $NBITS
       displayName: Build package
     - bash: |
+        set -ex
         BUILD_DIR=manylinux/linux$NBITS/
         UPLOAD_DIR=$UPLOAD/linux$NBITS/
         mkdir -p $UPLOAD_DIR
@@ -31,7 +37,7 @@ jobs:
         cp $BUILD_DIR/bin/{cbc,bonmin,couenne,ipopt} $UPLOAD_DIR
         cp $BUILD_DIR/coin-versions.txt $UPLOAD_DIR
         cd $UPLOAD_DIR
-        tar czvf coin-linux$NBITS.tar.gz *
+        tar czvf coin.linux-intel$NBITS.`date +%Y%m%d`.tgz *
         mkdir -p $UPLOAD/{cbc,bonmin,couenne,ipopt}
         zip $UPLOAD/cbc/cbc-linux$NBITS.zip cbc coin-license.txt
         zip $UPLOAD/bonmin/bonmin-linux$NBITS.zip bonmin coin-license.txt
@@ -41,29 +47,33 @@ jobs:
     - task: PublishBuildArtifacts@1
       inputs: {pathtoPublish: '$(Build.ArtifactStagingDirectory)'}
 - job: macos
-  pool: {vmImage: 'macOS-10.13'}
+  pool: {vmImage: 'macOS-10.15'}
   variables:
     upload: $(Build.ArtifactStagingDirectory)
+    MACOSX_DEPLOYMENT_TARGET: 10.9
   steps:
     - script: |
         brew install gcc
       displayName: Install gcc (installs gfortran too)
     - bash: |
+        set -ex
         git submodule update --init --recursive --remote
         mkdir build
         cd build
-        cmake ..
+        export FC="gfortran-10"
+        cmake .. -DARCH=64
         make all coin-versions -j2
         make test || true
       displayName: Build package
     - bash: |
+        set -ex
         UPLOAD_DIR=$UPLOAD/macos/
         mkdir -p $UPLOAD_DIR
         cp Cbc/Cbc/LICENSE $UPLOAD_DIR/coin-license.txt
         cp build/bin/{cbc,bonmin,couenne,ipopt} $UPLOAD_DIR
         cp build/coin-versions.txt $UPLOAD_DIR
         cd $UPLOAD_DIR
-        tar czvf coin-osx.tar.gz *
+        tar czvf coin.macos64.`date +%Y%m%d`.tgz *
         mkdir -p $UPLOAD/{cbc,bonmin,couenne,ipopt}
         zip $UPLOAD/cbc/cbc-osx.zip cbc coin-license.txt
         zip $UPLOAD/bonmin/bonmin-osx.zip bonmin coin-license.txt
@@ -88,23 +98,28 @@ jobs:
     - script: |
         choco uninstall mingw
         choco install mingw --x86 -y
+        choco install make --x86 -y
       condition: eq(variables['arch'], 'win32')
+      displayName: Install mingw
     - bash: |
+        set -ex
         git submodule update --init --recursive --remote
         mkdir build
         cd build
-        cmake .. -G "Visual Studio 16 2019" -A $ARCH -DCOIN_DISABLE_WARNINGS=1 -DCMAKE_SH="CMAKE_SH-NOTFOUND"
+        cmake .. -G "Visual Studio 16 2019" -A $ARCH -DARCH=$NBITS -DCOIN_DISABLE_WARNINGS=1 -DCMAKE_SH="CMAKE_SH-NOTFOUND"
         cmake --build . -t ALL_BUILD coin-versions -j 2 --config Release
         ctest -C Release || true
+        ls -l Release
       displayName: Build package
     - bash: |
+        set -ex
         UPLOAD_DIR=$UPLOAD/win$NBITS/
         mkdir -p $UPLOAD_DIR
         cp Cbc/Cbc/LICENSE $UPLOAD_DIR/coin-license.txt
         cp build/bin/Release/{cbc.exe,bonmin.exe,couenne.exe,ipopt.exe,libipoptfort.dll} $UPLOAD_DIR
         cp build/coin-versions.txt $UPLOAD_DIR
         cd $UPLOAD_DIR
-        7z a -tzip coin-win$NBITS.zip *
+        7z a -tzip coin.mswin$NBITS.`date +%Y%m%d`.zip *
         mkdir -p $UPLOAD/{cbc,bonmin,couenne,ipopt}
         7z a -tzip $UPLOAD/cbc/cbc-win$NBITS.zip cbc.exe coin-license.txt
         7z a -tzip $UPLOAD/bonmin/bonmin-win$NBITS.zip libipoptfort.dll bonmin.exe coin-license.txt
