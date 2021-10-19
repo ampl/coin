@@ -22,16 +22,16 @@ jobs:
       displayName: Check CPU
     - bash: |
         set -ex
-        BUILD_DIR=manylinux/linux$NBITS/
+        BUILD_DIR=manylinux/linux-intel$NBITS/
         git submodule update --init --recursive --remote
         mkdir -p $BUILD_DIR/*
         rm -rf $BUILD_DIR/*
-        docker run -v `pwd`:/base --rm $IMAGE /base/manylinux/build.sh $NBITS
+        docker run -v `pwd`:/base --rm $IMAGE /base/manylinux/build.sh `nproc` intel$NBITS $NBITS
       displayName: Build package
     - bash: |
         set -ex
-        BUILD_DIR=manylinux/linux$NBITS/
-        UPLOAD_DIR=$UPLOAD/linux$NBITS/
+        BUILD_DIR=manylinux/linux-intel$NBITS/
+        UPLOAD_DIR=$UPLOAD/linux-intel$NBITS/
         mkdir -p $UPLOAD_DIR
         cp Cbc/Cbc/LICENSE $UPLOAD_DIR/coin-license.txt
         cp $BUILD_DIR/bin/{cbc,bonmin,couenne,ipopt} $UPLOAD_DIR
