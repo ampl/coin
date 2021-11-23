@@ -1,4 +1,4 @@
-/* $Id: CoinLpIO.hpp 2088 2019-01-22 09:15:46Z forrest $ */
+/* $Id: CoinLpIO.hpp 2122 2019-04-08 03:26:16Z stefan $ */
 // Last edit: 11/5/08
 //
 // Name:     CoinLpIO.hpp; Support for Lp files
@@ -283,6 +283,11 @@ public:
   inline void setObjectiveOffset(double value)
   {
     objectiveOffset_[0] = value;
+  }
+  /// Return true if maximization problem reformulated as minimization
+  inline bool wasMaximization() const
+  {
+    return wasMaximization_;
   }
 
   /// Set objective offset
@@ -629,6 +634,9 @@ protected:
 
   /// Objective function name
   char *objName_[MAX_OBJECTIVES];
+
+  /// Maximization reformulation flag
+  bool wasMaximization_;
 
   /** Row names (including objective function name) 
       and column names when stopHash() for the corresponding 

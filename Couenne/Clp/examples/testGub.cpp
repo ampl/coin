@@ -1,4 +1,4 @@
-/* $Id: testGub.cpp 2278 2017-10-02 09:51:14Z forrest $ */
+/* $Id: testGub.cpp 2449 2019-04-08 03:34:28Z stefan $ */
 // Copyright (C) 2003, International Business Machines
 // Corporation and others.  All Rights Reserved.
 // This code is licensed under the terms of the Eclipse Public License (EPL).
@@ -442,6 +442,9 @@ int main(int argc, const char *argv[])
           }
           printf("obj offset is %g\n", model2.objectiveOffset());
           printf("Primal took %g seconds\n", CoinCpuTime() - time1);
+     } else {
+       printf("No gub rows - this is just example code so exiting\n");
+       exit(77);
      }
      delete [] mark;
      delete [] gubStart;

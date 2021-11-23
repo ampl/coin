@@ -1685,13 +1685,13 @@ CglGomory::generateCuts(
 #endif
 #if MORE_GOMORY_CUTS<2
 	      nTotalEls -= number;
-	      cs.insert(rc);
+	      cs.insertIfNotDuplicate(rc);
 #else
 	      if(number<saveLimit) {
 		nTotalEls -= number;
-		cs.insert(rc);
+		cs.insertIfNotDuplicate(rc);
 	      } else {
-		longCuts.insert(rc);
+		longCuts.insertIfNotDuplicate(rc);
 	      }
 #endif
 	      //printf("nTot %d kCol %d iCol %d ibasic %d\n",
@@ -1703,7 +1703,7 @@ CglGomory::generateCuts(
 	      rc.setRow(number,cutIndex,packed,false);
 	      rc.setLb(bounds[0]);
 	      rc.setUb(bounds[1]);   
-	      secondaryCuts.insert(rc);
+	      secondaryCuts.insertIfNotDuplicate(rc);
 #endif
 	    }
 	  } else {
@@ -1804,7 +1804,7 @@ CglGomory::generateCuts(
     while (nTotalEls>0) {
       for (int i=0;i<numberLong;i++) {
 	nTotalEls -= longCuts.rowCutPtr(i)->row().getNumElements();
-	cs.insert(longCuts.rowCut(i));
+	cs.insertIfNotDuplicate(longCuts.rowCut(i));
 	numberAdded ++;
 	if (nTotalEls<=0)
 	  break;
@@ -1816,7 +1816,7 @@ CglGomory::generateCuts(
     while (nTotalEls>0) {
       for (int i=0;i<numberInaccurate;i++) {
 	nTotalEls -= secondaryCuts.rowCutPtr(i)->row().getNumElements();
-	cs.insert(secondaryCuts.rowCut(i));
+	cs.insertIfNotDuplicate(secondaryCuts.rowCut(i));
 	numberAdded ++;
 	if (nTotalEls<=0)
 	  break;

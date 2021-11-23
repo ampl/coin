@@ -9,7 +9,7 @@
 //-----------------------------------------------------------------------------
 // Copyright (C) 2002, Tobias Pfender, International Business Machines
 // Corporation and others.  All Rights Reserved.
-// Last edit: $Id: OsiSpxSolverInterface.cpp 2200 2019-01-06 23:02:02Z unxusr $
+// Last edit: $Id: OsiSpxSolverInterface.cpp 2272 2019-08-06 20:37:30Z stefan $
 
 #include "CoinPragma.hpp"
 
@@ -1184,6 +1184,7 @@ void OsiSpxSolverInterface::loadProblem(const CoinPackedMatrix &matrix,
   const double *elem = matrix.getElements();
   const int *index = matrix.getIndices();
   double *thecollb, *thecolub, *theobj, *therowlb, *therowub;
+  soplex::SPxLP::SPxSense objsen = soplex_->spxSense();
 
   // create defaults if parameter is NULL
   if (collb == NULL) {
@@ -1266,8 +1267,8 @@ void OsiSpxSolverInterface::loadProblem(const CoinPackedMatrix &matrix,
     // soplex_->changeBounds( soplex::Vector( ncols, thecollb ), soplex::Vector( ncols, thecolub ) );
   }
 
-  // switch sense to minimization problem
-  soplex_->changeSense(soplex::SPxSolver::MINIMIZE);
+  // make sure original sense is preserved
+  soplex_->changeSense(objsen);
 
   // delete default arrays if neccessary
   if (collb == NULL)
@@ -1388,6 +1389,7 @@ void OsiSpxSolverInterface::loadProblem(const int numcols, const int numrows,
   int col, pos;
   soplex::LPColSet colset(numcols, start[numcols]);
   soplex::DSVector colvec;
+  soplex::SPxLP::SPxSense objsen = soplex_->spxSense();
 
   soplex_->clear();
   spxintvars_->clear();
@@ -1402,6 +1404,7 @@ void OsiSpxSolverInterface::loadProblem(const int numcols, const int numrows,
 
   soplex_->addCols(colset);
   soplex_->changeRange(soplex::Vector(numrows, const_cast< double * >(rowlb)), soplex::Vector(numrows, const_cast< double * >(rowub)));
+  soplex_->changeSense(objsen);
 }
 
 //-----------------------------------------------------------------------------
@@ -1546,7 +1549,13 @@ OsiSolverInterface *OsiSpxSolverInterface::clone(bool copyData) const
 //-------------------------------------------------------------------
 OsiSpxSolverInterface::OsiSpxSolverInterface(const OsiSpxSolverInterface &source)
   : OsiSolverInterface(source)
-  , soplex_(new soplex::SoPlex(*source.soplex_))
+#if SOPLEX_VERSION >= 220
+  , spxout_(new soplex::SPxOut)
+  , soplex_(new soplex::SoPlex(*spxout_, soplex::SPxSolver::ENTER, soplex::SPxSolver::COLUMN))
+#else
+  , spxout_(NULL)
+  , soplex_(new soplex::SoPlex(soplex::SPxSolver::ENTER, soplex::SPxSolver::COLUMN))
+#endif
   , spxintvars_(new soplex::DIdxSet(*source.spxintvars_))
   , hotStartCStat_(NULL)
   , hotStartCStatSize_(0)
@@ -1564,6 +1573,8 @@ OsiSpxSolverInterface::OsiSpxSolverInterface(const OsiSpxSolverInterface &source
   , matrixByRow_(NULL)
   , matrixByCol_(NULL)
 {
+  // Using the copy-constructor of SoPlex did not work, see #113
+  *soplex_ = *source.soplex_;
   if (source.colsol_ != NULL)
     setColSolution(source.getColSolution());
   if (source.rowsol_ != NULL)

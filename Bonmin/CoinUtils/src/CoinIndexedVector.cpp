@@ -1,4 +1,4 @@
-/* $Id: CoinIndexedVector.cpp 2084 2019-01-09 14:17:08Z forrest $ */
+/* $Id: CoinIndexedVector.cpp 2156 2019-08-06 20:33:03Z stefan $ */
 // Copyright (C) 2000, International Business Machines
 // Corporation and others.  All Rights Reserved.
 // This code is licensed under the terms of the Eclipse Public License (EPL).
@@ -1462,6 +1462,7 @@ bool CoinIndexedVector::operator==(const CoinIndexedVector &rhs) const
         break;
       }
     }
+    delete[] temp;
   } else {
     const double *celem2 = elements_;
     if (packedMode_) {
@@ -2244,6 +2245,8 @@ void CoinPartitionedVector::print() const
     }
     printf("\n");
   }
+  delete[] tempElements;
+  delete[] tempIndices;
 }
 /* Sort the indexed storage vector (increasing indices). */
 void CoinPartitionedVector::sort()

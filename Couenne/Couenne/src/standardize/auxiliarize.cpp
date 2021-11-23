@@ -1,4 +1,4 @@
-/* $Id: auxiliarize.cpp 792 2012-01-24 17:24:15Z pbelotti $
+/* $Id: auxiliarize.cpp 1315 2020-01-31 11:27:19Z stefan $
  *
  * Name:    auxiliarize.cpp
  * Author:  Pietro Belotti
@@ -73,7 +73,7 @@ void CouenneProblem::auxiliarize (exprVar *aux, exprVar *subst) {
     if (body) {
 
       if (jnlst_ -> ProduceOutput (Ipopt::J_ALL, J_REFORMULATE)) {
-	printf ("replacing within common expression [%d]: ", i - commonexprs_.begin ()); fflush (stdout); (*i) -> print (); printf ("\n");
+	printf ("replacing within common expression [%d]: ", (int)(i - commonexprs_.begin ())); fflush (stdout); (*i) -> print (); printf ("\n");
       }
 
       if ((body -> Type () == VAR) || 
@@ -123,7 +123,7 @@ void CouenneProblem::auxiliarize (exprVar *aux, exprVar *subst) {
     if (body) {
 
       if (jnlst_ -> ProduceOutput (Ipopt::J_ALL, J_REFORMULATE)) {
-	printf ("replacing within constraint [%d]: ", i - constraints_.begin ()); fflush (stdout); (*i) -> print (); 
+	printf ("replacing within constraint [%d]: ", (int)(i - constraints_.begin ())); fflush (stdout); (*i) -> print (); 
       }
 
       if ((body -> Type () == VAR) ||

@@ -1,3 +1,9 @@
+06/08/2019 OsiGrb
+  - fix problem with loading a problem with ranged rows when already a problem has been loaded (#124)
+
+06/08/2019 OsiSpx
+  - fixed issue with objective sense getting lost when loading new problem (#123)
+
 10/03/2019 OsiSpx
   - fixed problems with copy constructor / clone (#113)
 

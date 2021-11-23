@@ -1,4 +1,4 @@
-// $Id: CouenneAmplInterface.cpp 1147 2015-05-04 14:01:51Z stefan $
+// $Id: CouenneAmplInterface.cpp 1315 2020-01-31 11:27:19Z stefan $
 //
 // (C) Copyright XXX 2009
 // All Rights Reserved.
@@ -51,7 +51,7 @@
 #include "opcode.hd"
 
 // get ASL op. code relative to function pointer passed as parameter 
-int getOperator (efunc *);
+size_t getOperator (efunc *);
 
 #define OBJ_DE    ((const ASL_fg *) asl) -> I.obj_de_
 #define VAR_E     ((const ASL_fg *) asl) -> I.var_e_

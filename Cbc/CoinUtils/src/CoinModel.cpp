@@ -1,4 +1,4 @@
-/* $Id: CoinModel.cpp 2083 2019-01-06 19:38:09Z unxusr $ */
+/* $Id: CoinModel.cpp 2259 2020-01-16 13:43:43Z stefan $ */
 // Copyright (C) 2005, International Business Machines
 // Corporation and others.  All Rights Reserved.
 // This code is licensed under the terms of the Eclipse Public License (EPL).
@@ -45,7 +45,10 @@ CoinBaseModel::CoinBaseModel(const CoinBaseModel &rhs)
   problemName_ = rhs.problemName_;
   rowBlockName_ = rhs.rowBlockName_;
   columnBlockName_ = rhs.columnBlockName_;
-  handler_ = new CoinMessageHandler(*rhs.handler_);
+  if (rhs.handler_ != NULL)
+    handler_ = new CoinMessageHandler(*rhs.handler_) ;
+  else
+    handler_ = NULL ;
 }
 
 //-------------------------------------------------------------------
@@ -71,7 +74,10 @@ CoinBaseModel::operator=(const CoinBaseModel &rhs)
     optimizationDirection_ = rhs.optimizationDirection_;
     objectiveOffset_ = rhs.objectiveOffset_;
     delete handler_;
-    handler_ = new CoinMessageHandler(*rhs.handler_);
+    if (rhs.handler_ != NULL)
+      handler_ = new CoinMessageHandler(*rhs.handler_) ;
+    else
+      handler_ = NULL ;
     logLevel_ = rhs.logLevel_;
   }
   return *this;
@@ -3766,7 +3772,7 @@ void convertBoundToSense(const double lower, const double upper,
   char &sense, double &right,
   double &range)
 {
-  double inf = 1.0e-30;
+  double inf = 1.0e30;
   range = 0.0;
   if (lower > -inf) {
     if (upper < inf) {

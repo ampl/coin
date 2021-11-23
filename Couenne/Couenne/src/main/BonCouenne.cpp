@@ -1,4 +1,4 @@
-// $Id: BonCouenne.cpp 1270 2019-02-23 17:21:42Z stefan $
+// $Id: BonCouenne.cpp 1315 2020-01-31 11:27:19Z stefan $
 //
 // (C) Copyright International Business Machines Corporation and Carnegie Mellon University 2006, 2007
 // All Rights Reserved.
@@ -413,7 +413,7 @@ Auxiliaries:     %8d (%d integer)\n\n",
             if ((*it) -> Multiplicity () == 0) {
 
               if ((*it) -> Image ()) fprintf (txtSol, "%d %e\n", (*it) -> Index (), (*(*it) -> Image ()) ());
-              else                   fprintf (txtSol, "%d %e\n", (*it) -> Index (), 0);
+              else                   fprintf (txtSol, "%d %e\n", (*it) -> Index (), 0.0);
 
             } else fprintf (txtSol, "%d %e\n", (*it) -> Index (), (*(*it)) ());
           }

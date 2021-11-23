@@ -1,4 +1,4 @@
-// $Id: CglFlowCover.cpp 1392 2017-11-28 11:57:24Z forrest $
+// $Id: CglFlowCover.cpp 1505 2019-10-03 13:53:58Z stefan $
 //-----------------------------------------------------------------------------
 // name:     Cgl Lifted Simple Generalized Flow Cover Cut Generator
 // author:   Yan Xu                email: yan.xu@sas.com
@@ -305,7 +305,7 @@ void CglFlowCover::generateCuts(const OsiSolverInterface & si, OsiCuts & cs,
       hasCut = generateOneFlowCut(si, rowLen, ind, coef, 'L', 
 				  thisRhs, flowCut1, violation);
       if (hasCut)  {                         // If find a cut
-	cs.insert(flowCut1);
+	cs.insertIfNotDuplicate(flowCut1);
 	incNumFlowCuts();
 	if (getNumFlowCuts() >= getMaxNumCuts())
 	  break;
@@ -314,7 +314,7 @@ void CglFlowCover::generateCuts(const OsiSolverInterface & si, OsiCuts & cs,
       hasCut = generateOneFlowCut(si, rowLen, ind, coef, 'G', 
 				  thisRhs, flowCut2, violation);
       if (hasCut)  {
-	cs.insert(flowCut2);
+	cs.insertIfNotDuplicate(flowCut2);
 	incNumFlowCuts();
 	if (getNumFlowCuts() >= getMaxNumCuts())
 	  break;
@@ -324,7 +324,7 @@ void CglFlowCover::generateCuts(const OsiSolverInterface & si, OsiCuts & cs,
       hasCut = generateOneFlowCut(si, rowLen, ind, coef, sense[iRow], 
 				  thisRhs, flowCut3, violation);
       if (hasCut)  {
-	cs.insert(flowCut3);
+	cs.insertIfNotDuplicate(flowCut3);
 	incNumFlowCuts();
 	if (getNumFlowCuts() >= getMaxNumCuts())
 	  break;
@@ -1197,8 +1197,35 @@ CglFlowCover::generateOneFlowCut( const OsiSolverInterface & si,
 #endif
     cutLen = j;
     // Skip if no elements ? - bug somewhere
-    if (cutLen == 0)
+    if (cutLen == 0) {
+        if (xCoef)
+            delete[] xCoef;
+        if (cutCoef)
+            delete[] cutCoef;
+        if (yCoef)
+            delete[] yCoef;
+        if (M)
+            delete[] M;
+        if (label)
+            delete[] label;
+        if (sign)
+            delete[] sign;
+        if (up)
+            delete[] up;
+        if (candidate)
+            delete[] candidate;
+        if (y)
+            delete[] y;
+        if (x)
+            delete[] x;
+        if (mt)
+            delete[] mt;
+        if (rho)
+            delete[] rho;
+        if (order)
+            delete[] order;
         return false;
+    }
         
     // Recheck the violation.
     double saveViolation = violation;

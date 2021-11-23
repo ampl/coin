@@ -1,4 +1,4 @@
-/* $Id: CoinOslC.h 2083 2019-01-06 19:38:09Z unxusr $ */
+/* $Id: CoinOslC.h 2259 2020-01-16 13:43:43Z stefan $ */
 #ifndef COIN_OSL_C_INCLUDE
 /*
   Copyright (C) 1987, 2009, International Business Machines Corporation
@@ -390,7 +390,7 @@ void clp_free(void *oldArray);
       jj1 = maction[j1];
       for (kr = nres; kr < knpre; kr += 2) {
         jj2 = maction[j2];
-        if ((jj1 == 0)) {
+        if (jj1 == 0) {
           ++kfill;
         } else {
           maction[j1] = static_cast< MACTION_T >(-maction[j1]);
@@ -399,7 +399,7 @@ void clp_free(void *oldArray);
           d1 = fabs(dluval[kr]);
         }
         j1 = hcoli[kr + 2];
-        if ((jj2 == 0)) {
+        if (jj2 == 0) {
           ++kfill;
         } else {
           maction[j2] = static_cast< MACTION_T >(-maction[j2]);

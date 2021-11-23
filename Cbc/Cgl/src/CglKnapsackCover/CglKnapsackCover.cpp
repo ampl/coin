@@ -1,4 +1,4 @@
-// $Id: CglKnapsackCover.cpp 1387 2017-09-29 11:02:03Z forrest $
+// $Id: CglKnapsackCover.cpp 1505 2019-10-03 13:53:58Z stefan $
 // Copyright (C) 2000, International Business Machines
 // Corporation and others.  All Rights Reserved.
 // This code is licensed under the terms of the Eclipse Public License (EPL).
@@ -893,7 +893,7 @@ CglKnapsackCover::liftAndUncomplementAndAdd(
       }
     }
 #endif
-    cs.insert(rc);
+    cs.insertIfNotDuplicate(rc);
     
     return 1;
   } else {
@@ -2954,7 +2954,7 @@ CglKnapsackCover::liftUpDownAndUncomplementAndAdd(
       }
     }
 #endif
-    cs.insert(rc);
+    cs.insertIfNotDuplicate(rc);
   }
 }
 
@@ -3148,7 +3148,7 @@ CglKnapsackCover::seqLiftAndUncomplementAndAdd(
       }
     }
 #endif
-    cs.insert(rc);
+    cs.insertIfNotDuplicate(rc);
   }
 }
 

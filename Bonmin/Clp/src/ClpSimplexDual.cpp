@@ -1,4 +1,4 @@
-/* $Id: ClpSimplexDual.cpp 2385 2019-01-06 19:43:06Z unxusr $ */
+/* $Id: ClpSimplexDual.cpp 2618 2020-01-16 13:46:41Z stefan $ */
 // Copyright (C) 2002, International Business Machines
 // Corporation and others.  All Rights Reserved.
 // This code is licensed under the terms of the Eclipse Public License (EPL).
@@ -1411,8 +1411,8 @@ int ClpSimplexDual::whileIterating(double *&givenDuals, int ifValuesPass)
               printf("flag a %g %g\n", btranAlpha, alpha_);
 #endif
               //#define FEB_TRY
-#if 1 //def FEB_TRY \
-  // Make safer?
+#if 1
+	      // Make safer?
               factorization_->saferTolerances(-0.99, -1.03);
 #endif
               setFlagged(sequenceOut_);
@@ -1942,7 +1942,8 @@ int ClpSimplexDual::whileIterating(double *&givenDuals, int ifValuesPass)
                     (specialOptions_ & 16384) != 0 ? 1 : 0);
 #endif
                   // Get rid of objective
-                  if ((specialOptions_ & 16384) == 0)
+                  if ((specialOptions_ & 16384) == 0 &&
+		      (moreSpecialOptions_ & 256) == 0)
                     objective_ = new ClpLinearObjective(NULL, numberColumns_);
                 }
               }
@@ -1961,7 +1962,8 @@ int ClpSimplexDual::whileIterating(double *&givenDuals, int ifValuesPass)
                   printf("returning at %d\n", __LINE__);
 #endif
                   // Get rid of objective
-                  if ((specialOptions_ & 16384) == 0)
+                  if ((specialOptions_ & 16384) == 0 &&
+		      (moreSpecialOptions_ & 256) == 0)
                     objective_ = new ClpLinearObjective(NULL, numberColumns_);
                 }
               }
@@ -2381,7 +2383,7 @@ int ClpSimplexDual::updateDualsInDual(CoinIndexedVector *rowArray,
     work = rowArray->denseVector();
     number = rowArray->getNumElements();
     which = rowArray->getIndices();
-    double multiplier[] = { -1.0, 1.0 };
+    double multiplier[] = {0.0, 0.0, -1.0, 1.0 };
     for (i = 0; i < number; i++) {
       int iSequence = which[i];
       double alphaI = work[i];
@@ -2391,10 +2393,10 @@ int ClpSimplexDual::updateDualsInDual(CoinIndexedVector *rowArray,
         double value = reducedCost[iSequence] - theta * alphaI;
         // NO - can have free assert (iStatus>0);
         reducedCost[iSequence] = value;
-        double mult = multiplier[iStatus - 1];
+        double mult = multiplier[iStatus + 1];
         value *= mult;
         // skip if free
-        if (value < -tolerance && iStatus > 0) {
+        if (value < -tolerance) {
           // flipping bounds
           double movement = mult * (lower[iSequence] - upper[iSequence]);
           which[numberInfeasibilities++] = iSequence;
@@ -2413,6 +2415,8 @@ int ClpSimplexDual::updateDualsInDual(CoinIndexedVector *rowArray,
       }
     }
     // Do columns
+    multiplier[0] = -1.0;
+    multiplier[1] = 1.0;
     reducedCost = djRegion(1);
     lower = lowerRegion(1);
     upper = upperRegion(1);
@@ -3552,8 +3556,10 @@ void moveAndZero(clpTempInfo *info, int type, void *extra)
 #endif
 #ifdef _MSC_VER
 #include <intrin.h>
+#elif defined(__ARM_FEATURE_SIMD32) || defined(__ARM_NEON)
+#include <arm_neon.h>
 #else
-#include <immintrin.h>
+//#include <immintrin.h> // deemed unnecessary in #126; if that was wrong, then try to do as suggested in #127
 //#include <fmaintrin.h>
 #endif
 int ClpSimplexDual::dualColumn0(const CoinIndexedVector *rowArray,
@@ -4649,9 +4655,9 @@ ClpSimplexDual::dualColumn(CoinIndexedVector *rowArray,
       const int *which;
       const double *reducedCost;
       double tentativeTheta = 1.0e15;
-      double upperTheta = 1.0e31;
+      //double upperTheta = 1.0e31;
       bestPossible = 0.0;
-      double multiplier[] = { -1.0, 1.0 };
+      //double multiplier[] = { -1.0, 1.0 };
       double dualT = -dualTolerance_;
       int nSections = 2;
       int addSequence;

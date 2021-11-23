@@ -1,4 +1,4 @@
-/* $Id: CouenneProblemConstructors.cpp 1255 2018-08-27 22:56:09Z pbelotti $
+/* $Id: CouenneProblemConstructors.cpp 1289 2019-12-19 07:58:27Z stefan $
  *
  * Name:    CouenneProblemConstructors.cpp
  * Author:  Pietro Belotti
@@ -94,7 +94,7 @@ CouenneProblem::CouenneProblem (struct ASL *asl,
   double now = CoinCpuTime ();
 
   if (asl) {
-#if COIN_HAS_ASL
+#ifdef COIN_HAS_ASL
     // read problem from AMPL structure
     readnl (asl);
 #else

@@ -1,4 +1,4 @@
-/* $Id: unitTest.cpp 2385 2019-01-06 19:43:06Z unxusr $ */
+/* $Id: unitTest.cpp 2531 2019-10-03 13:48:16Z stefan $ */
 // Copyright (C) 2002, International Business Machines
 // Corporation and others.  All Rights Reserved.
 // This code is licensed under the terms of the Eclipse Public License (EPL).
@@ -72,7 +72,7 @@ extern double largeRowsCount;
 //#############################################################################
 
 // Function Prototypes. Function definitions is in this file.
-void testingMessage(const char *const msg);
+static void testingMessage(const char *const msg);
 #if defined(COIN_HAS_AMD) || defined(COIN_HAS_CHOLMOD) || defined(COIN_HAS_GLPK)
 static int barrierAvailable = 1;
 static std::string nameBarrier = "barrier-UFL";
@@ -1396,7 +1396,7 @@ int mainTest(int argc, const char *argv[], int algorithm,
 }
 
 // Display message on stdout and stderr
-void testingMessage(const char *const msg)
+static void testingMessage(const char *const msg)
 {
   std::cerr << msg;
   //cout <<endl <<"*****************************************"

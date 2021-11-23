@@ -1,4 +1,4 @@
-// $Id: CglDuplicateRow.cpp 1387 2017-09-29 11:02:03Z forrest $
+// $Id: CglDuplicateRow.cpp 1505 2019-10-03 13:53:58Z stefan $
 // Copyright (C) 2004, International Business Machines
 // Corporation and others.  All Rights Reserved.
 // This code is licensed under the terms of the Eclipse Public License (EPL).
@@ -830,7 +830,7 @@ void CglDuplicateRow::generateCuts12(const OsiSolverInterface & si, OsiCuts & cs
 	      index[1]=column1;
 	      index[2]=columnB1;
 	      rc.setRow(3,index,element,false);
-	      cs.insert(rc);
+	      cs.insertIfNotDuplicate(rc);
 	      // drop rows
 	      duplicate_[i]=-2;
 	      duplicate_[k]=-2;
@@ -883,7 +883,7 @@ void CglDuplicateRow::generateCuts12(const OsiSolverInterface & si, OsiCuts & cs
     OsiRowCut rc;
     rc.setLb(COIN_DBL_MAX);
     rc.setUb(0.0);   
-    cs.insert(rc);
+    cs.insertIfNotDuplicate(rc);
   }
 }
 void CglDuplicateRow::generateCuts4(const OsiSolverInterface & si, OsiCuts & cs,
@@ -2264,7 +2264,7 @@ void CglDuplicateRow::generateCuts4(const OsiSolverInterface & si, OsiCuts & cs,
     OsiRowCut rc;
     rc.setLb(COIN_DBL_MAX);
     rc.setUb(0.0);   
-    cs.insert(rc);
+    cs.insertIfNotDuplicate(rc);
   }
 }
 #if 0
@@ -3109,7 +3109,7 @@ void CglDuplicateRow::generateCuts8(const OsiSolverInterface & si, OsiCuts & cs,
     OsiRowCut rc;
     rc.setLb(COIN_DBL_MAX);
     rc.setUb(0.0);   
-    cs.insert(rc);
+    cs.insertIfNotDuplicate(rc);
   }
 }
 //-------------------------------------------------------------------

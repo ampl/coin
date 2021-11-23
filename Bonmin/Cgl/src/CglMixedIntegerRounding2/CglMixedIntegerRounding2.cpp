@@ -865,7 +865,7 @@ CglMixedIntegerRounding2::generateMirCuts(
 #if CGL_DEBUG
 	    std::cout << "MIR cut generated " << std::endl;
 #endif
-	    cs.insert(cMirCut);
+	    cs.insertIfNotDuplicate(cMirCut);
 	  }
 	}
 
@@ -1792,7 +1792,7 @@ CglMixedIntegerRounding2::generateCpp( FILE * fp)
   if (CRITERION_!=other.CRITERION_)
   fprintf(fp,"3  mixedIntegerRounding2.setCRITERION_(%d);\n",CRITERION_);
   if (doPreproc_!=other.doPreproc_)
-    fprintf(fp,"3  mixedIntegerRounding2.setDoPreproc_(%d);\n", doPreproc_);
+    fprintf(fp,"3  mixedIntegerRounding2.setDoPreproc(%d);\n", doPreproc_);
   if (getAggressiveness()!=other.getAggressiveness())
     fprintf(fp,"3  mixedIntegerRounding2.setAggressiveness(%d);\n",getAggressiveness());
   else

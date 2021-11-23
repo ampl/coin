@@ -1,4 +1,4 @@
-// $Id: CglOddHole.cpp 1387 2017-09-29 11:02:03Z forrest $
+// $Id: CglOddHole.cpp 1505 2019-10-03 13:53:58Z stefan $
 // Copyright (C) 2000, International Business Machines
 // Corporation and others.  All Rights Reserved.
 // This code is licensed under the terms of the Eclipse Public License (EPL).
@@ -563,7 +563,7 @@ void CglOddHole::generateCuts(const OsiRowCutDebugger * /*debugger*/,
 	      if (debugger) 
 		assert(!debugger->invalidCut(rc)); 
 #endif
-	      cs.insert(rc);
+	      cs.insertIfNotDuplicate(rc);
 	    }
 	  }
 	}

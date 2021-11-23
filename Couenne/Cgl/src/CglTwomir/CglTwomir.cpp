@@ -1,4 +1,4 @@
-// $Id: CglTwomir.cpp 1409 2018-09-01 08:45:48Z forrest $
+// $Id: CglTwomir.cpp 1505 2019-10-03 13:53:58Z stefan $
 // Copyright (C) 2002, International Business Machines
 // Corporation and others.  All Rights Reserved.
 // This code is licensed under the terms of the Eclipse Public License (EPL).
@@ -145,8 +145,8 @@ void CglTwomir::generateCuts(const OsiSolverInterface & si, OsiCuts & cs,
       memcpy(simplex->columnUpper(),colUpper,numberColumns*sizeof(double));
       for (int i=0;i<numberColumns;i++) {
 	if (colLower[i]<-1.0e20&&colUpper[i]>1.0e20) {
-	  double lower=-COIN_DBL_MAX;
-	  double upper=COIN_DBL_MAX;
+	  double lower=-si.getInfinity();
+	  double upper=si.getInfinity();
 	  if (solution[i]>0.0)
 	    lower=-1.0e10;
 	  else
@@ -261,7 +261,7 @@ void CglTwomir::generateCuts(const OsiSolverInterface & si, OsiCuts & cs,
       warm->resize(simplex->numberRows(),numberColumns);
       clpSolver->setBasis(*warm);
       delete warm;
-      simplex->setDualObjectiveLimit(COIN_DBL_MAX);
+      simplex->setDualObjectiveLimit(COIN_DBL_MAX);  //FIXME should this be si->getInfinity()?
       simplex->setLogLevel(0);
       clpSolver->resolve();
       //printf("Trying - %d its status %d objs %g %g - with offset %g\n",
@@ -395,15 +395,15 @@ void CglTwomir::generateCuts(const OsiSolverInterface & si, OsiCuts & cs,
 	}
 	if (largest<5.0e9*smallest&&goodCut) {
 	  rowcut.setRow(number, cutIndex, packed);
-	  rowcut.setUb(COIN_DBL_MAX);
+	  rowcut.setUb(si.getInfinity());
 	  rowcut.setLb(rhs);
-	  cs.insert(rowcut);
+	  cs.insertIfNotDuplicate(rowcut);
 	}
 #else
 	rowcut.setRow(cut->nz, cut->index, cut->coeff);
-	rowcut.setUb(DBL_MAX);
+	rowcut.setUb(si->getInfinity());
 	rowcut.setLb(cut->rhs);
-	cs.insert(rowcut);
+	cs.insertIfNotDuplicate(rowcut);
 #endif
       }
     
@@ -740,16 +740,16 @@ DGG_data_t* DGG_getData(const void *osi_ptr )
         DGG_setEqualityConstraint(data,j);
       
       /* check if the row is bounded above/below and define variable bounds */
-      if ( rowUpper[i] < COIN_DBL_MAX )
+      if ( rowUpper[i] < si->getInfinity() )
         DGG_setIsConstraintBoundedAbove(data,j);
-      if ( rowLower[i] > -1*COIN_DBL_MAX )
+      if ( rowLower[i] > -si->getInfinity() )
         DGG_setIsConstraintBoundedBelow(data,j);
 
       data->lb[j] = 0.0;
       if (DGG_isConstraintBoundedAbove(data,j) && DGG_isConstraintBoundedBelow(data,j)) 
           data->ub[j] = rowUpper[i] - rowLower[i];
       else
-          data->ub[j] = COIN_DBL_MAX;
+          data->ub[j] = si->getInfinity();
 
       /* compute row activity. for this we need to go to the row in question,
          and multiply all the coefficients times their respective variables.

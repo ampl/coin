@@ -1300,6 +1300,9 @@ int OsiSolverInterface::writeMpsNative(const char *filename,
     objective, hasInteger ? integrality : 0,
     getRowLower(), getRowUpper(),
     columnNames, rowNames);
+  std::string probName;
+  this->getStrParam(OsiProbName, probName);
+  writer.setProblemName(probName.c_str());
   double objOffset = 0.0;
   getDblParam(OsiObjOffset, objOffset);
   writer.setObjectiveOffset(objOffset);
@@ -1479,6 +1482,9 @@ int OsiSolverInterface::writeLpNative(FILE *fp,
   //writer.print();
   delete[] objective;
   delete[] integrality;
+  std::string probName;
+  this->getStrParam(OsiProbName, probName);
+  writer.setProblemName(probName.c_str());
   return writer.writeLp(fp, epsilon, numberAcross, decimals,
     useRowNames);
 

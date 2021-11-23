@@ -1,4 +1,4 @@
-/* $Id: ClpDualRowSteepest.cpp 2385 2019-01-06 19:43:06Z unxusr $ */
+/* $Id: ClpDualRowSteepest.cpp 2499 2019-06-28 15:42:58Z stefan $ */
 // Copyright (C) 2002, International Business Machines
 // Corporation and others.  All Rights Reserved.
 // This code is licensed under the terms of the Eclipse Public License (EPL).
@@ -375,6 +375,7 @@ int ClpDualRowSteepest::pivotRow()
     model_->setLargestDualError(0.0);
     // can't loop
     chosenRow = pivotRow();
+    number = infeasible_->getNumElements();
     model_->setLargestDualError(saveError);
   }
   if (chosenRow < 0 && lastPivotRow < 0) {
@@ -390,6 +391,9 @@ int ClpDualRowSteepest::pivotRow()
     infeasible_->setNumElements(nLeft);
     model_->setNumberPrimalInfeasibilities(nLeft);
   }
+#ifndef NDEBUG
+  //infeasible_->checkClean();
+#endif
   return chosenRow;
 }
 #if 0

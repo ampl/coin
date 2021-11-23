@@ -1,4 +1,4 @@
-/* $Id: ClpModel.hpp 2385 2019-01-06 19:43:06Z unxusr $ */
+/* $Id: ClpModel.hpp 2643 2020-02-03 10:03:22Z stefan $ */
 // Copyright (C) 2002, International Business Machines
 // Corporation and others.  All Rights Reserved.
 // This code is licensed under the terms of the Eclipse Public License (EPL).
@@ -140,6 +140,10 @@ public:
   bool isInteger(int index) const;
   /// Resizes rim part of model
   void resize(int newNumberRows, int newNumberColumns);
+private:
+  /// Makes sure matrix dimensions are at least model dimensions
+  void synchronizeMatrix();
+public:
   /// Deletes rows
   void deleteRows(int number, const int *which);
   /// Add one row

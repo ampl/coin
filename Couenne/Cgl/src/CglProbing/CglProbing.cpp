@@ -1,4 +1,4 @@
-// $Id: CglProbing.cpp 1437 2018-11-23 19:53:53Z forrest $
+// $Id: CglProbing.cpp 1505 2019-10-03 13:53:58Z stefan $
 // Copyright (C) 2002, International Business Machines
 // Corporation and others.  All Rights Reserved.
 // This code is licensed under the terms of the Eclipse Public License (EPL).
@@ -611,7 +611,10 @@ CglProbing::tighten(double *colLower, double * colUpper,
 	    // clean
 	    colUpper[j]=floor(colUpper[j]+1.0e-4);
 	    colLower[j]=ceil(colLower[j]-1.0e-4);
-	    assert (colUpper[j]==colLower[j]);
+	    if (colUpper[j]<colLower[j]) {
+	      /*printf("infeasible\n");*/
+	      ninfeas++;
+	    }
 	  }
 	}
       }

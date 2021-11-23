@@ -1,4 +1,4 @@
-/* $Id: ClpEventHandler.cpp 2385 2019-01-06 19:43:06Z unxusr $ */
+/* $Id: ClpEventHandler.cpp 2438 2019-03-26 12:39:54Z forrest $ */
 // Copyright (C) 2004, International Business Machines
 // Corporation and others.  All Rights Reserved.
 // This code is licensed under the terms of the Eclipse Public License (EPL).
@@ -55,6 +55,8 @@ ClpEventHandler::clone() const
 // Event
 int ClpEventHandler::event(Event whichEvent)
 {
+
+  assert (!model_||model_->eventHandler()==this);
   if (whichEvent != theta)
     return -1; // do nothing
   else

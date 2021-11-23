@@ -1,4 +1,4 @@
-/* $Id: ClpSimplex.cpp 2453 2019-04-22 03:41:45Z stefan $ */
+/* $Id: ClpSimplex.cpp 2554 2019-12-19 09:01:53Z stefan $ */
 // Copyright (C) 2002, International Business Machines
 // Corporation and others.  All Rights Reserved.
 // This code is licensed under the terms of the Eclipse Public License (EPL).
@@ -611,7 +611,7 @@ int ClpSimplex::gutsOfSolution(double *givenDuals,
     int numberOut = 0;
     // But may be very large rhs etc
     double useError = CoinMin(largestPrimalError_,
-      1.0e5 / maximumAbsElement(solution_, numberRows_ + numberColumns_));
+			      1.0e5 / (1.0+maximumAbsElement(solution_, numberRows_ + numberColumns_)));
     if ((oldValue < incomingInfeasibility_ || badInfeasibility > (CoinMax(10.0 * allowedInfeasibility_, 100.0 * oldValue)))
       && (badInfeasibility > CoinMax(incomingInfeasibility_, allowedInfeasibility_) || useError > 1.0e-3)) {
       if (algorithm_ > 1) {
@@ -1831,7 +1831,8 @@ int ClpSimplex::internalFactorize(int solveType)
           double big_bound = largeValue_;
           double value = columnActivityWork_[iColumn];
           if (lower > -big_bound || upper < big_bound) {
-            if ((getColumnStatus(iColumn) == atLowerBound && columnActivityWork_[iColumn] == lower) || (getColumnStatus(iColumn) == atUpperBound && columnActivityWork_[iColumn] == upper)) {
+            if ((getColumnStatus(iColumn) == atLowerBound && value == lower) ||
+		(getColumnStatus(iColumn) == atUpperBound && value == upper)) {
               // status looks plausible
             } else {
               // set to sensible
@@ -6309,7 +6310,7 @@ int ClpSimplex::barrier(bool crossover)
   assert(!doKKT);
   ClpCholeskyTaucs *cholesky = new ClpCholeskyTaucs();
   barrier.setCholesky(cholesky);
-#elifdef COIN_HAS_MUMPS
+#elif defined(COIN_HAS_MUMPS)
   if (!doKKT) {
     ClpCholeskyMumps *cholesky = new ClpCholeskyMumps();
     barrier.setCholesky(cholesky);
@@ -6932,9 +6933,10 @@ int ClpSimplex::saveModel(const char *fileName)
         put += lengthNames_ + 1;
       }
       numberWritten = fwrite(array, lengthNames_ + 1, numberColumns_, fp);
-      if (numberWritten != static_cast< size_t >(numberColumns_))
+      if (numberWritten != static_cast< size_t >(numberColumns_)) {
+        delete[] array;
         return 1;
-      delete[] array;
+      }
     }
 #endif
     // integers
@@ -7638,7 +7640,8 @@ int ClpSimplex::readLp(const char *filename, const double epsilon)
   }
   CoinLpIO m;
   m.setEpsilon(epsilon);
-  fclose(fp);
+  if (fp != stdin)
+    fclose(fp);
   m.readLp(filename);
 
   // set problem name

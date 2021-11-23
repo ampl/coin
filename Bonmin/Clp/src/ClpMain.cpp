@@ -1,4 +1,4 @@
-/* $Id: ClpMain.cpp 2385 2019-01-06 19:43:06Z unxusr $ */
+/* $Id: ClpMain.cpp 2453 2019-04-22 03:41:45Z stefan $ */
 // Copyright (C) 2002, International Business Machines
 // Corporation and others.  All Rights Reserved.
 // This code is licensed under the terms of the Eclipse Public License (EPL).
@@ -362,7 +362,7 @@ void cilkTest()
 
   //cv.start();
 #if 1
-  //#pragma cilk_grainsize=CILK_FOR_GRAINSIZE
+  //#pragma cilk grainsize = CILK_FOR_GRAINSIZE
   cilk_for(unsigned int i = 0; i < n; ++i)
   {
     a[i] = dowork(a[i]);
@@ -401,5 +401,3 @@ void cilkTest()
 }
 #endif
 
-/* vi: softtabstop=2 shiftwidth=2 expandtab tabstop=2
-*/

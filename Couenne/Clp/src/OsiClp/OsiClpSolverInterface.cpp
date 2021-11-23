@@ -116,6 +116,7 @@ void OsiClpSolverInterface::initialSolve()
     solver = new ClpSimplex(true);
     deleteSolver = true;
     solver->borrowModel(*modelPtr_);
+    solver->eventHandler()->setSimplex(solver);
     // See if user set factorization frequency
     // borrowModel does not move
     solver->factorization()->maximumPivots(userFactorizationFrequency);
@@ -1439,7 +1440,7 @@ void OsiClpSolverInterface::setupForRepeatedUse(int senseOfAdventure, int printO
   if (stopPrinting) {
     CoinMessages *messagesPointer = modelPtr_->messagesPointer();
     // won't even build messages
-    messagesPointer->setDetailMessages(100, 10000, reinterpret_cast< int * >(NULL));
+    messagesPointer->setDetailMessages(100, 10000, (int*)NULL);
   }
 #endif
 }
@@ -2786,7 +2787,6 @@ void OsiClpSolverInterface::unmarkHotStart()
   modelPtr_->specialOptions_ = saveData_.specialOptions_;
 }
 
-#ifdef CONFLICT_CUTS
 // Return a conflict analysis cut from small model
 OsiRowCut *
 OsiClpSolverInterface::smallModelCut(const double *originalLower, const double *originalUpper,
@@ -3580,7 +3580,6 @@ OsiClpSolverInterface::modelCut(const double *originalLower, const double *origi
   }
   return cut;
 }
-#endif
 
 //#############################################################################
 // Problem information methods (original data)
@@ -5807,9 +5806,31 @@ int OsiClpSolverInterface::readLp(const char *filename, const double epsilon)
   // set objective name
   setObjName(m.getObjName());
 
-  // no errors
+#ifndef SWITCH_BACK_TO_MAXIMIZATION
+#define SWITCH_BACK_TO_MAXIMIZATION 1
+#endif
+#if SWITCH_BACK_TO_MAXIMIZATION
+  double * originalObj = NULL;
+  if (m.wasMaximization()) {
+    // switch back
+    setDblParam(OsiObjOffset, -m.objectiveOffset());
+    int numberColumns = m.getNumCols();
+    originalObj = CoinCopyOfArray(m.getObjCoefficients(),numberColumns);
+    for (int i=0;i < numberColumns;i++)
+      originalObj[i] = - originalObj[i];
+    modelPtr_->setOptimizationDirection(-1.0);
+    handler_->message(COIN_GENERAL_INFO, messages_)
+      << "Switching back to maximization to get correct duals etc"
+      << CoinMessageEol;
+  }
+  loadProblem(*m.getMatrixByRow(), m.getColLower(), m.getColUpper(),
+	      !originalObj ? m.getObjCoefficients() : originalObj,
+	      m.getRowLower(), m.getRowUpper());
+  delete [] originalObj;
+#else
   loadProblem(*m.getMatrixByRow(), m.getColLower(), m.getColUpper(),
     m.getObjCoefficients(), m.getRowLower(), m.getRowUpper());
+#endif
 
   char *integer = const_cast< char * >(m.integerColumns());
   int nCols = m.getNumCols();

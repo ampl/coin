@@ -1,4 +1,4 @@
-/* $Id: ClpSimplex.cpp 2393 2019-02-21 12:01:58Z forrest $ */
+/* $Id: ClpSimplex.cpp 2554 2019-12-19 09:01:53Z stefan $ */
 // Copyright (C) 2002, International Business Machines
 // Corporation and others.  All Rights Reserved.
 // This code is licensed under the terms of the Eclipse Public License (EPL).
@@ -152,6 +152,7 @@ ClpSimplex::ClpSimplex(bool emptyMessages)
   // say Steepest pricing
   primalColumnPivot_ = new ClpPrimalColumnSteepest();
   solveType_ = 1; // say simplex based life form
+  eventHandler_->setSimplex(this);
 }
 
 // Subproblem constructor
@@ -265,6 +266,7 @@ ClpSimplex::ClpSimplex(const ClpModel *rhs,
   // say Steepest pricing
   primalColumnPivot_ = new ClpPrimalColumnSteepest();
   solveType_ = 1; // say simplex based life form
+  eventHandler_->setSimplex(this);
   if (fixOthers) {
     int numberOtherColumns = rhs->numberColumns();
     int numberOtherRows = rhs->numberRows();
@@ -411,6 +413,7 @@ ClpSimplex::ClpSimplex(const ClpSimplex *rhs,
     spareDoubleArray_[i] = 0.0;
   }
   saveStatus_ = NULL;
+  eventHandler_->setSimplex(this);
   factorization_ = new ClpFactorization(*rhs->factorization_, -numberRows_);
   //factorization_ = new ClpFactorization(*rhs->factorization_,
   //				rhs->factorization_->goDenseThreshold());
@@ -608,7 +611,7 @@ int ClpSimplex::gutsOfSolution(double *givenDuals,
     int numberOut = 0;
     // But may be very large rhs etc
     double useError = CoinMin(largestPrimalError_,
-      1.0e5 / maximumAbsElement(solution_, numberRows_ + numberColumns_));
+			      1.0e5 / (1.0+maximumAbsElement(solution_, numberRows_ + numberColumns_)));
     if ((oldValue < incomingInfeasibility_ || badInfeasibility > (CoinMax(10.0 * allowedInfeasibility_, 100.0 * oldValue)))
       && (badInfeasibility > CoinMax(incomingInfeasibility_, allowedInfeasibility_) || useError > 1.0e-3)) {
       if (algorithm_ > 1) {
@@ -619,6 +622,7 @@ int ClpSimplex::gutsOfSolution(double *givenDuals,
         //printf("going to all slack\n");
         allSlackBasis(true);
         CoinIotaN(pivotVariable_, numberRows_, numberColumns_);
+	delete [] save;
         return 1;
       }
       //printf("Original largest infeas %g, now %g, primalError %g\n",
@@ -681,9 +685,11 @@ int ClpSimplex::gutsOfSolution(double *givenDuals,
       delete[] sort;
     }
     delete[] save;
+    save = NULL;
     if (numberOut)
       return numberOut;
   }
+  delete [] save;
   if ((moreSpecialOptions_ & 128) != 0 && !numberIterations_) {
     //printf("trying feas pump\n");
     const char *integerType = integerInformation();
@@ -1825,7 +1831,8 @@ int ClpSimplex::internalFactorize(int solveType)
           double big_bound = largeValue_;
           double value = columnActivityWork_[iColumn];
           if (lower > -big_bound || upper < big_bound) {
-            if ((getColumnStatus(iColumn) == atLowerBound && columnActivityWork_[iColumn] == lower) || (getColumnStatus(iColumn) == atUpperBound && columnActivityWork_[iColumn] == upper)) {
+            if ((getColumnStatus(iColumn) == atLowerBound && value == lower) ||
+		(getColumnStatus(iColumn) == atUpperBound && value == upper)) {
               // status looks plausible
             } else {
               // set to sensible
@@ -1919,9 +1926,9 @@ int ClpSimplex::internalFactorize(int solveType)
   //         solution_[iRow],iRow,status_[iRow]);
   //}
   //}
-#if 0 //ndef _MSC_VER                                                              \
-  // The local static var k is a problem when trying to build a DLL. Since this is \
-  // just for debugging (likely done on *nix), just hide it from Windows           \
+#if 0 //ndef _MSC_VER                                                           
+  // The local static var k is a problem when trying to build a DLL. Since this is 
+  // just for debugging (likely done on *nix), just hide it from Windows        
   // -- lh, 101016 --
      if (0)  {
           static int k = 0;
@@ -6268,6 +6275,7 @@ int ClpSimplex::barrier(bool crossover)
   int savePerturbation = perturbation_;
   ClpInterior barrier;
   barrier.borrowModel(*model2);
+  barrier.eventHandler()->setSimplex(NULL);
   // See if quadratic objective
   ClpQuadraticObjective *quadraticObj = NULL;
   if (objective_->type() == 2)
@@ -6302,7 +6310,7 @@ int ClpSimplex::barrier(bool crossover)
   assert(!doKKT);
   ClpCholeskyTaucs *cholesky = new ClpCholeskyTaucs();
   barrier.setCholesky(cholesky);
-#elifdef COIN_HAS_MUMPS
+#elif defined(COIN_HAS_MUMPS)
   if (!doKKT) {
     ClpCholeskyMumps *cholesky = new ClpCholeskyMumps();
     barrier.setCholesky(cholesky);
@@ -6925,9 +6933,10 @@ int ClpSimplex::saveModel(const char *fileName)
         put += lengthNames_ + 1;
       }
       numberWritten = fwrite(array, lengthNames_ + 1, numberColumns_, fp);
-      if (numberWritten != static_cast< size_t >(numberColumns_))
+      if (numberWritten != static_cast< size_t >(numberColumns_)) {
+        delete[] array;
         return 1;
-      delete[] array;
+      }
     }
 #endif
     // integers
@@ -7393,6 +7402,8 @@ bool ClpSimplex::sanityCheck()
       << rowcol[isColumn(firstBad)] << sequenceWithin(firstBad)
       << CoinMessageEol;
     problemStatus_ = 1;
+    // but set secondary status to avoid errors
+    secondaryStatus_ = 6; // good enough
     return false;
   }
   if (modifiedBounds)
@@ -7629,14 +7640,40 @@ int ClpSimplex::readLp(const char *filename, const double epsilon)
   }
   CoinLpIO m;
   m.setEpsilon(epsilon);
-  fclose(fp);
+  if (fp != stdin)
+    fclose(fp);
   m.readLp(filename);
 
   // set problem name
   setStrParam(ClpProbName, m.getProblemName());
+  // set objective function offest
+  setDblParam(ClpObjOffset, m.objectiveOffset());
   // no errors
+#ifndef SWITCH_BACK_TO_MAXIMIZATION
+#define SWITCH_BACK_TO_MAXIMIZATION 1
+#endif
+#if SWITCH_BACK_TO_MAXIMIZATION
+  double * originalObj = NULL;
+  if (m.wasMaximization()) {
+    // switch back
+    setDblParam(ClpObjOffset, -m.objectiveOffset());
+    int numberColumns = m.getNumCols();
+    originalObj = CoinCopyOfArray(m.getObjCoefficients(),numberColumns);
+    for (int i=0;i < numberColumns;i++)
+      originalObj[i] = - originalObj[i];
+    setOptimizationDirection(-1.0);
+    handler_->message(CLP_GENERAL, messages_)
+      << "Switching back to maximization to get correct duals etc"
+      << CoinMessageEol;
+  }
+  loadProblem(*m.getMatrixByRow(), m.getColLower(), m.getColUpper(),
+	      !originalObj ? m.getObjCoefficients() : originalObj,
+	      m.getRowLower(), m.getRowUpper());
+  delete [] originalObj;
+#else
   loadProblem(*m.getMatrixByRow(), m.getColLower(), m.getColUpper(),
     m.getObjCoefficients(), m.getRowLower(), m.getRowUpper());
+#endif
 
   if (m.integerColumns()) {
     integerType_ = new char[numberColumns_];
@@ -9251,6 +9288,7 @@ void ClpSimplex::returnModel(ClpSimplex &otherModel)
   if (perturbationArray_ != otherModel.perturbationArray_)
     delete[] perturbationArray_;
   perturbationArray_ = NULL;
+  assert (otherModel.eventHandler()->simplex()==&otherModel);
 }
 /* Constructs a non linear cost from list of non-linearities (columns only)
    First lower of each column is taken as real lower

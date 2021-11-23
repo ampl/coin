@@ -490,7 +490,7 @@ CglResidualCapacity::generateResCapCuts(
 #if CGL_DEBUG
 	    std::cout << "Res. cap. cut generated " << std::endl;
 #endif
-	    cs.insert(resCapCut);
+	    cs.insertIfNotDuplicate(resCapCut);
 	}
     }
     
@@ -515,7 +515,7 @@ CglResidualCapacity::generateResCapCuts(
 #if CGL_DEBUG
 	    std::cout << "Res. cap. cut generated " << std::endl;
 #endif
-	    cs.insert(resCapCut);
+	    cs.insertIfNotDuplicate(resCapCut);
 	}
     }
 

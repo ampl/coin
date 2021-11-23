@@ -2,7 +2,7 @@
 # All Rights Reserved.
 # This file is distributed under the Eclipse Public License.
 #
-## $Id: coin.m4 3701 2016-10-25 14:09:40Z stefan $
+## $Id: coin.m4 4026 2019-10-09 14:27:30Z stefan $
 #
 # Author: Andreas Wachter    IBM      2006-04-14
 
@@ -97,7 +97,7 @@ AC_DEFUN([AC_COIN_PROJECTVERSION],
  ])
  
 # Capture libtool library version, if given.
- m4_ifvaln([$2],[coin_libversion=$2],[])
+ m4_ifval([$2],[coin_libversion=$2],[])
 ])
 
 ###########################################################################
@@ -1095,13 +1095,14 @@ fi
 
 # Try if FFLAGS works
 if test "$F77" != "unavailable" ; then
+  orig_FFLAGS="FFLAGS"
   AC_TRY_LINK(,[      integer i],[],[FFLAGS=])
   if test -z "$FFLAGS"; then
-    AC_MSG_WARN([The flags FFLAGS="$FFLAGS" do not work.  I will now just try '-O', but you might want to set FFLAGS manually.])
+    AC_MSG_WARN([The flags FFLAGS="$orig_FFLAGS" do not work.  I will now just try '-O', but you might want to set FFLAGS manually.])
     FFLAGS='-O'
     AC_TRY_LINK(,[      integer i],[],[FFLAGS=])
     if test -z "$FFLAGS"; then
-      AC_MSG_WARN([This value for FFLAGS does not work.  I will continue with empty FFLAGS, but you might want to set FFLAGS manually.])
+      AC_MSG_WARN([The flags FFLAGS=-O do not work. I will continue with empty FFLAGS, but you might want to set FFLAGS manually.])
     fi
   fi
 fi
@@ -1427,16 +1428,14 @@ if test "$enable_maintainer_mode" = yes; then
   BUILDTOOLSDIR=
   if test -r $srcdir/BuildTools/coin.m4; then
     BUILDTOOLSDIR=$srcdir/BuildTools
+  elif test -r $srcdir/../BuildTools/coin.m4; then
+    BUILDTOOLSDIR=$srcdir/../BuildTools
+  elif test -r $srcdir/../../BuildTools/coin.m4; then
+    BUILDTOOLSDIR=$srcdir/../../BuildTools
+  elif test -r $srcdir/../../../BuildTools/coin.m4; then
+    BUILDTOOLSDIR=$srcdir/../../../BuildTools
   else
-    if test -r $srcdir/../BuildTools/coin.m4; then
-      BUILDTOOLSDIR=$srcdir/../BuildTools
-    else
-      if test -r $srcdir/../../BuildTools/coin.m4; then
-        BUILDTOOLSDIR=$srcdir/../../BuildTools
-      else
-        AC_MSG_ERROR(Cannot find the BuildTools directory, better disable maintainer mode.)
-      fi
-    fi
+    AC_MSG_ERROR(Cannot find the BuildTools directory, better disable maintainer mode.)
   fi
   AC_SUBST(BUILDTOOLSDIR)
   
@@ -1461,7 +1460,7 @@ if test x$prefix = xNONE; then
 else
   full_prefix=$prefix
 fi
-full_prefix=`cd $full_prefix ; pwd`
+
 AC_SUBST(abs_lib_dir)
 abs_lib_dir=$full_prefix/lib
 AC_SUBST(abs_include_dir)
@@ -1828,7 +1827,10 @@ AC_DEFUN([AC_COIN_PROG_LIBTOOL],
   AC_SUBST(ac_cxx_preproc_warn_flag)
 
   AC_MSG_NOTICE([Build is "$build".])
-  mydos2unix='| dos2unix'
+  AC_CHECK_PROG([dos2unix], [dos2unix], [dos2unix])
+  if test "$dos2unix" = dos2unix ; then
+    mydos2unix="| dos2unix"
+  fi
   case $build in
     *-mingw*)
       CYGPATH_W=echo
@@ -2523,7 +2525,11 @@ AC_DEFUN([AC_COIN_DATA_PATH],
 AC_ARG_VAR(m4_toupper(COIN_DATA_$1_PATH),[Set to absolute path to Data/$1 subdirectory])
 
 if test x"$m4_toupper(COIN_DATA_$1_PATH)" = x; then
-  m4_toupper(COIN_DATA_$1_PATH)=`cd $srcdir/../Data/$1; pwd`
+  if test -d $srcdir/../Data/$1 ; then
+    m4_toupper(COIN_DATA_$1_PATH)=`cd $srcdir/../Data/$1; pwd`
+  else
+    m4_toupper(COIN_DATA_$1_PATH)=`cd $srcdir/../../Data/$1; pwd`
+  fi
 fi
 
 # Under Cygwin, use Windows path.  Add separator
@@ -3087,6 +3093,17 @@ if test x$coin_projectdir = xyes ; then
       fi
       if test -d ../../$i/pkgconfig ; then
         COIN_PKG_CONFIG_PATH_UNINSTALLED="`cd ../../$i/pkgconfig; pwd`:${COIN_PKG_CONFIG_PATH_UNINSTALLED}"
+      fi
+    done
+  fi
+
+  if test -f ../../../coin_subdirs.txt ; then
+    for i in `cat ../../../coin_subdirs.txt` ; do
+      if test -d ../../../$i ; then
+        COIN_PKG_CONFIG_PATH_UNINSTALLED="`cd ../../../$i; pwd`:${COIN_PKG_CONFIG_PATH_UNINSTALLED}"
+      fi
+      if test -d ../../../$i/pkgconfig ; then
+        COIN_PKG_CONFIG_PATH_UNINSTALLED="`cd ../../../$i/pkgconfig; pwd`:${COIN_PKG_CONFIG_PATH_UNINSTALLED}"
       fi
     done
   fi

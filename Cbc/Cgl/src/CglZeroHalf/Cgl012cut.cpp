@@ -1,4 +1,4 @@
-// $Id: Cgl012cut.cpp 1476 2019-04-10 03:59:49Z stefan $
+// $Id: Cgl012cut.cpp 1505 2019-10-03 13:53:58Z stefan $
 // Copyright (C) 2010, International Business Machines
 // Corporation and others.  All Rights Reserved.
 // This code is licensed under the terms of the Eclipse Public License (EPL).
@@ -2349,20 +2349,20 @@ typedef hash_element **hash_table;
 
 /* global variables for local search */
 
-int n; /* number of variables in the ILP */
-int m; /* number of constraints in the ILP */
-int it; /* number of tabu search iterations so far */
-tabu_cut *cur_cut; /* information about the current cut in local search */
-int *last_moved; /* last iteration when a given constraint was added/
+static int n; /* number of variables in the ILP */
+static int m; /* number of constraints in the ILP */
+static int it; /* number of tabu search iterations so far */
+static tabu_cut *cur_cut; /* information about the current cut in local search */
+static int *last_moved; /* last iteration when a given constraint was added/
 		    deleted from the list of constraints of the cut */
-int last_it_add; /* last iteration when a cut was added to the list */
-int last_it_restart; /* last iteration when a restart was performed */
-int prohib_period; /* current prohibition period */
-int last_prohib_period_mod; /* last iteration where prohibition period was modified */
-hash_table hash_tab; /* hash table */
-int A; /* parameter A in Battiti and Protasi */
-int B; /* parameter B in Battiti and Protasi */
-float elapsed_time; /* time elapsed since the beginning of the current
+static int last_it_add; /* last iteration when a cut was added to the list */
+static int last_it_restart; /* last iteration when a restart was performed */
+static int prohib_period; /* current prohibition period */
+static int last_prohib_period_mod; /* last iteration where prohibition period was modified */
+static hash_table hash_tab; /* hash table */
+static int A; /* parameter A in Battiti and Protasi */
+static int B; /* parameter B in Battiti and Protasi */
+static float elapsed_time; /* time elapsed since the beginning of the current
 		       tabu search call */
 
 /* clear_cur_cut: clear the current solution (no constraint in the cut) */

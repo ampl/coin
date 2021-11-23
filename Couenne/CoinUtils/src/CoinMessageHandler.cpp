@@ -1,4 +1,4 @@
-/* $Id: CoinMessageHandler.cpp 2083 2019-01-06 19:38:09Z unxusr $ */
+/* $Id: CoinMessageHandler.cpp 2112 2019-03-15 15:14:15Z stefan $ */
 // Copyright (C) 2002, International Business Machines
 // Corporation and others.  All Rights Reserved.
 // This code is licensed under the terms of the Eclipse Public License (EPL).
@@ -831,7 +831,7 @@ CoinMessageHandler::operator<<(double doublevalue)
           sprintf(messageOut_, g_format_, doublevalue);
           if (next != format_ + 2) {
             messageOut_ += strlen(messageOut_);
-            sprintf(messageOut_, "%s", format_ + 2);
+            strcpy(messageOut_, format_ + 2);
           }
         }
         messageOut_ += strlen(messageOut_);

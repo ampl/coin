@@ -1,4 +1,4 @@
-/* $Id: CoinPresolveZeros.cpp 2083 2019-01-06 19:38:09Z unxusr $ */
+/* $Id: CoinPresolveZeros.cpp 2156 2019-08-06 20:33:03Z stefan $ */
 // Copyright (C) 2002, International Business Machines
 // Corporation and others.  All Rights Reserved.
 // This code is licensed under the terms of the Eclipse Public License (EPL).
@@ -224,6 +224,19 @@ const CoinPresolveAction
   /*
   Scan for zeros.
 */
+  // may be duplicate columns
+  if (ncheckcols && ncheckcols != prob->ncols_) {
+    std::sort(checkcols,checkcols+ncheckcols);
+    int n = ncheckcols;
+    ncheckcols = 1;
+    int iCheck = checkcols[0];
+    for (int i=1;i<n;i++) {
+      if (checkcols[i]!=iCheck) {
+	iCheck = checkcols[i];
+	checkcols[ncheckcols++] = iCheck;
+      }
+    }
+  }
   int nzeros;
   if (ncheckcols == prob->ncols_) {
     nzeros = count_col_zeros2(ncheckcols, checkcols, mcstrt, colels, hincol);

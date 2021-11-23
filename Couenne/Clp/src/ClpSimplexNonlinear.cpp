@@ -1,4 +1,4 @@
-/* $Id: ClpSimplexNonlinear.cpp 2385 2019-01-06 19:43:06Z unxusr $ */
+/* $Id: ClpSimplexNonlinear.cpp 2449 2019-04-08 03:34:28Z stefan $ */
 // Copyright (C) 2004, International Business Machines
 // Corporation and others.  All Rights Reserved.
 // This code is licensed under the terms of the Eclipse Public License (EPL).
@@ -2098,7 +2098,10 @@ int ClpSimplexNonlinear::pivotColumn(CoinIndexedVector *longArray,
       //returnCode=2;
       //objTheta=-1.0; // so we fall through
     }
-    assert(theta_ < 1.0e30); // for now
+    if (theta_ >= 1.0e30) { // odd
+      returnCode=2;
+      break;
+    }
     // See if we need to pivot
     if (theta_ == basicTheta || ordinaryDj) {
       if (!ordinaryDj) {
@@ -2306,6 +2309,7 @@ int ClpSimplexNonlinear::pivotColumn(CoinIndexedVector *longArray,
       columnArray->clear();
       longArray->clear();
       if (ordinaryDj) {
+	assert (sequenceIn_>=0);
         valueIn_ = solution_[sequenceIn_];
         dualIn_ = dj_[sequenceIn_];
         lowerIn_ = lower_[sequenceIn_];

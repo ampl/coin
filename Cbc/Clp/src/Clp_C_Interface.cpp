@@ -1,4 +1,4 @@
-// $Id: Clp_C_Interface.cpp 2449 2019-04-08 03:34:28Z stefan $
+// $Id: Clp_C_Interface.cpp 2630 2020-01-29 17:45:31Z stefan $
 // Copyright (C) 2003, International Business Machines
 // Corporation and others.  All Rights Reserved.
 // This code is licensed under the terms of the Eclipse Public License (EPL).
@@ -375,12 +375,14 @@ Clp_chgObjCoefficients(Clp_Simplex *model, const double *objIn)
   model->model_->chgObjCoefficients(objIn);
 }
 /* Change matrix coefficients */
+#if (defined(__cplusplus) && __cplusplus >= 199901L) || (defined(__STDC_VERSION__) && __STDC_VERSION__ >= 199901L)
 COINLIBAPI void COINLINKAGE
 Clp_modifyCoefficient(Clp_Simplex *model, int row, int column, double newElement,
   bool keepZero)
 {
   model->model_->modifyCoefficient(row, column, newElement, keepZero);
 }
+#endif
 /* Drops names - makes lengthnames 0 and names empty */
 COINLIBAPI void COINLINKAGE
 Clp_dropNames(Clp_Simplex *model)
@@ -471,8 +473,7 @@ COINLIBAPI void COINLINKAGE
 Clp_problemName(Clp_Simplex *model, int maxNumberCharacters, char *array)
 {
   std::string name = model->model_->problemName();
-  maxNumberCharacters = CoinMin(maxNumberCharacters,
-    ((int)strlen(name.c_str())) + 1);
+  maxNumberCharacters = CoinMin(maxNumberCharacters, (int)name.size() + 1);
   strncpy(array, name.c_str(), maxNumberCharacters - 1);
   array[maxNumberCharacters - 1] = '\0';
 }

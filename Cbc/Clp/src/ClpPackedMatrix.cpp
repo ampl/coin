@@ -1,4 +1,4 @@
-/* $Id: ClpPackedMatrix.cpp 2468 2019-05-03 04:31:14Z stefan $ */
+/* $Id: ClpPackedMatrix.cpp 2618 2020-01-16 13:46:41Z stefan $ */
 // Copyright (C) 2002, International Business Machines
 // Corporation and others.  All Rights Reserved.
 // This code is licensed under the terms of the Eclipse Public License (EPL).
@@ -6749,10 +6749,10 @@ ClpPackedMatrix3::ClpPackedMatrix3()
 }
 #ifdef _MSC_VER
 #include <intrin.h>
-#elif defined(__arm__)
+#elif defined(__ARM_FEATURE_SIMD32) || defined(__ARM_NEON)
 #include <arm_neon.h>
 #else
-#include <immintrin.h>
+//#include <immintrin.h> // deemed unnecessary in #126; if that was wrong, then try to do as suggested in #127
 //#include <fmaintrin.h>
 #endif
 /* Constructor from copy. */

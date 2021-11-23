@@ -1,4 +1,4 @@
-/* $Id: CoinLpIO.cpp 2122 2019-04-08 03:26:16Z stefan $ */
+/* $Id: CoinLpIO.cpp 2213 2019-12-19 08:44:16Z stefan $ */
 // Last edit: 11/5/08
 //
 // Name:     CoinLpIO.cpp; Support for Lp files
@@ -1869,6 +1869,9 @@ void CoinLpIO::readLp(const char *filename)
     readable = fileCoinReadable(fname);
     if (readable)
       input_ = CoinFileInput::create(fname);
+  } else if (!strcmp(filename,"-")) {
+    input_ = new CoinPlainFileInput(stdin);
+    readable = true;
   }
   if (!readable) {
     char str[8192];

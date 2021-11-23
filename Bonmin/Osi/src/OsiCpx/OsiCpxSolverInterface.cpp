@@ -2088,12 +2088,11 @@ void OsiCpxSolverInterface::setRowPrice(const double *rs)
     // Copy in new row solution.
     CoinDisjointCopyN(rs, nr, rowsol_);
 
-    // if a col solution exists, then pass into CPLEX
-    if (colsol_ != NULL) {
-      int err = CPXcopystart(env_, getMutableLpPtr(), NULL, NULL,
-        const_cast< double * >(colsol_),
-        const_cast< double * >(rowsol_),
-        NULL, NULL);
+    // if reduced cost exists, then pass into CPLEX
+    if (redcost_ != NULL) {
+      int err = CPXcopystart(env_, getMutableLpPtr(), NULL, NULL, NULL, NULL,
+        const_cast< double * >(redcost_),
+        const_cast< double * >(rowsol_));
       checkCPXerror(err, "CPXcopystart", "setRowPrice");
     }
   }

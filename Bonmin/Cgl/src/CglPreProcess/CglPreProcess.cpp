@@ -1958,6 +1958,8 @@ CglPreProcess::preProcessNonDefault(OsiSolverInterface &model,
   double offset;
   int numberMoved = 0;
   startModel_->getDblParam(OsiObjOffset, offset);
+  // This is not a vital loop so be careful
+#ifndef SKIP_MOVE_COSTS_TO_INTEGERS
   for (iRow = 0; iRow < numberRows; iRow++) {
     //int slack = -1;
     int nPlus = 0;
@@ -2018,21 +2020,24 @@ CglPreProcess::preProcessNonDefault(OsiSolverInterface &model,
             nMinus++;
           }
         }
-      } else {
-        rhs -= lower[iColumn] * value;
       }
     }
-    if (((nPlus == 1 && startModel_->isInteger(iPlus) && nMinus > 0) || (nMinus == 1 && startModel_->isInteger(iMinus) && nPlus > 0)) && numberContinuous && true) {
+    if (((nPlus == 1 && startModel_->isInteger(iPlus) && nMinus > 0 && !obj[iPlus]) ||
+	 (nMinus == 1 && startModel_->isInteger(iMinus) && nPlus > 0 && !obj[iMinus]))
+	&& numberContinuous) {
       int jColumn;
       double multiplier;
-      if (nPlus == 1 && startModel_->isInteger(iPlus)) {
+      double inverseValueOther;
+      if (nPlus == 1) {
         jColumn = iPlus;
         multiplier = fabs(valuePlus / valueMinus);
         rhs /= -valueMinus;
+	inverseValueOther = 1.0/valueMinus;
       } else {
         jColumn = iMinus;
         multiplier = fabs(valueMinus / valuePlus);
         rhs /= valuePlus;
+	inverseValueOther = 1.0/valuePlus;
       }
       double smallestPos = COIN_DBL_MAX;
       double smallestNeg = -COIN_DBL_MAX;
@@ -2069,7 +2074,10 @@ CglPreProcess::preProcessNonDefault(OsiSolverInterface &model,
             if (iColumn != jColumn) {
               if (upper[iColumn] > lower[iColumn]) {
                 obj[iColumn] -= move;
-              }
+	      } else {
+		double value = elementByRow[j];
+		obj[iColumn] -= move*value*inverseValueOther;
+	      }
             } else {
               obj[jColumn] += move * multiplier;
             }
@@ -2078,6 +2086,7 @@ CglPreProcess::preProcessNonDefault(OsiSolverInterface &model,
       }
     }
   }
+#endif
 #if CBC_USEFUL_PRINTING > 1
   if (numberMoved)
     printf("ZZZ %d costs moved\n", numberMoved);
@@ -6789,6 +6798,7 @@ CglPreProcess::someFixed(OsiSolverInterface &model,
     }
   }
   delete[] sort;
+  delete[] dj;
   return newModel;
 }
 // If we have a cutoff - fix variables
@@ -8079,7 +8089,7 @@ int CglUniqueRowCuts::insertIfNotDuplicate(const OsiRowCut &cut)
 void CglUniqueRowCuts::addCuts(OsiCuts &cs)
 {
   for (int i = 0; i < numberCuts_; i++) {
-    cs.insert(*rowCut_[i]);
+    cs.insertIfNotDuplicate(*rowCut_[i]);
     delete rowCut_[i];
     rowCut_[i] = NULL;
   }

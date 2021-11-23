@@ -9,7 +9,7 @@
 // Copyright (C) 2009 Humboldt University Berlin and others.
 // All Rights Reserved.
 
-// $Id: OsiGrbSolverInterface.cpp 2197 2019-01-06 23:00:34Z unxusr $
+// $Id: OsiGrbSolverInterface.cpp 2272 2019-08-06 20:37:30Z stefan $
 
 #include <iostream>
 #include <cassert>
@@ -36,8 +36,6 @@ extern "C" {
 #ifndef UNUSED
 #if defined(__GNUC__)
 #define UNUSED __attribute__((unused))
-#else
-#define UNUSED
 #endif
 #endif
 
@@ -695,11 +693,13 @@ CoinWarmStart *OsiGrbSolverInterface::getEmptyWarmStart() const
   return (dynamic_cast< CoinWarmStart * >(new CoinWarmStartBasis()));
 }
 
+#ifdef UNUSED
 // below we assume that getBasisStatus uses the same values as the warm start enum, i.e. 0: free, 1: basic, 2: upper, 3: lower
 static CompileTimeAssert< CoinWarmStartBasis::isFree == 0 > UNUSED change_In_Enum_CoinWarmStartBasis_Status_free_breaks_this_function;
 static CompileTimeAssert< CoinWarmStartBasis::basic == 1 > UNUSED change_In_Enum_CoinWarmStartBasis_Status_basic_breaks_this_function;
 static CompileTimeAssert< CoinWarmStartBasis::atUpperBound == 2 > UNUSED change_In_Enum_CoinWarmStartBasis_Status_upper_breaks_this_function;
 static CompileTimeAssert< CoinWarmStartBasis::atLowerBound == 3 > UNUSED change_In_Enum_CoinWarmStartBasis_Status_lower_breaks_this_function;
+#endif
 
 CoinWarmStart *OsiGrbSolverInterface::getWarmStart() const
 {
@@ -3679,6 +3679,7 @@ void OsiGrbSolverInterface::freeAllMemory()
   delete[] auxcolind;
   auxcolind = NULL;
   auxcolindspace = 0;
+  nauxcols = 0;
 }
 
 /// converts a normal row into a ranged row by adding an auxiliary variable

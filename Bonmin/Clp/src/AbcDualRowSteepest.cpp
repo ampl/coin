@@ -1,4 +1,4 @@
-/* $Id: AbcDualRowSteepest.cpp 2385 2019-01-06 19:43:06Z unxusr $ */
+/* $Id: AbcDualRowSteepest.cpp 2431 2019-03-15 15:56:51Z stefan $ */
 // Copyright (C) 2002, International Business Machines
 // Corporation and others, Copyright (C) 2012, FasterCoin.  All Rights Reserved.
 // This code is licensed under the terms of the Eclipse Public License (EPL).
@@ -177,7 +177,7 @@ static void choose(int &chosenRow, double &largest, int n,
   const double *weights, double tolerance)
 {
   cilk::reducer_max_index< int, double > maximumIndex(chosenRow, largest);
-#pragma cilk_grainsize = 128
+#pragma cilk grainsize = 128
   cilk_for(int i = 0; i < n; i++)
   {
     int iRow = index[i];

@@ -1,4 +1,4 @@
-/* $Id: CbcTree.cpp 2467 2019-01-03 21:26:29Z unxusr $ */
+/* $Id: CbcTree.cpp 2550 2019-04-22 03:46:32Z stefan $ */
 // Copyright (C) 2004, International Business Machines
 // Corporation and others.  All Rights Reserved.
 // This code is licensed under the terms of the Eclipse Public License (EPL).
@@ -651,7 +651,7 @@ void CbcTree::cleanTree(CbcModel *model, double cutoff, double &bestPossibleObje
     // node should not have anything pointing to it
     if (node->nodeInfo())
       node->nodeInfo()->throwAway();
-    delete node;
+    model->deleteNode(node);
     delete lastws;
   }
   delete[] nodeArray;

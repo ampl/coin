@@ -1,4 +1,4 @@
-/* $Id: CbcSolver.cpp 2588 2019-06-13 14:38:38Z stefan $ */
+/* $Id: CbcSolver.cpp 2770 2019-12-19 09:13:22Z stefan $ */
 // Copyright (C) 2007, International Business Machines
 // Corporation and others.  All Rights Reserved.
 // This code is licensed under the terms of the Eclipse Public License (EPL).
@@ -441,7 +441,9 @@ CbcSolver::CbcSolver(const CbcSolver &rhs)
   , babModel_(NULL)
   , userFunction_(NULL)
   , statusUserFunction_(NULL)
+  , cutGenerator_(new CglCutGenerator *[rhs.numberCutGenerators()])  
   , numberUserFunctions_(rhs.numberUserFunctions_)
+  , numberCutGenerators_(rhs.numberCutGenerators())
   , startTime_(CoinCpuTime())
   , doMiplib_(rhs.doMiplib_)
   , noPrinting_(rhs.noPrinting_)
@@ -8129,7 +8131,7 @@ int CbcMain1(int argc, const char *argv[],
               // stdin
               canOpen = true;
               fileName = "-";
-            } else if (field == "stdin_lp") {
+            } else if (field == "-lp" || field == "stdin_lp") {
               // stdin
               canOpen = true;
               fileName = "-";

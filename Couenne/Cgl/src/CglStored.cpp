@@ -66,7 +66,7 @@ void CglStored::generateCuts(const OsiSolverInterface &si, OsiCuts &cs,
               element[1] = 1.0;
               cut.setEffectiveness(violation);
               cut.setRow(2, column, element, false);
-              cs.insert(cut);
+              cs.insertIfNotDuplicate(cut);
             }
           } else {
             double violation = value2 - value1;
@@ -80,7 +80,7 @@ void CglStored::generateCuts(const OsiSolverInterface &si, OsiCuts &cs,
               element[1] = -1.0;
               cut.setEffectiveness(violation);
               cut.setRow(2, column, element, false);
-              cs.insert(cut);
+              cs.insertIfNotDuplicate(cut);
             }
           }
         } else {
@@ -100,7 +100,7 @@ void CglStored::generateCuts(const OsiSolverInterface &si, OsiCuts &cs,
               element[1] = 1.0;
               cut.setEffectiveness(violation);
               cut.setRow(2, column, element, false);
-              cs.insert(cut);
+              cs.insertIfNotDuplicate(cut);
             }
           } else {
             double violation = value2 - value1 * (upperValue - lowerValue) - lowerValue;
@@ -114,7 +114,7 @@ void CglStored::generateCuts(const OsiSolverInterface &si, OsiCuts &cs,
               element[1] = -1.0;
               cut.setEffectiveness(violation);
               cut.setRow(2, column, element, false);
-              cs.insert(cut);
+              cs.insertIfNotDuplicate(cut);
             }
           }
         }
@@ -137,7 +137,7 @@ void CglStored::generateCuts(const OsiSolverInterface &si, OsiCuts &cs,
               element[1] = -1.0;
               cut.setEffectiveness(violation);
               cut.setRow(2, column, element, false);
-              cs.insert(cut);
+              cs.insertIfNotDuplicate(cut);
             }
           } else {
             double violation = value1 + value2 - 1.0;
@@ -151,7 +151,7 @@ void CglStored::generateCuts(const OsiSolverInterface &si, OsiCuts &cs,
               element[1] = 1.0;
               cut.setEffectiveness(violation);
               cut.setRow(2, column, element, false);
-              cs.insert(cut);
+              cs.insertIfNotDuplicate(cut);
             }
           }
         } else {
@@ -171,7 +171,7 @@ void CglStored::generateCuts(const OsiSolverInterface &si, OsiCuts &cs,
               element[1] = -1.0;
               cut.setEffectiveness(violation);
               cut.setRow(2, column, element, false);
-              cs.insert(cut);
+              cs.insertIfNotDuplicate(cut);
             }
           } else {
             double violation = (upperValue - lowerValue) * value1 + value2 - upperValue;
@@ -185,7 +185,7 @@ void CglStored::generateCuts(const OsiSolverInterface &si, OsiCuts &cs,
               element[1] = 1.0;
               cut.setEffectiveness(violation);
               cut.setRow(2, column, element, false);
-              cs.insert(cut);
+              cs.insertIfNotDuplicate(cut);
             }
           }
         }

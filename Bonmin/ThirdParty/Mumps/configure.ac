@@ -2,7 +2,7 @@
 # All Rights Reserved.
 # This file is distributed under the Eclipse Public License.
 
-## $Id: configure.ac 3912 2018-11-17 16:17:57Z stefan $
+## $Id: configure.ac 4099 2020-01-31 10:33:36Z stefan $
 
 # Author:  Andreas Waechter            IBM    2006-04-13
 
@@ -12,7 +12,7 @@
 
 AC_PREREQ(2.59)
 
-AC_INIT([ThirdPartyMumps],[1.6.1],[http://projects.coin-or.org/BuildTools/newticket])
+AC_INIT([ThirdPartyMumps],[1.6.2],[http://projects.coin-or.org/BuildTools/newticket])
 
 AC_COPYRIGHT([
 Copyright 2007-2009 International Business Machines and others.
@@ -30,7 +30,7 @@ AC_CONFIG_SRCDIR(MUMPS/src/dmumps_part1.F)
 # /usr/local.
 AC_PREFIX_DEFAULT([`pwd`])
 
-AC_COIN_PROJECTDIR_INIT(Mumps,7:1:6)
+AC_COIN_PROJECTDIR_INIT(Mumps,7:2:6)
 
 #############################################################################
 #                         Standard build tool stuff                         #

@@ -2,7 +2,7 @@
 # All Rights Reserved.
 # This file is distributed under the Eclipse Public License.
 
-## $Id: configure.ac 3893 2018-11-17 15:58:47Z stefan $
+## $Id: configure.ac 4084 2020-01-31 10:26:04Z stefan $
 
 # Author:  Andreas Waechter            IBM    2006-04-13
 
@@ -12,7 +12,7 @@
 
 AC_PREREQ(2.59)
 
-AC_INIT([ThirdPartyFilterSQP],[1.3.5],[http://projects.coin-or.org/BuildTools/newticket])
+AC_INIT([ThirdPartyFilterSQP],[1.3.6],[http://projects.coin-or.org/BuildTools/newticket])
 
 AC_COPYRIGHT([
 Copyright 2006 International Business Machines and others.
@@ -30,7 +30,7 @@ AC_CONFIG_SRCDIR(source/src/filter.f)
 # /usr/local.
 AC_PREFIX_DEFAULT([`pwd`])
 
-AC_COIN_PROJECTDIR_INIT(FilterSQP,4:5:3)
+AC_COIN_PROJECTDIR_INIT(FilterSQP,4:6:3)
 
 #############################################################################
 #                         Standard build tool stuff                         #

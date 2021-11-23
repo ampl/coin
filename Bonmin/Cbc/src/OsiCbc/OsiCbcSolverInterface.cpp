@@ -1,4 +1,4 @@
-// $Id: OsiCbcSolverInterface.cpp 2469 2019-01-06 23:17:46Z unxusr $
+// $Id: OsiCbcSolverInterface.cpp 2534 2019-03-15 16:27:39Z stefan $
 // Copyright (C) 2002, International Business Machines
 // Corporation and others.  All Rights Reserved.
 // This code is licensed under the terms of the Eclipse Public License (EPL).
@@ -748,8 +748,10 @@ void OsiCbcSolverInterface::setObjSense(double s)
 // Invoke solver's built-in enumeration algorithm
 void OsiCbcSolverInterface::branchAndBound()
 {
-  *messageHandler() << "Warning: Use of OsiCbc is deprecated." << CoinMessageEol;
-  *messageHandler() << "To enjoy the full performance of Cbc, use the CbcSolver interface." << CoinMessageEol;
+  if( messageHandler()->logLevel() > 0 ) {
+    *messageHandler() << "Warning: Use of OsiCbc is deprecated." << CoinMessageEol;
+    *messageHandler() << "To enjoy the full performance of Cbc, use the CbcSolver interface." << CoinMessageEol;
+  }
   modelPtr_->branchAndBound();
 }
 
@@ -767,12 +769,12 @@ OsiCbcSolverInterface::dfltRowColName(char rc, int ndx, unsigned digits) const
   return (modelPtr_->solver()->dfltRowColName(rc, ndx, digits));
 }
 
-std::string OsiCbcSolverInterface::getObjName(unsigned maxLen) const
+std::string OsiCbcSolverInterface::getObjName(std::string::size_type maxLen) const
 {
   return (modelPtr_->solver()->getObjName(maxLen));
 }
 
-std::string OsiCbcSolverInterface::getRowName(int ndx, unsigned maxLen) const
+std::string OsiCbcSolverInterface::getRowName(int ndx, std::string::size_type maxLen) const
 {
   return (modelPtr_->solver()->getRowName(ndx, maxLen));
 }
@@ -782,7 +784,7 @@ const OsiSolverInterface::OsiNameVec &OsiCbcSolverInterface::getRowNames()
   return (modelPtr_->solver()->getRowNames());
 }
 
-std::string OsiCbcSolverInterface::getColName(int ndx, unsigned maxLen) const
+std::string OsiCbcSolverInterface::getColName(int ndx, std::string::size_type maxLen) const
 {
   return (modelPtr_->solver()->getColName(ndx, maxLen));
 }

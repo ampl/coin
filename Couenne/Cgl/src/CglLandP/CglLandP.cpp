@@ -4,7 +4,7 @@
 //           Carnegie Mellon University, Pittsburgh, PA 15213
 // Date:     07/21/05
 //
-// $Id: CglLandP.cpp 1122 2013-04-06 20:39:53Z stefan $
+// $Id: CglLandP.cpp 1505 2019-10-03 13:53:58Z stefan $
 //
 // This code is licensed under the terms of the Eclipse Public License (EPL).
 //---------------------------------------------------------------------------
@@ -662,7 +662,7 @@ CglLandP::generateCuts(const OsiSolverInterface & si, OsiCuts & cs,
                 cut.setGloballyValid(true);
             }
             cs.insertIfNotDuplicate(cut, eq);
-            //cs.insert(cut);
+            //cs.insertIfNotDuplicate(cut);
             {
                 //std::cout<<"Violation "<<cut.violated(cached_.colsol_)<<std::endl;
                 nCut++;

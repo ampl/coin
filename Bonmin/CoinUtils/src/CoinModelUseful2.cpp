@@ -1,4 +1,4 @@
-/* $Id: CoinModelUseful2.cpp 2083 2019-01-06 19:38:09Z unxusr $ */
+/* $Id: CoinModelUseful2.cpp 2112 2019-03-15 15:14:15Z stefan $ */
 // Copyright (C) 2005, International Business Machines
 // Corporation and others.  All Rights Reserved.
 /* A Bison parser, made by GNU Bison 1.875c.  */
@@ -630,10 +630,6 @@ YYSTYPE *yyvaluep;
   } else
     YYFPRINTF(yyoutput, "nterm %s (", yytname[yytype]);
 
-  switch (yytype) {
-  default:
-    break;
-  }
   YYFPRINTF(yyoutput, ")");
 }
 
@@ -654,11 +650,6 @@ YYSTYPE *yyvaluep;
   /* Pacify ``unused variable'' warnings.  */
   (void)yyvaluep;
 
-  switch (yytype) {
-
-  default:
-    break;
-  }
 }
 
 static symrec *
@@ -1274,12 +1265,10 @@ yyerrlab:
 `---------------------------------------------------*/
 yyerrorlab:
 
-#ifdef __GNUC__
   /* Pacify GCC when the user code never invokes YYERROR and the label
      yyerrorlab therefore never appears in user code.  */
   if (0)
     goto yyerrorlab;
-#endif
 
   yyvsp -= yylen;
   yyssp -= yylen;

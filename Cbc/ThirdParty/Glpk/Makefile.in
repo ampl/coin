@@ -254,6 +254,7 @@ build_cpu = @build_cpu@
 build_os = @build_os@
 build_vendor = @build_vendor@
 datadir = @datadir@
+dos2unix = @dos2unix@
 exec_prefix = @exec_prefix@
 glpkmajorver = @glpkmajorver@
 glpkminorver = @glpkminorver@

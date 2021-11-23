@@ -1,4 +1,4 @@
-/* $Id: CoinSignal.hpp 2083 2019-01-06 19:38:09Z unxusr $ */
+/* $Id: CoinSignal.hpp 2216 2019-12-27 03:28:40Z stefan $ */
 // Copyright (C) 2003, International Business Machines
 // Corporation and others.  All Rights Reserved.
 // This code is licensed under the terms of the Eclipse Public License (EPL).
@@ -37,6 +37,13 @@ typedef __decltype(SIG_DFL) CoinSighandler_t;
 //-----------------------------------------------------------------------------
 
 #if defined(__MINGW32__) && defined(__GNUC__)
+typedef __decltype(SIG_DFL) CoinSighandler_t;
+#define CoinSighandler_t_defined
+#endif
+
+//-----------------------------------------------------------------------------
+
+#if defined(__OpenBSD__) && defined(__GNUC__)
 typedef __decltype(SIG_DFL) CoinSighandler_t;
 #define CoinSighandler_t_defined
 #endif

@@ -1,4 +1,4 @@
-/* $Id: CbcCutGenerator.cpp 2467 2019-01-03 21:26:29Z unxusr $ */
+/* $Id: CbcCutGenerator.cpp 2706 2019-10-08 09:25:42Z stefan $ */
 // Copyright (C) 2003, International Business Machines
 // Corporation and others.  All Rights Reserved.
 // This code is licensed under the terms of the Eclipse Public License (EPL).
@@ -28,6 +28,11 @@
 #include "CbcBranchDynamic.hpp"
 #include "CglProbing.hpp"
 #include "CoinTime.hpp"
+#ifdef CBC_THREAD
+// need time on a thread by thread basis
+#include <pthread.h>
+#include <time.h>
+#endif
 
 // Default Constructor
 CbcCutGenerator::CbcCutGenerator()
@@ -263,8 +268,29 @@ bool CbcCutGenerator::generateCuts(OsiCuts &cs, int fullScan, OsiSolverInterface
     }
 #endif
     double time1 = 0.0;
-    if (timing())
+    //#undef CBC_THREAD
+    /* TODO there should be check in configure or the Posix version C preprocessor variable
+     * to decide whether pthread_getcpuclockid is available
+     */
+#if defined(_MSC_VER) || defined(__MSVCRT__) || defined(__APPLE__) || !defined(CBC_THREAD)
+    if (timing()) 
       time1 = CoinCpuTime();
+#else
+    struct timespec currTime;
+    clockid_t threadClockId;
+    if (timing()) {
+      if (!model_->getNumberThreads()) {
+	time1 = CoinCpuTime();
+      } else {
+	// Get thread clock Id
+	pthread_getcpuclockid(pthread_self(), &threadClockId);
+	// Using thread clock Id get the clock time
+	clock_gettime(threadClockId, &currTime);
+	time1 = static_cast<double>(currTime.tv_sec)
+	  +1.0e-9*static_cast<double>(currTime.tv_nsec);
+      }
+    }
+#endif
     //#define CBC_DEBUG
     int numberRowCutsBefore = cs.sizeRowCuts();
     int numberColumnCutsBefore = cs.sizeColCuts();
@@ -1254,8 +1280,23 @@ bool CbcCutGenerator::generateCuts(OsiCuts &cs, int fullScan, OsiSolverInterface
 #endif
       numberColumnCuts_ += numberColumnCutsAfter - numberColumnCutsBefore;
     }
-    if (timing())
+    if (timing()) {
+      // Using thread clock Id get the clock time
+      /* TODO there should be check in configure or the Posix version C preprocessor variable
+       * to decide whether pthread_getcpuclockid is available
+       */
+#if defined(_MSC_VER) || defined(__MSVCRT__) || defined(__APPLE__) || !defined(CBC_THREAD)
       timeInCutGenerator_ += CoinCpuTime() - time1;
+#else
+      if (!model_->getNumberThreads()) {
+	timeInCutGenerator_ += CoinCpuTime() - time1;
+      } else {
+	clock_gettime(threadClockId, &currTime);
+	timeInCutGenerator_ += static_cast<double>(currTime.tv_sec) + 1.0e-9*
+	  static_cast<double>(currTime.tv_nsec) - time1;
+      }
+#endif
+    }
     // switch off if first time and no good
     if (node == NULL && !pass) {
       if (numberRowCutsAfter - numberRowCutsBefore

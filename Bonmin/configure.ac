@@ -2,7 +2,7 @@
 # All Rights Reserved.
 # This file is distributed under the Eclipse Public License.
 
-## $Id: configure.ac 2201 2019-02-23 15:58:34Z stefan $
+## $Id: configure.ac 2254 2020-01-31 12:22:34Z stefan $
 
 # Author:  Andreas Waechter            IBM    2006-04-13
 
@@ -12,7 +12,7 @@
 
 AC_PREREQ(2.59)
 
-AC_INIT([Bonmin],[1.8.7],[bonmin@lists.coin-or.org])
+AC_INIT([Bonmin],[1.8.8],[bonmin@lists.coin-or.org])
 
 AC_COPYRIGHT([
 Copyright 2006 International Business Machines and others.

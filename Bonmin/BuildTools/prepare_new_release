@@ -5,7 +5,7 @@
 # This file is distributed under the Eclipse Public License.
 # It is part of the BuildTools project in COIN-OR (www.coin-or.org)
 #
-# $Id: prepare_new_release 2947 2013-09-13 08:36:57Z stefan $
+# $Id: prepare_new_release 3949 2019-03-15 15:18:45Z stefan $
 #
 # Author: Andreas Waechter     IBM      2007-06-21
 # Modified: Lou Hafer	       SFU	2008-01-20
@@ -592,7 +592,7 @@ if test -n "$srcDepFile" ; then
       if test $ext_isNormal = yes &&
          test $ext_proj != BuildTools && test $ourBTURL != none ; then
         ext_rel_url_notail=`echo $ext_rel_url | sed -e 's,/[^/]*$,,'`
-	extBTURL=`svn propget svn:externals $ext_rel_url_notail`
+	extBTURL=`svn propget svn:externals $ext_rel_url_notail || :`
 	extBTURL=`echo $extBTURL | \
 	  sed -n -e 's/^BuildTools *https:\([^ ]*\) *$/https:\1/p'`
 	if test -n "$extBTURL" ; then
@@ -781,15 +781,6 @@ if test -n "$stableExternals" ; then
   rm -f Dependencies.temp.$$
   svn propset -F Dependencies svn:externals .
   echo ''
-fi
-
-# If we had a Dependencies file to begin with, it contained references to
-# stable branches, and perhaps releases. This is the set of dependencies that
-# we want to commit in Dependencies, so reload $srcDepFile.bak into
-# Dependencies, now that we have svn:externals set to releases.
-
-if test -n "$srcDepFile" ; then
-  cp $srcDepFile.bak Dependencies
 fi
 
 if test -r Dependencies ; then

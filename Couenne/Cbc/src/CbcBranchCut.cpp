@@ -1,4 +1,4 @@
-/* $Id: CbcBranchCut.cpp 2467 2019-01-03 21:26:29Z unxusr $ */
+/* $Id: CbcBranchCut.cpp 2534 2019-03-15 16:27:39Z stefan $ */
 // Copyright (C) 2004, International Business Machines
 // Corporation and others.  All Rights Reserved.
 // This code is licensed under the terms of the Eclipse Public License (EPL).
@@ -193,8 +193,8 @@ CbcCutBranchingObject::branch()
     cut = &up_;
     way_ = -1; // Swap direction
   }
-  printf("CUT %s ", (way_ == -1) ? "up" : "down");
-  cut->print();
+  // printf("CUT %s ", (way_ == -1) ? "up" : "down");
+  // cut->print();
   // See if cut just fixes variables
   double lb = cut->lb();
   double ub = cut->ub();

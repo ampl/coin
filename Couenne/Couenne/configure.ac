@@ -1,4 +1,4 @@
-## $Id: configure.ac 1274 2019-02-23 17:59:23Z stefan $
+## $Id: configure.ac 1316 2020-01-31 13:32:10Z stefan $
 #
 # Copyright (C) 2006 International Business Machines.
 # All Rights Reserved.
@@ -13,7 +13,7 @@
 
 AC_PREREQ(2.59)
 
-AC_INIT([Couenne],[0.5.7],[couenne@list.coin-or.org])
+AC_INIT([Couenne],[0.5.8],[couenne@list.coin-or.org])
 
 AC_COPYRIGHT([
 Copyright 2006 Carnegie Mellon University, International Business Machines and others.
@@ -44,7 +44,7 @@ AC_COIN_F77_WRAPPERS
 AC_CANONICAL_BUILD
 
 # Initialization specifically for project main directories
-AC_COIN_PROJECTDIR_INIT(Couenne,5:7:4)
+AC_COIN_PROJECTDIR_INIT(Couenne,5:8:4)
 
 # Check if user wants to produce debugging code
 AC_COIN_DEBUG_COMPILE(Couenne)

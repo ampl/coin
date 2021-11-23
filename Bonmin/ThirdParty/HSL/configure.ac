@@ -2,7 +2,7 @@
 # All Rights Reserved.
 # This file is distributed under the Eclipse Public License.
 
-## $Id: configure.ac 3845 2018-09-16 14:08:18Z stefan $
+## $Id: configure.ac 4090 2020-01-31 10:29:31Z stefan $
 
 # Author:  Andreas Waechter            IBM    2006-04-13
 
@@ -12,7 +12,7 @@
 
 AC_PREREQ(2.59)
 
-AC_INIT([ThirdPartyHSL],[1.5.7],[http://projects.coin-or.org/BuildTools/newticket])
+AC_INIT([ThirdPartyHSL],[1.5.8],[http://projects.coin-or.org/BuildTools/newticket])
 
 AC_COPYRIGHT([
 Copyright 2006, 2009 International Business Machines and others.
@@ -30,7 +30,7 @@ AC_CONFIG_SRCDIR([coinhsl/common/deps.f])
 # /usr/local.
 AC_PREFIX_DEFAULT([`pwd`])
 
-AC_COIN_PROJECTDIR_INIT(COINHSL,6:7:5)
+AC_COIN_PROJECTDIR_INIT(COINHSL,6:8:5)
 
 #############################################################################
 #                         Standard build tool stuff                         #

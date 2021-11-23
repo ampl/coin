@@ -1,4 +1,4 @@
-/* $Id: ClpSimplexPrimal.cpp 2449 2019-04-08 03:34:28Z stefan $ */
+/* $Id: ClpSimplexPrimal.cpp 2554 2019-12-19 09:01:53Z stefan $ */
 // Copyright (C) 2002, International Business Machines
 // Corporation and others.  All Rights Reserved.
 // This code is licensed under the terms of the Eclipse Public License (EPL).
@@ -572,7 +572,7 @@ int ClpSimplexPrimal::primal(int ifValuesPass, int startFinishOptions)
     createRim(1);
     memset(cost_, 0, (numberRows_ + numberColumns_) * sizeof(double));
 #endif
-    delete nonLinearCost_;
+    delete nonLinearCost_; 
     nonLinearCost_ = new ClpNonLinearCost(this);
     nonLinearCost_->checkInfeasibilities(0.0);
     sumPrimalInfeasibilities_ = nonLinearCost_->sumInfeasibilities();
@@ -3612,7 +3612,9 @@ int ClpSimplexPrimal::nextSuperBasic(int superBasicType,
   int returnValue = -1;
   bool finished = false;
   while (!finished) {
-    returnValue = firstFree_;
+    if (firstFree_>=0 && !flagged(firstFree_) &&
+	getStatus(firstFree_) == superBasic) 
+      returnValue = firstFree_;
     int iColumn = firstFree_ + 1;
     if (superBasicType > 1) {
       if (superBasicType > 2) {

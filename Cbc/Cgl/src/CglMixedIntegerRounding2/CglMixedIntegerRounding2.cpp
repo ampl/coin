@@ -865,7 +865,7 @@ CglMixedIntegerRounding2::generateMirCuts(
 #if CGL_DEBUG
 	    std::cout << "MIR cut generated " << std::endl;
 #endif
-	    cs.insert(cMirCut);
+	    cs.insertIfNotDuplicate(cMirCut);
 	  }
 	}
 

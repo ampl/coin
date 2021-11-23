@@ -1,4 +1,4 @@
-// $Id: CglTreeInfo.cpp 1442 2019-01-06 16:39:41Z unxusr $
+// $Id: CglTreeInfo.cpp 1505 2019-10-03 13:53:58Z stefan $
 // Copyright (C) 2000, International Business Machines
 // Corporation and others.  All Rights Reserved.
 // This code is licensed under the terms of the Eclipse Public License (EPL).
@@ -1589,7 +1589,7 @@ void CglTreeProbingInfo::generateCuts(const OsiSolverInterface &si, OsiCuts &cs,
               rc.setLb(1.0);
               rc.setUb(COIN_DBL_MAX);
               rc.setRow(2, index, element, false);
-              cs.insert(rc);
+              cs.insertIfNotDuplicate(rc);
             }
           } else {
             if (value1 - value2 < -0.00001) {
@@ -1603,7 +1603,7 @@ void CglTreeProbingInfo::generateCuts(const OsiSolverInterface &si, OsiCuts &cs,
               rc.setLb(0.0);
               rc.setUb(COIN_DBL_MAX);
               rc.setRow(2, index, element, false);
-              cs.insert(rc);
+              cs.insertIfNotDuplicate(rc);
             }
           }
         }
@@ -1628,7 +1628,7 @@ void CglTreeProbingInfo::generateCuts(const OsiSolverInterface &si, OsiCuts &cs,
               rc.setLb(-COIN_DBL_MAX);
               rc.setUb(0.0);
               rc.setRow(2, index, element, false);
-              cs.insert(rc);
+              cs.insertIfNotDuplicate(rc);
             }
           } else {
             if (value1 + value2 > 1.00001) {
@@ -1642,7 +1642,7 @@ void CglTreeProbingInfo::generateCuts(const OsiSolverInterface &si, OsiCuts &cs,
               rc.setLb(-COIN_DBL_MAX);
               rc.setUb(1.0);
               rc.setRow(2, index, element, false);
-              cs.insert(rc);
+              cs.insertIfNotDuplicate(rc);
             }
           }
         }
@@ -1676,7 +1676,7 @@ void CglTreeProbingInfo::generateCuts(const OsiSolverInterface &si, OsiCuts &cs,
           OsiRowCut rc;
           rc.setLb(COIN_DBL_MAX);
           rc.setUb(0.0);
-          cs.insert(rc);
+          cs.insertIfNotDuplicate(rc);
           //printf("IMPINFEAS!\n");
           return;
         }
@@ -1710,7 +1710,7 @@ void CglTreeProbingInfo::generateCuts(const OsiSolverInterface &si, OsiCuts &cs,
           OsiRowCut rc;
           rc.setLb(COIN_DBL_MAX);
           rc.setUb(0.0);
-          cs.insert(rc);
+          cs.insertIfNotDuplicate(rc);
           //printf("IMPINFEAS!\n");
           return;
         }
@@ -1726,6 +1726,7 @@ void CglTreeProbingInfo::generateCuts(const OsiSolverInterface &si, OsiCuts &cs,
       }
     }
     delete[] fixed;
+    fixed = NULL;
     if (feasible) {
       //printf("IMP fixed %d\n",numberFixed);
       OsiColCut cc;
@@ -1739,10 +1740,13 @@ void CglTreeProbingInfo::generateCuts(const OsiSolverInterface &si, OsiCuts &cs,
       OsiRowCut rc;
       rc.setLb(COIN_DBL_MAX);
       rc.setUb(0.0);
-      cs.insert(rc);
+      cs.insertIfNotDuplicate(rc);
       //printf("IMPINFEAS!\n");
     }
   }
+
+  if (fixed)
+    delete[] fixed;
 }
 
 /* vi: softtabstop=2 shiftwidth=2 expandtab tabstop=2

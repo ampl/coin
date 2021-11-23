@@ -1,4 +1,4 @@
-/* $Id: CoinMpsIO.cpp 2125 2019-04-10 03:55:09Z stefan $ */
+/* $Id: CoinMpsIO.cpp 2213 2019-12-19 08:44:16Z stefan $ */
 // Copyright (C) 2000, International Business Machines
 // Corporation and others.  All Rights Reserved.
 // This code is licensed under the terms of the Eclipse Public License (EPL).
@@ -1195,7 +1195,7 @@ int hash(const char *name, int maxsiz, int length)
   for (j = 0; j < length; ++j) {
     int iname = name[j];
 
-    n += mmult[j] * iname;
+    n += mmult[j % (sizeof(mmult)/sizeof(int)) ] * iname;
   }
   return (abs(n) % maxsiz); /* integer abs */
 }
@@ -3593,6 +3593,9 @@ int CoinMpsIO::readBasis(const char *filename, const char *extension,
   cardReader_->setWhichSection(COIN_BASIS_SECTION);
   cardReader_->setFreeFormat(true);
   // below matches CoinWarmStartBasis,
+#ifdef MODIFY_SPRINT
+  const unsigned char isFree = 0x00;
+#endif
   const unsigned char basic = 0x01;
   const unsigned char atLowerBound = 0x03;
   const unsigned char atUpperBound = 0x02;
@@ -3616,7 +3619,11 @@ int CoinMpsIO::readBasis(const char *filename, const char *extension,
       int iRow = -1;
       switch (cardReader_->mpsType()) {
       case COIN_BS_BASIS:
+#ifndef MODIFY_SPRINT
         columnStatus[iColumn] = basic;
+#else
+	columnStatus[iColumn] = isFree;
+#endif
         break;
       case COIN_XL_BASIS:
         columnStatus[iColumn] = basic;

@@ -102,5 +102,11 @@ main(void)
       // Could then check other status functions.
    }
 
+   delete[] row_ub;
+   delete[] row_lb;
+   delete[] objective;
+   delete[] col_ub;
+   delete[] col_lb;
+
    return 0;
 }

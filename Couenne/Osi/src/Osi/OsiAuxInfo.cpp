@@ -176,7 +176,7 @@ OsiBabSolver::mipBound() const
 bool OsiBabSolver::mipFeasible() const
 {
   assert(solver_);
-  if (solverType_ == 0)
+  if (solverType_ == 0 || solverType_ == 4)
     return true;
   else if (solverType_ != 3)
     return solver_->isProvenOptimal();

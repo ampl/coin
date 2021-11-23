@@ -1,4 +1,4 @@
-// $Id: driver3.cpp 2498 2019-02-20 13:07:32Z unxusr $
+// $Id: driver3.cpp 2534 2019-03-15 16:27:39Z stefan $
 // Copyright (C) 2007, International Business Machines
 // Corporation and others.  All Rights Reserved.
 // This code is licensed under the terms of the Eclipse Public License (EPL).
@@ -10,6 +10,7 @@
 #include "CbcModel.hpp"
 #include "OsiClpSolverInterface.hpp"
 #include "CbcBranchDynamic.hpp"
+#include "CbcSolver.hpp"
 
 #include "CoinTime.hpp"
 
@@ -26,6 +27,11 @@ Then it calls CbcMain1 passing all parameters apart from first
 Finally it prints solution
 
 ************************************************************************/
+
+static int dummyCallBack(CbcModel * /*model*/, int /*whereFrom*/)
+{
+  return 0;
+}
 
 int main(int argc, const char *argv[])
 {
@@ -105,10 +111,10 @@ int main(int argc, const char *argv[])
      but this will do
   */
   if (argc > 2) {
-    CbcMain1(argc - 1, argv + 1, model, cbcData);
+    CbcMain1(argc - 1, argv + 1, model, dummyCallBack, cbcData);
   } else {
     const char *argv2[] = { "driver3", "-solve", "-quit" };
-    CbcMain1(3, argv2, model, cbcData);
+    CbcMain1(3, argv2, model, dummyCallBack, cbcData);
   }
 
   // Print solution if finished (could get from model.bestSolution() as well

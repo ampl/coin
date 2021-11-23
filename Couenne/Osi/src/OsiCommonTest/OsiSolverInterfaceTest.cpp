@@ -2293,7 +2293,7 @@ void testArtifStatus(const OsiSolverInterface *emptySi)
         std::cout << "Incorrect status " << statCode[stati] << " for " << contype[i] << " constraint c" << i << " (" << sense[iter] << "), expected " << statCode[goodStatus[iter * rowCnt + i]] << "." << std::endl;
       }
     }
-    OSIUNITTEST_ASSERT_ERROR(ok == true, {}, *si, "testArtifStatus: artifical variable status");
+    OSIUNITTEST_ASSERT_ERROR(ok == true, {}, *si, "testArtifStatus: artificial variable status");
 
     delete ws;
   }
@@ -2458,6 +2458,7 @@ void testReducedCosts(const OsiSolverInterface *emptySi,
   }
 
   delete[] cbarCalc;
+  delete si;
 }
 
 /*
@@ -3819,6 +3820,7 @@ void testDualRays(const OsiSolverInterface *emptySi,
   Clean up.
 */
     delete[] rA;
+    delete wsb;
     for (rayNdx = 0; rayNdx < raysReturned; rayNdx++) {
       delete[] rays[rayNdx];
     }
@@ -4002,39 +4004,6 @@ void OsiSolverInterfaceCommonUnitTest(const OsiSolverInterface *emptySi,
     OSIUNITTEST_ASSERT_ERROR(eq(objCoef[6], 0.0), {}, *exmip1Si, "problem read correctly: objective coefficients");
     OSIUNITTEST_ASSERT_ERROR(eq(objCoef[7], -1.0), {}, *exmip1Si, "problem read correctly: objective coefficients");
 
-    // make sure col solution is something reasonable,
-    // that is between upper and lower bounds
-    const double *cs = exmip1Si->getColSolution();
-    int c;
-    bool okColSol = true;
-    //double inf = exmip1Si->getInfinity();
-    for (c = 0; c < nc; c++) {
-      // if colSol is not between column bounds then
-      // colSol is unreasonable.
-      if (!(cl[c] <= cs[c] && cs[c] <= cu[c]))
-        okColSol = false;
-      // if at least one column bound is not infinite,
-      // then it is unreasonable to have colSol as infinite
-      // FIXME: temporarily commented out pending some group thought on the
-      //	semantics of this test. -- lh, 03.04.29 --
-      // if ( (cl[c]<inf || cu[c]<inf) && cs[c]>=inf ) okColSol=false;
-    }
-    OSIUNITTEST_ASSERT_WARNING(okColSol, {}, *exmip1Si, "column solution before solve");
-
-    // Test that objective value is correct
-    // FIXME: the test checks the primal value. vol fails this, because vol
-    // considers the dual value to be the objective value
-    /*
-       gurobi fails this, because gurobi does not have a solution before a
-       model is solved (which makes sense, I (SV) think)
-
-       Eh, well, you can argue the point, but the current OSI spec requires
-       that there be a valid solution from the point that the problem is
-       loaded. Nothing says it needs to be a good solution. -- lh, 100826 --
-    */
-    double correctObjValue = CoinPackedVector(nc, objCoef).dotProduct(cs);
-    double siObjValue = exmip1Si->getObjValue();
-    OSIUNITTEST_ASSERT_SEVERITY_EXPECTED(eq(correctObjValue, siObjValue), {}, *exmip1Si, "solution value before solve", TestOutcome::WARNING, solverName == "Vol");
   }
 
   // Test matrixByCol method
@@ -4141,7 +4110,7 @@ void OsiSolverInterfaceCommonUnitTest(const OsiSolverInterface *emptySi,
     OSIUNITTEST_ASSERT_ERROR(eq(ru[3], 5.0), {}, solverName, "problem cloned: rows upper bounds");
     OSIUNITTEST_ASSERT_ERROR(eq(ru[4], 15.), {}, solverName, "problem cloned: rows upper bounds");
 
-    const double *objCoef = exmip1Si->getObjCoefficients();
+    const double *objCoef = si2->getObjCoefficients();
     OSIUNITTEST_ASSERT_ERROR(eq(objCoef[0], 1.0), {}, solverName, "problem cloned: objective coefficients");
     OSIUNITTEST_ASSERT_ERROR(eq(objCoef[1], 0.0), {}, solverName, "problem cloned: objective coefficients");
     OSIUNITTEST_ASSERT_ERROR(eq(objCoef[2], 0.0), {}, solverName, "problem cloned: objective coefficients");
@@ -4150,25 +4119,6 @@ void OsiSolverInterfaceCommonUnitTest(const OsiSolverInterface *emptySi,
     OSIUNITTEST_ASSERT_ERROR(eq(objCoef[5], 0.0), {}, solverName, "problem cloned: objective coefficients");
     OSIUNITTEST_ASSERT_ERROR(eq(objCoef[6], 0.0), {}, solverName, "problem cloned: objective coefficients");
     OSIUNITTEST_ASSERT_ERROR(eq(objCoef[7], -1.0), {}, solverName, "problem cloned: objective coefficients");
-
-    // make sure col solution is something reasonable,
-    // that is between upper and lower bounds
-    const double *cs = exmip1Si->getColSolution();
-    int c;
-    bool okColSol = true;
-    //double inf = exmip1Si->getInfinity();
-    for (c = 0; c < nc; c++) {
-      // if colSol is not between column bounds then
-      // colSol is unreasonable.
-      if (!(cl[c] <= cs[c] && cs[c] <= cu[c]))
-        okColSol = false;
-      // if at least one column bound is not infinite,
-      // then it is unreasonable to have colSol as infinite
-      // FIXME: temporarily commented out pending some group thought on the
-      //	semantics of this test. -- lh, 03.04.29 --
-      // if ( (cl[c]<inf || cu[c]<inf) && cs[c]>=inf ) okColSol=false;
-    }
-    OSIUNITTEST_ASSERT_WARNING(okColSol, {}, solverName, "problem cloned: column solution before solve");
 
     // Test getting of objective offset
     double objOffset;

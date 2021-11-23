@@ -1,4 +1,4 @@
-/* $Id: analyzeSparsity.cpp 732 2011-07-03 20:06:50Z pbelotti $
+/* $Id: analyzeSparsity.cpp 1315 2020-01-31 11:27:19Z stefan $
  *
  * Name:    analyzeSparsity.cpp
  * Author:  Pietro Belotti
@@ -59,8 +59,8 @@ void CouenneProblem::analyzeSparsity (CouNumber c0,
 
   if (jnlst_ -> ProduceOutput (Ipopt::J_ALL, J_REFORMULATE)) {
     printf ("qmap has %d element, occur has %d, md*s*(s+1)/2 = %g\n", 
-	    qmap.Map().size (), 
-	    occur.size (),
+	    (int)qmap.Map().size (), 
+	    (int)occur.size (),
 	    MIN_DENSITY * (double) (occur.size ()) * ((double) (occur.size ()) + 1.) / 2);
   }
 

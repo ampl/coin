@@ -9,7 +9,7 @@
 // Copyright (C) 2009 Humboldt University Berlin and others.
 // All Rights Reserved.
 
-// $Id: OsiGrbSolverInterface.cpp 2252 2019-04-08 03:28:06Z stefan $
+// $Id: OsiGrbSolverInterface.cpp 2272 2019-08-06 20:37:30Z stefan $
 
 #include <iostream>
 #include <cassert>
@@ -3679,6 +3679,7 @@ void OsiGrbSolverInterface::freeAllMemory()
   delete[] auxcolind;
   auxcolind = NULL;
   auxcolindspace = 0;
+  nauxcols = 0;
 }
 
 /// converts a normal row into a ranged row by adding an auxiliary variable

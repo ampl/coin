@@ -20,7 +20,7 @@ if (EXISTS ${ASL_DIR}/CMakeLists.txt)
   # Set generic architecture compiler flags
   include(setArchitecture)
   getArchitectureFlags(${ARCH} CCFLAGS LLFLAGS)
-  add_compile_options(${CCFLAGS})
+  #add_compile_options(${CCFLAGS})
 
   add_subdirectory(${ASL_DIR})
   set(COIN_HAS_ASL 1)

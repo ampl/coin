@@ -725,6 +725,7 @@ void testSimplexAPI(const OsiSolverInterface *emptySi, const std::string &sample
   if (si->canDoSimplexInterface() == 0) {
     OSIUNITTEST_ADD_OUTCOME(solverName, "testSimplexAPI", "skipped test", OsiUnitTest::TestOutcome::NOTE, true);
     std::cout << solverName << " has no OsiSimplex API." << std::endl;
+    delete si;
     return;
   }
   /*
@@ -744,6 +745,7 @@ void testSimplexAPI(const OsiSolverInterface *emptySi, const std::string &sample
     OSIUNITTEST_ADD_OUTCOME(solverName, "testSimplexAPI mode 2", "skipped test", OsiUnitTest::TestOutcome::NOTE, true);
     std::cout << solverName << " does not implement Simplex API mode 2." << std::endl;
   }
+  delete si;
 }
 
 } /* namespace OsiUnitTest */

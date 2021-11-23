@@ -1,4 +1,4 @@
-/* $Id: CbcNode.cpp 2467 2019-01-03 21:26:29Z unxusr $ */
+/* $Id: CbcNode.cpp 2699 2019-10-03 14:05:25Z stefan $ */
 // Copyright (C) 2002, International Business Machines
 // Corporation and others.  All Rights Reserved.
 // This code is licensed under the terms of the Eclipse Public License (EPL).
@@ -4453,6 +4453,7 @@ int CbcNode::analyze(CbcModel *model, double *results)
           model->messageHandler()->message(CBC_GENERAL, *model->messagesPointer())
             << "Skipping analyze as problem too large"
             << CoinMessageEol;
+        delete[] back;
         return 0;
       }
     }
@@ -5113,6 +5114,7 @@ int CbcNode::analyze(CbcModel *model, double *results)
       if (value <= groupValue[j] || j == 10)
         break;
     }
+    assert( j < (int)(sizeof(groupCounts)/sizeof(int)) );
     groupCounts[j]++;
   }
   general[0] = '\0';
@@ -5165,6 +5167,7 @@ int CbcNode::analyze(CbcModel *model, double *results)
         if (value <= groupValue[j] || j == 10)
           break;
       }
+      assert( j < (int)(sizeof(groupCounts)/sizeof(int)) );
       groupCounts[j]++;
     }
   }

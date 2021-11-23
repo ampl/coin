@@ -1,4 +1,4 @@
-/* $Id: ClpPrimalColumnSteepest.cpp 2449 2019-04-08 03:34:28Z stefan $ */
+/* $Id: ClpPrimalColumnSteepest.cpp 2618 2020-01-16 13:46:41Z stefan $ */
 // Copyright (C) 2002, International Business Machines
 // Corporation and others.  All Rights Reserved.
 // This code is licensed under the terms of the Eclipse Public License (EPL).
@@ -3171,7 +3171,7 @@ void ClpPrimalColumnSteepest::saveWeights(ClpSimplex *model, int mode)
     int sequenceIn = model_->sequenceIn();
     assert(sequenceIn >= 0 && sequenceIn < model_->numberRows() + model_->numberColumns());
     // possible weights_ was never set up // assert(weights_);
-    if (weights_ && weights_[sequenceIn] == (mode_ != 1) ? 1.0 : 1.0 + ADD_ONE)
+    if (weights_ && weights_[sequenceIn] == ((mode_ != 1) ? 1.0 : 1.0 + ADD_ONE))
       return;
     else
       mode = 5;

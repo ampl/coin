@@ -2458,6 +2458,7 @@ void testReducedCosts(const OsiSolverInterface *emptySi,
   }
 
   delete[] cbarCalc;
+  delete si;
 }
 
 /*
@@ -3819,6 +3820,7 @@ void testDualRays(const OsiSolverInterface *emptySi,
   Clean up.
 */
     delete[] rA;
+    delete wsb;
     for (rayNdx = 0; rayNdx < raysReturned; rayNdx++) {
       delete[] rays[rayNdx];
     }

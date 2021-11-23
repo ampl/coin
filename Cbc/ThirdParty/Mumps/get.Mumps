@@ -27,8 +27,20 @@ echo " "
 
 rm -f MUMPS*.tgz
 
-echo "Downloading the source code from ..."
-$wgetcmd http://mumps.enseeiht.fr/MUMPS_${mumps_ver}.tar.gz
+echo "Downloading the source code from coin-or-tools.github.io..."
+if $wgetcmd http://coin-or-tools.github.io/ThirdParty-Mumps/MUMPS_${mumps_ver}.tar.gz ;
+then
+  echo "Download finished."
+else
+  echo
+  echo "Downloading from GitHub failed, trying mumps.enseeiht.fr..."
+  if $wgetcmd http://mumps.enseeiht.fr/MUMPS_${mumps_ver}.tar.gz ;
+  then
+    echo "Download finished."
+  else
+    echo "Download failed...exiting"
+  fi
+fi
 
 echo "Uncompressing the tarball..."
 gunzip -f MUMPS_${mumps_ver}.tar.gz

@@ -361,7 +361,7 @@ void CglAllDifferent::generateCuts(const OsiSolverInterface & si, OsiCuts & cs,
     OsiRowCut rc;
     rc.setLb(COIN_DBL_MAX);
     rc.setUb(0.0);   
-    cs.insert(rc);
+    cs.insertIfNotDuplicate(rc);
   } else {
     // check to see if can tighten bounds
     CoinPackedVector lbs;

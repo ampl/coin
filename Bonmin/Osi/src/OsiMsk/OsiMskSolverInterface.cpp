@@ -99,11 +99,31 @@ static void MSKAPI printlog(void *ptr, char* s)
   printf("%s",s);
 } 
 
+static
+void handleMessage(CoinMessageHandler* handler, MSKCONST char* str)
+{
+	size_t len = strlen(str);
+	if( len == 0 )
+		return;
+
+	if( str[len-1] == '\n')
+	{
+		char* str_ = (char*)malloc(len);
+		memcpy(str_, str, len-1);
+		str_[len-1] = '\0';
+		handler->message(0, "MSK", str_, ' ') << CoinMessageEol;
+		free(str_);
+	}
+	else
+		handler->message(0, "MSK", str, ' ');
+}
+
 static 
 void MSKAPI OsiMskStreamFuncLog(MSKuserhandle_t handle, MSKCONST char* str) {
-	if (handle) {
-		if (((CoinMessageHandler*)handle)->logLevel() >= 1)
-			((CoinMessageHandler*)handle)->message(0, "MSK", str, ' ') << CoinMessageEol;
+	CoinMessageHandler* handler = (CoinMessageHandler*)handle;
+	if (handler != NULL) {
+		if (handler->logLevel() >= 1)
+			handleMessage(handler, str);
 	} else {
 		printf(str);
 		printf("\n");
@@ -112,9 +132,10 @@ void MSKAPI OsiMskStreamFuncLog(MSKuserhandle_t handle, MSKCONST char* str) {
 
 static 
 void MSKAPI OsiMskStreamFuncWarning(MSKuserhandle_t handle, MSKCONST char* str) {
-	if (handle) {
-		if (((CoinMessageHandler*)handle)->logLevel() >= 0)
-			((CoinMessageHandler*)handle)->message(0, "MSK", str, ' ') << CoinMessageEol;
+	CoinMessageHandler* handler = (CoinMessageHandler*)handle;
+	if (handler != NULL) {
+		if (handler->logLevel() >= 0)
+			handleMessage(handler, str);
 	} else {
 		printf(str);
 		printf("\n");
@@ -123,8 +144,9 @@ void MSKAPI OsiMskStreamFuncWarning(MSKuserhandle_t handle, MSKCONST char* str) 
 
 static 
 void MSKAPI OsiMskStreamFuncError(MSKuserhandle_t handle, MSKCONST char* str) {
-	if (handle) {
-		((CoinMessageHandler*)handle)->message(0, "MSK", str, ' ') << CoinMessageEol;
+	CoinMessageHandler* handler = (CoinMessageHandler*)handle;
+	if (handler != NULL) {
+		handleMessage(handler, str);
 	} else {
 		fprintf(stderr, str);
 		fprintf(stderr, "\n");
@@ -427,17 +449,20 @@ void OsiMskSolverInterface::initialSolve()
     err = MSK_getintparam(getMutableLpPtr(), MSK_IPAR_OPTIMIZER, &MSKsolverused_);
     checkMSKerror(err,"MSK_getintparam","initialsolve");
 
-    #if MSK_DO_MOSEK_LOG > 0
+#if MSK_DO_MOSEK_LOG > 0
+    err = MSK_putintparam( getMutableLpPtr(),MSK_IPAR_LOG,MSK_DO_MOSEK_LOG);
+    checkMSKerror(err,"MSK_putintparam","initialsolve");
+
     err = MSK_putintparam( getMutableLpPtr(),MSK_IPAR_LOG_SIM,MSK_DO_MOSEK_LOG);
     checkMSKerror(err,"MSK_putintparam","initialsolve");
-    #endif
+#endif
 
     Mskerr = MSK_optimize(getLpPtr( OsiMskSolverInterface::FREECACHED_RESULTS ));
 
-    #if MSK_DO_MOSEK_LOG > 0
+#if MSK_DO_MOSEK_LOG > 0
     err = MSK_solutionsummary( getMutableLpPtr(),MSK_STREAM_LOG);
     checkMSKerror(err,"MSK_solutionsummary","initialsolve");
-    #endif
+#endif
 
     err = MSK_putintparam(getMutableLpPtr(), MSK_IPAR_OPTIMIZER, solver);
     checkMSKerror(err,"MSK_putintparam","initialsolve");
@@ -480,13 +505,13 @@ void OsiMskSolverInterface::resolve()
     err = MSK_getintparam(getMutableLpPtr(), MSK_IPAR_OPTIMIZER, &MSKsolverused_);
     checkMSKerror(err,"MSK_getintparam","resolve");
 
-    #if MSK_DO_MOSEK_LOG > 0
+#if MSK_DO_MOSEK_LOG > 0
     err = MSK_putintparam( getMutableLpPtr(),MSK_IPAR_LOG,MSK_DO_MOSEK_LOG);
     checkMSKerror(err,"MSK_putintparam","resolve");
 
     err = MSK_putintparam( getMutableLpPtr(),MSK_IPAR_LOG_SIM,MSK_DO_MOSEK_LOG);
     checkMSKerror(err,"MSK_putintparam","resolve");
-    #endif
+#endif
 
     Mskerr = MSK_optimize(getLpPtr( OsiMskSolverInterface::FREECACHED_RESULTS ));
 
@@ -5185,6 +5210,11 @@ void OsiMskSolverInterface::gutsOfCopy( const OsiMskSolverInterface & source )
   err = MSK_clonetask(source.getMutableLpPtr(),&task_);
 
   checkMSKerror( err, "MSK_clonetask", "gutsOfCopy" );
+
+  // reinitialize output streams to use message handler of copy, also not sure that MSK_clonetask copied these over
+  MSK_linkfunctotaskstream(task_, MSK_STREAM_LOG, messageHandler(), OsiMskStreamFuncLog);
+  MSK_linkfunctotaskstream(task_, MSK_STREAM_ERR, messageHandler(), OsiMskStreamFuncWarning);
+  MSK_linkfunctotaskstream(task_, MSK_STREAM_WRN, messageHandler(), OsiMskStreamFuncError);
 
   // Set MIP information
   resizeColType(source.coltypesize_);

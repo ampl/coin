@@ -1,4 +1,4 @@
-/* $Id: Cbc_ampl.cpp 2467 2019-01-03 21:26:29Z unxusr $ */
+/* $Id: Cbc_ampl.cpp 2618 2019-07-01 09:43:37Z stefan $ */
 /****************************************************************
 Copyright (C) 1997-2000 Lucent Technologies
 Modifications for Coin -  Copyright (C) 2006, International Business Machines Corporation and others.
@@ -597,7 +597,7 @@ int readAmpl(ampl_info *info, int argc, char **argv, void **coinModel)
       const char *argument = info->arguments[i];
       for (j = 0; j < sizeof(something) / sizeof(char *); j++) {
         const char *check = something[j];
-        if (!strncmp(argument, check, sizeof(check))) {
+        if (!strncmp(argument, check, strlen(check))) {
           found = (int)(j + 1);
         } else if (!strncmp(argument, "log", 3)) {
           foundLog = 1;

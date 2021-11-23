@@ -1,4 +1,4 @@
-/* $Id: CbcOrClpParam.cpp 2476 2019-06-13 14:49:27Z stefan $ */
+/* $Id: CbcOrClpParam.cpp 2554 2019-12-19 09:01:53Z stefan $ */
 // Copyright (C) 2002, International Business Machines
 // Corporation and others.  All Rights Reserved.
 // This code is licensed under the terms of the Eclipse Public License (EPL).
@@ -1048,6 +1048,7 @@ int CbcOrClpParam::intParameter(CbcModel &model) const
 #ifdef CBC_THREAD
   case CBC_PARAM_INT_THREADS:
     value = model.getNumberThreads();
+	break;
 #endif
   case CBC_PARAM_INT_RANDOMSEED:
     value = model.getRandomSeed();
@@ -1382,13 +1383,22 @@ CoinReadGetString(int argc, const char *argv[])
     if (CbcOrClpRead_mode > 0) {
       if (CbcOrClpRead_mode < argc || CbcOrClpEnvironmentIndex >= 0) {
         if (CbcOrClpEnvironmentIndex < 0) {
-          if (argv[CbcOrClpRead_mode][0] != '-') {
+	  const char * input = argv[CbcOrClpRead_mode];
+	  if (strcmp(input,"--")&&strcmp(input,"stdin")&&
+	      strcmp(input,"stdin_lp")) {
             field = argv[CbcOrClpRead_mode++];
-          } else if (!strcmp(argv[CbcOrClpRead_mode], "--")) {
+          } else {
             CbcOrClpRead_mode++;
             // -- means import from stdin
-            field = "-";
-          }
+	    // but allow for other than mps files
+	    // Clp does things in different way !!
+	    if (!strcmp(input,"--"))
+	      field = "-";
+	    else if (!strcmp(input,"stdin"))
+	      field = "-";
+	    else if (!strcmp(input,"stdin_lp"))
+	      field = "-lp";
+	  }
         } else {
           fillEnv();
           field = line;

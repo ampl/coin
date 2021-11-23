@@ -1,4 +1,4 @@
-/* $Id: ClpModel.cpp 2385 2019-01-06 19:43:06Z unxusr $ */
+/* $Id: ClpModel.cpp 2431 2019-03-15 15:56:51Z stefan $ */
 // copyright (C) 2002, International Business Machines
 // Corporation and others.  All Rights Reserved.
 // This code is licensed under the terms of the Eclipse Public License (EPL).
@@ -3772,7 +3772,7 @@ int ClpModel::writeMps(const char *filename,
   writer.setMpsData(*(matrix_->getPackedMatrix()), COIN_DBL_MAX,
     getColLower(), getColUpper(),
     objective,
-    reinterpret_cast< const char * >(NULL) /*integrality*/,
+    (const char *)NULL /*integrality*/,
     getRowLower(), getRowUpper(),
     columnNames, rowNames);
   // Pass in array saying if each variable integer

@@ -1,4 +1,4 @@
-/* $Id: ClpSimplexOther.cpp 2388 2019-01-07 19:04:36Z unxusr $ */
+/* $Id: ClpSimplexOther.cpp 2554 2019-12-19 09:01:53Z stefan $ */
 // Copyright (C) 2004, International Business Machines
 // Corporation and others.  All Rights Reserved.
 // This code is licensed under the terms of the Eclipse Public License (EPL).
@@ -7040,6 +7040,8 @@ int ClpSimplex::modifyCoefficientsAndPivot(int number,
         returnCode = 3; // refactorize
       }
     }
+
+    delete[] which2;
   }
   if (newStatus) {
     for (int i = 0; i < number; i++) {
@@ -10501,7 +10503,7 @@ int ClpSimplex::outDuplicateRows(int numberLook, int *whichRows, bool noOverlaps
         << "Null model" << CoinMessageEol;
       return NULL;
     }
-    char *environment = new char[100];
+    char *environment = new char[256];
     double *obj = CoinCopyOfArray(objective(), numberColumns_);
     std::sort(obj, obj + numberColumns_);
     bool allInt = true;

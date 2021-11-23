@@ -1,4 +1,4 @@
-// $Id: CglZeroHalf.cpp 1397 2018-01-03 10:22:47Z forrest $
+// $Id: CglZeroHalf.cpp 1505 2019-10-03 13:53:58Z stefan $
 // Copyright (C) 2010, International Business Machines
 // Corporation and others.  All Rights Reserved.
 // This code is licensed under the terms of the Eclipse Public License (EPL).
@@ -121,7 +121,7 @@ CglZeroHalf::generateCuts(const OsiSolverInterface & si, OsiCuts & cs,
 	  rc.setGloballyValid();
 	//double violation = rc.violated(solution);
 	//if (violation>1.0e-6)
-	  cs.insert(rc);
+	  cs.insertIfNotDuplicate(rc);
 	  //else
 	  //printf("violation of %g\n",violation);
       }

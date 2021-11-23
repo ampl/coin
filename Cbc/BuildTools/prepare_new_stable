@@ -5,7 +5,7 @@
 # This file is distributed under the Eclipse Public License.
 # It is part of the BuildTools project in COIN-OR (www.coin-or.org)
 #
-# $Id: prepare_new_stable 2947 2013-09-13 08:36:57Z stefan $
+# $Id: prepare_new_stable 3946 2019-02-24 17:55:35Z stefan $
 #
 # Adapted from prepare_new_release by Lou Hafer, SFU, 100507. 
 
@@ -523,7 +523,7 @@ if test -n "$srcDepFile" ; then
       if test $ext_isNormalURL = yes &&
          test $ext_proj != BuildTools && test $srcBTURL != none ; then
         ext_url_notail=`echo $ext_url | sed -e 's,/[^/]*$,,'`
-	extBTURL=`svn propget svn:externals $ext_url_notail`
+	extBTURL=`svn propget svn:externals $ext_url_notail || :`
 	extBTURL=`echo $extBTURL | \
 	  sed -n -e 's/^BuildTools *https:\([^ ]*\) *$/https:\1/p'`
 	if test -n "$extBTURL" ; then

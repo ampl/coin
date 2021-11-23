@@ -1,4 +1,4 @@
-/* $Id: ClpSimplex.hpp 2385 2019-01-06 19:43:06Z unxusr $ */
+/* $Id: ClpSimplex.hpp 2618 2020-01-16 13:46:41Z stefan $ */
 // Copyright (C) 2002, International Business Machines
 // Corporation and others.  All Rights Reserved.
 // This code is licensed under the terms of the Eclipse Public License (EPL).
@@ -1988,7 +1988,7 @@ void ClpSimplexUnitTest(const std::string &mpsDir);
 // For Devex stuff
 #define DEVEX_TRY_NORM 1.0e-4
 #define DEVEX_ADD_ONE 1.0
-#if defined(ABC_INHERIT) || defined(CBC_THREAD) || defined(THREADS_IN_ANALYZE)
+#if defined(ABC_INHERIT) || defined(THREADS_IN_ANALYZE)
 // Use pthreads
 #include <pthread.h>
 typedef struct {

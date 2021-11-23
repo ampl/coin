@@ -269,7 +269,7 @@ void OsiRowCutUnitTest(const OsiSolverInterface *baseSiP,
   bool errorThrown = false;
   try {
     c.setRow(ne, inx, el);
-  } catch (CoinError e) {
+  } catch (CoinError &e) {
     errorThrown = true;
   }
   OSIUNITTEST_ASSERT_ERROR(errorThrown == true, {}, "osirowcut", "duplicate entries");

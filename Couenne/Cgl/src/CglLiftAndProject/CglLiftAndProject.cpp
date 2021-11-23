@@ -301,7 +301,7 @@ void CglLiftAndProject::generateCuts(const OsiSolverInterface& si, OsiCuts& cs,
       rc.setRow(n,nVectorIndices,alpha);
       rc.setLb(beta_);
       rc.setUb(solverINFINITY);
-      cs.insert(rc);
+      cs.insertIfNotDuplicate(rc);
     }
     // delete col for u_o and v_0
     coneSi->deleteCols(2,delCols);

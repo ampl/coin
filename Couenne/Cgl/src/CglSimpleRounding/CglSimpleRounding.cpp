@@ -1,4 +1,4 @@
-// $Id: CglSimpleRounding.cpp 1120 2013-04-06 20:34:40Z stefan $
+// $Id: CglSimpleRounding.cpp 1505 2019-10-03 13:53:58Z stefan $
 // Copyright (C) 2000, International Business Machines
 // Corporation and others.  All Rights Reserved.
 // This code is licensed under the terms of the Eclipse Public License (EPL).
@@ -153,7 +153,7 @@ CglSimpleRounding::generateCuts(const OsiSolverInterface & si, OsiCuts & cs,
       rc.setRow(cut.getNumElements(),cut.getIndices(),cut.getElements());
       rc.setLb(-COIN_DBL_MAX);
       rc.setUb(cutRhs);   
-      cs.insert(rc);
+      cs.insertIfNotDuplicate(rc);
 
 #ifdef CGL_DEBUG
       printf("Row %i had a simple rounding cut:\n",rowIndex);

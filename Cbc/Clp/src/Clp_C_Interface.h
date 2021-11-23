@@ -1,4 +1,4 @@
-/* $Id: Clp_C_Interface.h 2449 2019-04-08 03:34:28Z stefan $ */
+/* $Id: Clp_C_Interface.h 2630 2020-01-29 17:45:31Z stefan $ */
 /*
   Copyright (C) 2002, 2003 International Business Machines Corporation
   and others.  All Rights Reserved.
@@ -10,6 +10,15 @@
 
 /* include all defines and ugly stuff */
 #include "Coin_C_defines.h"
+
+/* accidentally used a bool for Clp_modifyCoefficient, so need to include stdbool.h
+ * Clp_modifyCoefficient signature will change to use int with Clp 1.18
+ * stdbool.h is available with C99
+ * __STDC_VERSION__ isn't available when compiling C++ - look at C++ version instead
+ */
+#if (defined(__cplusplus) && __cplusplus >= 199901L) || (defined(__STDC_VERSION__) && __STDC_VERSION__ >= 199901L)
+#include <stdbool.h>
+#endif
 
 #if defined(CLP_EXTERN_C)
 typedef struct {
@@ -143,9 +152,14 @@ COINLIBAPI void COINLINKAGE Clp_chgColumnLower(Clp_Simplex *model, const double 
 COINLIBAPI void COINLINKAGE Clp_chgColumnUpper(Clp_Simplex *model, const double *columnUpper);
 /** Change objective coefficients */
 COINLIBAPI void COINLINKAGE Clp_chgObjCoefficients(Clp_Simplex *model, const double *objIn);
-/** Change matrix coefficients */
+/** Change matrix coefficients
+ * 
+ * \note Clp 1.18 will change the type of @param keepZero to int.
+ */
+#if (defined(__cplusplus) && __cplusplus >= 199901L) || (defined(__STDC_VERSION__) && __STDC_VERSION__ >= 199901L)
 COINLIBAPI void COINLINKAGE Clp_modifyCoefficient(Clp_Simplex *model, int row, int column, double newElement,
   bool keepZero);
+#endif
 /** Drops names - makes lengthnames 0 and names empty */
 COINLIBAPI void COINLINKAGE Clp_dropNames(Clp_Simplex *model);
 /** Copies in names */

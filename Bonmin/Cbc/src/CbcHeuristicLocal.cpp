@@ -1,4 +1,4 @@
-/* $Id: CbcHeuristicLocal.cpp 2467 2019-01-03 21:26:29Z unxusr $ */
+/* $Id: CbcHeuristicLocal.cpp 2699 2019-10-03 14:05:25Z stefan $ */
 // Copyright (C) 2002, International Business Machines
 // Corporation and others.  All Rights Reserved.
 // This code is licensed under the terms of the Eclipse Public License (EPL).
@@ -599,6 +599,7 @@ int CbcHeuristicLocal::solution(double &solutionValue,
           weight[i] = model_->randomNumberGenerator()->randomDouble();
         }
         CoinSort_2(weight, weight + numberIntegers, integerVariable);
+        delete[] weight;
       }
     }
     /*
@@ -1665,6 +1666,7 @@ int CbcHeuristicCrossover::solution(double &solutionValue,
     returnCode &= ~2;
   }
 
+  delete[] fixed;
   delete solver;
   return returnCode;
 }

@@ -1,4 +1,4 @@
-/* $Id: CoinAbcCommon.hpp 2385 2019-01-06 19:43:06Z unxusr $ */
+/* $Id: CoinAbcCommon.hpp 2476 2019-06-13 14:49:27Z stefan $ */
 // Copyright (C) 2000, International Business Machines
 // Corporation and others, Copyright (C) 2012, FasterCoin.  All Rights Reserved.
 // This code is licensed under the terms of the Eclipse Public License (EPL).
@@ -226,7 +226,7 @@ int clapack_dgetrs(const enum CBLAS_ORDER Order, const enum CBLAS_TRANSPOSE Tran
 typedef unsigned char CoinCheckZero;
 template < class T >
 inline void
-CoinAbcMemset0(register T *to, const int size)
+CoinAbcMemset0(T *to, const int size)
 {
 #ifndef NDEBUG
   // Some debug so check
@@ -238,7 +238,7 @@ CoinAbcMemset0(register T *to, const int size)
 }
 template < class T >
 inline void
-CoinAbcMemcpy(register T *to, register const T *from, const int size)
+CoinAbcMemcpy(T *to, const T *from, const int size)
 {
 #ifndef NDEBUG
   // Some debug so check
