@@ -15,9 +15,9 @@ find ../Cbc/* ! -iname "*cmake*" -delete
 cp -r Cbc-$CBC_VERSION/* ../Cbc/
 
 curl -O https://www.coin-or.org/download/source/Ipopt/Ipopt-$IPOPT_VERSION.tar.gz
-tar xzvf Ipopt-$IPOPT_VERSION.tar.gz
+tar xzvf Ipopt-$IPOPT_VERSION.tgz
 find ../Ipopt/* ! -iname "*cmake*" -delete
-cp -r Ipopt-releases-$IPOPT_VERSION/* ../Ipopt/
+cp -r Ipopt-$IPOPT_VERSION/* ../Ipopt/
 
 curl -O https://www.coin-or.org/download/source/Bonmin/Bonmin-$BONMIN_VERSION.tgz
 tar xzvf Bonmin-$BONMIN_VERSION.tgz
