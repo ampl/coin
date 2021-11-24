@@ -4,20 +4,20 @@ mkdir -p tmp
 cd tmp
 rm -rf *
 
-CBC_VERSION=2.10.3
+CBC_VERSION=2.10.5
 IPOPT_VERSION=3.12.13
-BONMIN_VERSION=1.8.7
-COUENNE_VERSION=0.5.7
+BONMIN_VERSION=1.8.8
+COUENNE_VERSION=0.5.8
 
 curl -O https://www.coin-or.org/download/source/Cbc/Cbc-$CBC_VERSION.tgz
 tar xzvf Cbc-$CBC_VERSION.tgz
 find ../Cbc/* ! -iname "*cmake*" -delete
 cp -r Cbc-$CBC_VERSION/* ../Cbc/
 
-curl -O https://www.coin-or.org/download/source/Ipopt/Ipopt-$IPOPT_VERSION.tgz
-tar xzvf Ipopt-$IPOPT_VERSION.tgz
+curl -O https://www.coin-or.org/download/source/Ipopt/Ipopt-$IPOPT_VERSION.tar.gz
+tar xzvf Ipopt-$IPOPT_VERSION.tar.gz
 find ../Ipopt/* ! -iname "*cmake*" -delete
-cp -r Ipopt-$IPOPT_VERSION/* ../Ipopt/
+cp -r Ipopt-releases-$IPOPT_VERSION/* ../Ipopt/
 
 curl -O https://www.coin-or.org/download/source/Bonmin/Bonmin-$BONMIN_VERSION.tgz
 tar xzvf Bonmin-$BONMIN_VERSION.tgz
