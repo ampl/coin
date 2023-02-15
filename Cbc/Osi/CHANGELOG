@@ -1,3 +1,8 @@
+16/06/2020 OsiXpr
+  - added functionality for switching between dual and primal simplex with hints
+  - implemented getDualRays
+  - implemented getBasisStatus
+
 06/08/2019 OsiGrb
   - fix problem with loading a problem with ranged rows when already a problem has been loaded (#124)
 

@@ -3,7 +3,7 @@
 #*            This file is part of the test engine for MIPLIB2010            *
 #*                                                                           *
 #* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
-# $Id: run.sh 1854 2013-01-28 00:02:55Z stefan $
+# $Id$
 
 SHELL=$1
 BINNAME=$2

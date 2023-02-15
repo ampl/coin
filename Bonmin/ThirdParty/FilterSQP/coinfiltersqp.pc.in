@@ -1,9 +1,0 @@
-prefix=@prefix@
-libdir=@exec_prefix@/lib
-
-Name: FilterSQP
-Description: FilterSQP
-URL: https://projects.coin-or.org/BuildTools
-Version: @PACKAGE_VERSION@
-Libs: -L${libdir} -lfiltersqp @FILTERSQP_PCLIBS@
-Cflags:

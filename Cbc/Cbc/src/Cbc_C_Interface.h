@@ -1,4 +1,4 @@
-/* $Id: Cbc_C_Interface.h 2598 2019-06-14 15:03:05Z stefan $ */
+/* $Id$ */
 /*
   Copyright (C) 2004 International Business Machines Corporation and others.
   All Rights Reserved.

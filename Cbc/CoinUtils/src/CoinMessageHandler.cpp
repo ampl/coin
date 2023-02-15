@@ -1,4 +1,4 @@
-/* $Id: CoinMessageHandler.cpp 2112 2019-03-15 15:14:15Z stefan $ */
+/* $Id$ */
 // Copyright (C) 2002, International Business Machines
 // Corporation and others.  All Rights Reserved.
 // This code is licensed under the terms of the Eclipse Public License (EPL).

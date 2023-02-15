@@ -1,4 +1,4 @@
-// $Id: CglClique.hpp 1331 2016-01-26 19:37:05Z forrest $
+// $Id$
 // Copyright (C) 2000, International Business Machines
 // Corporation and others.  All Rights Reserved.
 // This code is licensed under the terms of the Eclipse Public License (EPL).

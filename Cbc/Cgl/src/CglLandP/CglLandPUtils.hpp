@@ -4,7 +4,7 @@
 //           CNRS, Aix-Marseille Universites
 // Date:     02/23/08
 //
-// $Id: CglLandPUtils.hpp 1122 2013-04-06 20:39:53Z stefan $
+// $Id$
 //
 // This code is licensed under the terms of the Eclipse Public License (EPL).
 //---------------------------------------------------------------------------
@@ -85,7 +85,7 @@ struct Cuts
     /** resize vector.*/
     void resize(unsigned int i)
     {
-        cuts_.resize(i, reinterpret_cast<OsiRowCut *> (NULL));
+        cuts_.resize(i, static_cast<OsiRowCut *> (NULL));
     }
 private:
     /** Stores the number of cuts.*/

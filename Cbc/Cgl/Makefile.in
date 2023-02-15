@@ -57,11 +57,10 @@ host_triplet = @host@
 # specified.  But we need to list it as subdirectory to make sure that it is
 # included in the tarball
 @ALWAYS_FALSE@am__append_1 = test
-DIST_COMMON = README $(am__configure_deps) \
-	$(srcdir)/BuildTools/Makemain.inc $(srcdir)/Makefile.am \
-	$(srcdir)/Makefile.in $(srcdir)/cgl-uninstalled.pc.in \
-	$(srcdir)/cgl.pc.in $(top_srcdir)/configure \
-	$(top_srcdir)/doxydoc/doxygen.conf.in \
+DIST_COMMON = $(am__configure_deps) $(srcdir)/BuildTools/Makemain.inc \
+	$(srcdir)/Makefile.am $(srcdir)/Makefile.in \
+	$(srcdir)/cgl-uninstalled.pc.in $(srcdir)/cgl.pc.in \
+	$(top_srcdir)/configure $(top_srcdir)/doxydoc/doxygen.conf.in \
 	$(top_srcdir)/examples/Makefile.in AUTHORS config.guess \
 	config.sub depcomp install-sh ltmain.sh missing
 @HAVE_EXTERNALS_TRUE@am__append_2 = Dependencies
@@ -140,6 +139,13 @@ CGLLIB_PCREQUIRES = @CGLLIB_PCREQUIRES@
 CGL_SUBDIRS = @CGL_SUBDIRS@
 CGL_SUBLIBS = @CGL_SUBLIBS@
 CGL_SVN_REV = @CGL_SVN_REV@
+CLP_CFLAGS = @CLP_CFLAGS@
+CLP_CFLAGS_INSTALLED = @CLP_CFLAGS_INSTALLED@
+CLP_DATA = @CLP_DATA@
+CLP_DATA_INSTALLED = @CLP_DATA_INSTALLED@
+CLP_DEPENDENCIES = @CLP_DEPENDENCIES@
+CLP_LIBS = @CLP_LIBS@
+CLP_LIBS_INSTALLED = @CLP_LIBS_INSTALLED@
 COINUTILS_CFLAGS = @COINUTILS_CFLAGS@
 COINUTILS_CFLAGS_INSTALLED = @COINUTILS_CFLAGS_INSTALLED@
 COINUTILS_DATA = @COINUTILS_DATA@
@@ -151,6 +157,8 @@ COIN_CC_IS_CL_FALSE = @COIN_CC_IS_CL_FALSE@
 COIN_CC_IS_CL_TRUE = @COIN_CC_IS_CL_TRUE@
 COIN_CXX_IS_CL_FALSE = @COIN_CXX_IS_CL_FALSE@
 COIN_CXX_IS_CL_TRUE = @COIN_CXX_IS_CL_TRUE@
+COIN_HAS_CLP_FALSE = @COIN_HAS_CLP_FALSE@
+COIN_HAS_CLP_TRUE = @COIN_HAS_CLP_TRUE@
 COIN_HAS_COINUTILS_FALSE = @COIN_HAS_COINUTILS_FALSE@
 COIN_HAS_COINUTILS_TRUE = @COIN_HAS_COINUTILS_TRUE@
 COIN_HAS_DOXYGEN_FALSE = @COIN_HAS_DOXYGEN_FALSE@
@@ -395,7 +403,7 @@ CLEANFILES =
 
 # Files that are generated and should be cleaned with make distclean
 DISTCLEANFILES = $(am__append_3) $(VPATH_DISTCLEANFILES)
-DocFiles = README AUTHORS LICENSE 
+DocFiles = README README.md AUTHORS AUTHORS.md LICENSE LICENSE.md 
 DocInstallDir = $(datadir)/coin/doc/$(PACKAGE_NAME)
 COIN_HAS_DOXYGEN = @COIN_HAS_DOXYGEN_TRUE@TRUE
 COIN_HAS_LATEX = @COIN_HAS_LATEX_TRUE@TRUE
@@ -982,7 +990,7 @@ uninstall-all-doxygen-docs:
 	  fi ; \
 	done ; 
 
-install-doc: $(DocFiles) 
+install-doc: 
 	test -z "$(DocInstallDir)" || $(mkdir_p) "$(DESTDIR)$(DocInstallDir)"
 	for file in $(DocFiles); do \
 	  if test -f "$$file"; then dir=; else dir="$(srcdir)/"; fi; \

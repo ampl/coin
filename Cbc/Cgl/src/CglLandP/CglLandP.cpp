@@ -4,7 +4,7 @@
 //           Carnegie Mellon University, Pittsburgh, PA 15213
 // Date:     07/21/05
 //
-// $Id: CglLandP.cpp 1505 2019-10-03 13:53:58Z stefan $
+// $Id$
 //
 // This code is licensed under the terms of the Eclipse Public License (EPL).
 //---------------------------------------------------------------------------

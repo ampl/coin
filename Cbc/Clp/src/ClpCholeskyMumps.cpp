@@ -1,4 +1,4 @@
-/* $Id: ClpCholeskyMumps.cpp 2385 2019-01-06 19:43:06Z unxusr $ */
+/* $Id$ */
 // Copyright (C) 2004, International Business Machines
 // Corporation and others.  All Rights Reserved.
 // This code is licensed under the terms of the Eclipse Public License (EPL).
@@ -13,14 +13,16 @@
 #define USE_COMM_WORLD -987654
 extern "C" {
 #include "dmumps_c.h"
+}
 // In newer ThirdParty/Mumps, mpi.h is renamed to mumps_mpi.h.
 // We get informed about this by having COIN_USE_MUMPS_MPI_H defined.
 #ifdef COIN_USE_MUMPS_MPI_H
+extern "C" {
 #include "mumps_mpi.h"
+}
 #else
 #include "mpi.h"
 #endif
-}
 
 #include "ClpCholeskyMumps.hpp"
 #include "ClpMessage.hpp"

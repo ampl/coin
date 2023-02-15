@@ -638,6 +638,16 @@ public:
   virtual ~OsiXprSolverInterface();
   //@}
 
+  /***************************************************************************/
+  /**@name OsiSimplexInterface methods 
+	 */
+  //@{
+
+  /** Returns a basis status of the structural/artificial variables 
+	 At present as warm start i.e 0: free, 1: basic, 2: upper, 3: lower
+	 */
+  virtual void getBasisStatus(int *cstat, int *rstat) const;
+
 protected:
   /**@name Protected methods */
   //@{

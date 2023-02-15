@@ -1,4 +1,4 @@
-// $Id: CglTwomirTest.cpp 1120 2013-04-06 20:34:40Z stefan $
+// $Id$
 // Copyright (C) 2000, International Business Machines
 // Corporation and others.  All Rights Reserved.
 // This code is licensed under the terms of the Eclipse Public License (EPL).

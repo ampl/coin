@@ -1,4 +1,4 @@
-/* $Id: Clp_C_Interface.h 2630 2020-01-29 17:45:31Z stefan $ */
+/* $Id$ */
 /*
   Copyright (C) 2002, 2003 International Business Machines Corporation
   and others.  All Rights Reserved.

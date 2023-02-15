@@ -2,7 +2,7 @@
 // All Rights Reserved.
 // This code is published under the Eclipse Public License.
 //
-// $Id: BonIpoptInteriorWarmStarter.hpp 2106 2015-01-20 10:33:55Z stefan $
+// $Id$
 //
 // Authors:  Andreas Waechter               IBM    2006-03-02
 

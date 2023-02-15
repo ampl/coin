@@ -1,4 +1,4 @@
-// $Id: CglProbing.hpp 1387 2017-09-29 11:02:03Z forrest $
+// $Id$
 // Copyright (C) 2002, International Business Machines
 // Corporation and others.  All Rights Reserved.
 // This code is licensed under the terms of the Eclipse Public License (EPL).

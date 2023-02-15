@@ -2,7 +2,7 @@
 // All Rights Reserved.
 // This code is published under the Eclipse Public License.
 //
-// $Id: BonCutStrengthener.hpp 2106 2015-01-20 10:33:55Z stefan $
+// $Id$
 //
 // Author:   Andreas Waechter                 IBM    2007-03-29
 

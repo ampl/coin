@@ -1,4 +1,4 @@
-/* $Id: CbcCutGenerator.cpp 2706 2019-10-08 09:25:42Z stefan $ */
+/* $Id$ */
 // Copyright (C) 2003, International Business Machines
 // Corporation and others.  All Rights Reserved.
 // This code is licensed under the terms of the Eclipse Public License (EPL).

@@ -1,4 +1,4 @@
-/* $Id: CbcThread.cpp 2699 2019-10-03 14:05:25Z stefan $ */
+/* $Id$ */
 // Copyright (C) 2002, International Business Machines
 // Corporation and others.  All Rights Reserved.
 // This code is licensed under the terms of the Eclipse Public License (EPL).
@@ -1736,8 +1736,14 @@ void CbcModel::moveToModel(CbcModel *baseModel, int mode)
         }
       }
       for (i = 0; i < stuff->nDeleteNode(); i++) {
-        //printf("CbcNode %x stuff delete\n",stuff->delNode[i]);
-        delete stuff->delNode()[i];
+        CbcNode * thisNode = stuff->delNode()[i];
+	if (baseModel->parallelMode()<0) {
+	  // deterministic - don't delete root node
+	  if (thisNode->depth())
+	    delete thisNode;
+	} else {
+	  delete thisNode;
+	}
       }
     }
   } else {

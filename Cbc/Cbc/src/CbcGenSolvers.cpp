@@ -4,7 +4,7 @@
 
   This code is licensed under the terms of the Eclipse Public License (EPL).
 
-  $Id: CbcGenSolvers.cpp 2499 2019-02-21 21:29:20Z stefan $
+  $Id$
 */
 /*
   This file is part of cbc-generic.
@@ -93,7 +93,7 @@
 
 namespace {
 
-char svnid[] = "$Id: CbcGenSolvers.cpp 2499 2019-02-21 21:29:20Z stefan $";
+char svnid[] = "$Id$";
 
 }
 

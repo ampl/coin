@@ -2,7 +2,7 @@
 # All Rights Reserved.
 # This file is distributed under the Eclipse Public License.
 
-## $Id: Makefile.am 2499 2019-02-21 21:29:20Z stefan $
+## $Id$
 
 # Author:  Andreas Waechter           IBM    2006-04-13
 
@@ -138,6 +138,7 @@ cbc_SOURCES = CoinSolve.cpp
 
 # Additional libraries
 cbc_LDADD = libCbcSolver.la libCbc.la $(CBCLIB_LIBS) $(ASL_LIBS)
+cbc_LDFLAGS = $(LT_LDFLAGS)
 cbc_DEPENDENCIES = libCbcSolver.la libCbc.la $(CBCLIB_DEPENDENCIES) $(ASL_DEPENDENCIES)
 
 endif
@@ -168,6 +169,7 @@ cbc_generic_SOURCES = \
 	CbcGenSolvers.cpp
 
 cbc_generic_LDADD = libCbcSolver.la libCbc.la $(CBCGENERIC_LIBS)
+cbc_LDFLAGS = $(LT_LDFLAGS)
 cbc_generic_DEPENDENCIES = libCbcSolver.la libCbc.la $(CBCGENERIC_DEPENDENCIES)
 
 # List all additionally required solver and Osi libraries

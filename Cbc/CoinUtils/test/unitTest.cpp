@@ -160,12 +160,14 @@ int main (int argc, const char *argv[])
   { allOK = false ;
     testingMessage( "ERROR" ) ; }
   testingMessage( "; NaN value: " ) ;
+# ifdef COIN_C_FINITE
   checkVal = checkVal/checkVal ;
   if (CoinIsnan(checkVal))
   { testingMessage( "ok.\n" ) ; }
   else
   { allOK = false ;
     testingMessage( "ERROR.\n" ) ; }
+# endif
 # else
   allOK = false ;
   testingMessage( "ERROR: No functional CoinIsnan.\n" ) ;

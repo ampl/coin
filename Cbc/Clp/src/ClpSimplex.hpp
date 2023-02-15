@@ -1,4 +1,4 @@
-/* $Id: ClpSimplex.hpp 2618 2020-01-16 13:46:41Z stefan $ */
+/* $Id$ */
 // Copyright (C) 2002, International Business Machines
 // Corporation and others.  All Rights Reserved.
 // This code is licensed under the terms of the Eclipse Public License (EPL).

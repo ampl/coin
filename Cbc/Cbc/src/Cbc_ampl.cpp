@@ -1,4 +1,4 @@
-/* $Id: Cbc_ampl.cpp 2618 2019-07-01 09:43:37Z stefan $ */
+/* $Id$ */
 /****************************************************************
 Copyright (C) 1997-2000 Lucent Technologies
 Modifications for Coin -  Copyright (C) 2006, International Business Machines Corporation and others.

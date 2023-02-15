@@ -1,4 +1,4 @@
-/* $Id: ClpCholeskyDense.hpp 2385 2019-01-06 19:43:06Z unxusr $ */
+/* $Id$ */
 /*
   Copyright (C) 2003, International Business Machines Corporation
   and others.  All Rights Reserved.

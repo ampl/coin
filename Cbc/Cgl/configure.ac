@@ -2,7 +2,7 @@
 # All Rights Reserved.
 # This file is distributed under the Eclipse Public License.
 
-## $Id: configure.ac 1532 2020-01-31 11:11:15Z stefan $
+## $Id$
 
 # Author:  Andreas Waechter            IBM    2006-04-13
 
@@ -12,7 +12,7 @@
 
 AC_PREREQ(2.59)
 
-AC_INIT([Cgl],[0.60.3],[cgl@list.coin-or.org])
+AC_INIT([Cgl],[0.60.6],[cgl@list.coin-or.org])
 
 AC_COPYRIGHT([
 Copyright 2006 International Business Machines and others.
@@ -41,7 +41,7 @@ AC_CANONICAL_BUILD
 # the source root directory contains definition of where to find those
 # externals.  The following macro ensures that those externals are
 # retrieved by svn if they are not there yet.
-AC_COIN_PROJECTDIR_INIT(Cgl,11:3:10)
+AC_COIN_PROJECTDIR_INIT(Cgl,11:6:10)
 
 # Check if user wants to produce debugging code
 AC_COIN_DEBUG_COMPILE(Cgl)
@@ -69,6 +69,7 @@ fi
 AC_COIN_CHECK_PACKAGE(Sample, [coindatasample])
 
 # Clp can be used by CglLandP
+AC_COIN_CHECK_PACKAGE(Clp, [clp], [CglLib])
 AC_COIN_CHECK_PACKAGE(OsiClp, [osi-clp], [CglLib])
 
 #############################################################################

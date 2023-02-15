@@ -2,7 +2,7 @@
 # All Rights Reserved.
 # This file is distributed under the Eclipse Public License.
 
-## $Id: Makefile.am 2054 2014-08-08 04:07:42Z mlubin $
+## $Id$
 
 # Author:  Andreas Waechter           IBM    2006-04-13
 
@@ -15,7 +15,10 @@ AUTOMAKE_OPTIONS = foreign
 CBC_TEST_TGTS = gamstests ositests
 
 if COIN_HAS_CLP
-  CBC_TEST_TGTS += test_cbc ctests
+if COIN_HAS_SAMPLE
+  CBC_TEST_TGTS += test_cbc
+endif
+  CBC_TEST_TGTS += ctests
 endif
 if CBC_BUILD_CBC_GENERIC
 if COIN_HAS_SAMPLE
@@ -29,9 +32,9 @@ if COIN_HAS_SAMPLE
   cbcflags += -dirSample `$(CYGPATH_W) $(SAMPLE_DATA)`
   ositestsflags += -mpsDir=`$(CYGPATH_W) $(SAMPLE_DATA)`
 endif
-cbcflags += -unitTest
 if COIN_HAS_MIPLIB3
-  cbcflags += -dirMiplib `$(CYGPATH_W) $(MIPLIB3_DATA)` -miplib
+  cbcflags += -dirMiplib `$(CYGPATH_W) $(MIPLIB3_DATA)` -unitTest
+#  cbcflags += -dirMiplib `$(CYGPATH_W) $(MIPLIB3_DATA)` -miplib
 endif
 if COIN_HAS_NETLIB
   ositestsflags += -netlibDir=`$(CYGPATH_W) $(NETLIB_DATA)` -testOsiSolverInterface

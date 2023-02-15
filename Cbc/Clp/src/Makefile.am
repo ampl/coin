@@ -2,7 +2,7 @@
 # All Rights Reserved.
 # This file is distributed under the Eclipse Public License.
 
-## $Id: Makefile.am 2235 2017-01-03 15:44:15Z forrest $
+## $Id$
 
 # Author:  Andreas Waechter           IBM    2006-04-13
 

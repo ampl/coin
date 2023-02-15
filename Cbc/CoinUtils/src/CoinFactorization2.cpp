@@ -1,4 +1,4 @@
-/* $Id: CoinFactorization2.cpp 2213 2019-12-19 08:44:16Z stefan $ */
+/* $Id$ */
 // Copyright (C) 2002, International Business Machines
 // Corporation and others.  All Rights Reserved.
 // This code is licensed under the terms of the Eclipse Public License (EPL).

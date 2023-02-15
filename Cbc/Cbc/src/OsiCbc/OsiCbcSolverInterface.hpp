@@ -1,4 +1,4 @@
-// $Id: OsiCbcSolverInterface.hpp 2534 2019-03-15 16:27:39Z stefan $
+// $Id$
 // Copyright (C) 2000, International Business Machines
 // Corporation and others.  All Rights Reserved.
 // This code is licensed under the terms of the Eclipse Public License (EPL).

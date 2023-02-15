@@ -5,7 +5,7 @@
 //           email: fmargot@andrew.cmu.edu
 // Date:     11/24/06
 //
-// $Id: CglParam.hpp 1442 2019-01-06 16:39:41Z unxusr $
+// $Id$
 //
 // This code is licensed under the terms of the Eclipse Public License (EPL).
 //-----------------------------------------------------------------------------

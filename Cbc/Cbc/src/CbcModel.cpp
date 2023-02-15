@@ -1,4 +1,4 @@
-/* $Id: CbcModel.cpp 2876 2020-02-17 10:37:31Z stefan $ */
+/* $Id$ */
 // Copyright (C) 2002, International Business Machines
 // Corporation and others.  All Rights Reserved.
 // This code is licensed under the terms of the Eclipse Public License (EPL).
@@ -1631,8 +1631,16 @@ void CbcModel::branchAndBound(int doStatistics)
   int nextCheckRestart = 50;
   // Force minimization !!!!
   bool flipObjective = (solver_->getObjSense() < 0.0);
-  if (flipObjective)
+  if (flipObjective) {
+    // In solver_ cutoff is correct with sign reversed
+    double cutoff;
+    solver_->getDblParam(OsiDualObjectiveLimit,cutoff);
+    // treat as if minimize
+    assert(fabs(dblParam_[CbcCurrentCutoff]) == fabs(cutoff) ||
+	   fabs(cutoff)>1.0e40);
+    dblParam_[CbcCurrentCutoff] = -cutoff;
     flipModel();
+  }
   dblParam_[CbcOptimizationDirection] = 1.0; // was solver_->getObjSense();
   strongInfo_[0] = 0;
   strongInfo_[1] = 0;
@@ -5423,7 +5431,7 @@ void CbcModel::branchAndBound(int doStatistics)
     OsiClpSolverInterface *clpSolver
       = dynamic_cast< OsiClpSolverInterface * >(solver_);
     if (clpSolver)
-      clpSolver->setFakeObjective(reinterpret_cast< double * >(NULL));
+      clpSolver->setFakeObjective(static_cast< double * >(NULL));
   }
 #endif
   moreSpecialOptions_ = saveMoreSpecialOptions;
@@ -5453,8 +5461,17 @@ void CbcModel::initialSolve()
   solver_->setHintParam(OsiDoInBranchAndCut, true, OsiHintDo, NULL);
   solver_->initialSolve();
   solver_->setHintParam(OsiDoInBranchAndCut, false, OsiHintDo, NULL);
-  if (!solver_->isProvenOptimal())
+  if (!solver_->isProvenOptimal()) {
+#ifdef COIN_HAS_CLP
+    OsiClpSolverInterface *clpSolver
+      = dynamic_cast< OsiClpSolverInterface * >(solver_);
+    // Do not resolve if presolve found infeasible/unbounded 
+    if (!clpSolver || clpSolver->getModelPtr()->secondaryStatus()!=11)
+      solver_->resolve();
+#else
     solver_->resolve();
+#endif
+  }
   // But set up so Jon Lee will be happy
   status_ = -1;
   secondaryStatus_ = -1;

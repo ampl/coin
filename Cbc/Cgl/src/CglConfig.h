@@ -2,7 +2,7 @@
  * All Rights Reserved.
  * This code is published under the Eclipse Public License.
  *
- * $Id: CglConfig.h 1024 2011-06-09 11:56:44Z stefan $
+ * $Id$
  *
  * Include file for the configuration of Cgl.
  *

@@ -4,7 +4,7 @@
 #*            This file is part of the test engine for MIPLIB2010            *
 #*                                                                           *
 #* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
-# $Id: parse.awk 1854 2013-01-28 00:02:55Z stefan $
+# $Id$
 
 function abs(x)
 {

@@ -1,4 +1,4 @@
-/* $Id: CbcModel.hpp 2699 2019-10-03 14:05:25Z stefan $ */
+/* $Id$ */
 // Copyright (C) 2002, International Business Machines
 // Corporation and others.  All Rights Reserved.
 // This code is licensed under the terms of the Eclipse Public License (EPL).

@@ -1,4 +1,4 @@
-// $Id: CbcSOS.cpp 2491 2019-02-12 13:05:24Z forrest $
+// $Id$
 // Copyright (C) 2002, International Business Machines
 // Corporation and others.  All Rights Reserved.
 // This code is licensed under the terms of the Eclipse Public License (EPL).

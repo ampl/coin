@@ -1,4 +1,4 @@
-// $Id: CglClique.cpp 1434 2018-11-03 13:02:36Z unxusr $
+// $Id$
 // Copyright (C) 2000, International Business Machines
 // Corporation and others.  All Rights Reserved.
 // This code is licensed under the terms of the Eclipse Public License (EPL).

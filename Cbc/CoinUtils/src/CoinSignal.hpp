@@ -1,4 +1,4 @@
-/* $Id: CoinSignal.hpp 2216 2019-12-27 03:28:40Z stefan $ */
+/* $Id$ */
 // Copyright (C) 2003, International Business Machines
 // Corporation and others.  All Rights Reserved.
 // This code is licensed under the terms of the Eclipse Public License (EPL).

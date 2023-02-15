@@ -1,4 +1,4 @@
-/* $Id: Coin_C_defines.h 2089 2019-02-07 19:44:57Z unxusr $ */
+/* $Id$ */
 /*
   Copyright (C) 2002, 2003 International Business Machines Corporation
   and others.  All Rights Reserved.

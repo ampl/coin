@@ -1,4 +1,4 @@
-/* $Id: ClpModel.hpp 2643 2020-02-03 10:03:22Z stefan $ */
+/* $Id$ */
 // Copyright (C) 2002, International Business Machines
 // Corporation and others.  All Rights Reserved.
 // This code is licensed under the terms of the Eclipse Public License (EPL).

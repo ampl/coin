@@ -1,4 +1,4 @@
-// $Id: unitTest.cpp 1114 2013-04-06 14:00:12Z stefan $
+// $Id$
 // Copyright (C) 2000, International Business Machines
 // Corporation and others.  All Rights Reserved.
 // This code is licensed under the terms of the Eclipse Public License (EPL).
@@ -16,22 +16,22 @@
 #include <cstdlib>
 
 #ifdef COIN_HAS_OSICPX
-#include <OsiCpxSolverInterface.hpp>
+#include "OsiCpxSolverInterface.hpp"
 #endif
 #ifdef COIN_HAS_OSIXPR
-#include <OsiXprSolverInterface.hpp>
+#include "OsiXprSolverInterface.hpp"
 #endif
 #ifdef COIN_HAS_OSICLP
-#include <OsiClpSolverInterface.hpp>
+#include "OsiClpSolverInterface.hpp"
 #endif
 #ifdef COIN_HAS_OSIDYLP
-#include <OsiDylpSolverInterface.hpp>
+#include "OsiDylpSolverInterface.hpp"
 #endif
 #ifdef COIN_HAS_OSIGLPK
-#include <OsiGlpkSolverInterface.hpp>
+#include "OsiGlpkSolverInterface.hpp"
 #endif
 #ifdef COIN_HAS_OSIVOL
-#include <OsiVolSolverInterface.hpp>
+#include "OsiVolSolverInterface.hpp"
 #endif
 
 #include "CglSimpleRounding.hpp"

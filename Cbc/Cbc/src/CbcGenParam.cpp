@@ -4,7 +4,7 @@
 
   This code is licensed under the terms of the Eclipse Public License (EPL).
 
-  $Id: CbcGenParam.cpp 2465 2019-01-03 19:26:52Z unxusr $
+  $Id$
 */
 /*
   This file is part of cbc-generic.
@@ -27,7 +27,7 @@
 
 namespace {
 
-char svnid[] = "$Id: CbcGenParam.cpp 2465 2019-01-03 19:26:52Z unxusr $";
+char svnid[] = "$Id$";
 
 }
 

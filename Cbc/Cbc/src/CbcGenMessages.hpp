@@ -19,7 +19,7 @@
 */
 
 /*
-  $Id: CbcGenMessages.hpp 2465 2019-01-03 19:26:52Z unxusr $
+  $Id$
 */
 
 /*

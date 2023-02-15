@@ -7,7 +7,7 @@
 //           email: fmargot@andrew.cmu.edu
 // Date:     2/6/05
 //
-// $Id: CglRedSplit.hpp 1387 2017-09-29 11:02:03Z forrest $
+// $Id$
 //-----------------------------------------------------------------------------
 // Copyright (C) 2005, Francois Margot and others.  All Rights Reserved.
 // This code is licensed under the terms of the Eclipse Public License (EPL).

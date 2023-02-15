@@ -1,4 +1,4 @@
-/* $Id: CoinOslFactorization2.cpp 2083 2019-01-06 19:38:09Z unxusr $ */
+/* $Id$ */
 /*
   Copyright (C) 1987, 2009, International Business Machines
   Corporation and others.  All Rights Reserved.

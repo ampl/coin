@@ -1,4 +1,4 @@
-/* $Id: CbcOrClpParam.cpp 2554 2019-12-19 09:01:53Z stefan $ */
+/* $Id$ */
 // Copyright (C) 2002, International Business Machines
 // Corporation and others.  All Rights Reserved.
 // This code is licensed under the terms of the Eclipse Public License (EPL).
@@ -2230,7 +2230,7 @@ correct tolerance (remembering to switch off presolve for this final short clean
     p.append("both");
     p.append("before");
     p.setLonghelp(
-      "This heuristic is very very compute intensive. It tries to find a Dantzig Wolfe structure and use that."
+      "This heuristic is very very compute intensive. It tries to find a Dantzig Wolfe structure and use that. "
       HEURISTICS_LONGHELP);
     parameters.push_back(p);
   }

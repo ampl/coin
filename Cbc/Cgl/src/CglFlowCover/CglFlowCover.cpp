@@ -1,4 +1,4 @@
-// $Id: CglFlowCover.cpp 1505 2019-10-03 13:53:58Z stefan $
+// $Id$
 //-----------------------------------------------------------------------------
 // name:     Cgl Lifted Simple Generalized Flow Cover Cut Generator
 // author:   Yan Xu                email: yan.xu@sas.com

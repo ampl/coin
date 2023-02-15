@@ -1,4 +1,4 @@
-/* $Id: ClpCholeskyTaucs.cpp 2385 2019-01-06 19:43:06Z unxusr $ */
+/* $Id$ */
 #ifdef TAUCS_BARRIER
 // Copyright (C) 2004, International Business Machines
 // Corporation and others.  All Rights Reserved.

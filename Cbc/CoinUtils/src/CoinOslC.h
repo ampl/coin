@@ -1,4 +1,4 @@
-/* $Id: CoinOslC.h 2259 2020-01-16 13:43:43Z stefan $ */
+/* $Id$ */
 #ifndef COIN_OSL_C_INCLUDE
 /*
   Copyright (C) 1987, 2009, International Business Machines Corporation

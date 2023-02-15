@@ -10,7 +10,7 @@
 // Copyright (C) 2009 Humboldt University Berlin and others.
 // All Rights Reserved.
 
-// $Id: OsiGrbSolverInterface.hpp 2197 2019-01-06 23:00:34Z unxusr $
+// $Id$
 
 #ifndef OsiGrbSolverInterface_H
 #define OsiGrbSolverInterface_H

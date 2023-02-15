@@ -1,4 +1,4 @@
-/* $Id: CoinOslFactorization3.cpp 2216 2019-12-27 03:28:40Z stefan $ */
+/* $Id$ */
 /*
   Copyright (C) 1987, 2009, International Business Machines
   Corporation and others.  All Rights Reserved.

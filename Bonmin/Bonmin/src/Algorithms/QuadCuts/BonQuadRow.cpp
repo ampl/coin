@@ -69,8 +69,8 @@ QuadRow::operator=(const QuadCut &cut){
     a_grad_idx_.clear();
     Q_row_grad_idx_.clear();
     Q_col_grad_idx_.clear();
-    //Q_hessian_idx.empty();
-    //H_Hes_idx_.empty()
+    //Q_hessian_idx.clear();
+    //H_Hes_idx_.clear()
     initialize();
     return (*this);
 }
@@ -89,12 +89,12 @@ QuadRow::operator=(const OsiRowCut &cut){
     c_ = 0;
     a_ = cut.row();
     Q_ = TMat();
-    g_.empty();
-    a_grad_idx_.empty();
+    g_.clear();
+    a_grad_idx_.clear();
     Q_row_grad_idx_.clear();
     Q_col_grad_idx_.clear();
-    //Q_hessian_idx.empty();
-    //H_Hes_idx_.empty()
+    //Q_hessian_idx.clear();
+    //H_Hes_idx_.clear()
     initialize();
     return (*this);
 }
@@ -263,7 +263,7 @@ QuadRow::add_to_hessian(AdjustableMat &H, bool offset){
   assert(Q_hessian_idx_.empty());
   for(int i = 0 ; i < Q_.nnz_ ; i++){
      std::pair<int, int> e;
-     e = std::make_pair(Q_.jCol_[i] + offset, Q_.iRow_[i] + offset);
+     e = std::make_pair(Q_.jCol_[i] + (offset ? 1 : 0), Q_.iRow_[i] + (offset ? 1 : 0));
      AdjustableMat::iterator pos = H.find(e);
      if(pos != H.end()){//Already exists
        if(pos->second.second != -1)

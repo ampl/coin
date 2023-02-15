@@ -4,7 +4,7 @@
 
   This code is licensed under the terms of the Eclipse Public License (EPL).
 
-  $Id: CbcGenCtlBlk.hpp 2467 2019-01-03 21:26:29Z unxusr $
+  $Id$
 */
 /*
   This file is part of cbc-generic.
@@ -47,7 +47,7 @@
 */
 
 /*
-  $Id: CbcGenCtlBlk.hpp 2467 2019-01-03 21:26:29Z unxusr $
+  $Id$
 */
 
 #define CBC_GENERIC_VERSION "00.01.00"

@@ -1,4 +1,3 @@
-/* $Id: CoinPresolveSingleton.cpp 2083 2019-01-06 19:38:09Z unxusr $ */
 // Copyright (C) 2002, International Business Machines
 // Corporation and others.  All Rights Reserved.
 // This code is licensed under the terms of the Eclipse Public License (EPL).
@@ -174,19 +173,35 @@ slack_doubleton_action::presolve(CoinPresolveMatrix *prob,
       lo = -lo;
       up = -up;
     }
-    if (lo <= -PRESOLVE_INF)
+    if (lo <= -1.0e-10*PRESOLVE_INF)
       lo = -PRESOLVE_INF;
     else {
       lo /= abs_aij;
-      if (lo <= -PRESOLVE_INF)
-        lo = -PRESOLVE_INF;
+      if (lo <= -1.0e-10*PRESOLVE_INF) {
+	lo = -PRESOLVE_INF;
+      } else {
+	// check tolerances
+	if (lo && fabs(lo)<=prob->feasibilityTolerance_ && abs_aij >1.0) {
+	  // be safe
+	  nactions--;
+	  continue;
+	}
+      }
     }
-    if (up > PRESOLVE_INF)
+    if (up > 1.0e-10*PRESOLVE_INF)
       up = PRESOLVE_INF;
     else {
       up /= abs_aij;
-      if (up > PRESOLVE_INF)
+      if (up > 1.0e-10*PRESOLVE_INF) {
         up = PRESOLVE_INF;
+      } else {
+	// check tolerances
+	if (up && fabs(up)<=prob->feasibilityTolerance_ && abs_aij >1.0) {
+	  // be safe
+	  nactions--;
+	  continue;
+	}
+      }
     }
 #if PRESOLVE_DEBUG > 2
     std::cout
@@ -301,7 +316,11 @@ slack_doubleton_action::presolve(CoinPresolveMatrix *prob,
       }
       if (prob->rowIsBasic(i))
         numberBasic++;
-      PRESOLVEASSERT(numberBasic > 0);
+#if PRESOLVE_DEBUG 
+      if(numberBasic == 0)
+	printf("warning neither row %d or column %d basic\n",
+	       i,j);
+#endif
       if (sol[j] <= clo[j] + ztolzb) {
         movement = clo[j] - sol[j];
         sol[j] = clo[j];
@@ -399,8 +418,10 @@ void slack_doubleton_action::postsolve(CoinPostsolveMatrix *prob) const
   double *acts = prob->acts_;
   double *rowduals = prob->rowduals_;
 
-#if PRESOLVE_DEBUG
+#if PRESOLVE_DEBUG > 0 || PRESOLVE_CONSISTENCY > 0
   char *rdone = prob->rdone_;
+#endif
+#if PRESOLVE_DEBUG
   std::cout
     << "Entering slack_doubleton_action::postsolve, "
     << nactions << " constraints to process." << std::endl;
@@ -870,6 +891,7 @@ void slack_singleton_action::postsolve(CoinPostsolveMatrix *prob) const
     double movement = 0.0;
     // acts was without coefficient - adjust
     acts[iRow] += coeff * sol[iCol];
+    rcosts[iCol] -= coeff*rowduals[iRow];
     if (acts[iRow] < rlo[iRow] - ztolzb)
       movement = rlo[iRow] - acts[iRow];
     else if (acts[iRow] > rup[iRow] + ztolzb)

@@ -1,4 +1,4 @@
-/* $Id: ClpModel.cpp 2643 2020-02-03 10:03:22Z stefan $ */
+/* $Id$ */
 // copyright (C) 2002, International Business Machines
 // Corporation and others.  All Rights Reserved.
 // This code is licensed under the terms of the Eclipse Public License (EPL).
@@ -1820,7 +1820,8 @@ void ClpModel::addRows(int number, const double *rowLower,
       matrix_->appendMatrix(number, 0, rowStarts, columns, elements);
     }
   }
-  synchronizeMatrix();
+  if (rowStarts)
+    synchronizeMatrix();
 }
 // Add rows
 void ClpModel::addRows(int number, const double *rowLower,
@@ -1900,14 +1901,15 @@ void ClpModel::addRows(int number, const double *rowLower,
   scaledMatrix_ = NULL;
   if (!matrix_)
     createEmptyMatrix();
-  if (rows)
+  if (rows) {
     matrix_->appendRows(number, rows);
+    synchronizeMatrix();
+  }
   setRowScale(NULL);
   setColumnScale(NULL);
   if (lengthNames_) {
     rowNames_.resize(numberRows_);
   }
-  synchronizeMatrix();
 }
 #endif
 #ifndef SLIM_CLP
@@ -1965,11 +1967,10 @@ int ClpModel::addRows(const CoinBuild &buildObject, bool tryPlusMinusOne, bool c
         numberElements += numberElementsThis;
         starts[iRow + 1] = numberElements;
       }
-      addRows(number, lower, upper, NULL);
       // make sure matrix has enough columns
-      matrix_->setDimensions(-1, numberColumns_);
-      numberErrors = matrix_->appendMatrix(number, 0, starts, column, element,
-        checkDuplicates ? numberColumns_ : -1);
+      if (matrix_)
+	matrix_->setDimensions(-1, numberColumns_);
+      addRows(number, lower, upper, starts, column, element);
       delete[] starts;
       delete[] column;
       delete[] element;
@@ -2392,14 +2393,15 @@ void ClpModel::addColumns(int number, const double *columnLower,
   scaledMatrix_ = NULL;
   if (!matrix_)
     createEmptyMatrix();
-  if (columns)
+  if (columns) {
     matrix_->appendCols(number, columns);
+    synchronizeMatrix();
+  }
   setRowScale(NULL);
   setColumnScale(NULL);
   if (lengthNames_) {
     columnNames_.resize(numberColumns_);
   }
-  synchronizeMatrix();
 }
 #endif
 #ifndef SLIM_CLP
@@ -3691,7 +3693,6 @@ int ClpModel::emptyProblem(int *infeasNumber, double *infeasSum, bool printMessa
               columnActivity_[i] = columnUpper_[i];
               status_[i] = 2;
               numberDualInfeasibilities++;
-              ;
               sumDualInfeasibilities += fabs(objValue);
               badColumn = i;
               badValue = -1.0;
@@ -3706,7 +3707,6 @@ int ClpModel::emptyProblem(int *infeasNumber, double *infeasSum, bool printMessa
               columnActivity_[i] = columnLower_[i];
               status_[i] = 3;
               numberDualInfeasibilities++;
-              ;
               sumDualInfeasibilities += fabs(objValue);
               badColumn = i;
               badValue = 1.0;
@@ -3718,7 +3718,8 @@ int ClpModel::emptyProblem(int *infeasNumber, double *infeasSum, bool printMessa
           columnActivity_[i] = 0.0;
           if (objValue) {
             numberDualInfeasibilities++;
-            ;
+            badColumn = i;
+	    badValue = (objValue > 0.0) ? -1.0 : 1.0;
             sumDualInfeasibilities += fabs(objValue);
             returnCode |= 2;
           }

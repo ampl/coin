@@ -1,4 +1,4 @@
-/* $Id: CoinPresolveDual.hpp 2083 2019-01-06 19:38:09Z unxusr $ */
+/* $Id$ */
 
 // Copyright (C) 2002, International Business Machines
 // Corporation and others.  All Rights Reserved.

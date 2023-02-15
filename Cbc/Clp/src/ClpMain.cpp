@@ -1,4 +1,4 @@
-/* $Id: ClpMain.cpp 2453 2019-04-22 03:41:45Z stefan $ */
+/* $Id$ */
 // Copyright (C) 2002, International Business Machines
 // Corporation and others.  All Rights Reserved.
 // This code is licensed under the terms of the Eclipse Public License (EPL).

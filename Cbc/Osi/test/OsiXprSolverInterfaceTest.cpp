@@ -128,10 +128,12 @@ OsiXprSolverInterfaceUnitTest(const std::string & mpsDir, const std::string & ne
       
       OSIUNITTEST_ASSERT_ERROR(!eq(cl[3],1.2345), {}, "xpress", "set col lower");
       xpressSi.setColLower( 3, 1.2345 );
+      cl = xpressSi.getColLower();
       OSIUNITTEST_ASSERT_ERROR( eq(cl[3],1.2345), {}, "xpress", "set col lower");
       
       OSIUNITTEST_ASSERT_ERROR(!eq(cu[4],10.2345), {}, "xpress", "set col upper");
       xpressSi.setColUpper( 4, 10.2345 );
+      cu = xpressSi.getColUpper();
       OSIUNITTEST_ASSERT_ERROR( eq(cu[4],10.2345), {}, "xpress", "set col upper");
 
       OSIUNITTEST_ASSERT_ERROR(eq(xpressSi.getObjCoefficients()[0], 1.0), {}, "xpress", "read and copy exmip1");

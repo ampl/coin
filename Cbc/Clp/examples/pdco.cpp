@@ -1,4 +1,4 @@
-/* $Id: pdco.cpp 1938 2013-04-09 16:29:57Z stefan $ */
+/* $Id$ */
 // Copyright (C) 2003, International Business Machines
 // Corporation and others.  All Rights Reserved.
 // This code is licensed under the terms of the Eclipse Public License (EPL).

@@ -1,4 +1,4 @@
-/* $Id: CoinFileIO.hpp 2083 2019-01-06 19:38:09Z unxusr $ */
+/* $Id$ */
 // Copyright (C) 2005, COIN-OR.  All Rights Reserved.
 // This code is licensed under the terms of the Eclipse Public License (EPL).
 

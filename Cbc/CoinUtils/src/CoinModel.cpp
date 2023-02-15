@@ -1,4 +1,4 @@
-/* $Id: CoinModel.cpp 2259 2020-01-16 13:43:43Z stefan $ */
+/* $Id$ */
 // Copyright (C) 2005, International Business Machines
 // Corporation and others.  All Rights Reserved.
 // This code is licensed under the terms of the Eclipse Public License (EPL).

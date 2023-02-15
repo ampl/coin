@@ -69,18 +69,24 @@ static void reporterror(const char *fname, int iline, int ierr)
 
 void OsiXprSolverInterface::initialSolve()
 {
+  const char * args = "";
+  bool takeHint;
+  OsiHintStrength strength;
+  getHintParam(OsiDoDualInInitial, takeHint, strength);
+  if (strength != OsiHintIgnore) {
+    args = takeHint ? "d" : "p";
+  }
 
   freeSolution();
 
 #if XPVERSION <= 20
   if (objsense_ == 1.0) {
-    XPRS_CHECKED(XPRSminim, (prob_, "l"));
+    XPRS_CHECKED(XPRSminim, (prob_, args));
   } else if (objsense_ == -1.0) {
-    XPRS_CHECKED(XPRSmaxim, (prob_, "l"));
+    XPRS_CHECKED(XPRSmaxim, (prob_, args));
   }
 #else
-
-  XPRS_CHECKED(XPRSlpoptimize, (prob_, "l"));
+  XPRS_CHECKED(XPRSlpoptimize, (prob_, args));
 #endif
 
   lastsolvewasmip = false;
@@ -90,18 +96,24 @@ void OsiXprSolverInterface::initialSolve()
 
 void OsiXprSolverInterface::resolve()
 {
+  const char * args = "";
+  bool takeHint;
+  OsiHintStrength strength;
+  getHintParam(OsiDoDualInResolve, takeHint, strength);
+  if (strength != OsiHintIgnore) {
+    args = takeHint ? "d" : "p";
+  }
 
   freeSolution();
 
 #if XPVERSION <= 20
   if (objsense_ == 1.0) {
-    XPRS_CHECKED(XPRSminim, (prob_, "dl"));
+    XPRS_CHECKED(XPRSminim, (prob_, args));
   } else if (objsense_ == -1.0) {
-    XPRS_CHECKED(XPRSmaxim, (prob_, "dl"));
+    XPRS_CHECKED(XPRSmaxim, (prob_, args));
   }
 #else
-
-  XPRS_CHECKED(XPRSlpoptimize, (prob_, "dl"));
+  XPRS_CHECKED(XPRSlpoptimize, (prob_, args));
 #endif
 
   lastsolvewasmip = false;
@@ -137,8 +149,15 @@ void OsiXprSolverInterface::branchAndBound()
     return;
   }
 #else
+  const char * args = "";
+  bool takeHint;
+  OsiHintStrength strength;
+  getHintParam(OsiDoDualInInitial, takeHint, strength);
+  if (strength != OsiHintIgnore) {
+    args = takeHint ? "d" : "p";
+  }
 
-  XPRS_CHECKED(XPRSmipoptimize, (prob_, ""));
+  XPRS_CHECKED(XPRSmipoptimize, (prob_, args));
 #endif
 
   lastsolvewasmip = true;
@@ -1063,10 +1082,19 @@ int OsiXprSolverInterface::getIterationCount() const
 std::vector< double * > OsiXprSolverInterface::getDualRays(int maxNumRays,
   bool fullRay) const
 {
-  // *FIXME* : must write the method -LL
-  throw CoinError("method is not yet written", "getDualRays",
-    "OsiXprSolverInterface");
-  return std::vector< double * >();
+  const int nrows = getNumRows();
+
+  double *dualRay = new double[nrows];
+  int hasRay;
+
+  int status;
+  XPRS_CHECKED(XPRSgetdualray, (prob_, dualRay, &hasRay));
+  if(hasRay){
+    return std::vector< double * >(1, dualRay);
+  }
+
+  delete dualRay;
+  return std::vector<double *>(0, (double *) NULL); 
 }
 
 //-----------------------------------------------------------------------------
@@ -2362,6 +2390,13 @@ OsiXprSolverInterface::operator=(const OsiXprSolverInterface &rhs)
     gutsOfCopy(rhs);
   }
   return *this;
+}
+
+//#############################################################################
+// OsiSimplexInterface
+//#############################################################################
+void OsiXprSolverInterface::getBasisStatus(int *cstat, int *rstat) const{
+  XPRS_CHECKED(XPRSgetbasis, (prob_,rstat, cstat));
 }
 
 //#############################################################################

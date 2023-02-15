@@ -1,4 +1,4 @@
-// $Id: CglFlowCoverTest.cpp 1372 2017-05-19 23:22:12Z lou $
+// $Id$
 //-----------------------------------------------------------------------------
 // name:     Cgl Lifed Simple Generalized Flow Cover Cut Generator
 // author:   Yan Xu                email: Yan.Xu@sas.com

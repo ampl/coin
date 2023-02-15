@@ -1,4 +1,4 @@
-/* $Id: Cbc_ampl.h 2465 2019-01-03 19:26:52Z unxusr $ */
+/* $Id$ */
 /*
   Copyright (C) 2006, International Business Machines Corporation and others.
   All Rights Reserved.

@@ -689,7 +689,7 @@ OsiTMINLPInterface & OsiTMINLPInterface::operator=(const OsiTMINLPInterface& rhs
         CoinCopyN(rhs.jRow_    , nnz_jac,jRow_    );
       }
       else if(nnz_jac > 0) {
-        throw CoinError("Arrays for storing jacobian are inconsistant.",
+        throw CoinError("Arrays for storing jacobian are inconsistent.",
             "copy constructor",
             "IpoptOAInterface");
       }
@@ -1853,7 +1853,7 @@ OsiTMINLPInterface::getConstraintsViolation(const double *x, double &obj)
       if(rowLower[i] > -1e10)
          rowViolation = std::max(0.,rowLower[i] - g[i]);
 
-      if(rowUpper[i] < 1e10);
+      if(rowUpper[i] < 1e10)
         rowViolation = std::max(rowViolation, g[i] - rowUpper[i]);
 
       norm = rowViolation > norm ? rowViolation : norm;
