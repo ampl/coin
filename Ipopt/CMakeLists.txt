@@ -4,7 +4,7 @@
 # MinGW gfortran on Windows while the rest is built with Visual C++.
 # This file is published under the Eclipse Public License (EPL).
 
-cmake_minimum_required(VERSION 2.8)
+cmake_minimum_required(VERSION 3.10)
 
 # Remove sh.exe from the path as it breaks MinGW makefile generation.
 find_program(SH_PROGRAM sh PATHS ENV PATH NO_DEFAULT_PATH)

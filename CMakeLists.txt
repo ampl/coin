@@ -2,7 +2,7 @@
 # Author: Victor Zverovich
 # This file is published under the Eclipse Public License (EPL).
 
-cmake_minimum_required(VERSION 2.8.12)
+cmake_minimum_required(VERSION 3.10)
 cmake_policy(VERSION ${CMAKE_MINIMUM_REQUIRED_VERSION})
 
 set_property(GLOBAL PROPERTY USE_FOLDERS ON)
@@ -69,6 +69,14 @@ function(add_cxx_flags)
   set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${flags}" PARENT_SCOPE)
 endfunction()
 
+# Add files specified as additional arguments to the specified folder.
+function (add_to_folder folder)
+  foreach (target ${ARGN})
+	if(TARGET ${target})
+		set_property(TARGET ${target} PROPERTY FOLDER ${folder})
+	endif()
+  endforeach ()
+endfunction ()
 
 include(CheckCXXCompilerFlag)
 # Always disable certain warnings
@@ -650,7 +658,12 @@ if (EXISTS ${COIN_SOURCE_DIR}/Ipopt)
     endif()
     set(CHOCO_DEFAULT_INSTALL C:/ProgramData/chocolatey)
     set(ALTERNATIVE_INSTALL C:/mingw${ARCH})
-    set(GFORTRANPATHS  ${STANDARD_MINGW_INSTALL}/bin ${CHOCO_DEFAULT_INSTALL}/bin ${ALTERNATIVE_INSTALL}/bin)
+
+
+
+    set(MSYS_ONE C:/msys64/usr/bin C:/tools/msys64/usr/bin)
+    set(MSYS C:/msys64/ucrt64/bin)
+    set(GFORTRANPATHS ${MSYS})
     find_program(MINGW_GFORTRAN gfortran PATHS ${GFORTRANPATHS})
     if (MINGW_GFORTRAN)
         # Create a script that sets up a build environment in Fortran subprojects.
@@ -676,6 +689,8 @@ if (EXISTS ${COIN_SOURCE_DIR}/Ipopt)
       foreach(p ${GFORTRANPATHS})
         message(WARNING ${p})
       endforeach()
+      message(ERROR "Cannot build IPOPT with VC/gfortran without gfortran, please install it and make sure it is on the PATH")
+
     endif ()
   else ()
     enable_language(Fortran OPTIONAL)

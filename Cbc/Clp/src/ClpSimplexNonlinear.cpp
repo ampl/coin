@@ -899,6 +899,7 @@ void ClpSimplexNonlinear::directionVector(CoinIndexedVector *vectorArray,
       } else {
         sequenceIn_ = -1;
       }
+      (void)nSuper;
 #else
       if (pivotMode2 >= 10 || !nSuper) {
         bool takeBest = true;
@@ -1769,7 +1770,9 @@ int ClpSimplexNonlinear::pivotColumn(CoinIndexedVector *longArray,
         // looks optimal
         // check if any dj look plausible
         int nSuper = 0;
+#ifdef CLP_DEBUG
         int nFlagged = 0;
+#endif
         int nNormal = 0;
         for (int iSequence = 0; iSequence < numberColumns_ + numberRows_; iSequence++) {
           if (flagged(iSequence)) {
@@ -1779,17 +1782,23 @@ int ClpSimplexNonlinear::pivotColumn(CoinIndexedVector *longArray,
             case ClpSimplex::isFixed:
               break;
             case atUpperBound:
+#ifdef CLP_DEBUG
               if (dj_[iSequence] > dualTolerance_)
                 nFlagged++;
+#endif
               break;
             case atLowerBound:
+#ifdef CLP_DEBUG
               if (dj_[iSequence] < -dualTolerance_)
                 nFlagged++;
+#endif
               break;
             case isFree:
             case superBasic:
+#ifdef CLP_DEBUG
               if (fabs(dj_[iSequence]) > dualTolerance_)
                 nFlagged++;
+#endif
               break;
             }
             continue;
@@ -3023,9 +3032,13 @@ char *statusCheck = new char[numberColumns];
 double *changeRegion = new double[numberColumns];
 double offset = 0.0;
 double objValue = 0.0;
+#ifndef NDEBUG
 int exitPass = 2 * numberPasses + 10;
+#endif
 for (iPass = 0; iPass < numberPasses; iPass++) {
+#ifndef NDEBUG
   exitPass--;
+#endif
   // redo objective
   offset = 0.0;
   objValue = -objectiveOffset;
@@ -3155,7 +3168,7 @@ for (iPass = 0; iPass < numberPasses; iPass++) {
         //CoinIndexedVector * columnArray = columnArray_[0];
         CoinIndexedVector *spare = rowArray_[1];
         double *work = longArray->denseVector();
-        int *which = longArray->getIndices();
+        //int *which = longArray->getIndices();
         int nPass = 100;
         //bool conjugate=false;
         // Put back true bounds
@@ -3206,13 +3219,13 @@ for (iPass = 0; iPass < numberPasses; iPass++) {
             absolutelyOptimal = true;
             break; //looks optimal
           }
-          double djNorm = 0.0;
-          int iIndex;
-          for (iIndex = 0; iIndex < numberNonBasic; iIndex++) {
-            int iSequence = which[iIndex];
-            double alpha = work[iSequence];
-            djNorm += alpha * alpha;
-          }
+          //double djNorm = 0.0;
+          //int iIndex;
+          //for (iIndex = 0; iIndex < numberNonBasic; iIndex++) {
+          //  int iSequence = which[iIndex];
+          //  double alpha = work[iSequence];
+          //  djNorm += alpha * alpha;
+          //}
           //if (!jPass)
           //printf("dj norm %g - %d \n",djNorm,numberNonBasic);
           //int number=longArray->getNumElements();
@@ -3382,8 +3395,10 @@ for (iPass = 0; iPass < numberPasses; iPass++) {
   }
   double maxGap = 0.0;
   int numberSmaller = 0;
+#ifdef CLP_DEBUG
   int numberSmaller2 = 0;
   int numberLarger = 0;
+#endif
   for (jNon = 0; jNon < numberNonLinearColumns; jNon++) {
     iColumn = listNonLinearColumn[jNon];
     maxDelta = CoinMax(maxDelta,
@@ -3392,11 +3407,15 @@ for (iPass = 0; iPass < numberPasses; iPass++) {
       if (last[0][jNon] * last[1][jNon] < 0) {
         // halve
         trust[jNon] *= 0.5;
+#ifdef CLP_DEBUG
         numberSmaller2++;
+#endif
       } else {
         if (last[0][jNon] == last[1][jNon] && last[0][jNon] == last[2][jNon])
           trust[jNon] = CoinMin(1.5 * trust[jNon], 1.0e6);
+#ifdef CLP_DEBUG
         numberLarger++;
+#endif
       }
     } else if (goodMove != -2 && trust[jNon] > 10.0 * deltaTolerance) {
       trust[jNon] *= 0.2;
@@ -4095,11 +4114,11 @@ int ClpSimplexNonlinear::primalSLP(int numberConstraints, ClpConstraint **constr
       double movement = newModel.primalRowSolution()[iRow] + constraint->offset();
       movement = fabs((movement - functionValue) * dualValue);
       infPenalty2 += movement;
-      double sumOfActivities = 0.0;
-      for (CoinBigIndex j = rowStart[iRow]; j < rowStart[iRow] + rowLength[iRow]; j++) {
-        int iColumn = column[j];
-        sumOfActivities += fabs(solution[iColumn] * elementByRow[j]);
-      }
+      //double sumOfActivities = 0.0;
+      //for (CoinBigIndex j = rowStart[iRow]; j < rowStart[iRow] + rowLength[iRow]; j++) {
+      //  int iColumn = column[j];
+      //  sumOfActivities += fabs(solution[iColumn] * elementByRow[j]);
+      //}
       if (rowLower_[iRow] > -1.0e20) {
         if (functionValue < rowLower_[iRow] - 1.0e-5) {
           double infeasibility = rowLower_[iRow] - functionValue;

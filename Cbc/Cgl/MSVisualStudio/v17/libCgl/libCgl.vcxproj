@@ -1,0 +1,196 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup Label="ProjectConfigurations">
+    <ProjectConfiguration Include="Debug|Win32">
+      <Configuration>Debug</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release|Win32">
+      <Configuration>Release</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Debug|x64">
+      <Configuration>Debug</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release|x64">
+      <Configuration>Release</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+  </ItemGroup>
+  <PropertyGroup Label="Globals">
+    <VCProjectVersion>16.0</VCProjectVersion>
+    <ProjectGuid>{1E645A44-00EF-4093-9F6A-1D082BD43BDB}</ProjectGuid>
+    <RootNamespace>libCgl</RootNamespace>
+    <WindowsTargetPlatformVersion>10.0</WindowsTargetPlatformVersion>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
+    <ConfigurationType>StaticLibrary</ConfigurationType>
+    <UseDebugLibraries>true</UseDebugLibraries>
+    <PlatformToolset>v143</PlatformToolset>
+    <CharacterSet>Unicode</CharacterSet>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
+    <ConfigurationType>StaticLibrary</ConfigurationType>
+    <UseDebugLibraries>false</UseDebugLibraries>
+    <PlatformToolset>v143</PlatformToolset>
+    <WholeProgramOptimization>true</WholeProgramOptimization>
+    <CharacterSet>Unicode</CharacterSet>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="Configuration">
+    <ConfigurationType>StaticLibrary</ConfigurationType>
+    <UseDebugLibraries>true</UseDebugLibraries>
+    <PlatformToolset>v143</PlatformToolset>
+    <CharacterSet>Unicode</CharacterSet>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="Configuration">
+    <ConfigurationType>StaticLibrary</ConfigurationType>
+    <UseDebugLibraries>false</UseDebugLibraries>
+    <PlatformToolset>v143</PlatformToolset>
+    <WholeProgramOptimization>true</WholeProgramOptimization>
+    <CharacterSet>Unicode</CharacterSet>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
+  <ImportGroup Label="ExtensionSettings">
+  </ImportGroup>
+  <ImportGroup Label="Shared">
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <PropertyGroup Label="UserMacros" />
+  <PropertyGroup />
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <ClCompile>
+      <WarningLevel>Level3</WarningLevel>
+      <Optimization>Disabled</Optimization>
+      <SDLCheck>true</SDLCheck>
+      <ConformanceMode>true</ConformanceMode>
+      <AdditionalIncludeDirectories>..\..\..\..\..\Coinutils\CoinUtils\src\;..\..\..\src\CglCommon;..\..\..\src\CglDuplicateRow;..\..\..\src\CglMixedIntegerRounding;..\..\..\src\CglMixedIntegerRounding2;..\..\..\src\CglFlowCover;..\..\..\src\CglClique;..\..\..\src\CglOddHole;..\..\..\src\CglLandP;..\..\..\src\CglKnapsackCover;..\..\..\src\CglGomory;..\..\..\src\CglPreProcess;..\..\..\src\CglRedSplit;..\..\..\src\CglResidualCapacity;..\..\..\src\CglSimpleRounding;..\..\..\src\CglTwomir;..\..\..\src\CglRedSplit2;..\..\..\src\CglProbing;..\..\..\src\CglZeroHalf;..\..\..\src;..\..\..\..\..\Osi\Osi\src\Osi;..\..\..\..\..\Clp\Clp\src\OsiClp;..\..\..\..\..\Clp\Clp\src</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>CGL_BUILD;_CRT_SECURE_NO_WARNINGS;_LIB;_DEBUG;WIN32;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+    </ClCompile>
+    <Link>
+      <SubSystem>Console</SubSystem>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+    <ClCompile>
+      <WarningLevel>Level3</WarningLevel>
+      <Optimization>Disabled</Optimization>
+      <SDLCheck>true</SDLCheck>
+      <ConformanceMode>true</ConformanceMode>
+      <AdditionalIncludeDirectories>..\..\..\..\..\Coinutils\CoinUtils\src\;..\..\..\src\CglCommon;..\..\..\src\CglDuplicateRow;..\..\..\src\CglMixedIntegerRounding;..\..\..\src\CglMixedIntegerRounding2;..\..\..\src\CglFlowCover;..\..\..\src\CglClique;..\..\..\src\CglOddHole;..\..\..\src\CglLandP;..\..\..\src\CglKnapsackCover;..\..\..\src\CglGomory;..\..\..\src\CglPreProcess;..\..\..\src\CglRedSplit;..\..\..\src\CglResidualCapacity;..\..\..\src\CglSimpleRounding;..\..\..\src\CglTwomir;..\..\..\src\CglRedSplit2;..\..\..\src\CglProbing;..\..\..\src\CglZeroHalf;..\..\..\src;..\..\..\..\..\Osi\Osi\src\Osi;..\..\..\..\..\Clp\Clp\src\OsiClp;..\..\..\..\..\Clp\Clp\src</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>CGL_BUILD;_CRT_SECURE_NO_WARNINGS;_LIB;_DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+    </ClCompile>
+    <Link>
+      <SubSystem>Console</SubSystem>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <ClCompile>
+      <WarningLevel>Level3</WarningLevel>
+      <Optimization>MaxSpeed</Optimization>
+      <FunctionLevelLinking>true</FunctionLevelLinking>
+      <IntrinsicFunctions>true</IntrinsicFunctions>
+      <SDLCheck>true</SDLCheck>
+      <ConformanceMode>true</ConformanceMode>
+      <AdditionalIncludeDirectories>..\..\..\..\..\Coinutils\CoinUtils\src\;..\..\..\src\CglCommon;..\..\..\src\CglDuplicateRow;..\..\..\src\CglMixedIntegerRounding;..\..\..\src\CglMixedIntegerRounding2;..\..\..\src\CglFlowCover;..\..\..\src\CglClique;..\..\..\src\CglOddHole;..\..\..\src\CglLandP;..\..\..\src\CglKnapsackCover;..\..\..\src\CglGomory;..\..\..\src\CglPreProcess;..\..\..\src\CglRedSplit;..\..\..\src\CglResidualCapacity;..\..\..\src\CglSimpleRounding;..\..\..\src\CglTwomir;..\..\..\src\CglRedSplit2;..\..\..\src\CglProbing;..\..\..\src\CglZeroHalf;..\..\..\src;..\..\..\..\..\Osi\Osi\src\Osi;..\..\..\..\..\Clp\Clp\src\OsiClp;..\..\..\..\..\Clp\Clp\src</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>CGL_BUILD;_CRT_SECURE_NO_WARNINGS;_LIB;NDEBUG;WIN32;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <MultiProcessorCompilation>true</MultiProcessorCompilation>
+    </ClCompile>
+    <Link>
+      <SubSystem>Console</SubSystem>
+      <EnableCOMDATFolding>true</EnableCOMDATFolding>
+      <OptimizeReferences>true</OptimizeReferences>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+    <ClCompile>
+      <WarningLevel>Level3</WarningLevel>
+      <Optimization>MaxSpeed</Optimization>
+      <FunctionLevelLinking>true</FunctionLevelLinking>
+      <IntrinsicFunctions>true</IntrinsicFunctions>
+      <SDLCheck>true</SDLCheck>
+      <ConformanceMode>true</ConformanceMode>
+      <AdditionalIncludeDirectories>..\..\..\..\..\Coinutils\CoinUtils\src\;..\..\..\src\CglCommon;..\..\..\src\CglDuplicateRow;..\..\..\src\CglMixedIntegerRounding;..\..\..\src\CglMixedIntegerRounding2;..\..\..\src\CglFlowCover;..\..\..\src\CglClique;..\..\..\src\CglOddHole;..\..\..\src\CglLandP;..\..\..\src\CglKnapsackCover;..\..\..\src\CglGomory;..\..\..\src\CglPreProcess;..\..\..\src\CglRedSplit;..\..\..\src\CglResidualCapacity;..\..\..\src\CglSimpleRounding;..\..\..\src\CglTwomir;..\..\..\src\CglRedSplit2;..\..\..\src\CglProbing;..\..\..\src\CglZeroHalf;..\..\..\src;..\..\..\..\..\Osi\Osi\src\Osi;..\..\..\..\..\Clp\Clp\src\OsiClp;..\..\..\..\..\Clp\Clp\src</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>CGL_BUILD;_CRT_SECURE_NO_WARNINGS;_LIB;NDEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <MultiProcessorCompilation>true</MultiProcessorCompilation>
+    </ClCompile>
+    <Link>
+      <SubSystem>Console</SubSystem>
+      <EnableCOMDATFolding>true</EnableCOMDATFolding>
+      <OptimizeReferences>true</OptimizeReferences>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemGroup>
+    <ClCompile Include="..\..\..\src\CglAllDifferent\CglAllDifferent.cpp" />
+    <ClCompile Include="..\..\..\src\CglClique\CglClique.cpp" />
+    <ClCompile Include="..\..\..\src\CglClique\CglCliqueHelper.cpp" />
+    <ClCompile Include="..\..\..\src\CglCutGenerator.cpp" />
+    <ClCompile Include="..\..\..\src\CglDuplicateRow\CglDuplicateRow.cpp" />
+    <ClCompile Include="..\..\..\src\CglFlowCover\CglFlowCover.cpp" />
+    <ClCompile Include="..\..\..\src\CglGMI\CglGMI.cpp" />
+    <ClCompile Include="..\..\..\src\CglGMI\CglGMIParam.cpp" />
+    <ClCompile Include="..\..\..\src\CglGomory\CglGomory.cpp" />
+    <ClCompile Include="..\..\..\src\CglKnapsackCover\CglKnapsackCover.cpp" />
+    <ClCompile Include="..\..\..\src\CglLandP\CglLandP.cpp" />
+    <ClCompile Include="..\..\..\src\CglLandP\CglLandPMessages.cpp" />
+    <ClCompile Include="..\..\..\src\CglLandP\CglLandPSimplex.cpp" />
+    <ClCompile Include="..\..\..\src\CglLandP\CglLandPTabRow.cpp" />
+    <ClCompile Include="..\..\..\src\CglLandP\CglLandPUtils.cpp" />
+    <ClCompile Include="..\..\..\src\CglLandP\CglLandPValidator.cpp" />
+    <ClCompile Include="..\..\..\src\CglLiftAndProject\CglLiftAndProject.cpp" />
+    <ClCompile Include="..\..\..\src\CglMessage.cpp" />
+    <ClCompile Include="..\..\..\src\CglMixedIntegerRounding\CglMixedIntegerRounding.cpp" />
+    <ClCompile Include="..\..\..\src\CglMixedIntegerRounding2\CglMixedIntegerRounding2.cpp" />
+    <ClCompile Include="..\..\..\src\CglOddHole\CglOddHole.cpp" />
+    <ClCompile Include="..\..\..\src\CglParam.cpp" />
+    <ClCompile Include="..\..\..\src\CglPreProcess\CglPreProcess.cpp" />
+    <ClCompile Include="..\..\..\src\CglProbing\CglProbing.cpp" />
+    <ClCompile Include="..\..\..\src\CglRedSplit2\CglRedSplit2.cpp" />
+    <ClCompile Include="..\..\..\src\CglRedSplit2\CglRedSplit2Param.cpp" />
+    <ClCompile Include="..\..\..\src\CglRedSplit\CglRedSplit.cpp" />
+    <ClCompile Include="..\..\..\src\CglRedSplit\CglRedSplitParam.cpp" />
+    <ClCompile Include="..\..\..\src\CglResidualCapacity\CglResidualCapacity.cpp" />
+    <ClCompile Include="..\..\..\src\CglSimpleRounding\CglSimpleRounding.cpp" />
+    <ClCompile Include="..\..\..\src\CglStored.cpp" />
+    <ClCompile Include="..\..\..\src\CglTreeInfo.cpp" />
+    <ClCompile Include="..\..\..\src\CglTwomir\CglTwomir.cpp" />
+    <ClCompile Include="..\..\..\src\CglZeroHalf\Cgl012cut.cpp" />
+    <ClCompile Include="..\..\..\src\CglZeroHalf\CglZeroHalf.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="..\..\..\src\CglConfig.h" />
+    <ClInclude Include="..\..\..\src\configall_system.h" />
+    <ClInclude Include="..\..\..\src\configall_system_msc.h" />
+    <ClInclude Include="..\..\..\src\config_cgl_default.h" />
+    <ClInclude Include="..\..\..\src\config_default.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\..\..\..\..\Clp\Clp\MSVisualStudio\v17\libClp\libClp.vcxproj">
+      <Project>{768b67d6-e6d3-4a8f-aa61-511fdbce7937}</Project>
+    </ProjectReference>
+    <ProjectReference Include="..\..\..\..\..\Clp\Clp\MSVisualStudio\v17\libOsiClp\libOsiClp.vcxproj">
+      <Project>{79433425-ec16-410f-9b91-8d31d2109c90}</Project>
+    </ProjectReference>
+    <ProjectReference Include="..\..\..\..\..\CoinUtils\CoinUtils\MSVisualStudio\v17\libCoinUtils\libCoinUtils.vcxproj">
+      <Project>{6d2ef92a-d693-47e3-a325-a686e78c5ffd}</Project>
+    </ProjectReference>
+    <ProjectReference Include="..\..\..\..\..\Osi\Osi\MSVisualStudio\v17\libOsi\libOsi.vcxproj">
+      <Project>{bf5c7532-ee0a-479b-9993-72134087d530}</Project>
+    </ProjectReference>
+  </ItemGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
+  <ImportGroup Label="ExtensionTargets">
+  </ImportGroup>
+</Project>

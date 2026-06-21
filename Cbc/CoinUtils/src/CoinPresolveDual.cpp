@@ -200,9 +200,9 @@ const CoinPresolveAction
      4 - fixed
      8 - don't touch
   */
-  char *active = reinterpret_cast< char * >(prob->usefulColumnInt_);
+  char *active = reinterpret_cast< char * >(prob->usefulColumnInt_+ncols);
   memset(active, 0, ncols);
-  int nOneBound = 0;
+  //int nOneBound = 0;
   int numberLook = prob->numberColsToDo_;
   int *look = prob->colsToDo_;
   for (int iLook = 0; iLook < numberLook; iLook++) {
@@ -221,11 +221,11 @@ const CoinPresolveAction
       else
         type = 4;
     }
-    if (type == 1 || type == 2)
-      nOneBound++;
+    //if (type == 1 || type == 2)
+    //  nOneBound++;
     active[j] = type;
   }
-  int nFreed = 0;
+  //int nFreed = 0;
 #define USE_ACTIVE 1
   //#define PRESOLVE_DEBUG 2
   for (int i = 0; i < nrows; i++) {
@@ -333,7 +333,7 @@ const CoinPresolveAction
 #endif
         doneSomething = true;
         active[icol] = 2 + 8;
-        nFreed++;
+        //nFreed++;
 #define TRY_UPPER 3
 #if TRY_UPPER > 1
       } else if (impliedUpper < ub + 1.0e-7) {
@@ -352,7 +352,7 @@ const CoinPresolveAction
 #if TRY_UPPER > 2
         doneSomething = true;
         active[icol] = 1 + 8;
-        nFreed++;
+        //nFreed++;
 #endif
 #endif
       } else {
@@ -445,7 +445,7 @@ const CoinPresolveAction
         printf("second type can take off lb of %g on column %d as implied lower %g - effective upper %g, coeff %g on row %d\n", lb, icol, impliedLower, maxUp, coeff, i);
 #endif
         active[icol] = 2 + 8;
-        nFreed++;
+        //nFreed++;
 #if 0 //TRY_UPPER
       } else if (impliedLower>lb-1.0e-7 ) {
 	printf("second type can't take off lb of %g on column %d as implied lower %g - effective upper %g, coeff %g on row %d\n",lb,icol,impliedLower,maxUp,coeff,i);
@@ -467,7 +467,7 @@ const CoinPresolveAction
 #if TRY_UPPER > 2
         doneSomething = true;
         active[icol] = 1 + 8;
-        nFreed++;
+        //nFreed++;
 #endif
 #endif
       }
@@ -585,7 +585,9 @@ const CoinPresolveAction
       int nflagu = 0;
       int nflagl = 0;
       // Number of ordinary rows
+#if PROCESS_INFINITE_LB
       int nordu = 0;
+#endif
       int nordl = 0;
       double cbarjmin = cost[j];
       double cbarjmax = cbarjmin;
@@ -598,7 +600,9 @@ const CoinPresolveAction
         if (aij > 0.0) {
           if (ymin[i] >= -ekkinf2) {
             cbarjmax -= mindelta;
+#if PROCESS_INFINITE_LB
             nordu++;
+#endif
           } else {
             nflagu++;
           }
@@ -611,7 +615,9 @@ const CoinPresolveAction
         } else {
           if (ymax[i] <= ekkinf2) {
             cbarjmax -= maxdelta;
+#if PROCESS_INFINITE_LB
             nordu++;
+#endif
           } else {
             nflagu++;
           }
@@ -1429,7 +1435,7 @@ const CoinPresolveAction
 #endif
     }
   }
-#if 1 // PRESOLVE_DEBUG > 0
+#if PRESOLVE_DEBUG > 0
   int makeEqCandCnt = 0;
   for (int i = 0; i < nrows; i++) {
     if (abs(canFix[i]) == 1)

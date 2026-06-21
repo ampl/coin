@@ -286,11 +286,11 @@ int CbcHeuristicDive::solution(double &solutionValue, int &numberNodes,
   // but can't be exactly coin_int_max
   maxSimplexIterations = CoinMin(maxSimplexIterations, COIN_INT_MAX >> 3);
   bool fixGeneralIntegers = false;
-  int maxIterations = maxIterations_;
+  //int maxIterations = maxIterations_;
   int saveSwitches = switches_;
   if ((maxIterations_ % 10) != 0) {
     int digit = maxIterations_ % 10;
-    maxIterations -= digit;
+    //maxIterations -= digit;
     switches_ |= 65536;
     if ((digit & 3) != 0)
       fixGeneralIntegers = true;
@@ -401,8 +401,10 @@ int CbcHeuristicDive::solution(double &solutionValue, int &numberNodes,
 
   int iteration = 0;
   int numberAtBoundFixed = 0;
+#if DIVE_PRINT > 1
   int numberGeneralFixed = 0; // fixed as satisfied but not at bound
   int numberReducedCostFixed = 0;
+#endif
   while (numberFractionalVariables) {
     iteration++;
 
@@ -509,7 +511,9 @@ int CbcHeuristicDive::solution(double &solutionValue, int &numberNodes,
 #endif
 
     numberAtBoundFixed = 0;
+#if DIVE_PRINT > 1
     numberGeneralFixed = 0; // fixed as satisfied but not at bound
+#endif
 #ifdef DIVE_FIX_BINARY_VARIABLES
     // fix binary variables based on pseudo reduced cost
     if (binVarIndex_.size()) {
@@ -700,7 +704,9 @@ int CbcHeuristicDive::solution(double &solutionValue, int &numberNodes,
               solver->setColUpper(iColumn, lower[iColumn]);
             } else {
               // fix to interior value
+#if DIVE_PRINT > 1
               numberGeneralFixed++;
+#endif
               double fixValue = floor(value + 0.5);
               columnFixed[numberAtBoundFixed] = iColumn;
               originalBound[numberAtBoundFixed] = upper[iColumn];
@@ -1453,7 +1459,7 @@ int CbcHeuristicDive::reducedCostFix(OsiSolverInterface *solver)
               djValue, gap, lower[iColumn], upper[iColumn]);
 #endif
           } else {
-            assert(clpSimplex->getColumnStatus(iColumn) == ClpSimplex::atLowerBound || clpSimplex->getColumnStatus(iColumn) == ClpSimplex::isFixed);
+            //assert(clpSimplex->getColumnStatus(iColumn) == ClpSimplex::atLowerBound || clpSimplex->getColumnStatus(iColumn) == ClpSimplex::isFixed);
           }
         }
 #endif
@@ -1470,7 +1476,7 @@ int CbcHeuristicDive::reducedCostFix(OsiSolverInterface *solver)
               djValue, gap, lower[iColumn], upper[iColumn]);
 #endif
           } else {
-            assert(clpSimplex->getColumnStatus(iColumn) == ClpSimplex::atUpperBound || clpSimplex->getColumnStatus(iColumn) == ClpSimplex::isFixed);
+            //assert(clpSimplex->getColumnStatus(iColumn) == ClpSimplex::atUpperBound || clpSimplex->getColumnStatus(iColumn) == ClpSimplex::isFixed);
           }
         }
 #endif
@@ -1516,14 +1522,18 @@ int CbcHeuristicDive::fixOtherVariables(OsiSolverInterface *solver,
   }
   int nOverGap = 0;
 #endif
+#ifdef CLP_INVESTIGATE4
   int numberFree = 0;
   int numberFixedAlready = 0;
+#endif
   for (int i = 0; i < numberIntegers; i++) {
     int iColumn = integerVariable[i];
     if (!isHeuristicInteger(solver, iColumn))
       continue;
     if (upper[iColumn] > lower[iColumn]) {
+#ifdef CLP_INVESTIGATE4
       numberFree++;
+#endif
       double value = solution[iColumn];
       if (fabs(floor(value + 0.5) - value) <= integerTolerance) {
         candidate[cnt].var = iColumn;
@@ -1534,7 +1544,9 @@ int CbcHeuristicDive::fixOtherVariables(OsiSolverInterface *solver,
 #endif
       }
     } else {
+#ifdef CLP_INVESTIGATE4
       numberFixedAlready++;
+#endif
     }
   }
 #ifdef GAP

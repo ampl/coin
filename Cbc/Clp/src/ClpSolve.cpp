@@ -65,7 +65,9 @@ int debugInt[24];
 #include "ClpCholeskyWssmp.hpp"
 #include "ClpCholeskyWssmpKKT.hpp"
 #endif
+#if defined(COIN_HAS_AMD) || defined(COIN_HAS_CHOLMOD) || defined(COIN_HAS_GLPK)
 #include "ClpCholeskyUfl.hpp"
+#endif
 #ifdef TAUCS_BARRIER
 #include "ClpCholeskyTaucs.hpp"
 #endif
@@ -989,6 +991,7 @@ int ClpSimplex::initialSolve(ClpSolve &options)
       model2 = this;
       eventHandler()->event(ClpEventHandler::presolveInfeasible);
       problemStatus_ = pinfo->presolveStatus();
+      secondaryStatus_ = 11;
       if (options.infeasibleReturn() || (moreSpecialOptions_ & 1) != 0) {
         delete pinfo;
         return -1;
@@ -1597,7 +1600,7 @@ int ClpSimplex::initialSolve(ClpSolve &options)
         double largest = 0.0;
         double smallest = 1.0e30;
         double largestGap = 0.0;
-        int numberNotE = 0;
+        //int numberNotE = 0;
         bool notInteger = false;
         for (iRow = 0; iRow < numberRows; iRow++) {
           double value1 = model2->rowLower_[iRow];
@@ -1620,7 +1623,7 @@ int ClpSimplex::initialSolve(ClpSolve &options)
           }
           // CHECKME This next bit can't be right...
           if (value2 > value1) {
-            numberNotE++;
+            //numberNotE++;
             //if (value2 > 1.0e31 || value1 < -1.0e31)
             //   largestGap = COIN_DBL_MAX;
             //else
@@ -3021,7 +3024,7 @@ int ClpSimplex::initialSolve(ClpSolve &options)
           double value = fullSolution[iColumn];
           if (model2->getColumnStatus(iColumn) != ClpSimplex::basic) {
             if (dj < -dualTolerance_ && value < columnUpper[iColumn])
-              dj = dj;
+              /*dj = dj*/;
             else if (dj > dualTolerance_ && value > columnLower[iColumn])
               dj = -dj;
             else if (columnUpper[iColumn] > columnLower[iColumn])
@@ -3335,18 +3338,24 @@ int ClpSimplex::initialSolve(ClpSolve &options)
         double *lower = barrier.columnLower();
         double *upper = barrier.columnUpper();
         double *solution = barrier.primalColumnSolution();
+#ifdef CLP_INVESTIGATE
         int nFix = 0;
+#endif
         for (int i = 0; i < n; i++) {
           if (barrier.fixedOrFree(i) && lower[i] < upper[i]) {
             double value = solution[i];
             if (value < lower[i] + 1.0e-6 && value - lower[i] < upper[i] - value) {
               solution[i] = lower[i];
               upper[i] = lower[i];
+#ifdef CLP_INVESTIGATE
               nFix++;
+#endif
             } else if (value > upper[i] - 1.0e-6 && value - lower[i] > upper[i] - value) {
               solution[i] = upper[i];
               lower[i] = upper[i];
+#ifdef CLP_INVESTIGATE
               nFix++;
+#endif
             }
           }
         }
@@ -3357,18 +3366,24 @@ int ClpSimplex::initialSolve(ClpSolve &options)
         lower = barrier.rowLower();
         upper = barrier.rowUpper();
         solution = barrier.primalRowSolution();
+#ifdef CLP_INVESTIGATE
         nFix = 0;
+#endif
         for (int i = 0; i < nr; i++) {
           if (barrier.fixedOrFree(i + n) && lower[i] < upper[i]) {
             double value = solution[i];
             if (value < lower[i] + 1.0e-6 && value - lower[i] < upper[i] - value) {
               solution[i] = lower[i];
               upper[i] = lower[i];
+#ifdef CLP_INVESTIGATE
               nFix++;
+#endif
             } else if (value > upper[i] - 1.0e-6 && value - lower[i] > upper[i] - value) {
               solution[i] = upper[i];
               lower[i] = upper[i];
+#ifdef CLP_INVESTIGATE
               nFix++;
+#endif
             }
           }
         }
@@ -3388,18 +3403,24 @@ int ClpSimplex::initialSolve(ClpSolve &options)
         double *lower = barrier.columnLower();
         double *upper = barrier.columnUpper();
         double *solution = barrier.primalColumnSolution();
+#ifdef CLP_INVESTIGATE
         int nFix = 0;
+#endif
         for (int i = 0; i < n; i++) {
           if (barrier.fixedOrFree(i) && lower[i] < upper[i]) {
             double value = solution[i];
             if (value < lower[i] + 1.0e-8 && value - lower[i] < upper[i] - value) {
               solution[i] = lower[i];
               upper[i] = lower[i];
+#ifdef CLP_INVESTIGATE
               nFix++;
+#endif
             } else if (value > upper[i] - 1.0e-8 && value - lower[i] > upper[i] - value) {
               solution[i] = upper[i];
               lower[i] = upper[i];
+#ifdef CLP_INVESTIGATE
               nFix++;
+#endif
             } else {
               //printf("fixcol %d %g <= %g <= %g\n",
               //     i,lower[i],solution[i],upper[i]);
@@ -3413,18 +3434,24 @@ int ClpSimplex::initialSolve(ClpSolve &options)
         lower = barrier.rowLower();
         upper = barrier.rowUpper();
         solution = barrier.primalRowSolution();
+#ifdef CLP_INVESTIGATE
         nFix = 0;
+#endif
         for (int i = 0; i < nr; i++) {
           if (barrier.fixedOrFree(i + n) && lower[i] < upper[i]) {
             double value = solution[i];
             if (value < lower[i] + 1.0e-5 && value - lower[i] < upper[i] - value) {
               solution[i] = lower[i];
               upper[i] = lower[i];
+#ifdef CLP_INVESTIGATE
               nFix++;
+#endif
             } else if (value > upper[i] - 1.0e-5 && value - lower[i] > upper[i] - value) {
               solution[i] = upper[i];
               lower[i] = upper[i];
+#ifdef CLP_INVESTIGATE
               nFix++;
+#endif
             } else {
               //printf("fixrow %d %g <= %g <= %g\n",
               //     i,lower[i],solution[i],upper[i]);
@@ -3791,7 +3818,9 @@ int ClpSimplex::initialSolve(ClpSolve &options)
       int savePerturbation = perturbation();
       if (savePerturbation == 50)
         setPerturbation(51); // small
-      if (!finalStatus || finalStatus == 2 || (moreSpecialOptions_ & 2) == 0 || fabs(sumDual) + fabs(sumPrimal) < 1.0e-3) {
+      if ((finalStatus>=0 && finalStatus <= 2)
+	  || (moreSpecialOptions_ & 2) == 0
+	  || fabs(sumDual) + fabs(sumPrimal) < 1.0e-3) {
         if (finalStatus == 2) {
           if (sumDual > 1.0e-4) {
             // unbounded - get feasible first
@@ -4286,6 +4315,10 @@ int ClpSimplexProgress::looping()
     infeasibility = model_->sumDualInfeasibilities();
     realInfeasibility = model_->nonLinearCost()->sumInfeasibilities();
     numberInfeasibilities = model_->numberDualInfeasibilities();
+    if (iterationNumber>3*model_->numberRows()+3*model_->numberColumns()) {
+      // should I put out a message
+      return 1;
+    }
   }
   int i;
   int numberMatched = 0;
@@ -6489,9 +6522,9 @@ int ClpSimplex::solveBenders(CoinStructuredModel *model, ClpSolve &options)
     // Solve master - may be unbounded
     //masterModel.scaling(0);
     // get obj for debug
-    double objSum = masterModel.objectiveValue();
-    for (int i = 0; i < numberBlocks; i++)
-      objSum += sub[i].objectiveValue();
+    //double objSum = masterModel.objectiveValue();
+    //for (int i = 0; i < numberBlocks; i++)
+    //  objSum += sub[i].objectiveValue();
     //printf("objsum %g\n",objSum);
     if (0) {
       masterModel.writeMps("yy.mps");
@@ -7102,24 +7135,24 @@ int ClpSimplex::solveBenders(CoinStructuredModel *model, ClpSolve &options)
       int numberRows2 = sub[iBlock].numberRows();
       int numberColumns2 = sub[iBlock].numberColumns();
       double *saveLower = modification[iBlock];
-      double *lower2 = sub[iBlock].rowLower();
+      //double *lower2 = sub[iBlock].rowLower();
       double *saveUpper = saveLower + numberRows2 + numberColumns2;
-      double *upper2 = sub[iBlock].rowUpper();
+      //double *upper2 = sub[iBlock].rowUpper();
       int typeRun = sub[iBlock].secondaryStatus();
       sub[iBlock].setSecondaryStatus(0);
       if (typeRun != 99) {
         if (0) {
-          double objValue = 0.0;
+          //double objValue = 0.0;
           const double *solution = sub[iBlock].dualRowSolution();
           for (int i = 0; i < numberRows2; i++) {
             if (solution[i] < -dualTolerance_) {
               // at upper
               assert(saveUpper[i] < 1.0e30);
-              objValue += solution[i] * upper2[i];
+              //objValue += solution[i] * upper2[i];
             } else if (solution[i] > dualTolerance_) {
               // at lower
               assert(saveLower[i] > -1.0e30);
-              objValue += solution[i] * lower2[i];
+              //objValue += solution[i] * lower2[i];
             }
           }
           //printf("obj %g\n",objValue);

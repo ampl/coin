@@ -504,6 +504,13 @@ CoinMpsCardReader::nextField()
     gotCard = false;
   } else {
     gotCard = true;
+    //#define COIN_ALLOW_DOLLAR_AS_COMMENT
+#ifdef COIN_ALLOW_DOLLAR_AS_COMMENT
+    if (*next == '$') {
+      if (next[1] == ' ' || next[1] == '\t' || next[1] == '\0')
+	gotCard = false; // comment
+    }
+#endif
   }
   while (!gotCard) {
     // need new image
@@ -629,6 +636,8 @@ CoinMpsCardReader::nextField()
                 }
               }
               strcpyAndCompress(columnName_, next);
+	      if (next-card_!=4)
+		freeFormat_ = true; // free format
               if (nextBlank) {
                 *nextBlank = save;
                 // on to next
@@ -675,6 +684,7 @@ CoinMpsCardReader::nextField()
                   nextBlank = NULL;
                 }
               } else {
+		freeFormat_ = true; // free format
                 if (nextBlank) {
                   save = *nextBlank;
                   *nextBlank = '\0';
@@ -819,6 +829,12 @@ CoinMpsCardReader::nextField()
         // blank
         continue;
       }
+#ifdef COIN_ALLOW_DOLLAR_AS_COMMENT
+      if (*next == '$') {
+	if (next[1] == ' ' || next[1] == '\t' || next[1] == '\0')
+	  position_ = eol_; // comment
+      }
+#endif
       return section_;
     } else if (card_[0] != '*') {
       // not a comment
@@ -857,6 +873,7 @@ CoinMpsCardReader::nextField()
         nextBlank = NULL;
       }
     } else {
+      freeFormat_ = true; // free format
       if (nextBlank) {
         save = *nextBlank;
         *nextBlank = '\0';
@@ -907,6 +924,12 @@ CoinMpsCardReader::nextField()
       value_ = -1.0e100;
     }
   }
+#ifdef COIN_ALLOW_DOLLAR_AS_COMMENT
+  if (*next == '$') {
+    if (next[1] == ' ' || next[1] == '\t' || next[1] == '\0')
+      position_ = eol_; // comment
+  }
+#endif
   return section_;
 }
 static char *
@@ -1612,9 +1635,17 @@ int CoinMpsIO::readMps(int &numberSets, CoinSet **&sets)
     cardReader_->nextField();
     // Fudge for what ever code has OBJSENSE
     if (!strncmp(cardReader_->card(), "OBJSENSE", 8)) {
+      // Correct format has min/max on next card
+      const char *thisCard = cardReader_->card();
+      char temp[80];
+      cardReader_->strcpyAndCompress(temp,cardReader_->card());
+      bool onSameCard = false;
+      if (strlen(temp)>10) {
+	onSameCard = true;
+	thisCard += 8; // move on
+      }
       cardReader_->nextField();
       int i;
-      const char *thisCard = cardReader_->card();
       int direction = 0;
       for (i = 0; i < 20; i++) {
         if (thisCard[i] != ' ') {
@@ -1630,7 +1661,8 @@ int CoinMpsIO::readMps(int &numberSets, CoinSet **&sets)
       else
         printf("%s found after OBJSENSE - Coin ignores\n",
           (direction > 0 ? "MIN" : "MAX"));
-      cardReader_->nextField();
+      if (!onSameCard)
+	cardReader_->nextField();
     }
     if (cardReader_->whichSection() != COIN_ROW_SECTION) {
       handler_->message(COIN_MPS_BADIMAGE, messages_) << cardReader_->cardNumber()
@@ -1966,9 +1998,9 @@ int CoinMpsIO::readMps(int &numberSets, CoinSet **&sets)
     objUsed = false;
     memset(lastColumn, '\0', 200);
     bool gotRhs = false;
-
+    bool gotNextSection = false;
     // need coding for blank rhs
-    while (cardReader_->nextField() == COIN_RHS_SECTION) {
+    while (!gotNextSection && cardReader_->nextField() == COIN_RHS_SECTION) {
       COINRowIndex irow;
 
       switch (cardReader_->mpsType()) {
@@ -1979,6 +2011,7 @@ int CoinMpsIO::readMps(int &numberSets, CoinSet **&sets)
           if (gotRhs) {
             while (cardReader_->nextField() == COIN_RHS_SECTION) {
             }
+	    gotNextSection = true;
             break;
           } else {
             gotRhs = true;
@@ -2063,7 +2096,8 @@ int CoinMpsIO::readMps(int &numberSets, CoinSet **&sets)
         }
       }
     }
-    if (cardReader_->whichSection() == COIN_RANGES_SECTION) {
+    gotNextSection = false;
+    if (!gotNextSection && cardReader_->whichSection() == COIN_RANGES_SECTION) {
       memset(lastColumn, '\0', 200);
       bool gotRange = false;
       COINRowIndex irow;
@@ -2078,6 +2112,7 @@ int CoinMpsIO::readMps(int &numberSets, CoinSet **&sets)
             if (gotRange) {
               while (cardReader_->nextField() == COIN_RANGES_SECTION) {
               }
+	      gotNextSection = true;
               break;
             } else {
               gotRange = true;
@@ -2225,17 +2260,19 @@ int CoinMpsIO::readMps(int &numberSets, CoinSet **&sets)
     }
     // start hash even if no bound section - to make sure names survive
     startHash(columnName, numberColumns_, 1);
+    gotNextSection = false;
     if (cardReader_->whichSection() == COIN_BOUNDS_SECTION) {
       memset(lastColumn, '\0', 200);
       bool gotBound = false;
 
-      while (cardReader_->nextField() == COIN_BOUNDS_SECTION) {
+      while (!gotNextSection && cardReader_->nextField() == COIN_BOUNDS_SECTION) {
         if (strcmp(lastColumn, cardReader_->columnName())) {
 
           // skip rest if got a bound
           if (gotBound) {
             while (cardReader_->nextField() == COIN_BOUNDS_SECTION) {
             }
+	    gotNextSection = true;
             break;
           } else {
             gotBound = true;

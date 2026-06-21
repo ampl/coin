@@ -6,8 +6,6 @@
 /*! \file CbcSolver.cpp
     \brief Second level routines for the cbc stand-alone solver.
 */
-
-
 #include "CbcConfig.h"
 #include "CoinPragma.hpp"
 
@@ -58,6 +56,7 @@
 // for printing
 #ifndef CLP_OUTPUT_FORMAT
 #define CLP_OUTPUT_FORMAT % 15.8g
+#define CLP_INTEGER_OUTPUT_FORMAT % 15ld
 #endif
 #define CLP_QUOTE(s) CLP_STRING(s)
 #define CLP_STRING(s) #s
@@ -874,6 +873,7 @@ static void signal_handler_error(int whichSignal)
   a noop when COIN_DEVELOP is not defined. To avoid compiler warnings, the
   formal parameters also need to go away.
 */
+static
 #ifdef COIN_DEVELOP
 void checkSOS(CbcModel *babModel, const OsiSolverInterface *solver)
 #else
@@ -1261,6 +1261,25 @@ CoinReadGetDoubleField(int &whichArgument, int argc, const char *argv[], int *va
 #define CoinReadGetIntField(x, y, z) CoinReadGetIntField(whichArgument, x, y, z)
 #define CoinReadGetDoubleField(x, y, z) CoinReadGetDoubleField(whichArgument, x, y, z)
 #endif
+// For setting maximum time after postprocessing
+static void setMaximumSeconds(OsiSolverInterface * solver,double originalLimit,
+			      double startTime, double startTimeElapsed,
+			      bool useCpuTime)
+{
+  OsiClpSolverInterface *osiclp =
+    dynamic_cast< OsiClpSolverInterface * >(solver);
+  if (osiclp) {
+    ClpSimplex *lpSolver = osiclp->getModelPtr();
+    // How much have we got left
+    if (useCpuTime) {
+      double timeLeft = originalLimit-(CoinCpuTime()-startTime);
+      lpSolver->setMaximumSeconds(CoinMax(timeLeft,0.0));
+    } else {
+      double timeLeft = originalLimit-(CoinGetTimeOfDay()-startTimeElapsed);
+      lpSolver->setMaximumWallSeconds(CoinMax(timeLeft,0.0));
+    }
+  }
+}
 // Default Constructor
 CbcSolverUsefulData::CbcSolverUsefulData()
 {
@@ -1343,7 +1362,9 @@ int CbcMain1(int argc, const char *argv[],
   CbcSolverUsefulData &parameterData)
 {
   std::vector< CbcOrClpParam > parameters_(parameterData.parameters_);
+#ifdef COIN_HAS_ASL
   double totalTime = parameterData.totalTime_;
+#endif
   bool noPrinting = parameterData.noPrinting_;
   bool useSignalHandler = parameterData.useSignalHandler_;
   CbcModel &model_ = model;
@@ -1436,7 +1457,9 @@ int CbcMain1(int argc, const char *argv[],
   {
     double time1 = CoinCpuTime(), time2;
     time0 = time1;
+#if CBC_QUIET == 0
     double time1Elapsed = time0Elapsed;
+#endif
     bool goodModel = (originalSolver->getNumCols()) ? true : false;
 
     // register signal handler
@@ -1940,7 +1963,9 @@ int CbcMain1(int argc, const char *argv[],
       field = CoinReadGetCommand(argc, argv);
       // Reset time
       time1 = CoinCpuTime();
+#if CBC_QUIET == 0
       time1Elapsed = CoinGetTimeOfDay();
+#endif
       // adjust field if has odd trailing characters
       char temp[200];
       strcpy(temp, field.c_str());
@@ -3703,14 +3728,14 @@ int CbcMain1(int argc, const char *argv[],
                         double *gradient = new double[numberColumns + 1];
                         memcpy(gradient, qp->objectiveAsObject()->gradient(qp, solution, offset, true, 2),
                           numberColumns * sizeof(double));
-                        double rhs = 0.0;
+                        //double rhs = 0.0;
                         int *column = new int[numberColumns + 1];
                         int n = 0;
                         for (int i = 0; i < numberColumns; i++) {
                           double value = gradient[i];
                           if (fabs(value) > 1.0e-12) {
                             gradient[n] = value;
-                            rhs += value * solution[i];
+                            //rhs += value * solution[i];
                             column[n++] = i;
                           }
                         }
@@ -4001,7 +4026,9 @@ int CbcMain1(int argc, const char *argv[],
               babModel_->assignSolver(solver3);
 #endif
               time2 = CoinCpuTime();
+#ifdef COIN_HAS_ASL
               totalTime += time2 - time1;
+#endif
               //time1 = time2;
               double timeLeft = babModel_->getMaximumSeconds();
               int numberOriginalColumns = babModel_->solver()->getNumCols();
@@ -4569,9 +4596,8 @@ int CbcMain1(int argc, const char *argv[],
                       int iColumn = originalColumns[i];
                       back[iColumn] = i;
                     }
-                    int numberSOSOld = osiclp->numberSOS();
                     int numberSOS = osiclp2->numberSOS();
-                    assert(numberSOS == numberSOSOld);
+                    assert(numberSOS == osiclp->numberSOS());
                     CoinSet *setInfo = const_cast< CoinSet * >(osiclp2->setInfo());
                     for (int i = 0; i < numberSOS; i++) {
                       //int type = setInfo[i].setType();
@@ -5781,7 +5807,7 @@ int CbcMain1(int argc, const char *argv[],
                     std::vector< std::pair< std::string, double > > mipStart2;
                     for (int i = 0; (i < babModel_->solver()->getNumCols()); ++i) {
                       int iColumn = babModel_->originalColumns()[i];
-                      if (iColumn >= 0) {
+                      if (iColumn >= 0 && iColumn < model.getNumCols()) {
                         std::string cname = model_.solver()->getColName(iColumn);
                         colNames.push_back(cname);
                         babModel_->solver()->setColName(i, cname);
@@ -5813,6 +5839,14 @@ int CbcMain1(int argc, const char *argv[],
                     babModel_->createContinuousSolver();
                     babModel_->setBestSolution(CBC_ROUNDING,
                       obj, &x[0], 1);
+		    /* But this is outside branchAndBound so needs to know 
+		       about direction */
+		    if (babModel_->getObjSense()==-1.0) {
+		      babModel_->setCutoff(-obj);
+		      babModel_->setMinimizationObjValue(-obj);
+		      // and solver (solver will flip)
+		      babModel_->solver()->setDblParam(OsiDualObjectiveLimit,obj);
+		    }
                     babModel_->clearContinuousSolver();
                     babModel_->passInSolverCharacteristics(NULL);
                     if (useSolution == 0)
@@ -5884,14 +5918,12 @@ int CbcMain1(int argc, const char *argv[],
                   // CbcObjects
                   if (preProcess && (process.numberSOS() || babModel_->numberObjects())) {
                     int numberSOS = process.numberSOS();
-                    int numberIntegers = babModel_->numberIntegers();
                     /* model may not have created objects
                                            If none then create
                                         */
                     if (!integersOK) {
                       int type = (pseudoUp) ? 1 : 0;
                       babModel_->findIntegers(true, type);
-                      numberIntegers = babModel_->numberIntegers();
                     }
                     OsiObject **oldObjects = babModel_->objects();
                     // Do sets and priorities
@@ -7275,10 +7307,30 @@ int CbcMain1(int argc, const char *argv[],
                     int k = parameters_[jParam].currentOptionAsInteger();
                     if (k < 4) {
                       babModel_->setMoreSpecialOptions2(babModel_->moreSpecialOptions2() | (k * 128));
-                    } else {
+                    } else if (k==4 ) {
 #define MAX_NAUTY_PASS 2000
                       nautyAdded = nautiedConstraints(*babModel_,
 						      MAX_NAUTY_PASS);
+		    } else {
+		      assert (k>=5 && k <=9);
+                      if (k == 5)
+                        babModel_->setMoreSpecialOptions2(
+                            babModel_->moreSpecialOptions2() | 128 | 256 |
+                            131072);
+                      else if (k == 6)
+                        babModel_->setMoreSpecialOptions2(
+                            babModel_->moreSpecialOptions2() | 128 | 256 |
+                            262144);
+                      else if (k == 7)
+                        babModel_->setMoreSpecialOptions2(
+                            babModel_->moreSpecialOptions2() | 128 | 256 |
+                            131072 | 262144);
+                      else if (k == 8)
+                        babModel_->setMoreSpecialOptions2(
+                            babModel_->moreSpecialOptions2()|131072|1073741824);
+                      else 
+                        babModel_->setMoreSpecialOptions2(
+                            babModel_->moreSpecialOptions2()|262144|1073741824);
                     }
                   }
                 }
@@ -7361,7 +7413,7 @@ int CbcMain1(int argc, const char *argv[],
                   if (numberSolutions > 1) {
                     for (int iSolution = numberSolutions - 1; iSolution >= 0; iSolution--) {
                       model_.setBestSolution(babModel_->savedSolution(iSolution),
-                        model_.solver()->getNumCols(),
+					     CoinMin(model_.solver()->getNumCols(),babModel_->solver()->getNumCols()),
                         babModel_->savedSolutionObjective(iSolution));
                     }
                   }
@@ -7477,12 +7529,6 @@ int CbcMain1(int argc, const char *argv[],
                     }
                   }
                 }
-#ifndef CBC_OTHER_SOLVER
-		{
-		  OsiClpSolverInterface *solver = dynamic_cast< OsiClpSolverInterface * >(model_.solver());
-		  ClpSimplex *simplex = solver->getModelPtr();
-		}
-#endif
                 int returnCode = CbcClpUnitTest(model_, dirMiplib, extra2, stuff,argc,argv,callBack,parameterData);
                 babModel_ = NULL;
                 return returnCode;
@@ -7503,9 +7549,12 @@ int CbcMain1(int argc, const char *argv[],
 #endif
               statistics_cut_time = 0.0;
               if (!noPrinting_) {
+		double direction =
+		  babModel_->solver()->getObjSense();
                 // Print more statistics
                 sprintf(generalPrint, "Cuts at root node changed objective from %g to %g",
-                  babModel_->getContinuousObjective(), babModel_->rootObjectiveAfterCuts());
+                  babModel_->getContinuousObjective()*direction,
+			babModel_->rootObjectiveAfterCuts()*direction);
                 generalMessageHandler->message(CLP_GENERAL, generalMessages)
                   << generalPrint
                   << CoinMessageEol;
@@ -7571,7 +7620,9 @@ int CbcMain1(int argc, const char *argv[],
               }
               // adjust time to allow for children on some systems
               time2 = CoinCpuTime() + CoinCpuTimeJustChildren();
+#ifdef COIN_HAS_ASL
               totalTime += time2 - time1;
+#endif
               // For best solution
               double *bestSolution = NULL;
               // Say in integer
@@ -7721,12 +7772,21 @@ int CbcMain1(int argc, const char *argv[],
                       << generalPrint
                       << CoinMessageEol;
                   }
+		  // set time limit for really bad problems
+		  double timeLimit = parameters_[whichParam(CBC_PARAM_DBL_TIMELIMIT_BAB, parameters_)].doubleValue();
+		  bool useCpuTime = !model_.useElapsedTime();
+		  // But only if not stopped on time!
+		  if (!babModel_->status())
+		    setMaximumSeconds(saveSolver, timeLimit,
+				      time0, time0Elapsed, useCpuTime);
                   saveSolver->resolve();
                   if (!saveSolver->isProvenOptimal()) {
                     // try all slack
                     CoinWarmStartBasis *basis = dynamic_cast< CoinWarmStartBasis * >(babModel_->solver()->getEmptyWarmStart());
                     saveSolver->setWarmStart(basis);
                     delete basis;
+		    setMaximumSeconds(saveSolver, timeLimit,
+				      time0, time0Elapsed, useCpuTime);
                     saveSolver->initialSolve();
 #ifdef COIN_DEVELOP
                     saveSolver->writeMps("inf2");
@@ -7748,12 +7808,16 @@ int CbcMain1(int argc, const char *argv[],
                   CoinWarmStartBasis *basis = dynamic_cast< CoinWarmStartBasis * >(babModel_->solver()->getWarmStart());
                   originalSolver->setBasis(*basis);
                   delete basis;
+		  setMaximumSeconds(originalSolver, timeLimit,
+				    time0, time0Elapsed, useCpuTime);
                   originalSolver->resolve();
                   if (!originalSolver->isProvenOptimal()) {
                     // try all slack
                     CoinWarmStartBasis *basis = dynamic_cast< CoinWarmStartBasis * >(babModel_->solver()->getEmptyWarmStart());
                     originalSolver->setBasis(*basis);
                     delete basis;
+		    setMaximumSeconds(originalSolver, timeLimit,
+				      time0, time0Elapsed, useCpuTime);
                     originalSolver->initialSolve();
                     OsiClpSolverInterface *osiclp = dynamic_cast< OsiClpSolverInterface * >(originalSolver);
                     if (osiclp)
@@ -8318,7 +8382,9 @@ int CbcMain1(int argc, const char *argv[],
                 goodModel = true;
 #endif
                 time2 = CoinCpuTime();
+#ifdef COIN_HAS_ASL
                 totalTime += time2 - time1;
+#endif
                 time1 = time2;
                 // Go to canned file if just input file
                 if (CbcOrClpRead_mode == 2 && argc == 2) {
@@ -8616,7 +8682,9 @@ int CbcMain1(int argc, const char *argv[],
 #endif
                 }
                 time2 = CoinCpuTime();
+#ifdef COIN_HAS_ASL
                 totalTime += time2 - time1;
+#endif
                 time1 = time2;
               }
             } else {
@@ -8835,7 +8903,7 @@ int CbcMain1(int argc, const char *argv[],
                     int nBadDir = 0;
                     int nBadPri = 0;
                     int nBadName = 0;
-                    int nBadLine = 0;
+                    //int nBadLine = 0;
                     int nLine = 0;
                     iColumn = -1;
                     int lowestPriority = -COIN_INT_MAX;
@@ -8879,7 +8947,7 @@ int CbcMain1(int argc, const char *argv[],
                         if (comma) {
                           *comma = '\0';
                         } else if (i < nAcross - 1) {
-                          nBadLine++;
+                          //nBadLine++;
                           break;
                         }
                         switch (order[i]) {
@@ -9218,7 +9286,9 @@ int CbcMain1(int argc, const char *argv[],
                 ClpSimplex *model2 = lpSolver;
                 model2->writeBasis(fileName.c_str(), outputFormat > 1, outputFormat - 2);
                 time2 = CoinCpuTime();
+#ifdef COIN_HAS_ASL
                 totalTime += time2 - time1;
+#endif
                 time1 = time2;
               }
             } else {
@@ -9292,7 +9362,9 @@ int CbcMain1(int argc, const char *argv[],
               if (!status) {
                 goodModel = true;
                 time2 = CoinCpuTime();
+#ifdef COIN_HAS_ASL
                 totalTime += time2 - time1;
+#endif
                 time1 = time2;
               } else {
                 // errors
@@ -9342,7 +9414,9 @@ int CbcMain1(int argc, const char *argv[],
               if (!status) {
                 goodModel = true;
                 time2 = CoinCpuTime();
+#ifdef COIN_HAS_ASL
                 totalTime += time2 - time1;
+#endif
                 time1 = time2;
               } else {
                 // errors
@@ -9961,7 +10035,7 @@ clp watson.mps -\nscaling off\nprimalsimplex");
                   }
                   fprintf(fp, " - objective value %.8f\n", objValue);
                 }
-#endif
+#endif 
                 // make fancy later on
                 int iRow;
                 int numberRows = clpSolver->getNumRows();
@@ -10147,7 +10221,7 @@ clp watson.mps -\nscaling off\nprimalsimplex");
                     // bound or rhs ranging
                   case 6:
                   case 7:
-                    solver->primalRanging(numberRows,
+                    solver->primalRanging(number,
                       which, valueIncrease, sequenceIncrease,
                       valueDecrease, sequenceDecrease);
                     break;
@@ -10222,6 +10296,10 @@ clp watson.mps -\nscaling off\nprimalsimplex");
                 sprintf(printFormat, " %s         %s\n",
                   CLP_QUOTE(CLP_OUTPUT_FORMAT),
                   CLP_QUOTE(CLP_OUTPUT_FORMAT));
+                char printIntFormat[50];
+                sprintf(printIntFormat, " %s         %s\n",
+                        CLP_QUOTE(CLP_INTEGER_OUTPUT_FORMAT),
+			CLP_QUOTE(CLP_OUTPUT_FORMAT));
                 if (printMode > 2 && printMode < 5) {
                   for (iRow = 0; iRow < numberRows; iRow++) {
                     int type = printMode - 3;
@@ -10293,9 +10371,17 @@ clp watson.mps -\nscaling off\nprimalsimplex");
                           for (; i < lengthPrint; i++)
                             fprintf(fp, " ");
                         }
-                        fprintf(fp, printFormat,
-                          primalColumnSolution[iColumn],
-                          dualColumnSolution[iColumn]);
+			double value = primalColumnSolution[iColumn];
+			double nearest = floor(value+0.5);
+			if (!clpSolver->isInteger(iColumn)||fabs(value-nearest)>1.0e-8) {
+			  fprintf(fp, printFormat, value,
+				  dualColumnSolution[iColumn]);
+			} else {
+			  // allow for very very large integer values
+			  long int iValue = nearest; 
+			  fprintf(fp, printIntFormat, iValue,
+				  dualColumnSolution[iColumn]);
+			}
                       } else {
                         char temp[100];
                         if (lengthName) {
@@ -10510,7 +10596,9 @@ clp watson.mps -\nscaling off\nprimalsimplex");
               }
               static_cast< ClpSimplexOther * >(lpSolver)->parametrics(fileName.c_str());
               time2 = CoinCpuTime();
+#ifdef COIN_HAS_ASL
               totalTime += time2 - time1;
+#endif
               time1 = time2;
             } else {
               sprintf(generalPrint, "** Current model not valid");
@@ -12120,7 +12208,7 @@ static void statistics(ClpSimplex *originalModel, ClpSimplex *model)
                   }
                 } else {
                   int row2 = mapRow[iRow];
-                  assert(iRow = mapRow[row2]);
+                  assert(iRow == mapRow[row2]);
                   if (rowLower[iRow] != rowLower[row2] || rowLower[row2] != rowLower[iRow])
                     good = false;
                   CoinBigIndex offset2 = rowStart[row2] - start;

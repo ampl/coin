@@ -297,12 +297,14 @@ void CglAllDifferent::generateCuts(const OsiSolverInterface & si, OsiCuts & cs,
           unsigned int iBit = 1<<jj;
           covered &= ~iBit;
           {
+#ifndef NDEBUG
             unsigned int kBit=0;
             for (int k=0;k<nStack;k++) {
               int kk=stack[k];
               kBit |= 1<<kk;
             }
             assert (covered==kBit);
+#endif
           }
           jj++;
           stack[nStack]=jj;

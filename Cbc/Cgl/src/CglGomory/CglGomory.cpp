@@ -171,12 +171,12 @@ void CglGomory::generateCuts(const OsiSolverInterface & si, OsiCuts & cs,
       }
       numberCopy=0;
       numberAdd=0;
-      const double * rowSolution = si.getRowActivity();
-      double offset=0.0;
+      //const double * rowSolution = si.getRowActivity();
+      //double offset=0.0;
       for (int iRow=numberOriginalRows;iRow<numberRows;iRow++) {
 	if (!copy[iRow-numberOriginalRows]) {
 	  double value = pi[iRow];
-	  offset += rowSolution[iRow]*value;
+	  //offset += rowSolution[iRow]*value;
 	  for (CoinBigIndex k=rowStart[iRow];
 	       k<rowStart[iRow]+rowLength[iRow];k++) {
 	    int iColumn=column[k];
@@ -633,11 +633,9 @@ CglGomory::generateCuts(
   int * rowIsBasic = new int[numberRows];
   int * columnIsBasic = new int[numberColumns];
   int i;
-  int numberBasic=0;
   for (i=0;i<numberRows;i++) {
     if (warm->getArtifStatus(i) == CoinWarmStartBasis::basic) {
       rowIsBasic[i]=1;
-      numberBasic++;
     } else {
       rowIsBasic[i]=-1;
     }
@@ -645,7 +643,6 @@ CglGomory::generateCuts(
   for (i=0;i<numberColumns;i++) {
     if (warm->getStructStatus(i) == CoinWarmStartBasis::basic) {
       columnIsBasic[i]=1;
-      numberBasic++;
     } else {
       columnIsBasic[i]=-1;
     }

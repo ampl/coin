@@ -1418,7 +1418,7 @@ int OsiSolverInterface::writeLpNative(const char *filename,
   if (!fp) {
     printf("### ERROR: in OsiSolverInterface::writeLpNative(): unable to open file %s\n",
       filename);
-    exit(1);
+    return (1);
   }
   int nerr = writeLpNative(fp, rowNames, columnNames,
     epsilon, numberAcross, decimals,
@@ -1817,8 +1817,9 @@ int OsiSolverInterface::differentModel(OsiSolverInterface &other,
   bool takeHint;
   OsiHintStrength strength;
   // Switch off printing if asked to
-  bool gotHint = (getHintParam(OsiDoReducePrint, takeHint, strength));
+  bool gotHint = getHintParam(OsiDoReducePrint, takeHint, strength);
   assert(gotHint);
+  (void)gotHint;
   bool printStuff = true;
   if (strength != OsiHintIgnore && takeHint)
     printStuff = false;

@@ -1,0 +1,65 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.3.32804.467
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "libCoinUtils", "libCoinUtils\libCoinUtils.vcxproj", "{6D2EF92A-D693-47E3-A325-A686E78C5FFD}"
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "CoinUtilsUnitTest", "CoinUtilsUnitTest\CoinUtilsUnitTest.vcxproj", "{FCF90EF8-93AE-482A-9B55-018B8338B99D}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{B8AB58C7-FB01-45B3-97CC-3F3E6583BF85}"
+	ProjectSection(SolutionItems) = preProject
+		..\..\..\.gitignore = ..\..\..\.gitignore
+		..\..\..\LICENSE = ..\..\..\LICENSE
+		..\..\..\README.md = ..\..\..\README.md
+	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "workflows", "workflows", "{E712FDE2-9810-416F-B615-FD827259BABA}"
+	ProjectSection(SolutionItems) = preProject
+		..\..\..\.github\workflows\linux-ci.yml = ..\..\..\.github\workflows\linux-ci.yml
+		..\..\..\.github\workflows\release.yml = ..\..\..\.github\workflows\release.yml
+		..\..\..\.github\workflows\windows-ci.yml = ..\..\..\.github\workflows\windows-ci.yml
+	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "test", "test", "{7032C4C9-B7AE-42F2-A4C0-26F1A9F054F1}"
+	ProjectSection(SolutionItems) = preProject
+		CoinUtilsTest.cmd = CoinUtilsTest.cmd
+	EndProjectSection
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|x64 = Debug|x64
+		Debug|x86 = Debug|x86
+		Release|x64 = Release|x64
+		Release|x86 = Release|x86
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{6D2EF92A-D693-47E3-A325-A686E78C5FFD}.Debug|x64.ActiveCfg = Debug|x64
+		{6D2EF92A-D693-47E3-A325-A686E78C5FFD}.Debug|x64.Build.0 = Debug|x64
+		{6D2EF92A-D693-47E3-A325-A686E78C5FFD}.Debug|x86.ActiveCfg = Debug|Win32
+		{6D2EF92A-D693-47E3-A325-A686E78C5FFD}.Debug|x86.Build.0 = Debug|Win32
+		{6D2EF92A-D693-47E3-A325-A686E78C5FFD}.Release|x64.ActiveCfg = Release|x64
+		{6D2EF92A-D693-47E3-A325-A686E78C5FFD}.Release|x64.Build.0 = Release|x64
+		{6D2EF92A-D693-47E3-A325-A686E78C5FFD}.Release|x86.ActiveCfg = Release|Win32
+		{6D2EF92A-D693-47E3-A325-A686E78C5FFD}.Release|x86.Build.0 = Release|Win32
+		{FCF90EF8-93AE-482A-9B55-018B8338B99D}.Debug|x64.ActiveCfg = Debug|x64
+		{FCF90EF8-93AE-482A-9B55-018B8338B99D}.Debug|x64.Build.0 = Debug|x64
+		{FCF90EF8-93AE-482A-9B55-018B8338B99D}.Debug|x86.ActiveCfg = Debug|Win32
+		{FCF90EF8-93AE-482A-9B55-018B8338B99D}.Debug|x86.Build.0 = Debug|Win32
+		{FCF90EF8-93AE-482A-9B55-018B8338B99D}.Release|x64.ActiveCfg = Release|x64
+		{FCF90EF8-93AE-482A-9B55-018B8338B99D}.Release|x64.Build.0 = Release|x64
+		{FCF90EF8-93AE-482A-9B55-018B8338B99D}.Release|x86.ActiveCfg = Release|Win32
+		{FCF90EF8-93AE-482A-9B55-018B8338B99D}.Release|x86.Build.0 = Release|Win32
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{FCF90EF8-93AE-482A-9B55-018B8338B99D} = {7032C4C9-B7AE-42F2-A4C0-26F1A9F054F1}
+		{E712FDE2-9810-416F-B615-FD827259BABA} = {B8AB58C7-FB01-45B3-97CC-3F3E6583BF85}
+		{7032C4C9-B7AE-42F2-A4C0-26F1A9F054F1} = {B8AB58C7-FB01-45B3-97CC-3F3E6583BF85}
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {47CE0831-9FE3-4146-A085-43BC3B8AE89A}
+	EndGlobalSection
+EndGlobal

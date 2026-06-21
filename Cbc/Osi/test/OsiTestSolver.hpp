@@ -21,12 +21,12 @@
 #endif
 
 template <class T> static inline T
-VolMax(register const T x, register const T y) {
+VolMax(const T x, const T y) {
    return ((x) > (y)) ? (x) : (y);
 }
 
 template <class T> static inline T
-VolAbs(register const T x) {
+VolAbs(const T x) {
    return ((x) > 0) ? (x) : -(x);
 }
 
@@ -502,7 +502,7 @@ public:
 			const double alpha) {
       if (alpha < parm.alphamin)
 	 return 1.0;
-      register const double ll = VolAbs(lcost);
+      const double ll = VolAbs(lcost);
       const double x = ll > 10 ? (lcost-lastvalue)/ll : (lcost-lastvalue);
       lastvalue = lcost;
       return (x <= 0.01) ? parm.alphafactor : 1.0;

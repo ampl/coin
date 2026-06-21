@@ -1019,13 +1019,13 @@ int ClpSimplexOther::restoreFromDual(const ClpSimplex *dualProblem,
   int numberBasic = 0;
   int iRow, iColumn = 0;
   // Get number of extra rows from ranges
-  int numberExtraRows = 0;
-  for (iRow = 0; iRow < numberRows_; iRow++) {
-    if (rowLower_[iRow] > -1.0e20 && rowUpper_[iRow] < 1.0e20) {
-      if (rowUpper_[iRow] != rowLower_[iRow])
-        numberExtraRows++;
-    }
-  }
+  //int numberExtraRows = 0;
+  //for (iRow = 0; iRow < numberRows_; iRow++) {
+  //  if (rowLower_[iRow] > -1.0e20 && rowUpper_[iRow] < 1.0e20) {
+  //    if (rowUpper_[iRow] != rowLower_[iRow])
+  //      numberExtraRows++;
+  //  }
+  //}
   const double *objective = this->objective();
   const double *dualDual = dualProblem->dualRowSolution();
   const double *dualDj = dualProblem->dualColumnSolution();
@@ -1163,7 +1163,9 @@ int ClpSimplexOther::restoreFromDual(const ClpSimplex *dualProblem,
   }
   // now rows
   int kExtraRow = jColumn;
+#ifndef NDEBUG
   int numberRanges = 0;
+#endif
   for (iRow = 0; iRow < numberRows_; iRow++) {
     Status status = dualProblem->getColumnStatus(iRow);
     if (status == basic) {
@@ -1200,7 +1202,9 @@ int ClpSimplexOther::restoreFromDual(const ClpSimplex *dualProblem,
         }
       } else {
         // range
+#ifndef NDEBUG
         numberRanges++;
+#endif
         Status statusL = dualProblem->getColumnStatus(kExtraRow);
         //printf("range row %d (%d), extra %d (%d) - dualSol %g,%g dualDj %g,%g\n",
         //     iRow,status,kExtraRow,statusL, dualSol[iRow],
@@ -1310,8 +1314,10 @@ int ClpSimplexOther::setInDual(ClpSimplex *dualProblem)
   int jColumn = numberRows_;
   for (iColumn = 0; iColumn < numberColumns_; iColumn++) {
     Status status = getColumnStatus(iColumn);
+#ifndef NDEBUG
     Status statusD = dualProblem->getRowStatus(iColumn);
     Status statusDJ = dualProblem->getColumnStatus(jColumn);
+#endif
     if (status == atLowerBound || status == isFixed || status == atUpperBound) {
       dualProblem->setRowStatus(iColumn, basic);
       numberBasic++;
@@ -1346,7 +1352,9 @@ int ClpSimplexOther::setInDual(ClpSimplex *dualProblem)
   // now rows (no ranges at first)
   for (iRow = 0; iRow < numberRows_; iRow++) {
     Status status = getRowStatus(iRow);
+#ifndef NDEBUG
     Status statusD = dualProblem->getColumnStatus(iRow);
+#endif
     if (status == basic) {
       // dual variable is at bound
       if (!lower[iRow]) {
@@ -2127,7 +2135,7 @@ int ClpSimplexOther::parametrics(double startingTheta, double &endingTheta, doub
       }
       if (maxTheta < endingTheta) {
         char line[100];
-        sprintf(line, "Crossover considerations reduce ending  theta from %g to %g\n",
+        snprintf(line, sizeof(line), "Crossover considerations reduce ending  theta from %g to %g\n",
           endingTheta, maxTheta);
         handler_->message(CLP_GENERAL, messages_)
           << line << CoinMessageEol;
@@ -2239,7 +2247,7 @@ int ClpSimplexOther::parametrics(double startingTheta, double &endingTheta, doub
         copyModel.dual();
         if (copyModel.problemStatus()) {
           char line[100];
-          sprintf(line, "Can not get to theta of %g\n", startingTheta);
+          snprintf(line, sizeof(line), "Can not get to theta of %g\n", startingTheta);
           handler_->message(CLP_GENERAL, messages_)
             << line << CoinMessageEol;
           canTryQuick = false; // do slowly to get exact amount
@@ -2264,7 +2272,7 @@ int ClpSimplexOther::parametrics(double startingTheta, double &endingTheta, doub
   }
   perturbation_ = savePerturbation;
   char line[100];
-  sprintf(line, "Ending theta %g\n", endingTheta);
+  snprintf(line, sizeof(line), "Ending theta %g\n", endingTheta);
   handler_->message(CLP_GENERAL, messages_)
     << line << CoinMessageEol;
   return problemStatus_;
@@ -2283,8 +2291,8 @@ int ClpSimplexOther::parametrics(const char *dataFile)
     return -2;
   }
 
-  if (!fgets(line, 200, fp)) {
-    sprintf(line, "Empty parametrics file %s?", dataFile);
+  if (!fgets(line, sizeof(line), fp)) {
+    snprintf(line, sizeof(line), "Empty parametrics file %s?", dataFile);
     handler_->message(CLP_GENERAL, messages_)
       << line << CoinMessageEol;
     fclose(fp);
@@ -2360,14 +2368,15 @@ int ClpSimplexOther::parametrics(const char *dataFile)
   if (intervalTheta >= endTheta)
     intervalTheta = 0.0;
   if (!good) {
-    sprintf(line, "Odd first line %s on file %s?", line, dataFile);
+    char line2[300];
+    snprintf(line2, sizeof(line2), "Odd first line %s on file %s?", line, dataFile);
     handler_->message(CLP_GENERAL, messages_)
-      << line << CoinMessageEol;
+      << line2 << CoinMessageEol;
     fclose(fp);
     return -2;
   }
-  if (!fgets(line, 200, fp)) {
-    sprintf(line, "Not enough records on parametrics file %s?", dataFile);
+  if (!fgets(line, sizeof(line), fp)) {
+    snprintf(line, sizeof(line), "Not enough records on parametrics file %s?", dataFile);
     handler_->message(CLP_GENERAL, messages_)
       << line << CoinMessageEol;
     fclose(fp);
@@ -2449,9 +2458,9 @@ int ClpSimplexOther::parametrics(const char *dataFile)
       upperRowMove = new double[numberRows_];
       memset(upperRowMove, 0, numberRows_ * sizeof(double));
       int nLine = 0;
-      int nBadLine = 0;
+      //int nBadLine = 0;
       int nBadName = 0;
-      while (fgets(line, 200, fp)) {
+      while (fgets(line, sizeof(line), fp)) {
         if (!strncmp(line, "ENDATA", 6) || !strncmp(line, "COLUMN", 6))
           break;
         nLine++;
@@ -2474,7 +2483,7 @@ int ClpSimplexOther::parametrics(const char *dataFile)
           if (comma) {
             *comma = '\0';
           } else if (i < nAcross - 1) {
-            nBadLine++;
+            //nBadLine++;
             break;
           }
           switch (orderRow[i]) {
@@ -2528,11 +2537,11 @@ int ClpSimplexOther::parametrics(const char *dataFile)
             strcpy(saveLine, line);
         }
       }
-      sprintf(line, "%d Row fields and %d records", nAcross, nLine);
+      snprintf(line, sizeof(line), "%d Row fields and %d records", nAcross, nLine);
       handler_->message(CLP_GENERAL, messages_)
         << line << CoinMessageEol;
       if (nBadName) {
-        sprintf(line, " ** %d records did not match on name/sequence, first bad %s", nBadName, saveLine);
+        snprintf(line, sizeof(line), " ** %d records did not match on name/sequence, first bad %s", nBadName, saveLine);
         handler_->message(CLP_GENERAL, messages_)
           << line << CoinMessageEol;
         returnCode = -1;
@@ -2543,7 +2552,7 @@ int ClpSimplexOther::parametrics(const char *dataFile)
       }
       delete[] rowNames;
     } else {
-      sprintf(line, "Duplicate or unknown keyword - or name/number fields wrong");
+      snprintf(line, sizeof(line), "Duplicate or unknown keyword - or name/number fields wrong");
       handler_->message(CLP_GENERAL, messages_)
         << line << CoinMessageEol;
       returnCode = -1;
@@ -2551,8 +2560,8 @@ int ClpSimplexOther::parametrics(const char *dataFile)
     }
   }
   if (good && (!strncmp(line, "COLUMN", 6) || !strncmp(line, "column", 6))) {
-    if (!fgets(line, 200, fp)) {
-      sprintf(line, "Not enough records on parametrics file %s after COLUMNS?", dataFile);
+    if (!fgets(line, sizeof(line), fp)) {
+      snprintf(line, sizeof(line), "Not enough records on parametrics file %s after COLUMNS?", dataFile);
       handler_->message(CLP_GENERAL, messages_)
         << line << CoinMessageEol;
       fclose(fp);
@@ -2621,9 +2630,9 @@ int ClpSimplexOther::parametrics(const char *dataFile)
         objectiveMove = new double[numberColumns_];
         memset(objectiveMove, 0, numberColumns_ * sizeof(double));
         int nLine = 0;
-        int nBadLine = 0;
+        //int nBadLine = 0;
         int nBadName = 0;
-        while (fgets(line, 200, fp)) {
+        while (fgets(line, sizeof(line), fp)) {
           if (!strncmp(line, "ENDATA", 6))
             break;
           nLine++;
@@ -2647,7 +2656,7 @@ int ClpSimplexOther::parametrics(const char *dataFile)
             if (comma) {
               *comma = '\0';
             } else if (i < nAcross - 1) {
-              nBadLine++;
+              //nBadLine++;
               break;
             }
             switch (orderColumn[i]) {
@@ -2702,11 +2711,11 @@ int ClpSimplexOther::parametrics(const char *dataFile)
               strcpy(saveLine, line);
           }
         }
-        sprintf(line, "%d Column fields and %d records", nAcross, nLine);
+        snprintf(line, sizeof(line), "%d Column fields and %d records", nAcross, nLine);
         handler_->message(CLP_GENERAL, messages_)
           << line << CoinMessageEol;
         if (nBadName) {
-          sprintf(line, " ** %d records did not match on name/sequence, first bad %s", nBadName, saveLine);
+          snprintf(line, sizeof(line), " ** %d records did not match on name/sequence, first bad %s", nBadName, saveLine);
           handler_->message(CLP_GENERAL, messages_)
             << line << CoinMessageEol;
           returnCode = -1;
@@ -2717,7 +2726,7 @@ int ClpSimplexOther::parametrics(const char *dataFile)
         }
         delete[] columnNames;
       } else {
-        sprintf(line, "Duplicate or unknown keyword - or name/number fields wrong");
+        snprintf(line, sizeof(line), "Duplicate or unknown keyword - or name/number fields wrong");
         handler_->message(CLP_GENERAL, messages_)
           << line << CoinMessageEol;
         returnCode = -1;
@@ -3273,7 +3282,7 @@ int ClpSimplexOther::parametrics(double startingTheta, double &endingTheta,
   delete rowArray_[5];
   rowArray_[5] = NULL;
   char line[100];
-  sprintf(line, "Ending theta %g\n", endingTheta);
+  snprintf(line, sizeof(line), "Ending theta %g\n", endingTheta);
   handler_->message(CLP_GENERAL, messages_)
     << line << CoinMessageEol;
   return problemStatus_;
@@ -5570,7 +5579,9 @@ int ClpSimplexOther::expandKnapsack(int knapsackRow, int &numberOutput,
     buildStart[0] = 0;
   while (iStack >= 0) {
     if (sum >= minSize && sum <= maxSize) {
+#ifndef NDEBUG
       double checkSize = 0.0;
+#endif
       bool good = true;
       int nRow = 0;
       double obj = 0.0;
@@ -5663,9 +5674,11 @@ int ClpSimplexOther::expandKnapsack(int knapsackRow, int &numberOutput,
           }
           break;
         }
+#ifndef NDEBUG
         for (int j = 0; j < numJ; j++) {
           checkSize += stack[j] * size[j];
         }
+#endif
         assert(fabs(sum - checkSize) < 1.0e-3);
       }
       for (jRow = 0; jRow < nRow; jRow++) {
@@ -5730,7 +5743,9 @@ void ClpSimplexOther::cleanupAfterPostsolve()
   }
   double dualTolerance = dblParam_[ClpDualTolerance];
   double primalTolerance = dblParam_[ClpPrimalTolerance];
+#ifdef CLP_INVESTIGATE
   int numberCleaned = 0;
+#endif
   double maxmin = optimizationDirection_;
   for (int iColumn = 0; iColumn < numberColumns_; iColumn++) {
     double dualValue = reducedCost_[iColumn] * maxmin;
@@ -5789,7 +5804,9 @@ void ClpSimplexOther::cleanupAfterPostsolve()
           double addDual = dualValue / value;
           dual_[iRow] += addDual;
           reducedCost_[iColumn] = 0.0;
+#ifdef CLP_INVESTIGATE
           numberCleaned++;
+#endif
           break;
         }
       }
@@ -5915,7 +5932,7 @@ ClpSimplexOther::gubVersion(int *whichRows, int *whichColumns,
       }
     }
     if (!numberNormal) {
-      sprintf(message, "Putting back one gub row to make non-empty");
+      snprintf(message, sizeof(message), "Putting back one gub row to make non-empty");
       handler_->message(CLP_GENERAL2, messages_)
         << message << CoinMessageEol;
       rowIsGub[smallestGubRow] = -1;
@@ -6129,7 +6146,7 @@ ClpSimplexOther::gubVersion(int *whichRows, int *whichColumns,
         }
       }
     }
-    sprintf(message, "** Before adding matrix there are %d rows and %d columns",
+    snprintf(message, sizeof(message), "** Before adding matrix there are %d rows and %d columns",
       model2->numberRows(), model2->numberColumns());
     handler_->message(CLP_GENERAL2, messages_)
       << message << CoinMessageEol;
@@ -6599,7 +6616,7 @@ void ClpSimplexOther::getGubBasis(ClpSimplex &original, const int *whichRows,
   double *solution = primalColumnSolution();
   double *originalSolution = original.primalColumnSolution();
   int numberSets = gubMatrix->numberSets();
-  const double *cost = original.objective();
+  //const double *cost = original.objective();
   int lastOdd = gubMatrix->firstAvailable();
   //assert (numberTotalColumns==numberColumns+numberSlacks);
   int numberRows = original.numberRows();
@@ -6725,9 +6742,9 @@ void ClpSimplexOther::getGubBasis(ClpSimplex &original, const int *whichRows,
     }
   }
   delete[] numberKey;
-  double objValue = 0.0;
-  for (int i = 0; i < numberColumns; i++)
-    objValue += cost[i] * originalSolution[i];
+  //double objValue = 0.0;
+  //for (int i = 0; i < numberColumns; i++)
+  //  objValue += cost[i] * originalSolution[i];
   //printf("objective value is %g\n", objValue);
 }
 /*
@@ -6821,14 +6838,14 @@ int ClpSimplex::modifyCoefficientsAndPivot(int number,
       for (int i = 0; i < n; i++) {
         int inWhich = sort[i];
         int iSequence = which2[inWhich];
-        int nZeroNew = 0;
+#ifndef NDEBUG
         int nZeroOld = 0;
+#endif
         for (CoinBigIndex j = start[inWhich]; j < start[inWhich + 1]; j++) {
           int iRow = row[j];
           double newValue = newCoefficient[j];
           if (!newValue) {
             newValue = COIN_INDEXED_REALLY_TINY_ELEMENT;
-            nZeroNew++;
           }
           array[iRow] = newValue;
         }
@@ -6847,7 +6864,9 @@ int ClpSimplex::modifyCoefficientsAndPivot(int number,
               }
             }
           } else {
+#ifndef NDEBUG
             nZeroOld++;
+#endif
           }
         }
         assert(!nZeroOld);
@@ -7801,7 +7820,9 @@ int ClpSimplex::outDuplicateRows(int numberLook, int *whichRows, bool noOverlaps
 #endif
   if (tolerance < 0.0)
     tolerance = primalTolerance_;
+#ifdef PRINT_DUP
   int nPossible = 0;
+#endif
   int nDelete = 0;
 #if USE_HASH == 1
   hash *temp = reinterpret_cast< hash * >(weights);
@@ -7845,8 +7866,8 @@ int ClpSimplex::outDuplicateRows(int numberLook, int *whichRows, bool noOverlaps
         CoinBigIndex start = rowStart[iThis];
         CoinBigIndex end = start + rowLength[iThis];
         if (rowLength[iThis] == rowLength[iLast]) {
-          nPossible++;
 #ifdef PRINT_DUP
+          nPossible++;
           char line[520], temp[50];
 #endif
           CoinBigIndex ishift = rowStart[iLast] - start;
@@ -8359,6 +8380,7 @@ int ClpSimplex::outDuplicateRows(int numberLook, int *whichRows, bool noOverlaps
     clpPresolveInfo *info;
     int *nActions;
   } clpPresolveMore;
+  static
   void ClpCopyToMiniSave(saveInfo & where, const char *info, unsigned int sizeInfo, int numberElements,
     const int *indices, const double *elements)
   {

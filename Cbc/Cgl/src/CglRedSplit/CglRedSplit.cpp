@@ -51,6 +51,7 @@ inline double CglRedSplit::rs_above_integer(double value)
 } /* rs_above_integer */
 
 /**********************************************************/
+static
 void rs_allocmatINT(int ***v, const int m, const int n)
 {
   int i;
@@ -71,6 +72,7 @@ void rs_allocmatINT(int ***v, const int m, const int n)
 } /* rs_allocmatINT */
 
 /**********************************************************/
+static
 void rs_deallocmatINT(int ***v, const int m, const int /*n*/)
 {
   int i;
@@ -82,6 +84,7 @@ void rs_deallocmatINT(int ***v, const int m, const int /*n*/)
 } /* rs_deallocmatINT */
 
 /**********************************************************/
+static
 void rs_allocmatDBL(double ***v, const int m, const int n)
 {
   int i;
@@ -102,6 +105,7 @@ void rs_allocmatDBL(double ***v, const int m, const int n)
 } /* rs_allocmatDBL */
 
 /**********************************************************/
+static
 void rs_deallocmatDBL(double ***v, const int m, const int /*n*/)
 {
   int i;
@@ -113,6 +117,7 @@ void rs_deallocmatDBL(double ***v, const int m, const int /*n*/)
 } /* rs_deallocmatDBL */
 
 /**********************************************************/
+static
 void rs_printvecINT(const char *vecstr, const int *x, const int n)
 {
   int num, fromto, upto, j, i;
@@ -131,6 +136,7 @@ void rs_printvecINT(const char *vecstr, const int *x, const int n)
 } /* rs_printvecINT */
 
 /**********************************************************/
+static
 void rs_printvecDBL(char const *vecstr, 
 		    const double *x, const int n)
 {
@@ -150,6 +156,8 @@ void rs_printvecDBL(char const *vecstr,
 } /* rs_printvecDBL */
 
 /**********************************************************/
+#ifdef RS_TRACEALL
+static
 void rs_printmatINT(char const *vecstr, const int **x, 
 		    const int m, const int n)
 {
@@ -165,8 +173,9 @@ void rs_printmatINT(char const *vecstr, const int **x,
   }
   printf("\n");
 } /* rs_printmatINT */
-
+#endif
 /**********************************************************/
+static
 void rs_printmatINT(char const *vecstr, int **x, const int m, const int n)
 {
   int i, j;
@@ -183,6 +192,7 @@ void rs_printmatINT(char const *vecstr, int **x, const int m, const int n)
 } /* rs_printmatINT */
 
 /**********************************************************/
+static
 void rs_printmatDBL(char const *vecstr, double **x, const int m, const int n)
 {
   int i, j;
@@ -199,6 +209,7 @@ void rs_printmatDBL(char const *vecstr, double **x, const int m, const int n)
 } /* rs_printmatDBL */
 
 /***************************************************************************/
+static
 double rs_dotProd(const double *u, const double *v, const int dim) {
 
   int i;
@@ -210,6 +221,7 @@ double rs_dotProd(const double *u, const double *v, const int dim) {
 } /* rs_dotProd */
 
 /***************************************************************************/
+static
 double rs_dotProd(const int *u, const double *v, const int dim) {
 
   int i;
@@ -221,6 +233,7 @@ double rs_dotProd(const int *u, const double *v, const int dim) {
 } /* rs_dotProd */
 
 /***************************************************************************/
+static
 double rs_genalea (int *x0)
 {
   int m = 2147483647;
@@ -312,12 +325,12 @@ void CglRedSplit::reduce_contNonBasicTab() {
     norm[i] = rs_dotProd(contNonBasicTab[i], contNonBasicTab[i], nTab);
   }
 
+#ifdef RS_TRACE
   double sum_norms = 0;
   for(i=0; i<mTab; i++) {
     sum_norms += norm[i];
   }
 
-#ifdef RS_TRACE
   printf("CglRedSplit::reduce_contNonBasicTab():Initial sum of  norms: %f\n", 
 	 sum_norms);
 #endif
@@ -381,12 +394,12 @@ void CglRedSplit::reduce_contNonBasicTab() {
   rs_printmatINT("pi_mat", pi_mat, mTab, mTab);
 #endif
 
+#ifdef RS_TRACE
   sum_norms = 0;
   for(i=0; i<mTab; i++) {
     sum_norms += norm[i];
   }
 
-#ifdef RS_TRACE
   printf("CglRedSplit::reduce_contNonBasicTab():Final sum of norms: %f\n", sum_norms);
 #endif
 

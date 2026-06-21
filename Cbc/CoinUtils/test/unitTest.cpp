@@ -70,9 +70,10 @@ int main (int argc, const char *argv[])
   /*
     Set parameter defaults.
   */
-  std::string mpsDir = dataDir + dirsep + "Sample" + dirsep ;
-  std::string netlibDir = dataDir + dirsep + "Netlib" + dirsep ;
-  std::string testModel = "p0033.mps" ;
+  //TKR: Don't set defaults, must be specified. 
+  std::string mpsDir = ""; // = dataDir + dirsep + "Sample" + dirsep ;
+  std::string netlibDir = ""; // = dataDir + dirsep + "Netlib" + dirsep ;
+  std::string testModel = ""; // = "p0033.mps" ;
   /*
     Process command line parameters. Assume params of the
     form 'keyword' or 'keyword=value'.
@@ -174,12 +175,14 @@ int main (int argc, const char *argv[])
 # endif
 
 
-  testingMessage( "Testing CoinModel\n" );
-  CoinModelUnitTest(mpsDir,netlibDir,testModel);
-
+  if (netlibDir != "" && mpsDir != "" && testModel != ""){
+     testingMessage( "Testing CoinModel\n" );
+     CoinModelUnitTest(mpsDir,netlibDir,testModel);
+  }
+  
   testingMessage( "Testing CoinError\n" );
   CoinErrorUnitTest();
-
+  
   testingMessage( "Testing CoinShallowPackedVector\n" );
   CoinShallowPackedVectorUnitTest();
 
@@ -200,12 +203,14 @@ int main (int argc, const char *argv[])
   CoinDenseVectorUnitTest<float>(0.0f);
 #endif
 
-  testingMessage( "Testing CoinMpsIO\n" );
-  CoinMpsIOUnitTest(mpsDir);
+  if (mpsDir != ""){
+     testingMessage( "Testing CoinMpsIO\n" );
+     CoinMpsIOUnitTest(mpsDir);
 
-  testingMessage( "Testing CoinLpIO\n" );
-  CoinLpIOUnitTest(mpsDir);
-
+     testingMessage( "Testing CoinLpIO\n" );
+     CoinLpIOUnitTest(mpsDir);
+  }
+  
   testingMessage( "Testing CoinMessageHandler\n" );
   if (!CoinMessageHandlerUnitTest())
   { allOK = false ; }

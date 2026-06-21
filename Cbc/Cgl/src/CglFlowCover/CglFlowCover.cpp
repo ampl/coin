@@ -770,22 +770,22 @@ CglFlowCover::generateOneFlowCut( const OsiSolverInterface & si,
   lambda = tempSum - knapRHS;
 
   if(CGLFLOW_DEBUG) {
-    double sum_mj_Cplus = 0.0;
-    double sum_mj_Cminus= 0.0;
+    //double sum_mj_Cplus = 0.0;
+    //double sum_mj_Cminus= 0.0;
     // double checkLambda; // variable not used anywhere (LL)
     // print out the knapsack variables
     std::cout << "Knapsack Cover: C+" << std::endl;
     for (i = 0; i < rowLen; ++i) { 
       if ( label[i] == CGLFLOW_COL_INCUT && sign[i] > 0 ) {
 	std::cout << ind[i] << '\t' << up[i] << std::endl;
-	sum_mj_Cplus += up[i];
+	//sum_mj_Cplus += up[i];
       }
     } 
     std::cout << "Knapsack Cover: C-" << std::endl;
     for (i = 0; i < rowLen; ++i) { 
       if ( label[i] == CGLFLOW_COL_INCUT && sign[i] < 0 ) {
 	std::cout << ind[i] << '\t' << up[i] << std::endl;
-	sum_mj_Cminus += up[i];
+	//sum_mj_Cminus += up[i];
       }
     }
 
@@ -798,7 +798,7 @@ CglFlowCover::generateOneFlowCut( const OsiSolverInterface & si,
   //-------------------------------------------------------------------------
   // Generate a violated SGFC
 
-  int numCMinus = 0;
+  //int numCMinus = 0;
   int numPlusPlus = 0;
   double* rho     = new double [rowLen];
   double* xCoef   = new double [rowLen]; 
@@ -820,7 +820,7 @@ CglFlowCover::generateOneFlowCut( const OsiSolverInterface & si,
   for (i = 0; i < rowLen; ++i) { 
     if ( label[i] == CGLFLOW_COL_INCUT && sign[i] < 0 ) {
       cutRHS += up[i];
-      ++numCMinus;
+      //++numCMinus;
     }
   }
 
@@ -1227,8 +1227,10 @@ CglFlowCover::generateOneFlowCut( const OsiSolverInterface & si,
         return false;
     }
         
+#ifndef NDEBUG
     // Recheck the violation.
     double saveViolation = violation;
+#endif
     violation = 0.0;
     for (i = 0; i < cutLen; ++i) 
       violation += cutCoef[i] * xlp[cutInd[i]];

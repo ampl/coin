@@ -368,7 +368,6 @@ int ClpCholeskyMumps::factorize(const double *diagonal, int *rowsDropped)
   //check sizes
   double largest2 = maximumAbsElement(sparseFactor_, sizeFactor_);
   largest2 *= 1.0e-20;
-  int numberDroppedBefore = 0;
   for (iRow = 0; iRow < numberRows_; iRow++) {
     int dropped = rowsDropped_[iRow];
     // Move to int array
@@ -381,7 +380,6 @@ int ClpCholeskyMumps::factorize(const double *diagonal, int *rowsDropped)
       } else {
         sparseFactor_[start] = CoinMax(diagonal, 1.0e-10);
         rowsDropped[iRow] = 2;
-        numberDroppedBefore++;
       }
     }
   }
@@ -437,13 +435,15 @@ int ClpCholeskyMumps::factorize(const double *diagonal, int *rowsDropped)
       }
     }
     numberRowsDropped_ += newDropped;
-    if (numberRowsDropped_ && 0) {
+#if 0
+    if (numberRowsDropped_) {
       std::cout << "Rank " << numberRows_ - numberRowsDropped_ << " ( " << numberRowsDropped_ << " dropped)";
       if (newDropped) {
         std::cout << " ( " << newDropped << " dropped this time)";
       }
       std::cout << std::endl;
     }
+#endif
   }
   status_ = 0;
   return newDropped;

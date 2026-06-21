@@ -1063,8 +1063,10 @@ tripleton_action::~tripleton_action()
   deleteAction(actions_, action *);
 }
 
+#if 0
 static double *tripleton_mult;
 static int *tripleton_id;
+static
 void check_tripletons(const CoinPresolveAction *paction)
 {
   const CoinPresolveAction *paction0 = paction;
@@ -1086,6 +1088,7 @@ void check_tripletons(const CoinPresolveAction *paction)
     }
   }
 }
+#endif
 
 /* vi: softtabstop=2 shiftwidth=2 expandtab tabstop=2
 */

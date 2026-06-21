@@ -216,7 +216,6 @@ int ClpSimplexPrimal::primal(int ifValuesPass, int startFinishOptions)
 
   algorithm_ = +1;
   moreSpecialOptions_ &= ~16; // clear check replaceColumn accuracy
-
   // save data
   ClpDataSave data = saveData();
   if (problemStatus_ == 10 && sumPrimalInfeasibilities_ == -123456789.0) {
@@ -362,7 +361,6 @@ int ClpSimplexPrimal::primal(int ifValuesPass, int startFinishOptions)
           COIN_DETAIL_PRINT(printf("End small model\n"));
         }
       }
-
       // may factorize, checks if problem finished
       statusOfProblemInPrimal(lastCleaned, factorType, &progress_, true, ifValuesPass, saveModel);
       if (initialStatus == 10) {
@@ -431,7 +429,7 @@ int ClpSimplexPrimal::primal(int ifValuesPass, int startFinishOptions)
             numberFixed++;
             break;
           case atLowerBound:
-            dj = dj;
+            //dj = dj;
             break;
           case isFree:
             dj = -100.0 * fabs(dj);
@@ -1153,12 +1151,14 @@ void ClpSimplexPrimal::statusOfProblemInPrimal(int &lastCleaned, int type,
       for (iSequence = 0; iSequence < numberColumns_; iSequence++)
         cost_[iSequence] = obj[iSequence] * direction;
     computeDuals(NULL);
+#ifdef CLP_USEFUL_PRINTOUT
     int numberSame = 0;
     int numberDifferent = 0;
     int numberZero = 0;
     int numberFreeSame = 0;
     int numberFreeDifferent = 0;
     int numberFreeZero = 0;
+#endif
     int n = 0;
     for (iSequence = 0; iSequence < numberTotal; iSequence++) {
       if (getStatus(iSequence) != basic && !flagged(iSequence)) {
@@ -1173,33 +1173,51 @@ void ClpSimplexPrimal::statusOfProblemInPrimal(int &lastCleaned, int type,
           if (distanceDown > primalTolerance_) {
             // free
             if (value > dualTolerance_) {
+#ifdef CLP_USEFUL_PRINTOUT
               numberFreeSame++;
+#endif
             } else if (value < -dualTolerance_) {
+#ifdef CLP_USEFUL_PRINTOUT
               numberFreeDifferent++;
+#endif
               dj_[n++] = feasibleDj / infeasibleDj;
             } else {
+#ifdef CLP_USEFUL_PRINTOUT
               numberFreeZero++;
+#endif
             }
           } else {
             // should not be negative
             if (value > dualTolerance_) {
+#ifdef CLP_USEFUL_PRINTOUT
               numberSame++;
+#endif
             } else if (value < -dualTolerance_) {
+#ifdef CLP_USEFUL_PRINTOUT
               numberDifferent++;
+#endif
               dj_[n++] = feasibleDj / infeasibleDj;
             } else {
+#ifdef CLP_USEFUL_PRINTOUT
               numberZero++;
+#endif
             }
           }
         } else if (distanceDown > primalTolerance_) {
           // should not be positive
           if (value > dualTolerance_) {
+#ifdef CLP_USEFUL_PRINTOUT
             numberSame++;
+#endif
           } else if (value < -dualTolerance_) {
+#ifdef CLP_USEFUL_PRINTOUT
             numberDifferent++;
+#endif
             dj_[n++] = feasibleDj / infeasibleDj;
           } else {
+#ifdef CLP_USEFUL_PRINTOUT
             numberZero++;
+#endif
           }
         }
       }
@@ -2532,7 +2550,7 @@ void ClpSimplexPrimal::perturb(int type)
     // See if we need to perturb
     int numberTotal = CoinMax(numberRows_, numberColumns_);
     double *sort = new double[numberTotal];
-    int nFixed = 0;
+    //int nFixed = 0;
     for (i = 0; i < numberRows_; i++) {
       double lo = fabs(rowLower_[i]);
       double up = fabs(rowUpper_[i]);
@@ -2540,8 +2558,8 @@ void ClpSimplexPrimal::perturb(int type)
       if (lo && lo < 1.0e20) {
         if (up && up < 1.0e20) {
           value = 0.5 * (lo + up);
-          if (lo == up)
-            nFixed++;
+          //if (lo == up)
+          //  nFixed++;
         } else {
           value = lo;
         }
@@ -3918,7 +3936,7 @@ int ClpSimplexPrimal::lexSolve()
             numberFixed++;
             break;
           case atLowerBound:
-            dj = dj;
+            //dj = dj;
             break;
           case isFree:
             dj = -100.0 * fabs(dj);

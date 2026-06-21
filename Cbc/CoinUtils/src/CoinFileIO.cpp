@@ -158,6 +158,9 @@ public:
           // return 0, otherwise at least the buffer contents were
           // transfered and buffer has to be returned.
           return initiallyEmpty ? 0 : buffer;
+	} else {
+	  // in case image does not terminate as expected
+	  destLast = dest + count-1;
         }
 
         dataEnd_ = dataStart_ + count;

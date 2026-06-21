@@ -259,7 +259,7 @@ resCapPreprocess(const OsiSolverInterface& si)
     rowTypes_ = new RowType [numRows_];     // Destructor will free memory
     
     // Summarize the row type infomation.
-    int numOTHER   = 0;
+    //int numOTHER   = 0;
     int numL       = 0;
     int numG       = 0;
     int numB       = 0;
@@ -293,7 +293,7 @@ resCapPreprocess(const OsiSolverInterface& si)
 	// Summarize information about row types
 	switch(rowType) {
 	case  ROW_OTHER:
-	    ++numOTHER; 
+	    //++numOTHER;
 	    break;
 	case  ROW_L:
 	    ++numL; 

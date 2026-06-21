@@ -8,6 +8,7 @@
 #include <cmath>
 #include <cassert>
 #include <cfloat>
+#include <climits>
 #include <iostream>
 
 #include "CoinPragma.hpp"
@@ -3904,8 +3905,8 @@ CglKnapsackCover::createCliques( OsiSolverInterface & si,
 	which[numberIntegers-numberM1]=iColumn;
       }
     }
-    int iUpper = static_cast<int> (floor(upperValue+1.0e-5));
-    int iLower = static_cast<int> (ceil(lowerValue-1.0e-5));
+    int iUpper = upperValue > INT_MAX ? INT_MAX : static_cast<int> (floor(upperValue+1.0e-5));
+    int iLower = lowerValue < INT_MIN ? INT_MIN : static_cast<int> (ceil(lowerValue-1.0e-5));
     int state=0;
     if (upperValue<1.0e6) {
       if (iUpper==1-numberM1)
@@ -4034,8 +4035,8 @@ CglKnapsackCover::createCliques( OsiSolverInterface & si,
 	  which[numberIntegers-numberM1]=iColumn;
 	}
       }
-      int iUpper = static_cast<int> (floor(upperValue+1.0e-5));
-      int iLower = static_cast<int> (ceil(lowerValue-1.0e-5));
+      int iUpper = upperValue > INT_MAX ? INT_MAX : static_cast<int> (floor(upperValue+1.0e-5));
+      int iLower = lowerValue < INT_MIN ? INT_MIN : static_cast<int> (ceil(lowerValue-1.0e-5));
       int state=0;
       if (upperValue<1.0e6) {
 	if (iUpper==1-numberM1)

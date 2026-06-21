@@ -21,6 +21,7 @@
 #if PRESOLVE_DEBUG > 0 || PRESOLVE_CONSISTENCY > 0
 #include "CoinPresolvePsdebug.hpp"
 #endif
+static
 int check_row(CoinBigIndex *mrstrt,
   double *rowels, int *hcol, int *hinrow,
   double coeff_factor, double kill_ratio, int irowx, int irowy, int &numberBadElements)
@@ -827,7 +828,9 @@ const CoinPresolveAction *implied_free_action::presolve(
     // if not integer - don't allow much fill
     if (!prob->anyInteger()) {
       int numberFree = unprocessed;
+#if CLP_USEFUL_PRINTOUT
       int nBad = 0;
+#endif
       unprocessed = 0;
       // Take out ones that make much denser or might lead to instability
       /*
@@ -939,10 +942,10 @@ const CoinPresolveAction *implied_free_action::presolve(
 	  Count up the total number of coefficients in entangled rows and mark them as
 	  contaminated.
 	*/
-        int ntotels = 0;
+        //int ntotels = 0;
         for (CoinBigIndex kcol = tgtcs; kcol < tgtce; ++kcol) {
           const int i = rowIndices[kcol];
-          ntotels += rowLengths[i];
+          //ntotels += rowLengths[i];
           PRESOLVEASSERT(!prob->rowUsed(i));
           prob->setRowUsed(i);
           rowsUsed[nRowsUsed++] = i;
@@ -988,8 +991,10 @@ const CoinPresolveAction *implied_free_action::presolve(
         if (numberBadElements || 3 * numberFill > 2 * (colLengths[tgtcol] + rowLengths[tgtrow])) {
           //printf("Bad subst col %d row %d - %d small elements, fill %d\n",
           //	 tgtcol,tgtrow,numberBadElements,numberFill);
+#if CLP_USEFUL_PRINTOUT
           if (numberBadElements)
             nBad++;
+#endif
         } else {
           whichFree[unprocessed] = tgtcol;
           implied_free[unprocessed++] = tgtrow;

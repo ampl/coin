@@ -1413,6 +1413,26 @@ public:
   {
     return solver_->getRowActivity();
   }
+   /// Return true if model flipped to make minimize (for printing)
+  inline bool modelFlipped() const
+  {
+    return (moreSpecialOptions2_&67108864)!=0;
+  }
+  /// Return objective function value with sign corrected
+  inline double trueObjValue(double value) const
+  {
+    return (moreSpecialOptions2_&67108864)==0 ? value : -value;
+  }
+  inline double trueBestObjValue() const
+  {
+    return (moreSpecialOptions2_&67108864)==0 ? bestObjective_ : -bestObjective_;
+  }
+  /// Return cutoff value with sign corrected
+  inline double trueCutoff() const
+  {
+    return (moreSpecialOptions2_&67108864)==0 ?
+      dblParam_[CbcCurrentCutoff] : -dblParam_[CbcCurrentCutoff]; 
+  }
 
   /// Get current objective function value
   inline double getCurrentObjValue() const
@@ -2104,6 +2124,7 @@ public:
 	11/12 bit 2048 - intermittent cuts
 	13/14 bit 8192 - go to bitter end in strong branching (first time)
 	15 bit 32768 - take care of very very small values for Integer/SOS variables
+	24 bit (67108864) - model has been flipped
     */
   inline void setMoreSpecialOptions2(int value)
   {
@@ -2588,15 +2609,24 @@ public:
   {
     maximumNumberIterations_ = value;
   }
-#ifdef COIN_HAS_NTY
+
   /// Symmetry information
   inline CbcSymmetry *symmetryInfo() const
   {
     return symmetryInfo_;
   }
+  /// Set symmetry information
+  inline void setSymmetryInfo(CbcSymmetry * info)
+  {
+    symmetryInfo_ = info;
+  }
   /// get rid of all
   void zapSymmetry();
-#endif
+  /// Root symmetry information
+  inline CbcSymmetry *rootSymmetryInfo() const
+  {
+    return rootSymmetryInfo_;
+  }
   /// Set depth for fast nodes
   inline void setFastNodeDepth(int value)
   {
@@ -3084,6 +3114,8 @@ private:
 #endif
   /// Symmetry information
   CbcSymmetry *symmetryInfo_;
+  /// Root symmetry information
+  CbcSymmetry *rootSymmetryInfo_;
   /// Total number of objects
   int numberObjects_;
 

@@ -495,7 +495,6 @@ CglLandPSimplex::cacheUpdate(const CglLandP::CachedData &cached, bool reducedSpa
             colsol_[nonBasics_[i]] = 0;
         }
         /** Mark the variables at zero in solution to cut so that we know that their contribution to reduced cost has to be computed*/
-        int n_removed =0;
         if (reducedSpace)
         {
             for (int ii = 0; ii < ncols_orig_ ; ii++)
@@ -503,7 +502,6 @@ CglLandPSimplex::cacheUpdate(const CglLandP::CachedData &cached, bool reducedSpa
                 if (getColsolToCut(ii) - up_bounds_[ii] > 1e-08 || getColsolToCut(ii) - lo_bounds_[ii] < 1e-08)
                 {
                     col_in_subspace[ii]=false;
-                    n_removed++;
                 }
             }
         }
@@ -1799,7 +1797,7 @@ CglLandPSimplex::fastFindBestPivotColumn(int direction, int gammaSign,
     double r = 1.;
     double s = normedCoef( static_cast<double> (gammaSign), basics_[row_i_.num]);
 
-    bool haveSmallGammaPivot = false;
+    //bool haveSmallGammaPivot = false;
     double gammaTolerance = 0;
     if (allowDegenerate)
         gammaTolerance = 0;
@@ -1857,7 +1855,7 @@ CglLandPSimplex::fastFindBestPivotColumn(int direction, int gammaSign,
         }
         else
         {
-            haveSmallGammaPivot |= true;
+            //haveSmallGammaPivot |= true;
             if (gammaSign > 0 && row_i < 0)
             {
                 q -= row_i * val;
@@ -2143,7 +2141,7 @@ int CglLandPSimplex::findBestPivot(int &leaving, int & direction,
     reducedCost * rc = new reducedCost[nNegativeRcRows_];
     int k = 0;
     rc[k].direction = 0;//initialize first rc
-    int k2 = 0;
+    //int k2 = 0;
     for (int i = 0 ; i < nrows_ ; i++)
     {
         if (ul_i[i] < -params.pivotTol)
@@ -2153,7 +2151,7 @@ int CglLandPSimplex::findBestPivot(int &leaving, int & direction,
             rc[k].gammaSign = -1;
             rc[k].value = ul_i[i];
             rc[k].row = i;
-            k2++;
+            //k2++;
         }
 
         if (vl_i[i] < -params.pivotTol)
@@ -2163,7 +2161,7 @@ int CglLandPSimplex::findBestPivot(int &leaving, int & direction,
             rc[k].gammaSign = 1;
             rc[k].value = vl_i[i];
             rc[k].row = i;
-            k2++;
+            //k2++;
         }
 
 
@@ -2194,7 +2192,7 @@ int CglLandPSimplex::findBestPivot(int &leaving, int & direction,
                     rc[k].value2 = uu_i[i];
                 }
             }
-            k2++;
+            //k2++;
         }
         if (vu_i[i] < -params.pivotTol)
             //&& rowFlags_[i]) //row has not been flaged
@@ -2223,7 +2221,7 @@ int CglLandPSimplex::findBestPivot(int &leaving, int & direction,
                     rc[k].value2 = vu_i[i];
                 }
             }
-            k2++;
+            //k2++;
         }
         if (rc[k].direction!=0) //We have added a row with < 0 rc during
             //last iteration
@@ -3311,7 +3309,7 @@ CglLandPSimplex::removeRows(int nDelete, const int * rowsIdx)
     original_index_.resize(nrows_);
 
     int numStructural = basis_->getNumStructural();
-    assert(ncols_ = numStructural);
+    assert(ncols_ == numStructural);
     int nNonBasics = 0;
     for (int i = 0 ; i < numStructural ; i++)
     {
@@ -3322,7 +3320,7 @@ CglLandPSimplex::removeRows(int nDelete, const int * rowsIdx)
     }
 
     int numArtificial = basis_->getNumArtificial();
-    assert(nrows_ = numArtificial);
+    assert(nrows_ == numArtificial);
     for (int i = 0 ; i < numArtificial ; i++)
     {
         if (basis_->getArtifStatus(i)!= CoinWarmStartBasis::basic)

@@ -1125,6 +1125,7 @@ bool ClpModel::setStrParam(ClpStrParam key, const std::string &value)
 #endif
 // Useful routines
 // Returns resized array and deletes incoming
+static
 double *resizeDouble(double *array, int size, int newSize, double fill,
   bool createArray)
 {
@@ -1141,6 +1142,7 @@ double *resizeDouble(double *array, int size, int newSize, double fill,
   return array;
 }
 // Returns resized array and updates size
+static
 double *deleteDouble(double *array, int size,
   int number, const int *which, int &newSize)
 {
@@ -1170,6 +1172,7 @@ double *deleteDouble(double *array, int size,
   }
   return array;
 }
+static
 char *deleteChar(char *array, int size,
   int number, const int *which, int &newSize,
   bool ifDelete)
@@ -1463,12 +1466,10 @@ void ClpModel::deleteRows(int number, const int *which)
   } else {
     char *deleted = new char[numberRows_];
     int i;
-    int numberDeleted = 0;
     CoinZeroN(deleted, numberRows_);
     for (i = 0; i < number; i++) {
       int j = which[i];
       if (j >= 0 && j < numberRows_ && !deleted[j]) {
-        numberDeleted++;
         deleted[j] = 1;
       }
     }
@@ -2537,6 +2538,7 @@ int ClpModel::addColumns(const CoinBuild &buildObject, bool tryPlusMinusOne, boo
     delete[] upper;
   }
   synchronizeMatrix();
+  (void)numberErrors; // todo do something with this number?
   return 0;
 }
 #endif
@@ -2894,7 +2896,7 @@ int ClpModel::readMps(const char *fileName,
   int status = 0;
   try {
     status = m.readMps(fileName, "");
-  } catch (CoinError e) {
+  } catch (const CoinError& e) {
     e.print();
     status = -1;
   }
@@ -3215,6 +3217,7 @@ void ClpModel::setObjective(ClpObjective *objective)
   objective_ = objective->clone();
 }
 // Returns resized array and updates size
+static
 double *whichDouble(double *array, int number, const int *which)
 {
   double *newArray = NULL;
@@ -3226,6 +3229,7 @@ double *whichDouble(double *array, int number, const int *which)
   }
   return newArray;
 }
+static
 char *whichChar(char *array, int number, const int *which)
 {
   char *newArray = NULL;
@@ -3237,6 +3241,7 @@ char *whichChar(char *array, int number, const int *which)
   }
   return newArray;
 }
+static
 unsigned char *whichUnsignedChar(unsigned char *array,
   int number, const int *which)
 {
@@ -3323,6 +3328,7 @@ ClpModel::ClpModel(const ClpModel *rhs,
     if (whichColumn[i] < 0 || whichColumn[i] >= rhs->numberColumns_)
       numberBad++;
   CoinAssertHint(!numberBad, "Bad Column list for subproblem constructor");
+  (void)numberBad;
   numberRows_ = numberRows;
   numberColumns_ = numberColumns;
   userPointer_ = rhs->userPointer_;

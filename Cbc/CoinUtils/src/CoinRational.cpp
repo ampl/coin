@@ -69,8 +69,7 @@ bool CoinRational::nearestRational_(double val, double maxdelta, long maxdnom)
 
 #if DEBUG_X
   if (shouldBeOK) {
-    double inaccuracy = fabs(fracpart - numerator_ / double(denominator_));
-    assert(inaccuracy <= maxdelta);
+    assert(fabs(fracpart - numerator_ / double(denominator_)) <= maxdelta);
   }
 #endif
   numerator_ += std::abs(intpart) * denominator_;

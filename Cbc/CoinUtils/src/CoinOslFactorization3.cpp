@@ -165,6 +165,7 @@ static void c_ekkafpv(int *hentry, int *hcoli,
  * so we maintain it as we shorten rows and removing columns altogether.
  *
  */
+static
 int c_ekkcsin(EKKfactinfo *fact,
   EKKHlink *rlink, EKKHlink *clink,
 
@@ -303,6 +304,7 @@ int c_ekkcsin(EKKfactinfo *fact,
 /*      7: pivot element too small */
 /*     -52: system error at label 220 (ipivot not found) */
 /*     -53: system error at label 400 (jpivot not found) */
+static
 int c_ekkrsin(EKKfactinfo *fact,
   EKKHlink *rlink, EKKHlink *clink,
   EKKHlink *mwork, int nfirst,
@@ -509,6 +511,7 @@ int c_ekkrsin(EKKfactinfo *fact,
   return (irtcod);
 } /* c_ekkrsin */
 
+static
 int c_ekkfpvt(const EKKfactinfo *fact,
   EKKHlink *rlink, EKKHlink *clink,
   int *nsingp, int *xrejctp,
@@ -648,6 +651,7 @@ L900:
   *xjpivtp = jpivot;
   return (irtcod);
 } /* c_ekkfpvt */
+static
 void c_ekkprpv(EKKfactinfo *fact,
   EKKHlink *rlink, EKKHlink *clink,
 
@@ -1362,7 +1366,7 @@ static void c_ekkmltf(const EKKfactinfo *fact, double *dluval, int *hcoli,
     }
   }
 } /* c_ekkmltf */
-int c_ekklfct(register EKKfactinfo *fact)
+int c_ekklfct(EKKfactinfo *fact)
 {
   const int nrow = fact->nrow;
   int ninbas = fact->xcsadr[nrow + 1] - 1;
@@ -2591,7 +2595,7 @@ inline void c_ekkclcp2(const int *hcol, const double *dels, const int *mrstrt,
     }
   }
 } /* c_ekkclcp */
-int c_ekkslcf(register const EKKfactinfo *fact)
+int c_ekkslcf(const EKKfactinfo *fact)
 {
   int *hrow = fact->xeradr;
   int *hcol = fact->xecadr;

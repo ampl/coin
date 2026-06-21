@@ -464,8 +464,8 @@ OsiTestSolverInterface::resolve()
   // Set the dual starting point
   VOL_dvector& dsol = volprob_.dsol;
   dsol.allocate(dsize);
-  std::transform(rowprice_, rowprice_+dsize, dsol.v,
-		 std::bind2nd(std::multiplies<double>(), objsense_));
+  for (i = 0; i < dsize; ++i)
+    dsol.v[i] = rowprice_[i] * objsense_;
 
   // adjust the dual vector (if necessary) to be sure it's feasible
   double * dv = dsol.v;

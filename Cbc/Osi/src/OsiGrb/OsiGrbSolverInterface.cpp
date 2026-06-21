@@ -2411,7 +2411,7 @@ void OsiGrbSolverInterface::addRows(const int numrows,
   if (haverangedrows) {
     int nr = getNumRows() - numrows;
     for (i = 0; i < numrows; ++i)
-      if (rowlb[i] > getInfinity() && rowub[i] < getInfinity() && rowub[i] - rowlb[i] > 0.0)
+      if (rowlb[i] > -getInfinity() && rowub[i] < getInfinity() && rowub[i] - rowlb[i] > 0.0)
         convertToRangedRow(nr + i, rowub[i], rowub[i] - rowlb[i]);
   } else if (nauxcols)
     resizeAuxColIndSpace();

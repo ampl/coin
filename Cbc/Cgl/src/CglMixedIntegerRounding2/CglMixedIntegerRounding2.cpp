@@ -358,15 +358,19 @@ mixIntRoundPreprocess(const OsiSolverInterface& si)
   }
   rowTypes_ = new RowType [numRows_];     // Destructor will free memory
 
-  // Summarize the row type infomation.
+  // Summarize the row type information.
+#if CGL_DEBUG
   int numUNDEFINED   = 0;
   int numVARUB       = 0;
   int numVARLB       = 0;
   int numVAREQ       = 0;
+#endif
   int numMIX         = 0;
   int numCONT        = 0;
   int numINT         = 0;
+#if CGL_DEBUG
   int numOTHER       = 0;
+#endif
 
   int iRow;
   const double* rowActivity        = si.getRowActivity();
@@ -396,16 +400,24 @@ mixIntRoundPreprocess(const OsiSolverInterface& si)
     // Summarize information about row types
     switch(rowType) {
     case  ROW_UNDEFINED:
-      ++numUNDEFINED; 
+#if CGL_DEBUG
+      ++numUNDEFINED;
+#endif
       break;
     case  ROW_VARUB:
-      ++numVARUB; 
+#if CGL_DEBUG
+      ++numVARUB;
+#endif
       break;
     case  ROW_VARLB:
-      ++numVARLB; 
+#if CGL_DEBUG
+      ++numVARLB;
+#endif
       break;
     case  ROW_VAREQ:
-      ++numVAREQ; 
+#if CGL_DEBUG
+      ++numVAREQ;
+#endif
       break;
     case  ROW_MIX:
       ++numMIX; 
@@ -417,7 +429,9 @@ mixIntRoundPreprocess(const OsiSolverInterface& si)
       ++numINT; 
       break;
     case  ROW_OTHER:
-      ++numOTHER; 
+#if CGL_DEBUG
+      ++numOTHER;
+#endif
       break;
     default:
       throw CoinError("Unknown row type", "MixIntRoundPreprocess",

@@ -21,9 +21,9 @@
 extern int ets_count;
 extern int ets_check;
 #endif
-#define COIN_REGISTER register
+#define COIN_REGISTER
 #define COIN_REGISTER2
-#define COIN_REGISTER3 register
+#define COIN_REGISTER3
 #ifdef COIN_USE_RESTRICT
 #define COIN_RESTRICT2 __restrict
 #else
@@ -328,6 +328,7 @@ static int c_ekkscmv(COIN_REGISTER const EKKfactinfo *COIN_RESTRICT2 fact, int n
 
   return static_cast< int >(mptr - mptrsave);
 } /* c_ekkscmv */
+static
 double c_ekkputl(const EKKfactinfo *COIN_RESTRICT2 fact,
   const int *COIN_RESTRICT mpt2,
   double *COIN_RESTRICT dwork1,
@@ -368,6 +369,7 @@ double c_ekkputl(const EKKfactinfo *COIN_RESTRICT2 fact,
 /* making this static seems to slow code down!
    may be being inlined
 */
+static
 int c_ekkputl2(const EKKfactinfo *COIN_RESTRICT2 fact,
   double *COIN_RESTRICT dwork1,
   double *del3p,

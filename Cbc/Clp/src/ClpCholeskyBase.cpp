@@ -1113,7 +1113,7 @@ myamlf(WSI n, WSI xadj[], WSI adjncy[], WSI dgree[], WSI varbl[],
   WSI l, i, j, k;
   double x, y;
   WSI maxmum, fltag, nodeg, scln, nm1, deg, tn,
-    locatns, ipp, jpp, nnode, numpiv, node,
+    /*locatns,*/ ipp, jpp, nnode, numpiv, node,
     nodeln, currloc, counter, numii, mindeg,
     i0, i1, i2, i4, i5, i6, i7, i9,
     j0, j1, j2, j3, j4, j5, j6, j7, j8, j9;
@@ -1166,7 +1166,7 @@ myamlf(WSI n, WSI xadj[], WSI adjncy[], WSI dgree[], WSI varbl[],
   maxmum = 0;
   mindeg = 1;
   fltag = 2;
-  locatns = locaux - 1;
+  //locatns = locaux - 1;
   nm1 = n - 1;
   counter = 1;
   for (l = 0; l < n; l++) {
@@ -1312,7 +1312,7 @@ myamlf(WSI n, WSI xadj[], WSI adjncy[], WSI dgree[], WSI varbl[],
         }
       }
       currloc = (j5 = locaux) - j4;
-      locatns += currloc;
+      //locatns += currloc;
     } else {
       i1 = (j4 = xadj[node - 1]) + lsize[node - 1];
       for (j = j5 = j4; j < i1; j++) {
@@ -1735,7 +1735,8 @@ myamlf(WSI n, WSI xadj[], WSI adjncy[], WSI dgree[], WSI varbl[],
 #ifdef WSSMP_DBG
       chk(66, node, n);
 #endif
-      locatns += (lsize[node - 1] - currloc), locaux = j;
+      //locatns += (lsize[node - 1] - currloc);
+      locaux = j;
     }
     varbl[node - 1] = numpiv + nodeg;
     lsize[node - 1] = j - j4;
@@ -2956,13 +2957,15 @@ int ClpCholeskyBase::factorize(const CoinWorkDouble *diagonal, int *rowsDropped)
         }
       }
       numberRowsDropped_ += newDropped;
-      if (numberRowsDropped_ && 0) {
+#if 0
+      if (numberRowsDropped_) {
         std::cout << "Rank " << numberRows_ - numberRowsDropped_ << " ( " << numberRowsDropped_ << " dropped)";
         if (newDropped) {
           std::cout << " ( " << newDropped << " dropped this time)";
         }
         std::cout << std::endl;
       }
+#endif
     }
   } else {
     //KKT
@@ -3265,12 +3268,10 @@ int ClpCholeskyBase::factorize(const CoinWorkDouble *diagonal, int *rowsDropped)
       std::cout << "Cholesky - largest " << largest << " smallest " << smallest << std::endl;
     choleskyCondition_ = largest / smallest;
     // Should save adjustments in ..R_
-    int n1 = 0, n2 = 0;
     CoinWorkDouble *primalR = model_->primalR();
     CoinWorkDouble *dualR = model_->dualR();
     for (iRow = 0; iRow < numberTotal; iRow++) {
       if (rowsDropped2[iRow]) {
-        n1++;
         //printf("row region1 %d dropped\n",iRow);
         //rowsDropped_[iRow]=1;
         rowsDropped_[iRow] = 0;
@@ -3282,7 +3283,6 @@ int ClpCholeskyBase::factorize(const CoinWorkDouble *diagonal, int *rowsDropped)
     }
     for (; iRow < numberRows_; iRow++) {
       if (rowsDropped2[iRow]) {
-        n2++;
         //printf("row region2 %d dropped\n",iRow);
         //rowsDropped_[iRow]=1;
         rowsDropped_[iRow] = 0;

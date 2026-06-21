@@ -422,10 +422,10 @@ OsiTestSolverInterface::writeMps(const char *filename,
    writer.setMpsData(*getMatrixByCol(), getInfinity(),
 		     getColLower(), getColUpper(),
 		     getObjCoefficients(), 
-		     reinterpret_cast<const char *> (NULL) /*integrality*/,
+		     NULL /*integrality*/,
 		     getRowLower(), getRowUpper(),
-		     reinterpret_cast<const char **> (NULL) /*colnam*/, 
-		     reinterpret_cast<const char **> (NULL) /*rownam*/);
+		     NULL /*colnam*/,
+		     NULL /*rownam*/);
    std::string fname = filename;
    if (extension)
    { if (extension[0] != '\0' && extension[0] != '.')

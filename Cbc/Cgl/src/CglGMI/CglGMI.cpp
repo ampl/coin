@@ -888,7 +888,6 @@ bool CglGMI::scaleCutIntegral(double* cutElem, int* cutIndex, int cutNz,
   double maxdelta = param.getEPS(); 
   double maxscale = 1000; 
   long maxdnom = 1000; 
-  long numerator = 0, denominator = 0;
   // Initialize gcd and lcm
   CoinRational r = CoinRational(cutRhs, maxdelta, maxdnom);
   if (r.getNumerator() != 0){

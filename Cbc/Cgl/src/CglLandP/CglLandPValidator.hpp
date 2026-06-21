@@ -117,7 +117,7 @@ private:
     /** minimum violation for accepting a cut */
     double minViolation_;
     /** Do we do scaling? */
-    bool scale_;
+    //bool scale_;
     /** Scale of right-hand-side.*/
     double rhsScale_;
     /** Strings explaining reason for rejections */

@@ -1260,8 +1260,11 @@ int ClpSimplexDual::whileIterating(double *&givenDuals, int ifValuesPass)
           columnArray_[1],
 #endif
           acceptablePivot, dubiousWeights);
-        if (sequenceIn_ < 0 && acceptablePivot > acceptablePivot_)
-          acceptablePivot_ = -fabs(acceptablePivot_); // stop early exit
+        if (sequenceIn_ < 0 && acceptablePivot <= acceptablePivot_) {
+          //acceptablePivot_ = -fabs(acceptablePivot_); // stop early exit
+	  if (!factorization_->pivots())
+	    problemStatus_=1;
+	}
 #if CAN_HAVE_ZERO_OBJ > 1
         if ((specialOptions_ & 16777216) != 0)
           theta_ = 0.0;
@@ -1920,7 +1923,8 @@ int ClpSimplexDual::whileIterating(double *&givenDuals, int ifValuesPass)
               int numberFake = numberAtFakeBound();
               double sumPrimal = (!numberFake) ? 2.0e5 : sumPrimalInfeasibilities_;
               if (sumPrimalInfeasibilities_ < 1.0e-3 || sumDualInfeasibilities_ > 1.0e-5 || (sumPrimal < 1.0e5 && (specialOptions_ & 1024) != 0 && factorization_->pivots())) {
-                if (sumPrimal > 50.0 && factorization_->pivots() > 2) {
+                if ((sumPrimal > 50.0 && factorization_->pivots() > 2)
+		    || ((moreSpecialOptions_&256)!=0 && factorization_->pivots())) {
                   problemStatus_ = -4;
 #ifdef COIN_DEVELOP
                   printf("status to -4 at %d - primalinf %g pivots %d\n",
@@ -3623,8 +3627,8 @@ int ClpSimplexDual::dualColumn0(const CoinIndexedVector *rowArray,
         double oldValue;
         double value;
 
-        assert(getStatus(iSequence + addSequence) != isFree
-          && getStatus(iSequence + addSequence) != superBasic);
+        //assert(getStatus(iSequence + addSequence) != isFree
+	//&& getStatus(iSequence + addSequence) != superBasic);
         int iStatus = (statusArray[iSequence] & 3) - 1;
         if (iStatus) {
           double mult = multiplier[iStatus - 1];
@@ -3896,8 +3900,7 @@ int ClpSimplexDual::dualColumn0(const CoinIndexedVector *rowArray,
             // give fake bounds if possible
             int jSequence = iSequence + addSequence;
             if (2.0 * fabs(solution_[jSequence]) < dualBound_) {
-              FakeBound bound = getFakeBound(jSequence);
-              assert(bound == ClpSimplexDual::noFake);
+              assert(getFakeBound(jSequence) == ClpSimplexDual::noFake);
               setFakeBound(jSequence, ClpSimplexDual::bothFake);
               numberFake_++;
               value = oldValue - tentativeTheta * alpha;
@@ -4760,7 +4763,7 @@ int ClpSimplexDual::checkUnbounded(CoinIndexedVector *ray,
     way = 0.0;
     status = -3;
   }
-  double movement = 1.0e10 * way; // some largish number
+  double movement = 1.0e20 * way; // some largish number
   double zeroTolerance = 1.0e-14 * dualBound_;
   for (i = 0; i < number; i++) {
     int iRow = index[i];
@@ -7210,8 +7213,8 @@ int ClpSimplexDual::fastDual(bool alwaysFinish)
       double *givenPi = NULL;
       returnCode = whileIterating(givenPi, 0);
       if ((!alwaysFinish && returnCode < 0) || returnCode == 3) {
-        if (returnCode != 3)
-          assert(problemStatus_ < 0);
+        //if (returnCode != 3)
+	//assert(problemStatus_ < 0);
         returnCode = 1;
         problemStatus_ = 3;
         // can't say anything interesting - might as well return

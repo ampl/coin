@@ -3766,8 +3766,10 @@ void CoinModel::badType() const
 //#############################################################################
 // Methods to input a problem
 //#############################################################################
+#if 0 // unused local function
 /** A function to convert from the lb/ub style of constraint
     definition to the sense/rhs/range style */
+static
 void convertBoundToSense(const double lower, const double upper,
   char &sense, double &right,
   double &range)
@@ -3797,10 +3799,12 @@ void convertBoundToSense(const double lower, const double upper,
     }
   }
 }
+#endif
 
 //-----------------------------------------------------------------------------
 /** A function to convert from the sense/rhs/range style of
     constraint definition to the lb/ub style */
+static
 void convertSenseToBound(const char sense, const double right,
   const double range,
   double &lower, double &upper)

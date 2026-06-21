@@ -131,6 +131,7 @@ void print_double_vect(char *s,double *v,int n)
   printf("\n");
 }
 #endif
+static
 void alloc_error(char *s)
 {
   printf("\n Warning: Not enough memory to allocate %s\n",s);
@@ -138,8 +139,9 @@ void alloc_error(char *s)
   exit(FALSE);
 }
 
+#if 0 // unused
 /* double2int: compute the integer equivalent of a double */
-
+static
 int double2int(double x)
 {
   if ( x > IINF ) return (IINF);
@@ -148,9 +150,10 @@ int double2int(double x)
   if ( x > 0.0 ) return(static_cast<int> (x + ZERO));
   return(static_cast<int> (x - ZERO));
 }
+#endif
 
 /* gcd: compute the greatest common divisor of two integers */
-
+static
 int gcd(int a,int b)
 {
   int c;
@@ -301,7 +304,7 @@ void Cgl012Cut::free_parity_ilp()
 }
 
 /* alloc_info_weak: allocate memory for the weakening info data structure */
-
+static
 info_weak *alloc_info_weak(int nweak /* number of variables to be weakened */)
 {
   info_weak *i_weak;
@@ -329,6 +332,7 @@ void print_info_weak(info_weak *i_weak)
 }
 #endif
 
+static
 void free_info_weak(info_weak *i_weak)
 {
   if ( i_weak->nweak > 0 ) {
@@ -602,7 +606,8 @@ printf("sense %c and rhs %d and slack %.5e\n",inp_ilp->msense[i],inp_ilp->mrhs[i
 
 separation_graph *Cgl012Cut::initialize_sep_graph()
 {
-  int maxnodes, maxedges, nnodes, j, jk; 
+  int maxnodes, nnodes, j, jk; 
+  long long maxedges;
   int *nodes, *ind;
   separation_graph *s_graph;
 
@@ -638,7 +643,7 @@ separation_graph *Cgl012Cut::initialize_sep_graph()
   if ( s_graph->ind == NULL ) alloc_error(const_cast<char*>("s_graph->ind"));
   for ( j = 0; j < maxnodes; j++ ) s_graph->ind[j] = ind[j];
   free(ind);
-  maxedges = (nnodes * (nnodes - 1)) / 2;
+  maxedges = ((long long)nnodes * ((long long)nnodes - 1)) / 2;
   s_graph->even_adj_list = reinterpret_cast<edge **> (malloc(maxedges*sizeof(edge *)));
   if ( s_graph->even_adj_list == NULL ) alloc_error(const_cast<char*>("s_graph->even_adj_list"));
   s_graph->odd_adj_list = reinterpret_cast<edge **> (malloc(maxedges*sizeof(edge *)));
@@ -651,7 +656,7 @@ separation_graph *Cgl012Cut::initialize_sep_graph()
 
 /* update_weight_sep_graph: consider a new edge obtained from the 
    (weakened) parity ILP and (possibly) add it to the separation graph */
-
+static
 separation_graph *update_weight_sep_graph(
 					  int j, int k, /* endpoints of the new edge */
 					  double weight, /* weight of the new edge */
@@ -705,6 +710,7 @@ void print_edge(edge *e)
 }
 #endif
 
+static
 void free_edge(edge *e)
 {
   if ( e->weak != NULL )  
@@ -732,6 +738,7 @@ void print_sep_graph(separation_graph *s_graph)
 }
 #endif
 
+static
 void free_sep_graph(separation_graph *s_graph)
 {
   int nnodes, maxedges, jk;
@@ -767,10 +774,10 @@ void free_sep_graph(separation_graph *s_graph)
 /* define_aux_graph: construct the auxiliary graph for the shortest 
    path computation - the data structure is based on that used by
    Cherkassky, Goldberg and Radzik's shortest path codes */
-     
+static
 auxiliary_graph *define_aux_graph(separation_graph *s_graph /* input separation graph */)
 {
-  int j, k, indjk, auxj1, auxj2, auxk1, auxk2, noutj, totoutj, narcs;
+  int j, k, indjk, auxj1, auxj2, auxk1, auxk2, /*noutj,*/ totoutj, narcs;
   edge *s_edge;
   auxiliary_graph *a_graph;
 
@@ -814,7 +821,7 @@ auxiliary_graph *define_aux_graph(separation_graph *s_graph /* input separation 
     a_graph->nodes[auxj2].firstArc = &(a_graph->arcs[narcs+totoutj]);
 #endif
     /* add the edges as arcs outgoing from j to the auxiliary graph */
-    noutj = 0;
+    //noutj = 0;
     for ( k = 0; k < s_graph->nnodes; k++ ) {
       if ( k != j ) {
 	auxk1 = AG_TWIN1(k); auxk2 = AG_TWIN2(k);
@@ -833,7 +840,7 @@ auxiliary_graph *define_aux_graph(separation_graph *s_graph /* input separation 
 	  a_graph->arcs[narcs].to = auxk1;
 	  a_graph->arcs[narcs+totoutj].to = auxk2;
 #endif
-	  narcs++; noutj++; 
+	  narcs++; //noutj++;
 	}
 	s_edge = s_graph->odd_adj_list[indjk];
 	if ( s_edge != NULL ) {
@@ -855,7 +862,7 @@ auxiliary_graph *define_aux_graph(separation_graph *s_graph /* input separation 
 	    a_graph->nodes[auxj2].first = &(a_graph->arcs[narcs+totoutj]);
 	  } 
 	  ... */
-	  narcs++; noutj++; 
+	  narcs++; //noutj++;
 	}
       }
     }
@@ -873,7 +880,7 @@ auxiliary_graph *define_aux_graph(separation_graph *s_graph /* input separation 
 /* cancel_node_aux_graph: remove the node j in the separation graph
   from the auxiliary graph - all the outgoing arc lengths are set to
   a large value */
-
+static
 auxiliary_graph *cancel_node_aux_graph(
 				       int j, /* index of the node in the separation graph */
 				       auxiliary_graph *a_graph /* auxiliary graph to be updated */
@@ -985,7 +992,7 @@ void print_aux_graph(auxiliary_graph *a_graph)
   print_arc_vect(const_cast<char*>("nodes"),a_graph->arcs,a_graph->narcs);
 }
 #endif
-
+static
 void free_aux_graph(auxiliary_graph *a_graph)
 {
   free(a_graph->nodes);
@@ -997,7 +1004,7 @@ void free_aux_graph(auxiliary_graph *a_graph)
 
 /* simple_cycle: check whether a given cycle is simple
    (and therefore may correspond to a non-dominated ineq.) */
-
+static
 short int simple_cycle(cycle *s_cyc /* cycle to be checked */)
 {
   int i, e, maxnodes;
@@ -1042,7 +1049,7 @@ short int simple_cycle(cycle *s_cyc /* cycle to be checked */)
   
 /* same_cycle: check whether two cycles are identical 
    (assumes the first nodes of the cycles coincide) */
-
+static
 short int same_cycle(cycle *s_cyc1, cycle *s_cyc2 /* cycles to be compared */)
 {
   int e, eb;
@@ -1082,6 +1089,7 @@ void print_cycle(cycle *s_cycle)
 }
 #endif
 
+static
 void free_cycle(cycle *s_cycle)
 {
   free(s_cycle->edge_list);
@@ -1089,7 +1097,7 @@ void free_cycle(cycle *s_cycle)
 }
 
 /* initialize_cycle_list: allocate and initialize the cycle list data structure */
-
+static
 cycle_list *initialize_cycle_list(int max_cyc /* maximum number of cycles in the list */)
 {
   cycle_list *s_cycle_list;
@@ -1104,7 +1112,7 @@ cycle_list *initialize_cycle_list(int max_cyc /* maximum number of cycles in the
 
 /* add_cycle_to_list: add a new cycle to the cycle list data structure
    (if not already in the list) */
-
+static
 cycle_list *add_cycle_to_list(
 			      cycle *s_cycle, /* pointer to the cycle to be added to the list */
 			      cycle_list *s_cycle_list /* input cycle list to be updated */
@@ -1129,6 +1137,7 @@ cycle_list *add_cycle_to_list(
   return(s_cycle_list);
 }
 
+static
 void free_cycle_list(cycle_list *s_cycle_list)
 {
   int c;
@@ -1156,6 +1165,7 @@ void print_cycle_list(cycle_list *s_cycle_list)
    for the shortest path computation - all the cycles in the list are
    different from each other */
 
+static
 cycle_list *get_shortest_odd_cycle_list(
 					int j, /* first node to be visited by the odd cycle */
 					separation_graph *s_graph, /* current separation graph */
@@ -1388,7 +1398,7 @@ cycle_list *get_shortest_odd_cycle_list(
 /* cut management subroutines */
 
 /* initialize_cut_list: allocate and initialize the cut list data structure */
-
+static
 cut_list *initialize_cut_list(int max_cut /* maximum number of cuts in the list */)
 {
   cut_list *cuts;
@@ -1425,6 +1435,7 @@ void Cgl012Cut::print_cut_list(cut_list *cuts)
 }
 #endif
 
+static
 void free_cut(cut *v_cut)
 {
   if ( v_cut->constr_list != NULL ) free(v_cut->constr_list);
@@ -1434,6 +1445,7 @@ void free_cut(cut *v_cut)
   free(v_cut);
 }
 
+static
 void free_cut_list(cut_list *cuts)
 {
   int c;
@@ -1768,7 +1780,7 @@ double Cgl012Cut::cut_score(
 
 /* same_cut: check whether two cuts are identical - not too clever
    (assumes the sparse coefficients are sorted by column index) */
-
+static
 short int same_cut(cut *cut1, cut *cut2 /* cuts to be compared */)
 {
   int j;
@@ -1787,7 +1799,7 @@ short int same_cut(cut *cut1, cut *cut2 /* cuts to be compared */)
    the same cut is not already in the list - no checking is made about 
    cuts dominating each other or implied by other cuts in the list plus
    the constraints of the original problem */
-
+static
 cut_list *add_cut_to_list(
 			  cut *v_cut, /* pointer to the violated cut to be added to the list */
 			  cut_list *cuts /* input cut list to be updated */
@@ -1807,7 +1819,7 @@ cut_list *add_cut_to_list(
 }
 
 /* getcuts: pick the 0-1/2 cuts in the list and give them on output */
-
+static
 void getcuts(
 	     cut_list *cuts, /* input cut list */
 	     int *cnum, /* number of violated 0-1/2 cuts identified by the procedure */
@@ -2362,11 +2374,9 @@ static int last_prohib_period_mod; /* last iteration where prohibition period wa
 static hash_table hash_tab; /* hash table */
 static int A; /* parameter A in Battiti and Protasi */
 static int B; /* parameter B in Battiti and Protasi */
-static float elapsed_time; /* time elapsed since the beginning of the current
-		       tabu search call */
 
 /* clear_cur_cut: clear the current solution (no constraint in the cut) */
-
+static
 void clear_cur_cut()
 {
   int i, j;
@@ -2389,7 +2399,7 @@ void clear_cur_cut()
 }
 
 /* initialize_cur_cut: allocate the memory for cur_cut */
-
+static
 void initialize_cur_cut() 
 {
   cur_cut = reinterpret_cast<tabu_cut *> (calloc(1,sizeof(tabu_cut)));
@@ -2404,7 +2414,7 @@ void initialize_cur_cut()
 }
 
 /* free_cur_cut: free the memory for cur_cut */
-
+static
 void free_cur_cut()
 {
   free(cur_cut->coef);
@@ -2446,7 +2456,7 @@ void Cgl012Cut::print_cur_cut()
 }  
 #endif  
 /* same_short_vect: check whether two short int vectors have the same content */
-
+static
 short int same_short_vect(
 			  int n_of_el, /* number of components in the vectors */
 			  short int *vec_1, 
@@ -2460,7 +2470,7 @@ short int same_short_vect(
 }
 
 /* initialize_hash_table: allocate the memory for the hash table */
-
+static
 void initialize_hash_table()
 {
   int i;
@@ -2470,7 +2480,7 @@ void initialize_hash_table()
 }
 
 /* clear_hash_table: clear the current hash table */
-
+static
 void clear_hash_table()
 {
   int i; 
@@ -2491,7 +2501,7 @@ void clear_hash_table()
 }
 
 /* free_hash_table: deallocate the memory for the hash table */
-
+static
 void free_hash_table()
 {
   clear_hash_table();
@@ -2499,7 +2509,7 @@ void free_hash_table()
 }
 
 /* hash_addr: compute the hash address associated with the current cut */
-
+static
 int hash_addr(
 	      int n_of_el, /* number of elements to be considered */
 	      short int *flag_vect /* vector of flags for the elements */
@@ -2516,7 +2526,7 @@ int hash_addr(
 
 /* hash_search: search for the current cut in the hash list of all cuts -
    if found return TRUE and update the last iteration the cut was found */
-
+static
 short int hash_search(int *cyc_len /* length of the cycle if the current cut is found */)
 { 
   int addr;
@@ -2536,7 +2546,7 @@ short int hash_search(int *cyc_len /* length of the cycle if the current cut is 
 }
 
 /* hash_insert: insert a new cut in the hash list of all cuts */
-
+static
 void hash_insert()
 {
   int addr, i;
@@ -2571,7 +2581,7 @@ void hash_insert()
 }        
 
 /* increase_prohib_period: implemented as in Battiti and Protasi */
-
+static
 void increase_prohib_period()
 {
   if ( prohib_period * 1.1 > prohib_period + 1 ) 
@@ -2585,7 +2595,7 @@ void increase_prohib_period()
 }
 
 /* decrease_prohib_period: implemented as in Battiti and Protasi */
-
+static
 void decrease_prohib_period()
 {
   if ( prohib_period * 0.9 < prohib_period - 1 ) 
@@ -2599,7 +2609,7 @@ void decrease_prohib_period()
 
 /* allowed: check if moving (adding/deleting) a given constraint 
    is not a tabu move */
-
+static
 short int allowed(int i /* constraint to be checked */)
 {
   if ( last_moved[i]  < it - prohib_period ) {
@@ -2617,7 +2627,7 @@ short int allowed(int i /* constraint to be checked */)
 
 /* in_cur_cut: check whether a given constraint is in the list of
    constraints defining the current cut */
-
+static
 short int in_cur_cut(int i /* constraint to be checked */)
 {
   if ( cur_cut->in_constr_list[i] == OUT ) return(FALSE);
@@ -2625,7 +2635,7 @@ short int in_cur_cut(int i /* constraint to be checked */)
 }
 
 /* tabu_score: define the score of a potential new cut */
-
+static
 double tabu_score(
 		  int *ccoef, /* cut left hand side coefficients */
 		  int crhs, /* cut right hand side */
@@ -2950,7 +2960,7 @@ short int Cgl012Cut::best_neighbour(cut_list *out_cuts /* list of the violated c
 /* memory_reaction: perform the long term reaction by cheching whether the
    current solution has already been visited or the best solution has not 
    been updated for too many iterations */
-
+static
 void memory_reaction()
 {
   int cycle_length;
@@ -3045,7 +3055,7 @@ void Cgl012Cut::restart(short int failure /* flag forcing the restart if some tr
 }
 
 /* free_memory: free the memory used by local search */
-
+static
 void free_memory()
 {
   free_cur_cut();

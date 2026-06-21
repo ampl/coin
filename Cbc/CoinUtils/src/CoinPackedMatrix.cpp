@@ -2208,7 +2208,9 @@ CoinPackedMatrix::CoinPackedMatrix(const CoinPackedMatrix &rhs,
         const CoinBigIndex *oldStart = rhs.start_;
         const int *oldIndex = rhs.index_;
         const int *oldLength = rhs.length_;
+#ifndef NDEBUG
         CoinBigIndex tooSmallCount = 0;
+#endif
         for (int i = 0; i < majorDim_; i++) {
           start_[i] = size;
           for (CoinBigIndex j = oldStart[i];
@@ -2218,7 +2220,9 @@ CoinPackedMatrix::CoinPackedMatrix(const CoinPackedMatrix &rhs,
               element_[size] = value;
               index_[size++] = oldIndex[j];
             } else {
+#ifndef NDEBUG
               tooSmallCount++;
+#endif
             }
           }
           length_[i] = static_cast< int >(size - start_[i]);

@@ -1317,8 +1317,8 @@ bool test16SebastianNowozin(OsiSolverInterface *si)
   int rows_to_delete_arr[] = { 0 };
   si->deleteRows(1, rows_to_delete_arr);
 
-  std::transform(objective, objective + 4, objective,
-    std::bind2nd(std::plus< double >(), 0.15));
+  for (int i = 0; i < 4; ++i )
+    objective[i] += 0.15;
   si->setObjective(objective);
   si->resolve();
   OSIUNITTEST_ASSERT_ERROR(si->isProvenOptimal(), return false, *si, "test16SebastianNowozin second resolve");
@@ -4032,7 +4032,6 @@ void OsiSolverInterfaceCommonUnitTest(const OsiSolverInterface *emptySi,
     int ad = 13579;
     {
       OsiSolverInterface *si1 = exmip1Si->clone();
-      int ad = 13579;
       si1->setApplicationData(&ad);
       OSIUNITTEST_ASSERT_ERROR(*(static_cast< int * >(si1->getApplicationData())) == ad, {}, solverName, "storing application data");
       si2 = si1->clone();

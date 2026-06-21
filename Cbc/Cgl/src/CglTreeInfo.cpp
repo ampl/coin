@@ -3,6 +3,7 @@
 // Corporation and others.  All Rights Reserved.
 // This code is licensed under the terms of the Eclipse Public License (EPL).
 
+#include <climits>
 #include <cstdlib>
 #include <cstdio>
 #include <cmath>
@@ -566,7 +567,7 @@ CglTreeProbingInfo::analyze(const OsiSolverInterface &si, int createSolver,
 #if 1
     for (iRow = 0; iRow < numberRows; iRow++) {
       int numberP1 = 0, numberM1 = 0;
-      int numberTotal = 0;
+      //int numberTotal = 0;
       CoinBigIndex j;
       double upperValue = rowUpper[iRow];
       double lowerValue = rowLower[iRow];
@@ -584,7 +585,7 @@ CglTreeProbingInfo::analyze(const OsiSolverInterface &si, int createSolver,
           break;
         } else {
           iColumn = backward_[iColumn];
-          numberTotal++;
+          //numberTotal++;
         }
         if (fabs(value) != 1.0) {
           good = false;
@@ -597,8 +598,8 @@ CglTreeProbingInfo::analyze(const OsiSolverInterface &si, int createSolver,
           whichM[numberM1++] = iColumn;
         }
       }
-      int iUpper = static_cast< int >(floor(upperValue + 1.0e-5));
-      int iLower = static_cast< int >(ceil(lowerValue - 1.0e-5));
+      int iUpper = upperValue > INT_MAX ? INT_MAX : static_cast<int> (floor(upperValue+1.0e-5));
+      int iLower = lowerValue < INT_MIN ? INT_MIN : static_cast<int> (ceil(lowerValue-1.0e-5));
       int state = 0;
       if (upperValue < 1.0e6) {
         if (iUpper == 1 - numberM1)

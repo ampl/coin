@@ -12,7 +12,7 @@
 
 AC_PREREQ(2.59)
 
-AC_INIT([CoinUtils],[2.11.6],[http://projects.coin-or.org/CoinUtils])
+AC_INIT([CoinUtils],[2.11.13],[http://projects.coin-or.org/CoinUtils])
 
 AC_COPYRIGHT([
 Copyright 2006 International Business Machines and others.
@@ -41,7 +41,7 @@ AC_CANONICAL_BUILD
 # the source root directory contains definition of where to find those
 # externals.  The following macro ensures that those externals are
 # retrieved by svn if they are not there yet.
-AC_COIN_PROJECTDIR_INIT(CoinUtils,14:6:11)
+AC_COIN_PROJECTDIR_INIT(CoinUtils,14:13:11)
 
 # Check if user wants to produce debugging code
 AC_COIN_DEBUG_COMPILE(CoinUtils)

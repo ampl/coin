@@ -289,8 +289,8 @@ void CoinOslFactorization::makeNonSingular(int *sequence, int numberColumns)
   //printf("nr %d nc %d\n",nr,nc);
 #ifndef NDEBUG
   bool goodPass = true;
-#endif
   int numberDone = 0;
+#endif
   for (int i = 0; i < numberRows_; i++) {
     int cRow = (-clink[i].pre) - 1;
     if (cRow == numberRows_ || cRow < 0) {
@@ -303,7 +303,9 @@ void CoinOslFactorization::makeNonSingular(int *sequence, int numberColumns)
       if (nextRow < numberRows_) {
         sequence[i] = nextRow + numberColumns;
         nextRow++;
+#ifndef NDEBUG
         numberDone++;
+#endif
       } else {
 #ifndef NDEBUG
         goodPass = false;

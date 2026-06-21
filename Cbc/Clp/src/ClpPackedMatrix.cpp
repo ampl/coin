@@ -6000,7 +6000,7 @@ int sizeWork = 6 * numberBlocks_;
 work_ = new double[sizeWork];
 ;
 int iBlock;
-int nZero = 0;
+//int nZero = 0;
 for (iBlock = 0; iBlock < numberBlocks_; iBlock++) {
   int start = iBlock * chunk;
   offset_[iBlock] = start;
@@ -6034,8 +6034,8 @@ for (iBlock = 0; iBlock < numberBlocks_; iBlock++) {
       }
     }
     count_[iRow * numberBlocks_ + iBlock] = static_cast< unsigned short >(nFound);
-    if (!nFound)
-      nZero++;
+    //if (!nFound)
+    //  nZero++;
   }
 }
 //double fraction = ((double) nZero)/((double) (numberBlocks_*numberRows_));
@@ -6828,7 +6828,6 @@ ClpPackedMatrix3::ClpPackedMatrix3(ClpSimplex *model, const CoinPackedMatrix *co
   unsigned char *status = model->statusArray();
   const double *lower = model->columnLower();
   const double *upper = model->columnUpper();
-  int nFree = 0; // or superbasic
   int nFreeEls = 0;
   for (iColumn = 0; iColumn < numberColumns; iColumn++) {
     CoinBigIndex start = columnStart[iColumn];
@@ -6842,7 +6841,6 @@ ClpPackedMatrix3::ClpPackedMatrix3(ClpSimplex *model, const CoinPackedMatrix *co
     n -= kZero;
     nels += n;
     if ((lower[iColumn] == -COIN_DBL_MAX && upper[iColumn] == COIN_DBL_MAX) || (status[iColumn] & 3) == 0) {
-      nFree++;
       nFreeEls += n;
       n = 0;
       if ((status[iColumn] & 3) != 0) {
@@ -7769,7 +7767,6 @@ void ClpPackedMatrix3::transposeTimes(const ClpSimplex *model,
       }
     }
   }
-  int numberOld = numberNonZero;
   int nMax = 0;
   for (int iBlock = 0; iBlock < numberBlocks_; iBlock++) {
     // C) Can do two at a time (if so put odd one into start_)
@@ -7917,7 +7914,6 @@ void ClpPackedMatrix3::transposeTimes(const ClpSimplex *model,
         index[numberNonZero++] = iSequence;
       }
     }
-    numberOld = numberNonZero;
   }
   for (int j = numberNonZero; j < nMax; j++)
     array[j] = 0.0;
@@ -8389,7 +8385,7 @@ void ClpPackedMatrix3::transposeTimes2(const ClpSimplex *model,
   }
   // Make sure sequenceOut not eligible
   int sequenceOut = model->sequenceOut();
-  double saveOutDj;
+  double saveOutDj = 0.0;
   if (sequenceOut >= 0) {
     saveOutDj = reducedCost[sequenceOut];
     unsigned char thisStatus = status[sequenceOut] & 7;

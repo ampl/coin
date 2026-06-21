@@ -457,8 +457,8 @@ void CbcOrClpParam::printString() const
 void CoinReadPrintit(const char *input)
 {
   int length = static_cast< int >(strlen(input));
-  assert(length <= 1000);
-  char temp[1001];
+  assert(length <= 10000);
+  char temp[10001];
   int i;
   int n = 0;
   for (i = 0; i < length; i++) {
@@ -3078,9 +3078,17 @@ This is a first try and will hopefully become more sophisticated.");
     p.append("strong");
     p.append("force");
     p.append("simple");
+    p.append("fastish");
+    p.append("lightweight");
+    p.append("moreprinting");
+    p.append("cuts");
+    p.append("cutslight");
     p.setLonghelp(
       "This switches on Orbital branching. \
-Value 'on' just adds orbital, 'strong' tries extra fixing in strong branching.");
+Value 'on' just adds orbital, 'strong' tries extra fixing in strong branching. \
+'cuts' just adds global cuts to break symmetry. \
+'fastish' only computes symmetry at root. \
+'lightweight' is as on where computation seems cheap");
     parameters.push_back(p);
   }
 #endif

@@ -309,7 +309,7 @@ Validator::Validator(double maxFillIn,
         maxFillIn_(maxFillIn),
         maxRatio_(maxRatio),
         minViolation_(minViolation),
-        scale_(scale),
+        //scale_(scale),
         rhsScale_(rhsScale),
         numRejected_(DummyEnd,0)
 { }

@@ -373,8 +373,10 @@ CglZeroHalf::refreshSolver(OsiSolverInterface * solver)
       mnz_ += iType*n;
     }
   }
+#ifndef NDEBUG
   int saveMr=mr_;
   int saveMnz=mnz_;
+#endif
   if (mnz_) {
     mc_ = numberColumns;
     mtbeg_ = new int [mr_];
@@ -503,6 +505,7 @@ CglZeroHalf::generateCpp( FILE * fp)
 }
 #include <vector>
 #include <algorithm>
+static
 //bool operator() (cgl_node * x, cgl_node * y) {
 bool best(cgl_node * x, cgl_node * y) {
   return (x->distanceBack>y->distanceBack);
