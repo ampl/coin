@@ -57,7 +57,7 @@ jobs:
         git submodule update --init --recursive --remote
         mkdir build
         cd build
-        export FC="gfortran-10"
+        export FC="gfortran-15"
         cmake .. -DARCH=64
         make all coin-versions -j2
         make test || true
