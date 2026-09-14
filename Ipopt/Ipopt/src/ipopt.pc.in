@@ -1,0 +1,15 @@
+@COIN_RELOCATABLE_FALSE@prefix=@prefix@
+@COIN_RELOCATABLE_TRUE@prefix=${pcfiledir}/../..
+exec_prefix=@exec_prefix@
+libdir=@libdir@
+includedir=@includedir@/coin-or
+
+Name: @PACKAGE_NAME@
+Description: Interior Point Optimizer
+URL: @PACKAGE_URL@
+Version: @PACKAGE_VERSION@
+Cflags: -I${includedir}
+@COIN_STATIC_BUILD_FALSE@Libs: -L${libdir} -lipopt
+@COIN_STATIC_BUILD_FALSE@Requires.private: @IPOPTLIB_PCFILES@
+@COIN_STATIC_BUILD_TRUE@Libs: -L${libdir} -lipopt @IPOPTLIB_LFLAGS_NOPC@
+@COIN_STATIC_BUILD_TRUE@Requires: @IPOPTLIB_PCFILES@

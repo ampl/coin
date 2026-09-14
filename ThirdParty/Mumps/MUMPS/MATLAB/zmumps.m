@@ -26,7 +26,7 @@ if(id.JOB == -2)
        disp('You are trying to call z/d version on a d/z instance');
        return;
      end
-     zmumpsmex(id.SYM,id.JOB,id.ICNTL,id.CNTL,id.PERM_IN,id.COLSCA,id.ROWSCA,id.RHS,id.VAR_SCHUR,id.INST,id.REDRHS);
+     zmumpsmex(id.SYM,id.JOB,id.ICNTL,id.CNTL,id.PERM_IN,id.COLSCA,id.ROWSCA,id.RHS,id.VAR_SCHUR,id.INST,id.REDRHS,id.KEEP,id.DKEEP);
      id = [];
      return;
 end
@@ -34,10 +34,10 @@ end
 
 if(id.JOB == -1)
      if(id.INST~=-9999)
-         disp('Allready initialized instance');
+         disp('Already initialized instance');
          return;
      end
-     [inform,rinform,sol,inst,schur,redrhs,pivnul_list,sym_perm,uns_perm,icntl,cntl] = zmumpsmex(id.SYM,id.JOB,id.ICNTL,id.CNTL,id.PERM_IN,id.COLSCA,id.ROWSCA,id.RHS,id.VAR_SCHUR,id.INST,id.REDRHS);
+     [inform,rinform,sol,inst,schur,redrhs,pivnul_list,sym_perm,uns_perm,icntl,cntl,colsca_out,rowsca_out,keep_out,dkeep_out] = zmumpsmex(id.SYM,id.JOB,id.ICNTL,id.CNTL,id.PERM_IN,id.COLSCA,id.ROWSCA,id.RHS,id.VAR_SCHUR,id.INST,id.REDRHS,id.KEEP,id.DKEEP);
      id.INFOG = inform;
      id.RINFOG = rinform;
      id.SOL = sol;
@@ -48,8 +48,12 @@ if(id.JOB == -1)
      id.SYM_PERM = sym_perm;
      id.UNS_PERM = uns_perm;
      id.TYPE = arithtype;
-     id.ICNTL=icntl;
-     id.CNTL=cntl;
+     id.ICNTL = icntl;
+     id.CNTL = cntl;
+     id.COLSCA = colsca_out;
+     id.ROWSCA = rowsca_out;
+     id.KEEP = keep_out;
+     id.DKEEP = dkeep_out;
      return;
 end
 
@@ -63,7 +67,7 @@ if(id.TYPE ~= arithtype)
    return;
 end
 
-[inform,rinform,sol,inst,schur,redrhs,pivnul_list,sym_perm,uns_perm,icntl,cntl] = zmumpsmex(id.SYM,id.JOB,id.ICNTL,id.CNTL,id.PERM_IN,id.COLSCA,id.ROWSCA,id.RHS,id.VAR_SCHUR,id.INST,id.REDRHS,mat);
+[inform,rinform,sol,inst,schur,redrhs,pivnul_list,sym_perm,uns_perm,icntl,cntl,colsca_out,rowsca_out,keep_out,dkeep_out] = zmumpsmex(id.SYM,id.JOB,id.ICNTL,id.CNTL,id.PERM_IN,id.COLSCA,id.ROWSCA,id.RHS,id.VAR_SCHUR,id.INST,id.REDRHS,id.KEEP,id.DKEEP,mat);
 id.INFOG = inform;
 id.RINFOG = rinform;
 id.SOL = sol;
@@ -81,3 +85,7 @@ id.SYM_PERM(sym_perm) = [1:size(mat,1)];
 id.UNS_PERM = uns_perm;
 id.ICNTL=icntl;
 id.CNTL=cntl;
+id.COLSCA=colsca_out;
+id.ROWSCA=rowsca_out;
+id.KEEP=keep_out;
+id.DKEEP=dkeep_out;

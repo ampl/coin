@@ -47,14 +47,14 @@ Methods in lib/graph.c:
 /*****************************************************************************
 ******************************************************************************/
 graph_t*
-newGraph(int nvtx, int nedges)
+newGraph(PORD_INT nvtx, PORD_INT nedges)
 { graph_t *G;
-  int     i;
+  PORD_INT     i;
 
   mymalloc(G, 1, graph_t);
-  mymalloc(G->xadj, (nvtx+1), int);
-  mymalloc(G->adjncy, nedges, int);
-  mymalloc(G->vwght, nvtx, int);
+  mymalloc(G->xadj, (nvtx+1), PORD_INT);
+  mymalloc(G->adjncy, nedges, PORD_INT);
+  mymalloc(G->vwght, nvtx, PORD_INT);
 
   G->nvtx = nvtx;
   G->nedges = nedges;
@@ -83,7 +83,7 @@ freeGraph(graph_t *G)
 ******************************************************************************/
 void
 printGraph(graph_t *G)
-{ int count, u, i, istart, istop;
+{ PORD_INT count, u, i, istart, istop;
 
   printf("\n#vertices %d, #edges %d, type %d, totvwght %d\n", G->nvtx,
          G->nedges >> 1, G->type, G->totvwght);
@@ -107,7 +107,7 @@ printGraph(graph_t *G)
 ******************************************************************************/
 void
 randomizeGraph(graph_t *G)
-{ int *xadj, *adjncy, nvtx, u, v, len, j, i, istart, istop;
+{ PORD_INT *xadj, *adjncy, nvtx, u, v, len, j, i, istart, istop;
 
   nvtx = G->nvtx;
   xadj = G->xadj;
@@ -129,10 +129,10 @@ randomizeGraph(graph_t *G)
 /*****************************************************************************
 ******************************************************************************/
 graph_t*
-setupSubgraph(graph_t *G, int *intvertex, int nvint, int *vtxmap)
+setupSubgraph(graph_t *G, PORD_INT *intvertex, PORD_INT nvint, PORD_INT *vtxmap)
 { graph_t *Gsub;
-  int     *xadj, *adjncy, *vwght, *xadjGsub, *adjncyGsub, *vwghtGsub;
-  int     nvtx, nedgesGsub, totvwght, u, v, i, j, jstart, jstop, ptr;
+  PORD_INT     *xadj, *adjncy, *vwght, *xadjGsub, *adjncyGsub, *vwghtGsub;
+  PORD_INT     nvtx, nedgesGsub, totvwght, u, v, i, j, jstart, jstop, ptr;
 
   nvtx = G->nvtx;
   xadj = G->xadj;
@@ -194,8 +194,8 @@ setupSubgraph(graph_t *G, int *intvertex, int nvint, int *vtxmap)
 graph_t*
 setupGraphFromMtx(inputMtx_t *A)
 { graph_t *G;
-  int     *xnza, *nzasub, *xadj, *adjncy;
-  int     neqs, nelem, nvtx, k, h1, h2, j, i, istart, istop;
+  PORD_INT     *xnza, *nzasub, *xadj, *adjncy;
+  PORD_INT     neqs, nelem, nvtx, k, h1, h2, j, i, istart, istop;
 
   neqs = A->neqs;
   nelem = A->nelem;
@@ -255,9 +255,9 @@ setupGraphFromMtx(inputMtx_t *A)
 /*****************************************************************************
 ******************************************************************************/
 graph_t*
-setupGridGraph(int dimX, int dimY, int type)
+setupGridGraph(PORD_INT dimX, PORD_INT dimY, PORD_INT type)
 { graph_t *G;
-  int     *xadj, *adjncy, nvtx, nedges, knz, k;
+  PORD_INT     *xadj, *adjncy, nvtx, nedges, knz, k;
 
   /* ---------------
      initializations
@@ -340,10 +340,10 @@ setupGridGraph(int dimX, int dimY, int type)
 
 /*****************************************************************************
 ******************************************************************************/
-int
+PORD_INT
 connectedComponents(graph_t *G)
-{ int *xadj, *adjncy, *marker, *queue;
-  int nvtx, u, v, w, qhead, qtail, comp, i, istart, istop;
+{ PORD_INT *xadj, *adjncy, *marker, *queue;
+  PORD_INT nvtx, u, v, w, qhead, qtail, comp, i, istart, istop;
 
   nvtx = G->nvtx;
   xadj = G->xadj;
@@ -352,8 +352,8 @@ connectedComponents(graph_t *G)
   /* ------------------------
      allocate working storage
      ------------------------ */ 
-  mymalloc(marker, nvtx, int);
-  mymalloc(queue, nvtx, int);
+  mymalloc(marker, nvtx, PORD_INT);
+  mymalloc(queue, nvtx, PORD_INT);
 
   /* ---------------
      initializations
@@ -396,10 +396,10 @@ connectedComponents(graph_t *G)
 /*****************************************************************************
 private function of compressGraph
 ******************************************************************************/
-static int
-indNodes(graph_t *G, int *vtxmap)
-{ int *xadj, *adjncy, *deg, *checksum, *tmp;
-  int nvtx, cnvtx, u, v, i, istart, istop, j, jstart, jstop;
+static PORD_INT
+indNodes(graph_t *G, PORD_INT *vtxmap)
+{ PORD_INT *xadj, *adjncy, *deg, *checksum, *tmp;
+  PORD_INT nvtx, cnvtx, u, v, i, istart, istop, j, jstart, jstop;
 
   nvtx = G->nvtx;
   xadj = G->xadj;
@@ -408,9 +408,9 @@ indNodes(graph_t *G, int *vtxmap)
   /* -------------------------
      set up the working arrays
      ------------------------- */
-  mymalloc(deg, nvtx, int);
-  mymalloc(checksum, nvtx, int);
-  mymalloc(tmp, nvtx, int);
+  mymalloc(deg, nvtx, PORD_INT);
+  mymalloc(checksum, nvtx, PORD_INT);
+  mymalloc(tmp, nvtx, PORD_INT);
 
   /* -------------------------------------------------
      compute for each vertex u its degree and checksum
@@ -439,8 +439,8 @@ indNodes(graph_t *G, int *vtxmap)
         tmp[adjncy[i]] = u;
 
         /* scan adjacency list of vertex u for indistinguishable vertices */
-        for (i = istart; i < istop; i++)
-         { v = adjncy[i];
+      for (i = istart; i < istop; i++)
+       { v = adjncy[i];
            if ((v > u) && (checksum[v] == checksum[u]) && (deg[v] == deg[u])
               && (vtxmap[v] == v))
             { jstart = xadj[v];
@@ -453,7 +453,7 @@ indNodes(graph_t *G, int *vtxmap)
               cnvtx--;
 FAILURE:      ;
             }
-         }
+       }
     }
 
   /* ----------------------
@@ -467,10 +467,10 @@ FAILURE:      ;
 /*****************************************************************************
 ******************************************************************************/
 graph_t*
-compressGraph(graph_t* G, int* vtxmap)
+compressGraph(graph_t* G, PORD_INT* vtxmap)
 { graph_t *Gc;
-  int     *xadj, *adjncy, *vwght, *xadjGc, *adjncyGc, *vwghtGc, *perm;
-  int     nvtx, nvtxGc, nedgesGc, u, v, i, istart, istop;
+  PORD_INT     *xadj, *adjncy, *vwght, *xadjGc, *adjncyGc, *vwghtGc, *perm;
+  PORD_INT     nvtx, nvtxGc, nedgesGc, u, v, i, istart, istop;
 
   nvtx = G->nvtx;
   xadj = G->xadj;
@@ -484,7 +484,7 @@ compressGraph(graph_t* G, int* vtxmap)
    * printf("indNodes(G, vtxmap) = %d",indNodes(G, vtxmap)); */
   if ((nvtxGc = indNodes(G, vtxmap)) > COMPRESS_FRACTION * nvtx)
     return(NULL);
-  mymalloc(perm, nvtx, int);
+  mymalloc(perm, nvtx, PORD_INT);
 
   /* -----------------------------------
      count edges of the compressed graph

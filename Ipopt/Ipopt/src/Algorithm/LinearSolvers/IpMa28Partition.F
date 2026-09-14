@@ -14,13 +14,11 @@ C
 C
 C*******************************************************************************
 C
-C    $Id$
-C
 C-------------------------------------------------------------------------------
 C                                 Title
 C-------------------------------------------------------------------------------
 C
-CT    Interface to MA28 for detecting degenerate constraints
+CT    Interface to MA28 double precision for detecting degenerate constraints
 C
 C-------------------------------------------------------------------------------
 C                          Programm description
@@ -73,7 +71,7 @@ CP   IW        W    INT    integer work space
 CP   LRW       I    INT    length of RW (Output for TASK = 0)
 CP   RW        W    DP     double precision work space
 CP   IERR      O    INT    =0: everything OK
-CP                         >0: Error occured; abort optimization
+CP                         >0: Error occurred; abort optimization
 CP                         <0: Warning; message to user
 C
 C*******************************************************************************

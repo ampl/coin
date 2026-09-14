@@ -12,3 +12,13 @@ package by Cleve Ashcraft.
 
 We are grateful to Juergen Schulze for letting us distribute PORD.
 
+SPACE-1.0 (which includes PORD) is in the public domain, see
+https://web.archive.org/web/20140426002151/http://www2.cs.uni-paderborn.de/cs/ag-monien/PERSONAL/SCHLUNZ/vrp.html 
+holding a copy of the original web page from Paderborn University
+(former web page not anymore available: http://www2.cs.uni-paderborn.de/cs/ag-monien/PERSONAL/SCHLUNZ/vrp.html) 
+in which it is indicated
+
+"The fill-reducing ordering algorithm has been integrated in a software package called SPACE (SPArse Cholesky Elimination). The package not only provides an easy to use interface to the ordering algorithm, it also offers functions for the symbolical/numerical factorization steps and for the solution of the triangular systems. The factorizations and solves may be computed in serial or in parallel using MPI. In all cases, the important computational kernels are based on BLAS-3 like operations. Although all functions are completely written in C code, the design of the library follows object-oriented principles; there are objects and methods that can be applied to the objects (i.e. object creation, object manipulation).
+
+The SPACE library is totally within the public domain; there are absolutely no licensing restrictions.
+

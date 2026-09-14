@@ -1,122 +1,164 @@
 C
-C  This file is part of MUMPS 4.10.0, built on Tue May 10 12:56:32 UTC 2011
+C  This file is part of MUMPS 5.9.1, released
+C  on Mon Jul 20 09:00:43 UTC 2026
 C
 C
-C  This version of MUMPS is provided to you free of charge. It is public
-C  domain, based on public domain software developed during the Esprit IV
-C  European project PARASOL (1996-1999). Since this first public domain
-C  version in 1999, research and developments have been supported by the
-C  following institutions: CERFACS, CNRS, ENS Lyon, INPT(ENSEEIHT)-IRIT,
-C  INRIA, and University of Bordeaux.
+C  Copyright 1991-2026 CERFACS, CNRS, ENS Lyon, INP Toulouse, Inria,
+C  Mumps Technologies, University of Bordeaux.
 C
-C  The MUMPS team at the moment of releasing this version includes
-C  Patrick Amestoy, Maurice Bremond, Alfredo Buttari, Abdou Guermouche,
-C  Guillaume Joslin, Jean-Yves L'Excellent, Francois-Henry Rouet, Bora
-C  Ucar and Clement Weisbecker.
+C  This version of MUMPS is provided to you free of charge. It is
+C  released under the CeCILL-C license 
+C  (see doc/CeCILL-C_V1-en.txt, doc/CeCILL-C_V1-fr.txt, and
+C  https://cecill.info/licences/Licence_CeCILL-C_V1-en.html)
 C
-C  We are also grateful to Emmanuel Agullo, Caroline Bousquet, Indranil
-C  Chowdhury, Philippe Combes, Christophe Daniel, Iain Duff, Vincent Espirat,
-C  Aurelia Fevre, Jacko Koster, Stephane Pralet, Chiara Puglisi, Gregoire
-C  Richard, Tzvetomila Slavova, Miroslav Tuma and Christophe Voemel who
-C  have been contributing to this project.
+C -----------------------------------------
+C  This file contains the definition
+C  of all tags.
+C -----------------------------------------
 C
-C  Up-to-date copies of the MUMPS package can be obtained
-C  from the Web pages:
-C  http://mumps.enseeiht.fr/  or  http://graal.ens-lyon.fr/MUMPS
-C
-C
-C   THIS MATERIAL IS PROVIDED AS IS, WITH ABSOLUTELY NO WARRANTY
-C   EXPRESSED OR IMPLIED. ANY USE IS AT YOUR OWN RISK.
-C
-C
-C  User documentation of any code that uses this software can
-C  include this complete notice. You can acknowledge (using
-C  references [1] and [2]) the contribution of this package
-C  in any scientific publication dependent upon the use of the
-C  package. You shall use reasonable endeavours to notify
-C  the authors of the package of this publication.
-C
-C   [1] P. R. Amestoy, I. S. Duff, J. Koster and  J.-Y. L'Excellent,
-C   A fully asynchronous multifrontal solver using distributed dynamic
-C   scheduling, SIAM Journal of Matrix Analysis and Applications,
-C   Vol 23, No 1, pp 15-41 (2001).
-C
-C   [2] P. R. Amestoy and A. Guermouche and J.-Y. L'Excellent and
-C   S. Pralet, Hybrid scheduling for the parallel solution of linear
-C   systems. Parallel Computing Vol 32 (2), pp 136-156 (2006).
-C
+C ---------------
+C  Tags for L0OMP 
+C ---------------
+      INTEGER F_IPOOLAFTER, F_PHYS_L0
+      PARAMETER ( F_IPOOLAFTER = 60, F_PHYS_L0 = 61 )
+C -----------------
+C  Tag for grouping
+C -----------------
+      INTEGER GROUPING
+      PARAMETER ( GROUPING = 50 )
+C ----------------------------------------------
+C  Tag for LMAT distribution (analysis by block)
+C      and for gathering graph
+C ----------------------------------------------
+      INTEGER LMATDIST, GATHERG_NZG, GATHERG_NB, 
+     &        GATHERG_FIRST, GATHERG_IPE, GATHERG_ADJ, 
+     &        CENT_AFTER_PARAORD
+      PARAMETER ( LMATDIST = 43, GATHERG_NZG=44, GATHERG_NB=45,
+     &        GATHERG_FIRST=46, GATHERG_IPE=47, GATHERG_ADJ= 48, 
+     &        CENT_AFTER_PARAORD=49)
+C -----------------------------------------
+C  Tag for arrowheads distribution
+C -----------------------------------------
       INTEGER ARROWHEAD, ARR_INT, ARR_REAL, ELT_INT, ELT_REAL
       PARAMETER ( ARROWHEAD = 20,
-     *            ARR_INT = 29,
-     *            ARR_REAL = 30,
-     *            ELT_INT = 31,
-     *            ELT_REAL = 32 )
+     &            ARR_INT = 29,
+     &            ARR_REAL = 30,
+     &            ELT_INT = 31,
+     &            ELT_REAL = 32 )
+C ----------------------------------------------------
+C   Tags for collecting distributed integer info
+C   for analysis in case of initial distributed matrix
+C ----------------------------------------------------
       INTEGER COLLECT_NZ, COLLECT_IRN, COLLECT_JCN
       PARAMETER( COLLECT_NZ  = 35,
-     *           COLLECT_IRN = 36,
-     *           COLLECT_JCN = 37 )
+     &           COLLECT_IRN = 36,
+     &           COLLECT_JCN = 37 )
+C -----------------------------------------
+C   Tags for factorization
+C -----------------------------------------
       INTEGER RACINE,
-     *        NOEUD,
-     *        TERREUR,
-     *        MAITRE_DESC_BANDE,
-     *        MAITRE2,
-     *        BLOC_FACTO,
-     *        CONTRIB_TYPE2,
-     *        MAPLIG,
-     *        FACTOR
+     &        NOEUD,
+     &        TERREUR,
+     &        MAITRE_DESC_BANDE,
+     &        MAITRE2,
+     &        BLOC_FACTO_RELAY,
+     &        CONTRIB_TYPE2,
+     &        MAPLIG,
+     &        FACTOR,
+     &        BLOC_FACTO
       PARAMETER ( RACINE            = 2,
-     *            NOEUD             = 3,
-     *            MAITRE_DESC_BANDE = 4,
-     *            MAITRE2           = 5,
-     *            BLOC_FACTO        = 6,
-     *            CONTRIB_TYPE2     = 7,
-     *            MAPLIG            = 8,
-     *            FACTOR            = 9,
-     *            TERREUR           = 99 )
+     &            NOEUD             = 3,
+     &            MAITRE_DESC_BANDE = 4,
+     &            MAITRE2           = 5,
+     &            BLOC_FACTO_RELAY  = 6,
+     &            CONTRIB_TYPE2     = 7,
+     &            MAPLIG            = 8,
+     &            FACTOR            = 9,
+     &            BLOC_FACTO        = 10,
+     &            TERREUR           = 99 )
+C -----------------------------------------
+C   Tags for assembly of root (in facto)
+C -----------------------------------------
       INTEGER ROOT_NELIM_INDICES,
-     *        ROOT_CONT_STATIC,
-     *        ROOT_NON_ELIM_CB,
-     *        ROOT_2SLAVE,
-     *        ROOT_2SON
+     &        ROOT_CONT_STATIC,
+     &        ROOT_NON_ELIM_CB,
+     &        ROOT_2SLAVE,
+     &        ROOT_2SON
        PARAMETER( ROOT_NELIM_INDICES = 15,
-     *        ROOT_CONT_STATIC       = 16,
-     *        ROOT_NON_ELIM_CB       = 17,
-     *        ROOT_2SLAVE            = 18,
-     *        ROOT_2SON              = 19 )
+     &        ROOT_CONT_STATIC       = 16,
+     &        ROOT_NON_ELIM_CB       = 17,
+     &        ROOT_2SLAVE            = 18,
+     &        ROOT_2SON              = 19 )
+C -----------------------------------------
+C   Tags for solve
+C -----------------------------------------
       INTEGER RACINE_SOLVE,
-     *        ContVec,
-     *        Master2Slave,
-     *        GatherSol,
-     *        ScatterRhsI,
-     *        ScatterRhsR
-      PARAMETER( RACINE_SOLVE = 10,
-     *           ContVec      = 11,
-     *           Master2Slave = 12,
-     *           GatherSol    = 13,
-     *           ScatterRhsI  = 54,
-     *           ScatterRhsR  = 55)
-      INTEGER FEUILLE,
-     *        BACKSLV_UPDATERHS,
-     *        BACKSLV_MASTER2SLAVE
-      PARAMETER( FEUILLE = 21,
-     *           BACKSLV_UPDATERHS = 22,
-     *           BACKSLV_MASTER2SLAVE = 23 )
+     &        ContVec,
+     &        Master2Slave,
+     &        GatherSol,
+     &        ScatterRhsI,
+     &        ScatterRhsR,
+     &        DistRhsI,
+     &        DistRhsR,
+     &        DistSolR
+      PARAMETER( RACINE_SOLVE = 14,
+     &           ContVec      = 11,
+     &           Master2Slave = 12,
+     &           GatherSol    = 13,
+     &           ScatterRhsI  = 54,
+     &           ScatterRhsR  = 55,
+     &           DistRhsI     = 51,
+     &           DistRhsR     = 52,
+     &           DistSolR     = 58)
+      INTEGER, PARAMETER :: TAG_WAKEUP = 53
+      INTEGER, PARAMETER :: DIST_RHS_INT    = 56
+      INTEGER, PARAMETER :: DIST_RHS_SCALAR = 57
+C -----------------------------------------
+C   Tags for backsolve
+C -----------------------------------------
+      INTEGER TERMBWD,
+     &        BACKSLV_UPDATERHS,
+     &        BACKSLV_MASTER2SLAVE
+      PARAMETER( TERMBWD = 21,
+     &           BACKSLV_UPDATERHS = 22,
+     &           BACKSLV_MASTER2SLAVE = 23 )
+C ------------------------
+C   Tag for symmetrization
+C ------------------------
       INTEGER SYMMETRIZE
       PARAMETER ( SYMMETRIZE = 24 )
+C ----------------------------
+C   Tags specific to symmetric
+C ----------------------------
       INTEGER BLOC_FACTO_SYM,
-     *        BLOC_FACTO_SYM_SLAVE, END_NIV2_LDLT,
-     *        END_NIV2
+     &        BLOC_FACTO_SYM_SLAVE, END_NIV2_LDLT,
+     &        END_NIV2
       PARAMETER ( BLOC_FACTO_SYM = 25,
-     *            BLOC_FACTO_SYM_SLAVE = 26, 
-     *            END_NIV2_LDLT = 33,
-     *            END_NIV2 = 34 )
+     &            BLOC_FACTO_SYM_SLAVE = 26, 
+     &            END_NIV2_LDLT = 33,
+     &            END_NIV2 = 34 )
+C -------------------------------------
+C   Tags specific to dynamic scheduling
+C -------------------------------------
       INTEGER UPDATE_LOAD
       PARAMETER ( UPDATE_LOAD = 27 )
+C   To send deficientcy
       INTEGER DEFIC_TAG
       PARAMETER(  DEFIC_TAG = 28 )
+C   To send Schur
       INTEGER TAG_SCHUR
       PARAMETER( TAG_SCHUR = 38 )
+C   To clean up IRECV
       INTEGER TAG_DUMMY
       PARAMETER( TAG_DUMMY = 39 )
+C   To send zero pivot indices
       INTEGER ZERO_PIV
       PARAMETER( ZERO_PIV = 40 )
+C   To send Singular values (if defined(try_null_space))
+      INTEGER TAG_ROOT1, TAG_ROOT2
+      PARAMETER( TAG_ROOT1 = 41 )
+      PARAMETER( TAG_ROOT2 = 42 )
+C
+C   Note: tags 100-160 are reserved for
+C         the parallel scaling routine
+C

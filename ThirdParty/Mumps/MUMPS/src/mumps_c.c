@@ -1,55 +1,18 @@
 /*
  *
- *  This file is part of MUMPS 4.10.0, built on Tue May 10 12:56:32 UTC 2011
+ *  This file is part of MUMPS 5.9.1, released
+ *  on Mon Jul 20 09:00:43 UTC 2026
  *
  *
- *  This version of MUMPS is provided to you free of charge. It is public
- *  domain, based on public domain software developed during the Esprit IV
- *  European project PARASOL (1996-1999). Since this first public domain
- *  version in 1999, research and developments have been supported by the
- *  following institutions: CERFACS, CNRS, ENS Lyon, INPT(ENSEEIHT)-IRIT,
- *  INRIA, and University of Bordeaux.
+ *  Copyright 1991-2026 CERFACS, CNRS, ENS Lyon, INP Toulouse, Inria,
+ *  Mumps Technologies, University of Bordeaux.
  *
- *  The MUMPS team at the moment of releasing this version includes
- *  Patrick Amestoy, Maurice Bremond, Alfredo Buttari, Abdou Guermouche,
- *  Guillaume Joslin, Jean-Yves L'Excellent, Francois-Henry Rouet, Bora
- *  Ucar and Clement Weisbecker.
- *
- *  We are also grateful to Emmanuel Agullo, Caroline Bousquet, Indranil
- *  Chowdhury, Philippe Combes, Christophe Daniel, Iain Duff, Vincent Espirat,
- *  Aurelia Fevre, Jacko Koster, Stephane Pralet, Chiara Puglisi, Gregoire
- *  Richard, Tzvetomila Slavova, Miroslav Tuma and Christophe Voemel who
- *  have been contributing to this project.
- *
- *  Up-to-date copies of the MUMPS package can be obtained
- *  from the Web pages:
- *  http://mumps.enseeiht.fr/  or  http://graal.ens-lyon.fr/MUMPS
- *
- *
- *   THIS MATERIAL IS PROVIDED AS IS, WITH ABSOLUTELY NO WARRANTY
- *   EXPRESSED OR IMPLIED. ANY USE IS AT YOUR OWN RISK.
- *
- *
- *  User documentation of any code that uses this software can
- *  include this complete notice. You can acknowledge (using
- *  references [1] and [2]) the contribution of this package
- *  in any scientific publication dependent upon the use of the
- *  package. You shall use reasonable endeavours to notify
- *  the authors of the package of this publication.
- *
- *   [1] P. R. Amestoy, I. S. Duff, J. Koster and  J.-Y. L'Excellent,
- *   A fully asynchronous multifrontal solver using distributed dynamic
- *   scheduling, SIAM Journal of Matrix Analysis and Applications,
- *   Vol 23, No 1, pp 15-41 (2001).
- *
- *   [2] P. R. Amestoy and A. Guermouche and J.-Y. L'Excellent and
- *   S. Pralet, Hybrid scheduling for the parallel solution of linear
- *   systems. Parallel Computing Vol 32 (2), pp 136-156 (2006).
+ *  This version of MUMPS is provided to you free of charge. It is
+ *  released under the CeCILL-C license 
+ *  (see doc/CeCILL-C_V1-en.txt, doc/CeCILL-C_V1-fr.txt, and
+ *  https://cecill.info/licences/Licence_CeCILL-C_V1-en.html)
  *
  */
-/* Written by JYL, march 2002 */
-/* This file groups so far all C functions and symbols that vary with the
-   arithmetic */
 /* Header used for debug purpose only
 #include <stdio.h>
 */
@@ -72,8 +35,8 @@
 # define MUMPS_REAL    ZMUMPS_REAL
 # define MUMPS_COMPLEX ZMUMPS_COMPLEX
 #endif
-/**
- * F_SYM_ARITH is the same as F_SYMBOL (see mumps_commn.h) for the symbols
+/*
+ * F_SYM_ARITH is the same as F_SYMBOL (see mumps_common.h) for the symbols
  * that depend on the arithmetic.
  * Example: For CMUMPS_XXX, first define
  *   #define CMUMPS_XXX F_SYM_ARITH(xxx,XXX) and then use
@@ -128,9 +91,14 @@ MUMPS_F77( MUMPS_INT      *job,
            MUMPS_INT      *par,
            MUMPS_INT      *comm_fortran,
            MUMPS_INT      *n,
+           MUMPS_INT      *nblk,
            MUMPS_INT      *icntl,
            MUMPS_REAL     *cntl,
+           MUMPS_INT      *keep,
+           MUMPS_REAL     *dkeep,
+           MUMPS_INT8     *keep8,
            MUMPS_INT      *nz,
+           MUMPS_INT8     *nnz,
            MUMPS_INT      *irn,
            MUMPS_INT      *irn_avail,
            MUMPS_INT      *jcn,
@@ -138,6 +106,7 @@ MUMPS_F77( MUMPS_INT      *job,
            MUMPS_COMPLEX  *a,
            MUMPS_INT      *a_avail,
            MUMPS_INT      *nz_loc,
+           MUMPS_INT8     *nnz_loc,
            MUMPS_INT      *irn_loc,
            MUMPS_INT      *irn_loc_avail,
            MUMPS_INT      *jcn_loc,
@@ -151,8 +120,18 @@ MUMPS_F77( MUMPS_INT      *job,
            MUMPS_INT      *eltvar_avail,
            MUMPS_COMPLEX  *a_elt,
            MUMPS_INT      *a_elt_avail,
+           MUMPS_INT      *blkptr,
+           MUMPS_INT      *blkptr_avail,
+           MUMPS_INT      *blkvar,
+           MUMPS_INT      *blkvar_avail,
            MUMPS_INT      *perm_in,
            MUMPS_INT      *perm_in_avail,
+           MUMPS_INT      *rowind,
+           MUMPS_INT      *rowind_avail,
+           MUMPS_INT      *colind,
+           MUMPS_INT      *colind_avail,
+           MUMPS_COMPLEX  *pivots,
+           MUMPS_INT      *pivots_avail,
            MUMPS_COMPLEX  *rhs,
            MUMPS_INT      *rhs_avail,
            MUMPS_COMPLEX  *redrhs,
@@ -161,7 +140,7 @@ MUMPS_F77( MUMPS_INT      *job,
            MUMPS_REAL     *rinfo,
            MUMPS_INT      *infog,
            MUMPS_REAL     *rinfog,
-           MUMPS_INT      *deficiency,
+           MUMPS_INT      *nb_singular_values,
            MUMPS_INT      *lwk_user,
            MUMPS_INT      *size_schur,
            MUMPS_INT      *listvar_schur,
@@ -182,14 +161,21 @@ MUMPS_F77( MUMPS_INT      *job,
            MUMPS_INT      *rhs_sparse_avail,
            MUMPS_COMPLEX  *sol_loc,
            MUMPS_INT      *sol_loc_avail,
+           MUMPS_COMPLEX  *rhs_loc,
+           MUMPS_INT      *rhs_loc_avail,
            MUMPS_INT      *irhs_sparse,
            MUMPS_INT      *irhs_sparse_avail,
            MUMPS_INT      *irhs_ptr,
            MUMPS_INT      *irhs_ptr_avail,
            MUMPS_INT      *isol_loc,
            MUMPS_INT      *isol_loc_avail,
+           MUMPS_INT      *irhs_loc,
+           MUMPS_INT      *irhs_loc_avail,
            MUMPS_INT      *nz_rhs,
            MUMPS_INT      *lsol_loc,
+           MUMPS_INT      *nloc_rhs,
+           MUMPS_INT      *lrhs_loc,
+           MUMPS_INT      *nsol_loc,
            MUMPS_INT      *schur_mloc,
            MUMPS_INT      *schur_nloc,
            MUMPS_INT      *schur_lld,
@@ -197,39 +183,74 @@ MUMPS_F77( MUMPS_INT      *job,
            MUMPS_INT      *schur_nblock,
            MUMPS_INT      *schur_nprow,
            MUMPS_INT      *schur_npcol,
+           MUMPS_INT      *ld_rhsintr,
            MUMPS_INT      *ooc_tmpdir,
            MUMPS_INT      *ooc_prefix,
            MUMPS_INT      *write_problem,
+#if ! defined(NO_SAVE_RESTORE)
+           MUMPS_INT      *save_dir,
+           MUMPS_INT      *save_prefix,
+#endif
            MUMPS_INT      *ooc_tmpdirlen,
            MUMPS_INT      *ooc_prefixlen,
-           MUMPS_INT      *write_problemlen
+           MUMPS_INT      *write_problemlen,
+#if ! defined(NO_SAVE_RESTORE)
+           MUMPS_INT      *save_dirlen,
+           MUMPS_INT      *save_prefixlen,
+#endif
+           MUMPS_INT      *metis_options
            );
-#ifdef return_scaling
 /*
- * Those two are static. They are passed inside cmumps_f77 but
- * might also be changed on return by MUMPS_AFFECT_COLSCA/ROWSCA
+ * COLSCA and ROWSCA are static. They are passed inside cmumps_f77 but
+ * might also be changed on return by MUMPS_ASSIGN_COLSCA/ROWSCA
  * NB: They are put here because they use MUMPS_REAL and need thus
  * one symbol per arithmetic.
+ * COLSCA_LOC and ROWSCA_LOC are also static. However, they are built
+ * at the end of the factorization and are always out arguments, they
+ * cannot be input.
+ * RHSINTR is the intermediate right-hand side. It is always allocated
+ * by MUMPS, although its content can be set or modified by the user.
+ * But the address of RHSINTR is out.
  */
 #if MUMPS_ARITH == MUMPS_ARITH_s
 # define MUMPS_COLSCA_STATIC SMUMPS_COLSCA_STATIC
 # define MUMPS_ROWSCA_STATIC SMUMPS_ROWSCA_STATIC
+# define MUMPS_COLSCA_LOC_STATIC SMUMPS_COLSCA_LOC_STATIC
+# define MUMPS_ROWSCA_LOC_STATIC SMUMPS_ROWSCA_LOC_STATIC
+# define MUMPS_RHSINTR_STATIC SMUMPS_RHSINTR_STATIC
+# define MUMPS_SINGULAR_VALUES_STATIC SMUMPS_SINGULAR_VALUES_STATIC
 #elif MUMPS_ARITH == MUMPS_ARITH_d
-# define MUMPS_COLSCA_STATIC SMUMPS_COLSCA_STATIC
-# define MUMPS_ROWSCA_STATIC SMUMPS_ROWSCA_STATIC
+# define MUMPS_COLSCA_STATIC DMUMPS_COLSCA_STATIC
+# define MUMPS_ROWSCA_STATIC DMUMPS_ROWSCA_STATIC
+# define MUMPS_COLSCA_LOC_STATIC DMUMPS_COLSCA_LOC_STATIC
+# define MUMPS_ROWSCA_LOC_STATIC DMUMPS_ROWSCA_LOC_STATIC
+# define MUMPS_RHSINTR_STATIC DMUMPS_RHSINTR_STATIC
+# define MUMPS_SINGULAR_VALUES_STATIC DMUMPS_SINGULAR_VALUES_STATIC
 #elif MUMPS_ARITH == MUMPS_ARITH_c
 # define MUMPS_COLSCA_STATIC CMUMPS_COLSCA_STATIC
 # define MUMPS_ROWSCA_STATIC CMUMPS_ROWSCA_STATIC
+# define MUMPS_COLSCA_LOC_STATIC CMUMPS_COLSCA_LOC_STATIC
+# define MUMPS_ROWSCA_LOC_STATIC CMUMPS_ROWSCA_LOC_STATIC
+# define MUMPS_RHSINTR_STATIC CMUMPS_RHSINTR_STATIC
+# define MUMPS_SINGULAR_VALUES_STATIC CMUMPS_SINGULAR_VALUES_STATIC
 #elif MUMPS_ARITH == MUMPS_ARITH_z
 # define MUMPS_COLSCA_STATIC ZMUMPS_COLSCA_STATIC
 # define MUMPS_ROWSCA_STATIC ZMUMPS_ROWSCA_STATIC
+# define MUMPS_COLSCA_LOC_STATIC ZMUMPS_COLSCA_LOC_STATIC
+# define MUMPS_ROWSCA_LOC_STATIC ZMUMPS_ROWSCA_LOC_STATIC
+# define MUMPS_RHSINTR_STATIC ZMUMPS_RHSINTR_STATIC
+# define MUMPS_SINGULAR_VALUES_STATIC ZMUMPS_SINGULAR_VALUES_STATIC
 #endif
 static MUMPS_REAL * MUMPS_COLSCA_STATIC;
 static MUMPS_REAL * MUMPS_ROWSCA_STATIC;
-#define MUMPS_AFFECT_COLSCA \
-    F_SYM_ARITH(affect_colsca,AFFECT_COLSCA)
+static MUMPS_REAL * MUMPS_COLSCA_LOC_STATIC;
+static MUMPS_REAL * MUMPS_ROWSCA_LOC_STATIC;
+static MUMPS_COMPLEX * MUMPS_RHSINTR_STATIC;
+static MUMPS_REAL * MUMPS_SINGULAR_VALUES_STATIC;
+#define MUMPS_ASSIGN_COLSCA \
+    F_SYM_ARITH(assign_colsca,ASSIGN_COLSCA)
 void MUMPS_CALL
-MUMPS_AFFECT_COLSCA(MUMPS_REAL * f77colsca)
+MUMPS_ASSIGN_COLSCA(MUMPS_REAL * f77colsca)
 {
   MUMPS_COLSCA_STATIC = f77colsca;
 }
@@ -240,10 +261,10 @@ MUMPS_NULLIFY_C_COLSCA()
 {
   MUMPS_COLSCA_STATIC = 0;
 }
-#define MUMPS_AFFECT_ROWSCA \
-    F_SYM_ARITH(affect_rowsca,AFFECT_ROWSCA)
+#define MUMPS_ASSIGN_ROWSCA \
+    F_SYM_ARITH(assign_rowsca,ASSIGN_ROWSCA)
 void MUMPS_CALL
-MUMPS_AFFECT_ROWSCA(MUMPS_REAL * f77rowsca)
+MUMPS_ASSIGN_ROWSCA(MUMPS_REAL * f77rowsca)
 {
   MUMPS_ROWSCA_STATIC = f77rowsca;
 }
@@ -254,7 +275,80 @@ MUMPS_NULLIFY_C_ROWSCA()
 {
   MUMPS_ROWSCA_STATIC = 0;
 }
-#endif /* return_scaling */
+#define MUMPS_ASSIGN_COLSCA_LOC \
+    F_SYM_ARITH(assign_colsca_loc,ASSIGN_COLSCA_LOC)
+void MUMPS_CALL
+MUMPS_ASSIGN_COLSCA_LOC(MUMPS_REAL * f77colsca_loc)
+{
+  MUMPS_COLSCA_LOC_STATIC = f77colsca_loc;
+}
+#define MUMPS_NULLIFY_C_COLSCA_LOC \
+    F_SYM_ARITH(nullify_c_colsca_loc,NULLIFY_C_COLSCA_LOC)
+void MUMPS_CALL
+MUMPS_NULLIFY_C_COLSCA_LOC()
+{
+  MUMPS_COLSCA_LOC_STATIC = 0;
+}
+#define MUMPS_ASSIGN_ROWSCA_LOC \
+    F_SYM_ARITH(assign_rowsca_loc,ASSIGN_ROWSCA_LOC)
+void MUMPS_CALL
+MUMPS_ASSIGN_ROWSCA_LOC(MUMPS_REAL * f77rowsca_loc)
+{
+  MUMPS_ROWSCA_LOC_STATIC = f77rowsca_loc;
+}
+#define MUMPS_NULLIFY_C_ROWSCA_LOC \
+    F_SYM_ARITH(nullify_c_rowsca_loc,NULLIFY_C_ROWSCA_LOC)
+void MUMPS_CALL
+MUMPS_NULLIFY_C_ROWSCA_LOC()
+{
+  MUMPS_ROWSCA_LOC_STATIC = 0;
+}
+#define MUMPS_ASSIGN_RHSINTR \
+    F_SYM_ARITH(assign_rhsintr,ASSIGN_RHSINTR)
+void MUMPS_CALL
+MUMPS_ASSIGN_RHSINTR(MUMPS_COMPLEX * f77rhsintr)
+{
+  MUMPS_RHSINTR_STATIC = f77rhsintr;
+}
+#define MUMPS_NULLIFY_C_RHSINTR \
+    F_SYM_ARITH(nullify_c_rhsintr,NULLIFY_C_RHSINTR)
+void MUMPS_CALL
+MUMPS_NULLIFY_C_RHSINTR()
+{
+  MUMPS_RHSINTR_STATIC = 0;
+}
+#define MUMPS_ASSIGN_SINGULAR_VALUES \
+    F_SYM_ARITH(assign_singular_values,ASSIGN_SINGULAR_VALUES)
+void MUMPS_CALL
+MUMPS_ASSIGN_SINGULAR_VALUES(MUMPS_REAL * f77singular_values)
+{
+  MUMPS_SINGULAR_VALUES_STATIC = f77singular_values;
+}
+#define MUMPS_NULLIFY_C_SING_VALUES \
+    F_SYM_ARITH(nullify_c_sing_values,NULLIFY_C_SING_VALUES)
+void MUMPS_CALL
+MUMPS_NULLIFY_C_SING_VALUES()
+{
+  MUMPS_SINGULAR_VALUES_STATIC = 0;
+}
+/* FIXME: move CMUMPS_SET_TMP_PTR to another file */
+#define MUMPS_SET_TMP_PTR \
+    F_SYM_ARITH(set_tmp_ptr,SET_TMP_PTR) /* Fortran routine <arith>MUMPS_SET_TMP_PTR called from C */
+#define MUMPS_SET_TMP_PTR_C \
+    F_SYM_ARITH(set_tmp_ptr_c,SET_TMP_PTR_C) /* C routine <arith>MUMPS_SET_TMP_PTR_C called from Fortran */
+void MUMPS_SET_TMP_PTR(void *x, MUMPS_INT8 * size);
+void MUMPS_CALL MUMPS_SET_TMP_PTR_C(MUMPS_INT8 *addr_ptr, MUMPS_INT8 *size) /* called from Fortran */
+{
+/*
+    MUMPS_SET_TMP_PTR sets a static Fortran pointer from an address and a size:
+    size is passed by address
+    The address passed in *addr_ptr, however, *addr_ptr is a MUMPS_INT8
+    addr_ptr is the pointer to the address we want to pass
+    We cast addr_ptr to a pointer to an address before taking the content
+     *(void *)addr_ptr)
+*/
+    MUMPS_SET_TMP_PTR(*(void**)addr_ptr, size);  /* calls Fortran */
+}
 #if MUMPS_ARITH == MUMPS_ARITH_s
 # define mumps_c       smumps_c
 # define MUMPS_STRUC_C SMUMPS_STRUC_C
@@ -277,17 +371,23 @@ mumps_c(MUMPS_STRUC_C * mumps_par)
      */
     MUMPS_INT *icntl;
     MUMPS_REAL *cntl;
+    MUMPS_INT *keep;
+    MUMPS_REAL *dkeep;
+    MUMPS_INT8 *keep8;
     MUMPS_INT *irn; MUMPS_INT *jcn; MUMPS_COMPLEX *a;
     MUMPS_INT *irn_loc; MUMPS_INT *jcn_loc; MUMPS_COMPLEX *a_loc;
     MUMPS_INT *eltptr, *eltvar; MUMPS_COMPLEX *a_elt;
+    MUMPS_INT *blkptr; MUMPS_INT *blkvar;
     MUMPS_INT *perm_in; MUMPS_INT perm_in_avail;
     MUMPS_INT *listvar_schur; MUMPS_INT listvar_schur_avail;
     MUMPS_COMPLEX *schur; MUMPS_INT schur_avail;
+    MUMPS_INT *rowind; MUMPS_INT *colind; MUMPS_COMPLEX *pivots;
+    MUMPS_INT rowind_avail; MUMPS_INT colind_avail; MUMPS_INT pivots_avail;
     MUMPS_COMPLEX *rhs; MUMPS_COMPLEX *redrhs;
     MUMPS_COMPLEX *wk_user; MUMPS_INT wk_user_avail;
     MUMPS_REAL *colsca; MUMPS_REAL *rowsca;
-    MUMPS_COMPLEX *rhs_sparse, *sol_loc;
-    MUMPS_INT *irhs_sparse, *irhs_ptr, *isol_loc;
+    MUMPS_COMPLEX *rhs_sparse, *sol_loc, *rhs_loc;
+    MUMPS_INT *irhs_sparse, *irhs_ptr, *isol_loc, *irhs_loc;
     MUMPS_INT irn_avail, jcn_avail, a_avail, rhs_avail, redrhs_avail;
     /* These are actually used
      * as booleans, but we stick
@@ -295,68 +395,96 @@ mumps_c(MUMPS_STRUC_C * mumps_par)
      * C-F77 interface */
     MUMPS_INT irn_loc_avail, jcn_loc_avail, a_loc_avail;
     MUMPS_INT eltptr_avail, eltvar_avail, a_elt_avail;
+    MUMPS_INT blkptr_avail, blkvar_avail;
     MUMPS_INT colsca_avail, rowsca_avail;
-    MUMPS_INT irhs_ptr_avail, rhs_sparse_avail, sol_loc_avail;
-    MUMPS_INT irhs_sparse_avail, isol_loc_avail;
+    MUMPS_INT irhs_ptr_avail, rhs_sparse_avail, sol_loc_avail, rhs_loc_avail;
+    MUMPS_INT irhs_sparse_avail, isol_loc_avail, irhs_loc_avail;
     MUMPS_INT *info; MUMPS_INT *infog;
     MUMPS_REAL *rinfo; MUMPS_REAL *rinfog;
-    MUMPS_INT ooc_tmpdir[255]; MUMPS_INT ooc_prefix[63];
-    MUMPS_INT write_problem[255];
+    MUMPS_INT ooc_tmpdir[1023]; MUMPS_INT ooc_prefix[255];
+    MUMPS_INT write_problem[1023];
+#if ! defined(NO_SAVE_RESTORE)
+    MUMPS_INT save_dir[1023]; MUMPS_INT save_prefix[255];
+#endif
     /* Other local variables */
     MUMPS_INT idummy; MUMPS_INT *idummyp;
     MUMPS_REAL rdummy; MUMPS_REAL *rdummyp;
     MUMPS_COMPLEX cdummy; MUMPS_COMPLEX *cdummyp;
     /* String lengths to be passed to Fortran by address */
-    int ooc_tmpdirlen;
-    int ooc_prefixlen;
-    int write_problemlen;
+    MUMPS_INT ooc_tmpdirlen;
+    MUMPS_INT ooc_prefixlen;
+#if ! defined(NO_SAVE_RESTORE)
+    MUMPS_INT save_dirlen;
+    MUMPS_INT save_prefixlen;
+#endif
+    MUMPS_INT write_problemlen;
+    MUMPS_INT *metis_options;
     int i;
     static const MUMPS_INT no = 0;
     static const MUMPS_INT yes = 1;
     idummyp = &idummy;
     cdummyp = &cdummy;
     rdummyp = &rdummy;
-#ifdef return_scaling
-    /* Don't forget to initialize those two before
-     * each call to mumps as we may copy values from
-     * old instances otherwise ! */
+    /* [SDCZ]MUMPS_F77 always calls either
+     * MUMPS_NULLIFY_C_COLSCA or MUMPS_ASSIGN_C_COLSCA
+     * (and ROWSCA). The next two lines are thus not
+     * strictly necessary. */
     MUMPS_COLSCA_STATIC=0;
     MUMPS_ROWSCA_STATIC=0;
-#endif
+    MUMPS_COLSCA_LOC_STATIC=0;
+    MUMPS_ROWSCA_LOC_STATIC=0;
+    MUMPS_SINGULAR_VALUES_STATIC=0;
     /* Initialize pointers to zero for job == -1 */
     if ( mumps_par->job == -1 )
       { /* job = -1: we just reset all pointers to 0 */
         mumps_par->irn=0; mumps_par->jcn=0; mumps_par->a=0; mumps_par->rhs=0; mumps_par->wk_user=0;
         mumps_par->redrhs=0;
-        mumps_par->eltptr=0; mumps_par->eltvar=0; mumps_par->a_elt=0; mumps_par->perm_in=0; mumps_par->sym_perm=0; mumps_par->uns_perm=0; mumps_par->irn_loc=0;mumps_par->jcn_loc=0;mumps_par->a_loc=0; mumps_par->listvar_schur=0;mumps_par->schur=0;mumps_par->mapping=0;mumps_par->pivnul_list=0;mumps_par->colsca=0;mumps_par->rowsca=0; mumps_par->rhs_sparse=0; mumps_par->irhs_sparse=0; mumps_par->sol_loc=0; mumps_par->irhs_ptr=0; mumps_par->isol_loc=0;
+        mumps_par->rowind=0; mumps_par->colind=0; mumps_par->pivots=0;
+        mumps_par->eltptr=0; mumps_par->eltvar=0; mumps_par->a_elt=0; mumps_par->blkptr=0; mumps_par->blkvar=0; mumps_par->perm_in=0; mumps_par->sym_perm=0; mumps_par->uns_perm=0; mumps_par->irn_loc=0;mumps_par->jcn_loc=0;mumps_par->a_loc=0; mumps_par->listvar_schur=0;mumps_par->schur=0;mumps_par->mapping=0;mumps_par->pivnul_list=0;mumps_par->colsca=0;mumps_par->colsca_from_mumps=0;mumps_par->rowsca=0;mumps_par->rowsca_from_mumps=0; mumps_par->colsca_loc=0; mumps_par->rowsca_loc=0; mumps_par->rhs_sparse=0; mumps_par->irhs_sparse=0; mumps_par->sol_loc=0; mumps_par->rhs_loc=0; mumps_par->irhs_ptr=0; mumps_par->isol_loc=0; mumps_par->irhs_loc=0; mumps_par->rhsintr=0; mumps_par->glob2loc_rhs=0; mumps_par->glob2loc_sol=0; mumps_par->singular_values=0;
         strcpy(mumps_par->ooc_tmpdir,"NAME_NOT_INITIALIZED");
         strcpy(mumps_par->ooc_prefix,"NAME_NOT_INITIALIZED");
         strcpy(mumps_par->write_problem,"NAME_NOT_INITIALIZED");
+#if ! defined(NO_SAVE_RESTORE)
+        strcpy(mumps_par->save_dir,"NAME_NOT_INITIALIZED");
+        strcpy(mumps_par->save_prefix,"NAME_NOT_INITIALIZED");
+#endif
         strncpy(mumps_par->version_number,MUMPS_VERSION,MUMPS_VERSION_MAX_LEN);
         mumps_par->version_number[MUMPS_VERSION_MAX_LEN+1] = '\0';
         /* Next line initializes scalars to arbitrary values.
          * Some of those will anyway be overwritten during the
          * call to Fortran routine [SDCZ]MUMPS_INIT_PHASE */
-        mumps_par->n=0; mumps_par->nz=0; mumps_par->nz_loc=0; mumps_par->nelt=0;mumps_par->instance_number=0;mumps_par->deficiency=0;mumps_par->lwk_user=0;mumps_par->size_schur=0;mumps_par->lrhs=0; mumps_par->lredrhs=0; mumps_par->nrhs=0; mumps_par->nz_rhs=0; mumps_par->lsol_loc=0;
- mumps_par->schur_mloc=0; mumps_par->schur_nloc=0; mumps_par->schur_lld=0; mumps_par->mblock=0; mumps_par->nblock=0; mumps_par->nprow=0; mumps_par->npcol=0;
+        mumps_par->n=0; mumps_par->nblk=0; mumps_par->nz=0; mumps_par->nnz=0; mumps_par->nz_loc=0; mumps_par->nnz_loc=0; mumps_par->nelt=0;mumps_par->instance_number=0;mumps_par->nb_singular_values=0;mumps_par->lwk_user=0;mumps_par->size_schur=0;mumps_par->lrhs=0; mumps_par->lredrhs=0; mumps_par->nrhs=0; mumps_par->nz_rhs=0; mumps_par->lsol_loc=0; mumps_par->nloc_rhs=0; mumps_par->lrhs_loc=0; mumps_par->nsol_loc=0;
+ mumps_par->schur_mloc=0; mumps_par->schur_nloc=0; mumps_par->schur_lld=0; mumps_par->mblock=0; mumps_par->nblock=0; mumps_par->nprow=0; mumps_par->npcol=0; mumps_par->ld_rhsintr=0;
       }
      ooc_tmpdirlen=(int)strlen(mumps_par->ooc_tmpdir);
      ooc_prefixlen=(int)strlen(mumps_par->ooc_prefix);
      write_problemlen=(int)strlen(mumps_par->write_problem);
+#if ! defined(NO_SAVE_RESTORE)
+     save_dirlen   =(int)strlen(mumps_par->save_dir);
+     save_prefixlen=(int)strlen(mumps_par->save_prefix);
+#endif
     /* Avoid the use of strnlen which may not be
      * available on all systems. Allow strings without
      * \0 at the end, if the file is not found, the
      * Fortran layer is responsible for raising an
      * error.  */
-    if(ooc_tmpdirlen > 255){
-        ooc_tmpdirlen=255;
+    if(ooc_tmpdirlen > 1023){
+        ooc_tmpdirlen=1023;
       }
-    if(ooc_prefixlen > 63){
-        ooc_prefixlen=63;
+    if(ooc_prefixlen > 255){
+        ooc_prefixlen=255;
       }
-    if(write_problemlen > 255){
-        write_problemlen=255;
+    if(write_problemlen > 1023){
+	write_problemlen=1023;
       }
+#if ! defined(NO_SAVE_RESTORE)
+    if(save_dirlen > 1023){
+        save_dirlen=1023;
+      }
+    if(save_prefixlen > 255){
+        save_prefixlen=255;
+      }
+#endif
     /*
      * Extract info from the C structure to call the F77 interface. The
      * following macro avoids repeating the same code with risks of errors.
@@ -377,6 +505,9 @@ mumps_c(MUMPS_STRUC_C * mumps_par)
     EXTRACT_POINTERS(irn,idummyp);
     EXTRACT_POINTERS(jcn,idummyp);
     EXTRACT_POINTERS(rhs,cdummyp);
+    EXTRACT_POINTERS(rowind,idummyp);
+    EXTRACT_POINTERS(colind,idummyp);
+    EXTRACT_POINTERS(pivots,cdummyp);
     EXTRACT_POINTERS(wk_user,cdummyp);
     EXTRACT_POINTERS(redrhs,cdummyp);
     EXTRACT_POINTERS(irn_loc,idummyp);
@@ -386,17 +517,52 @@ mumps_c(MUMPS_STRUC_C * mumps_par)
     EXTRACT_POINTERS(eltptr,idummyp);
     EXTRACT_POINTERS(eltvar,idummyp);
     EXTRACT_POINTERS(a_elt,cdummyp);
+    EXTRACT_POINTERS(blkptr,idummyp);
+    EXTRACT_POINTERS(blkvar,idummyp);
     EXTRACT_POINTERS(perm_in,idummyp);
     EXTRACT_POINTERS(listvar_schur,idummyp);
     EXTRACT_POINTERS(schur,cdummyp);
-    EXTRACT_POINTERS(colsca,rdummyp);
-    EXTRACT_POINTERS(rowsca,rdummyp);
+    /* EXTRACT_POINTERS not adapted to rowsca and colsca */
+    if ( mumps_par->rowsca != 0 && mumps_par->rowsca_from_mumps == 0 )
+      {
+        /* has been set by user and was not allocated in mumps */
+        rowsca = mumps_par-> rowsca;
+        rowsca_avail = yes;
+      }
+    else
+      {
+        /* Changing the rowsca pointer in C after an earlier call
+           where rowsca was allocated by mumps is not possible.
+           FIXME: check if the content of rowsca could still be
+           modified by the user -- with ICNTL(8) set to -1 --
+           before calling the next factorization step again.  */
+        rowsca = rdummyp;
+        rowsca_avail = no;
+      }
+    if ( mumps_par->colsca != 0 && mumps_par->colsca_from_mumps == 0 )
+      /* has been changed by user and was not allocated in mumps */
+      {
+        colsca = mumps_par-> colsca;
+        colsca_avail = yes;
+      }
+    else
+      {
+        /* Changing the colsca pointer in C after an earlier call
+           where colsca was allocated by mumps is not possible.
+           FIXME: check if the content of colsca could still be
+           modified by the user -- with ICNTL(8) set to -1 --
+           before calling the next factorization step again.  */
+        colsca = rdummyp;
+        colsca_avail = no;
+      }
     EXTRACT_POINTERS(rhs_sparse,cdummyp);
     EXTRACT_POINTERS(sol_loc,cdummyp);
+    EXTRACT_POINTERS(rhs_loc,cdummyp);
     EXTRACT_POINTERS(irhs_sparse,idummyp);
     EXTRACT_POINTERS(isol_loc,idummyp);
+    EXTRACT_POINTERS(irhs_loc,idummyp);
     EXTRACT_POINTERS(irhs_ptr,idummyp);
-    /* printf("irn_avail,jcn_avail, rhs_avail, a_avail, eltptr_avail, eltvar_avail,a_elt_avail,perm_in_avail= %d %d %d %d %d %d %d \n", irn_avail,jcn_avail, rhs_avail, a_avail, eltptr_avail, eltvar_avail, a_elt_avail, perm_in_avail);*/
+    /* printf("irn_avail,jcn_avail, rhs_avail, a_avail, eltptr_avail, eltvar_avail,a_elt_avail,perm_in_avail= %d %d %d %d %d %d %d \n", irn_avail,jcn_avail, rhs_avail, a_avail, eltptr_avail, eltvar_avail, a_elt_avail, perm_in_avail); */
     /*
      * Extract integers (input) or pointers that are
      * always allocated (such as ICNTL, INFO, ...)
@@ -405,6 +571,9 @@ mumps_c(MUMPS_STRUC_C * mumps_par)
     /* instance_number = mumps_par->instance_number; */
     icntl = mumps_par->icntl;
     cntl = mumps_par->cntl;
+    keep = mumps_par->keep;
+    dkeep = mumps_par->dkeep;
+    keep8 = mumps_par->keep8;
     info = mumps_par->info;
     infog = mumps_par->infog;
     rinfo = mumps_par->rinfo;
@@ -418,22 +587,32 @@ mumps_c(MUMPS_STRUC_C * mumps_par)
     for(i=0;i<write_problemlen;i++){
       write_problem[i]=(int)mumps_par->write_problem[i];
     }
+#if ! defined(NO_SAVE_RESTORE)
+    for(i=0;i<save_dirlen;i++){
+      save_dir[i]=(int)mumps_par->save_dir[i];
+    }
+    for(i=0;i<save_prefixlen;i++){
+      save_prefix[i]=(int)mumps_par->save_prefix[i];
+    }
+#endif
+    metis_options = mumps_par->metis_options;
     /* Call F77 interface */
     MUMPS_F77(&(mumps_par->job), &(mumps_par->sym), &(mumps_par->par), &(mumps_par->comm_fortran),
-          &(mumps_par->n), icntl, cntl,
-          &(mumps_par->nz), irn, &irn_avail, jcn, &jcn_avail, a, &a_avail,
-          &(mumps_par->nz_loc), irn_loc, &irn_loc_avail, jcn_loc, &jcn_loc_avail,
+          &(mumps_par->n), &(mumps_par->nblk), icntl, cntl, keep, dkeep, keep8,
+          &(mumps_par->nz), &(mumps_par->nnz), irn, &irn_avail, jcn, &jcn_avail, a, &a_avail,
+          &(mumps_par->nz_loc), &(mumps_par->nnz_loc), irn_loc, &irn_loc_avail, jcn_loc, &jcn_loc_avail,
           a_loc, &a_loc_avail,
-          &(mumps_par->nelt), eltptr, &eltptr_avail, eltvar, &eltvar_avail, a_elt, &a_elt_avail,
-          perm_in, &perm_in_avail,
+          &(mumps_par->nelt), eltptr, &eltptr_avail, eltvar, &eltvar_avail, a_elt, &a_elt_avail, blkptr, &blkptr_avail, blkvar, &blkvar_avail,
+          perm_in, &perm_in_avail, rowind, &rowind_avail, colind, &colind_avail, pivots, &pivots_avail,
           rhs, &rhs_avail, redrhs, &redrhs_avail, info, rinfo, infog, rinfog,
-          &(mumps_par->deficiency), &(mumps_par->lwk_user), &(mumps_par->size_schur), listvar_schur, &listvar_schur_avail, schur,
+          &(mumps_par->nb_singular_values), &(mumps_par->lwk_user), &(mumps_par->size_schur), 
+          listvar_schur, &listvar_schur_avail, schur,
           &schur_avail, wk_user, &wk_user_avail, colsca, &colsca_avail, rowsca, &rowsca_avail,
           &(mumps_par->instance_number), &(mumps_par->nrhs), &(mumps_par->lrhs),
           &(mumps_par->lredrhs),
-          rhs_sparse, &rhs_sparse_avail, sol_loc, &sol_loc_avail, irhs_sparse,
+          rhs_sparse, &rhs_sparse_avail, sol_loc, &sol_loc_avail, rhs_loc, &rhs_loc_avail, irhs_sparse,
           &irhs_sparse_avail, irhs_ptr, &irhs_ptr_avail, isol_loc,
-          &isol_loc_avail, &(mumps_par->nz_rhs), &(mumps_par->lsol_loc)
+          &isol_loc_avail, irhs_loc, &irhs_loc_avail, &(mumps_par->nz_rhs), &(mumps_par->lsol_loc), &(mumps_par->lrhs_loc), &(mumps_par->nsol_loc), &(mumps_par->nloc_rhs)
           , &(mumps_par->schur_mloc)
           , &(mumps_par->schur_nloc)
           , &(mumps_par->schur_lld)
@@ -441,28 +620,85 @@ mumps_c(MUMPS_STRUC_C * mumps_par)
           , &(mumps_par->nblock)
           , &(mumps_par->nprow)
           , &(mumps_par->npcol)
+          , &(mumps_par->ld_rhsintr)
           , ooc_tmpdir
           , ooc_prefix
           , write_problem
+#if ! defined(NO_SAVE_RESTORE)
+          , save_dir
+          , save_prefix
+#endif
           , &ooc_tmpdirlen
           , &ooc_prefixlen
           , &write_problemlen
+#if ! defined(NO_SAVE_RESTORE)
+          , &save_dirlen
+          , &save_prefixlen
+#endif
+          , metis_options    
     );
     /*
+     * Set interface to C (KEEP(500)=1) after job=-1
+     */
+    if ( mumps_par->job == -1 )
+      {
+        mumps_par->keep[499]=1;
+      }
+    /*
      * mapping and pivnul_list are usually 0 except if
-     * MUMPS_AFFECT_MAPPING/MUMPS_AFFECT_PIVNUL_LIST was called.
+     * MUMPS_ASSIGN_MAPPING/MUMPS_ASSIGN_PIVNUL_LIST was called.
      */
     mumps_par->mapping=mumps_get_mapping();
     mumps_par->pivnul_list=mumps_get_pivnul_list();
     /* to get permutations computed during analysis */
     mumps_par->sym_perm=mumps_get_sym_perm();
     mumps_par->uns_perm=mumps_get_uns_perm();
-#ifdef return_scaling
+    /* colsca_loc and rowsca_loc are always out */
+    mumps_par->colsca_loc=MUMPS_COLSCA_LOC_STATIC;
+    mumps_par->rowsca_loc=MUMPS_ROWSCA_LOC_STATIC;
+    /* glob2loc_rhs, glob2loc_sol and rhsintr are out */
+    mumps_par->glob2loc_rhs=mumps_get_glob2loc_rhs();
+    mumps_par->glob2loc_sol=mumps_get_glob2loc_sol();
+    mumps_par->rhsintr=MUMPS_RHSINTR_STATIC;
+    /* singular_values is always out */
+    mumps_par->singular_values=MUMPS_SINGULAR_VALUES_STATIC;
     /*
-     * colsca/rowsca can either be user data or have been
-     * modified within mumps by calls to MUMPS_AFFECT_COLSCA/ROWSCA.
+     * colsca/rowsca can either be user data or have been modified
+     * within mumps by calls to MUMPS_ASSIGN_COLSCA and/or
+     * MUMPS_ASSIGN_ROWSCA. In all cases their address is contained
+     * in MUMPS_COLSCA_STATIC and/or MUMPS_ROWSCA_STATIC.
+     *
+     * In case of a null pointer, we also reset mumps_par->rowsca/colsca
+     * to 0 (case of JOB=-2, the Fortran pointer will be NULL but the
+     * C pointer should also be null.
      */
-    if (colsca_avail == no) mumps_par->colsca = MUMPS_COLSCA_STATIC;
-    if (rowsca_avail == no) mumps_par->rowsca = MUMPS_ROWSCA_STATIC;
+    if (rowsca_avail == no) {
+      mumps_par->rowsca = MUMPS_ROWSCA_STATIC;
+      if (MUMPS_ROWSCA_STATIC) {
+         /* remember that row Scaling was computed by MUMPS */
+         mumps_par->rowsca_from_mumps=1;
+      }
+    }
+    if (colsca_avail == no) {
+      mumps_par->colsca = MUMPS_COLSCA_STATIC;
+      if (MUMPS_COLSCA_STATIC) {
+         /* remember that column Scaling was computed by MUMPS */
+         mumps_par->colsca_from_mumps=1;
+      }
+    }
+    /*
+     * Decode OOC_TMPDIR and OOC_PREFIX
+     * This is because they may have been set internally during MUMPS_F77
+#if ! defined(NO_SAVE_RESTORE)
+     * (which is not the case for save_prefix and save_dir)
 #endif
+     */
+    for(i=0;i<ooc_tmpdirlen;i++){
+      mumps_par->ooc_tmpdir[i]=(char)ooc_tmpdir[i];
+    }
+    mumps_par->ooc_tmpdir[ooc_tmpdirlen]='\0';
+    for(i=0;i<ooc_prefixlen;i++){
+      mumps_par->ooc_prefix[i]=(char)ooc_prefix[i];
+    }
+    mumps_par->ooc_prefix[ooc_prefixlen]='\0';
 }

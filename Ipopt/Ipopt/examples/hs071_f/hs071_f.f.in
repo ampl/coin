@@ -2,11 +2,9 @@ C Copyright (C) 2002, 2010 Carnegie Mellon University and others.
 C All Rights Reserved.
 C This code is published under the Eclipse Public License.
 C
-C    $Id$
-C
 C =============================================================================
 C
-C     This is an example for the usage of IPOPT.
+C     This is an example for the usage of IPOPT in double precision.
 C     It implements problem 71 from the Hock-Schittkowski test suite:
 C
 C     min   x1*x4*(x1 + x2 + x3)  +  x3
@@ -52,10 +50,19 @@ C     Vector of variables
 C
       double precision X(N)
 C
-C     Vector of lower and upper bounds
+C     Vector of lower and upper bounds, left and right hand sides, and scaling
 C
-      double precision X_L(N), X_U(N), Z_L(N), Z_U(N)
-      double precision G_L(M), G_U(M)
+      double precision X_L(N), X_U(N), X_SCALING(N), Z_L(N), Z_U(N)
+      double precision G_L(M), G_U(M), G_SCALING(M)
+
+C     To indicate to IPSETPROBLEMSCALING below that scaling for constraints
+C     should be omitted, a NULL pointer can be passed for G_SCALING. With
+C     Fortran > 77, this is done by removing the declaration of G_SCALING
+C     from the line above and the data G_SCALING line below and enabling
+C     the following line instead:
+C
+C     double precision, allocatable, dimension(:) :: G_SCALING
+C
 C
 C     Private data for evaluation routines
 C     This could be used to pass double precision and integer arrays untouched
@@ -74,8 +81,8 @@ C
 @BIT64FCOMMENT@      integer*8 IPCREATE
 C
       integer IERR
-      integer IPSOLVE, IPADDSTROPTION
-      integer IPADDNUMOPTION, IPADDINTOPTION
+      integer IPSOLVE, IPSETPROBLEMSCALING
+      integer IPADDSTROPTION, IPADDNUMOPTION, IPADDINTOPTION
       integer IPOPENOUTPUTFILE
 C
       double precision F
@@ -90,18 +97,20 @@ CC
 CC     The next is an optional callback method.  It is called once per
 CC     iteration.
 CC
-C      external ITER_CB
+      external ITER_CB
 C
-C     Set initial point and bounds:
+C     Set initial point, bounds, and scaling:
 C
-      data X   / 1d0, 5d0, 5d0, 1d0/
+      data X   / 1d0, 5d0, 5d0, 1d0 /
       data X_L / 1d0, 1d0, 1d0, 1d0 /
       data X_U / 5d0, 5d0, 5d0, 5d0 /
+      data X_SCALING / 1d0, 1d0, 1d0, 1d0 /
 C
-C     Set bounds for the constraints
+C     Set bounds and scaling for the constraints
 C
       data G_L / 25d0, 40d0 /
       data G_U / 1d40, 40d0 /
+      data G_SCALING / 1d0, 1d0 /
 C
 C     First create a handle for the Ipopt problem (and read the options
 C     file)
@@ -139,10 +148,18 @@ C
       IERR = IPADDNUMOPTION(IPROBLEM, 'tol', 1.d-7)
       if (IERR.ne.0 ) goto 9990
 
+C
+C     Set scaling
+C
+      IERR = IPSETPROBLEMSCALING(IPROBLEM, 1d0, X_SCALING, G_SCALING)
+      if (IERR.ne.0 ) goto 9990
+
 CC
 CC     Set a callback function to give you control once per iteration.
 CC     You can use it if you want to generate some output, or to stop
 CC     the optimization early.
+CC     Uncomment this line to print iterate in every iteration and
+CC     demonstrate how to stop Ipopt early.
 CC
 C      call IPSETCALLBACK(IPROBLEM, ITER_CB)
 
@@ -154,8 +171,11 @@ C
       DAT(2) = 0.d0
 C
 C     Call optimization routine
+C     Passing IPROBLEM instead of IDAT is a hack to make IPROBLEM
+C     accessible within ITER_CB. A proficient Fortran programmer would
+C     find a way to store IPROBLEM inside IDAT.
 C
-      IERR = IPSOLVE(IPROBLEM, X, G, F, LAM, Z_L, Z_U, IDAT, DAT)
+      IERR = IPSOLVE(IPROBLEM, X, G, F, LAM, Z_L, Z_U, IPROBLEM, DAT)
 C
 C     Output:
 C
@@ -385,15 +405,58 @@ C
       double precision DAT(*)
       integer IDAT(*)
       integer ISTOP
+      integer IPGETCURRITERATE
+      integer IPGETCURRVIOLATIONS
+      integer i, IERR
+      double precision X(4)
+      double precision Z_L(4)
+      double precision Z_U(4)
+      double precision G(2)
+      double precision LAMBDA(2)
+      double precision COMPL_X_L(4)
+      double precision COMPL_X_U(4)
+      double precision GRAD_LAG_X(4)
+      double precision CONS_VIOL(2)
+      double precision COMPL_G(2)
 C
-C     You can put some output here
+C     Get iterate and print
 C
-      write(*,*) 'Testing callback function in iteration ', ITER_COUNT
+      IERR = IPGETCURRITERATE(IDAT, 0, 1, 1, 1, 1, 4, X, Z_L, Z_U, 2, G,
+     1   LAMBDA)
+      if ( IERR.eq.0 ) then
+         do i = 1, 4
+            write(*,*) 'X, Z_L, Z_U (',i,') = ', X(i), Z_L(i), Z_U(i)
+         enddo
+         do i = 1, 2
+            write(*,*) 'G, LAMBDA   (',i,') = ', G(i), LAMBDA(i)
+         enddo
+      endif
+
+C
+C     Get violations and print
+C
+      IERR = IPGETCURRVIOLATIONS(IDAT, 0, 0, 1, 1, 1, 4,
+     1   0, 0, COMPL_X_L, COMPL_X_U, GRAD_LAG_X, 2, CONS_VIOL, COMPL_G)
+      if ( IERR.eq.0 ) then
+         do i = 1, 4
+            write(*,*) 'COMPL_X_L, COMPL_X_U, GRAD_LAG_X (',i,') = ',
+     1         COMPL_X_L(i), COMPL_X_U(i), GRAD_LAG_X(i)
+         enddo
+         do i = 1, 2
+            write(*,*) 'CONS_VIOL, COMPL_G (',i,') = ',
+     1         CONS_VIOL(i), COMPL_G(i)
+         enddo
+      endif
+
 C
 C     And set ISTOP to 1 if you want Ipopt to stop now.  Below is just a
 C     simple example.
 C
-      if (INF_PR.le.1D-04) ISTOP = 1
+      if (INF_PR.le.1D-04) then
+         write(*,*) 'Requesting stop due to small inf_pr in iteration ',
+     1      ITER_COUNT
+         ISTOP = 1
+      endif
 
       return
       end

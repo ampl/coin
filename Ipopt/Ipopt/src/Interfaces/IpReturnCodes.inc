@@ -2,8 +2,6 @@ C Copyright (C) 2005, 2009 International Business Machines and others.
 C All Rights Reserved.
 C This code is published under the Eclipse Public License.
 C
-C    $Id$
-C
 C Author:   Andreas Waechter    IBM      2005-08-11
 C
       INTEGER IP_SOLVE_SUCCEEDED
@@ -38,6 +36,9 @@ C
 
       INTEGER IP_CPUTIME_EXCEEDED
       PARAMETER( IP_CPUTIME_EXCEEDED = -4 )
+
+      INTEGER IP_WALLTIME_EXCEEDED
+      PARAMETER( IP_WALLTIME_EXCEEDED = -5 )
 
       INTEGER IP_NOT_ENOUGH_DEGREES_OF_FRE
       PARAMETER( IP_NOT_ENOUGH_DEGREES_OF_FRE = -10 )

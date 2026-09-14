@@ -1,52 +1,19 @@
 /*
  *
- *  This file is part of MUMPS 4.10.0, built on Tue May 10 12:56:32 UTC 2011
+ *  This file is part of MUMPS 5.9.1, released
+ *  on Mon Jul 20 09:00:43 UTC 2026
  *
  *
- *  This version of MUMPS is provided to you free of charge. It is public
- *  domain, based on public domain software developed during the Esprit IV
- *  European project PARASOL (1996-1999). Since this first public domain
- *  version in 1999, research and developments have been supported by the
- *  following institutions: CERFACS, CNRS, ENS Lyon, INPT(ENSEEIHT)-IRIT,
- *  INRIA, and University of Bordeaux.
+ *  Copyright 1991-2026 CERFACS, CNRS, ENS Lyon, INP Toulouse, Inria,
+ *  Mumps Technologies, University of Bordeaux.
  *
- *  The MUMPS team at the moment of releasing this version includes
- *  Patrick Amestoy, Maurice Bremond, Alfredo Buttari, Abdou Guermouche,
- *  Guillaume Joslin, Jean-Yves L'Excellent, Francois-Henry Rouet, Bora
- *  Ucar and Clement Weisbecker.
- *
- *  We are also grateful to Emmanuel Agullo, Caroline Bousquet, Indranil
- *  Chowdhury, Philippe Combes, Christophe Daniel, Iain Duff, Vincent Espirat,
- *  Aurelia Fevre, Jacko Koster, Stephane Pralet, Chiara Puglisi, Gregoire
- *  Richard, Tzvetomila Slavova, Miroslav Tuma and Christophe Voemel who
- *  have been contributing to this project.
- *
- *  Up-to-date copies of the MUMPS package can be obtained
- *  from the Web pages:
- *  http://mumps.enseeiht.fr/  or  http://graal.ens-lyon.fr/MUMPS
- *
- *
- *   THIS MATERIAL IS PROVIDED AS IS, WITH ABSOLUTELY NO WARRANTY
- *   EXPRESSED OR IMPLIED. ANY USE IS AT YOUR OWN RISK.
- *
- *
- *  User documentation of any code that uses this software can
- *  include this complete notice. You can acknowledge (using
- *  references [1] and [2]) the contribution of this package
- *  in any scientific publication dependent upon the use of the
- *  package. You shall use reasonable endeavours to notify
- *  the authors of the package of this publication.
- *
- *   [1] P. R. Amestoy, I. S. Duff, J. Koster and  J.-Y. L'Excellent,
- *   A fully asynchronous multifrontal solver using distributed dynamic
- *   scheduling, SIAM Journal of Matrix Analysis and Applications,
- *   Vol 23, No 1, pp 15-41 (2001).
- *
- *   [2] P. R. Amestoy and A. Guermouche and J.-Y. L'Excellent and
- *   S. Pralet, Hybrid scheduling for the parallel solution of linear
- *   systems. Parallel Computing Vol 32 (2), pp 136-156 (2006).
+ *  This version of MUMPS is provided to you free of charge. It is
+ *  released under the CeCILL-C license 
+ *  (see doc/CeCILL-C_V1-en.txt, doc/CeCILL-C_V1-fr.txt, and
+ *  https://cecill.info/licences/Licence_CeCILL-C_V1-en.html)
  *
  */
+#include <stdlib.h>
 #include "mumps_common.h"
 /* Special case of mapping and pivnul_list -- allocated from MUMPS */
 static MUMPS_INT * MUMPS_MAPPING;
@@ -54,13 +21,15 @@ static MUMPS_INT * MUMPS_PIVNUL_LIST;
 /* as uns_perm and sym_perm */
 static MUMPS_INT * MUMPS_SYM_PERM;
 static MUMPS_INT * MUMPS_UNS_PERM;
+static MUMPS_INT * MUMPS_GLOB2LOC_RHS;
+static MUMPS_INT * MUMPS_GLOB2LOC_SOL;
 MUMPS_INT*
 mumps_get_mapping()
 {
     return MUMPS_MAPPING;
 }
 void MUMPS_CALL
-MUMPS_AFFECT_MAPPING(MUMPS_INT * f77mapping)
+MUMPS_ASSIGN_MAPPING(MUMPS_INT * f77mapping)
 {
     MUMPS_MAPPING = f77mapping;
 }
@@ -75,7 +44,7 @@ mumps_get_pivnul_list()
     return MUMPS_PIVNUL_LIST;
 }
 void MUMPS_CALL
-MUMPS_AFFECT_PIVNUL_LIST(MUMPS_INT * f77pivnul_list)
+MUMPS_ASSIGN_PIVNUL_LIST(MUMPS_INT * f77pivnul_list)
 {
     MUMPS_PIVNUL_LIST = f77pivnul_list;
 }
@@ -90,7 +59,7 @@ mumps_get_sym_perm()
     return MUMPS_SYM_PERM;
 }
 void MUMPS_CALL
-MUMPS_AFFECT_SYM_PERM(MUMPS_INT * f77sym_perm)
+MUMPS_ASSIGN_SYM_PERM(MUMPS_INT * f77sym_perm)
 {
     MUMPS_SYM_PERM = f77sym_perm;
 }
@@ -105,7 +74,7 @@ mumps_get_uns_perm()
     return MUMPS_UNS_PERM;
 }
 void MUMPS_CALL
-MUMPS_AFFECT_UNS_PERM(MUMPS_INT * f77uns_perm)
+MUMPS_ASSIGN_UNS_PERM(MUMPS_INT * f77uns_perm)
 {
     MUMPS_UNS_PERM = f77uns_perm;
 }
@@ -113,4 +82,95 @@ void MUMPS_CALL
 MUMPS_NULLIFY_C_UNS_PERM()
 {
     MUMPS_UNS_PERM = 0;
+}
+MUMPS_INT*
+mumps_get_glob2loc_rhs()
+{
+    return MUMPS_GLOB2LOC_RHS;
+}
+void MUMPS_CALL
+MUMPS_ASSIGN_GLOB2LOC_RHS(MUMPS_INT * f77glob2loc_rhs)
+{
+    MUMPS_GLOB2LOC_RHS = f77glob2loc_rhs;
+}
+void MUMPS_CALL
+MUMPS_NULLIFY_C_GLOB2LOC_RHS()
+{
+    MUMPS_GLOB2LOC_RHS = 0;
+}
+MUMPS_INT*
+mumps_get_glob2loc_sol()
+{
+    return MUMPS_GLOB2LOC_SOL;
+}
+void MUMPS_CALL
+MUMPS_ASSIGN_GLOB2LOC_SOL(MUMPS_INT * f77glob2loc_sol)
+{
+    MUMPS_GLOB2LOC_SOL = f77glob2loc_sol;
+}
+void MUMPS_CALL
+MUMPS_NULLIFY_C_GLOB2LOC_SOL()
+{
+    MUMPS_GLOB2LOC_SOL = 0;
+}
+void MUMPS_CALL
+MUMPS_ICOPY_32TO64_64C_IP_C(MUMPS_INT *inouttab, MUMPS_INT8 *sizetab)
+/* Copies in-place *sizetab int values starting at address inouttab
+   into *sizetab int64_t values starting at the same address.
+*/
+{
+   MUMPS_INT8 i8; /* signed integer needed for reversed loop below */
+   for (i8=*sizetab-1; i8 >=0; i8--)
+     {
+       /* outtab8[i8]=(MUMPS_INT8)intab4[i8]; */
+       ((MUMPS_INT8 *)inouttab)[i8]=(MUMPS_INT8)inouttab[i8];
+     }
+}
+void MUMPS_CALL
+MUMPS_ICOPY_64TO32_64C_IP_C(MUMPS_INT8 *inouttab, MUMPS_INT8 *sizetab)
+/* Copies in-place *sizetab int64_t values starting at address inouttab
+   into *sizetab int values starting at the same address */
+{
+   MUMPS_INT8 i8;
+   for (i8=0; i8 < *sizetab; i8++)
+     {
+       /*       outtab4[i8]=(MUMPS_INT)intab8[i8]; */
+       ((MUMPS_INT *)inouttab)[i8]=(MUMPS_INT)inouttab[i8];
+     }
+}
+void MUMPS_CALL
+MUMPS_MALLOC_C(MUMPS_INT8 *address, MUMPS_INT8 *size)
+{
+  void * ptr;
+  ptr=malloc(*size);
+  *address=(MUMPS_INT8)(ptr);
+}
+void MUMPS_CALL
+MUMPS_FREE_C(void *address)
+{
+  free(address);
+}
+void MUMPS_CALL
+MUMPS_RCOPY_32TO64_64C_IP_C(float *inouttab, MUMPS_INT8 *sizetab)
+/* Copies in-place *sizetab float values starting at address inouttab
+   into *sizetab double values starting at the same address.
+*/
+{
+   MUMPS_INT8 i8; /* signed integer needed for reversed loop below */
+   for (i8=*sizetab-1; i8 >=0; i8--)
+     {
+       ((double *)inouttab)[i8]=(double)inouttab[i8];
+     }
+}
+void MUMPS_CALL
+MUMPS_RCOPY_64TO32_64C_IP_C(double *inouttab, MUMPS_INT8 *sizetab)
+/* Copies in-place *sizetab double values starting at address inouttab
+   into *sizetab float values starting at the same address */
+{
+   MUMPS_INT8 i8;
+   for (i8=0; i8 < *sizetab; i8++)
+     {
+       /*       outtab4[i8]=(MUMPS_INT)intab8[i8]; */
+       ((float *)inouttab)[i8]=(float)inouttab[i8];
+     }
 }

@@ -1,50 +1,16 @@
 /*
  *
- *  This file is part of MUMPS 4.10.0, built on Tue May 10 12:56:32 UTC 2011
+ *  This file is part of MUMPS 5.9.1, released
+ *  on Mon Jul 20 09:00:43 UTC 2026
  *
  *
- *  This version of MUMPS is provided to you free of charge. It is public
- *  domain, based on public domain software developed during the Esprit IV
- *  European project PARASOL (1996-1999). Since this first public domain
- *  version in 1999, research and developments have been supported by the
- *  following institutions: CERFACS, CNRS, ENS Lyon, INPT(ENSEEIHT)-IRIT,
- *  INRIA, and University of Bordeaux.
+ *  Copyright 1991-2026 CERFACS, CNRS, ENS Lyon, INP Toulouse, Inria,
+ *  Mumps Technologies, University of Bordeaux.
  *
- *  The MUMPS team at the moment of releasing this version includes
- *  Patrick Amestoy, Maurice Bremond, Alfredo Buttari, Abdou Guermouche,
- *  Guillaume Joslin, Jean-Yves L'Excellent, Francois-Henry Rouet, Bora
- *  Ucar and Clement Weisbecker.
- *
- *  We are also grateful to Emmanuel Agullo, Caroline Bousquet, Indranil
- *  Chowdhury, Philippe Combes, Christophe Daniel, Iain Duff, Vincent Espirat,
- *  Aurelia Fevre, Jacko Koster, Stephane Pralet, Chiara Puglisi, Gregoire
- *  Richard, Tzvetomila Slavova, Miroslav Tuma and Christophe Voemel who
- *  have been contributing to this project.
- *
- *  Up-to-date copies of the MUMPS package can be obtained
- *  from the Web pages:
- *  http://mumps.enseeiht.fr/  or  http://graal.ens-lyon.fr/MUMPS
- *
- *
- *   THIS MATERIAL IS PROVIDED AS IS, WITH ABSOLUTELY NO WARRANTY
- *   EXPRESSED OR IMPLIED. ANY USE IS AT YOUR OWN RISK.
- *
- *
- *  User documentation of any code that uses this software can
- *  include this complete notice. You can acknowledge (using
- *  references [1] and [2]) the contribution of this package
- *  in any scientific publication dependent upon the use of the
- *  package. You shall use reasonable endeavours to notify
- *  the authors of the package of this publication.
- *
- *   [1] P. R. Amestoy, I. S. Duff, J. Koster and  J.-Y. L'Excellent,
- *   A fully asynchronous multifrontal solver using distributed dynamic
- *   scheduling, SIAM Journal of Matrix Analysis and Applications,
- *   Vol 23, No 1, pp 15-41 (2001).
- *
- *   [2] P. R. Amestoy and A. Guermouche and J.-Y. L'Excellent and
- *   S. Pralet, Hybrid scheduling for the parallel solution of linear
- *   systems. Parallel Computing Vol 32 (2), pp 136-156 (2006).
+ *  This version of MUMPS is provided to you free of charge. It is
+ *  released under the CeCILL-C license 
+ *  (see doc/CeCILL-C_V1-en.txt, doc/CeCILL-C_V1-fr.txt, and
+ *  https://cecill.info/licences/Licence_CeCILL-C_V1-en.html)
  *
  */
 #ifndef MUMPS_IO_H
@@ -60,12 +26,23 @@
  *  MUST be called before low_level_init_ooc_c.
  * 
  */
-#define MUMPS_OOC_PREFIX_MAX_LENGTH 63
-#define MUMPS_OOC_TMPDIR_MAX_LENGTH 255
+#define MUMPS_OOC_PREFIX_MAX_LENGTH 255
+#define MUMPS_OOC_TMPDIR_MAX_LENGTH 1023
 static char MUMPS_OOC_STORE_PREFIX[MUMPS_OOC_PREFIX_MAX_LENGTH];
-static int  MUMPS_OOC_STORE_PREFIXLEN=-1;
+static MUMPS_INT  MUMPS_OOC_STORE_PREFIXLEN=-1;
 static char MUMPS_OOC_STORE_TMPDIR[MUMPS_OOC_TMPDIR_MAX_LENGTH];
-static int  MUMPS_OOC_STORE_TMPDIRLEN=-1;
+static MUMPS_INT  MUMPS_OOC_STORE_TMPDIRLEN=-1;
+#define MUMPS_DUMPRHSBINARY_C \
+    F_SYMBOL(dumprhsbinary_c,DUMPRHSBINARY_C)
+void MUMPS_CALL MUMPS_DUMPRHSBINARY_C ( MUMPS_INT *N, MUMPS_INT *NRHS,
+     MUMPS_INT *LRHS, float *RHS, MUMPS_INT *K35, 
+     char *filename, mumps_ftnlen l1 );
+#define MUMPS_DUMPMATBINARY_C \
+    F_SYMBOL(dumpmatbinary_c,DUMPMATBINARY_C)
+void MUMPS_CALL MUMPS_DUMPMATBINARY_C ( MUMPS_INT* N, MUMPS_INT8 *NNZ,
+     MUMPS_INT* K35, MUMPS_INT *irn, MUMPS_INT *jcn,
+     void *A, MUMPS_INT *is_A_provided,
+     char *file_name, mumps_ftnlen l1 );
 #define MUMPS_LOW_LEVEL_INIT_PREFIX \
     F_SYMBOL(low_level_init_prefix,LOW_LEVEL_INIT_PREFIX)
 void MUMPS_CALL
@@ -74,14 +51,14 @@ MUMPS_LOW_LEVEL_INIT_PREFIX(MUMPS_INT * dim, char * str, mumps_ftnlen l1);
     F_SYMBOL(low_level_init_tmpdir,LOW_LEVEL_INIT_TMPDIR)
 void MUMPS_CALL
 MUMPS_LOW_LEVEL_INIT_TMPDIR(MUMPS_INT * dim, char * str, mumps_ftnlen l1);
-MUMPS_INLINE int
+MUMPS_INLINE MUMPS_INT
 mumps_convert_2fint_to_longlong( MUMPS_INT *, MUMPS_INT *, long long *);
 #define MUMPS_LOW_LEVEL_INIT_OOC_C \
     F_SYMBOL(low_level_init_ooc_c,LOW_LEVEL_INIT_OOC_C)
 void MUMPS_CALL
 MUMPS_LOW_LEVEL_INIT_OOC_C(MUMPS_INT *_myid, MUMPS_INT *total_size_io,MUMPS_INT *size_element,
                            MUMPS_INT *async, MUMPS_INT *k211, MUMPS_INT *nb_file_type,
-                           MUMPS_INT *flag_tab , MUMPS_INT* ierr);
+                           MUMPS_INT *flag_tab , MUMPS_INT *keep255, MUMPS_INT* ierr);
 #define MUMPS_TEST_REQUEST_C \
     F_SYMBOL(test_request_c,TEST_REQUEST_C)
 void MUMPS_CALL
@@ -134,10 +111,6 @@ MUMPS_CLEAN_IO_DATA_C(MUMPS_INT *myid,MUMPS_INT *step,MUMPS_INT *ierr);
     F_SYMBOL(get_max_nb_req_c,GET_MAX_NB_REQ_C)
 void MUMPS_CALL
 MUMPS_GET_MAX_NB_REQ_C(MUMPS_INT *max,MUMPS_INT *ierr);
-#define MUMPS_GET_MAX_FILE_SIZE_C \
-    F_SYMBOL(get_max_file_size_c,GET_MAX_FILE_SIZE_C)
-void MUMPS_CALL
-MUMPS_GET_MAX_FILE_SIZE_C(double * max_ooc_file_size);
 #define MUMPS_OOC_GET_NB_FILES_C \
     F_SYMBOL(ooc_get_nb_files_c,OOC_GET_NB_FILES_C)
 void MUMPS_CALL
@@ -160,7 +133,7 @@ MUMPS_OOC_ALLOC_POINTERS_C(MUMPS_INT *nb_file_type, MUMPS_INT *dim, MUMPS_INT *i
     F_SYMBOL(ooc_init_vars_c,OOC_INIT_VARS_C)
 void MUMPS_CALL
 MUMPS_OOC_INIT_VARS_C(MUMPS_INT *myid_arg, MUMPS_INT *size_element, MUMPS_INT *async,
-                      MUMPS_INT *k211, MUMPS_INT *ierr);
+                      MUMPS_INT *keep211, MUMPS_INT *keep255, MUMPS_INT *ierr);
 #define MUMPS_OOC_START_LOW_LEVEL \
     F_SYMBOL(ooc_start_low_level,OOC_START_LOW_LEVEL)
 void MUMPS_CALL

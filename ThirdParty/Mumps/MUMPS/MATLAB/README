@@ -1,19 +1,18 @@
 README
 ************************************************************************
-*  This MATLAB interface to MUMPS is provided to you free of charge.   *
-*  It is part of the MUMPS package (see ../Conditions_of_use) and is   *
-*  public domain. Up-to-date copies can be obtained from the Web       *
-*  pages        http://mumps.enseeiht.fr/         or                   *
-*  		http://graal.ens-lyon.fr/MUMPS                         *
+*  This MATLAB interface to MUMPS is part of the MUMPS package         *
+*  (see ../LICENSE for the conditions of use) *
+*  Up-to-date copies of MUMPS can be obtained from the web             *
+*  page http://mumps-solver.org                                        *
 *                                                                      *
 *  THIS MATERIAL IS PROVIDED AS IS, WITH ABSOLUTELY NO WARRANTY	       *
 *  EXPRESSED OR IMPLIED.  ANY USE IS AT YOUR OWN RISK.                 *
 *                                                                      *
-*  More info is available in the main MUMPS users' guide and in:       *
+*  More information is available in the main MUMPS userguide and in:   *
 *                                                                      *
 *   [2006] Aurelia Fevre, Jean-Yves L'Excellent and Stephane Pralet    *
 *   MATLAB and Scilab interfaces to MUMPS. LIP Report RR2006-06.       *
-*   Also available as an INRIA and an ENSEEIHT-IRIT Technical Report.  *
+*   Also available as INRIA and ENSEEIHT-IRIT Technical Reports.       *
 *                                                                      *
 ************************************************************************
 
@@ -58,6 +57,16 @@ README
  Makefile.inc). Note that this also applies to other external
  libraries, such as METIS, SCOTCH, BLAS, etc.
 
+ 2-
+ to specify an adequate BLAS library.
+ Unless you compile with the option -DINTSIZE64, MUMPS expects 32-bit
+ integers by default (see the MUMPS_INT datatype in mumps_c_types.h).
+ In that case, you should specify a BLAS library relying on 32-bit
+ integers. Otherwise, an error at execution time is likely to occur
+ (e.g., "segmentation fault in idamax"). If you use a shared library,
+ make sure that Matlab will not override your default BLAS library
+ (One way to do that is to issue LD_PRELOAD=my_blas_library.so matlab
+ instead matlab)
 
  2- 
  to edit make.inc.
@@ -67,14 +76,14 @@ README
 
  You can use something like
  nm -o /opt/intel/compiler80/lib/*.a | grep <name of missing compiler symbol>
- to find which libraries should be added 
+ to help finding which libraries should be added 
 
  3-
- to run the make command
+ to run the "make" command
 
  4- We advise you to run the 4 examples 
     simple_example.m, multiplerhs_example.m, sparserhs_example.m and
-    schurrhs_example.m
+    schur_example.m
     and to check that everything runs smoothly.
 
 ******************************************************************************
@@ -85,7 +94,7 @@ README
  in sequential for double precision and double complex versions.
  For example it does not support:
   - other versions (single precision arithmetic, parallel version...)
-  - elemental format
+  - elemental format for the input matrix
 
 ******************************************************************************
 
@@ -98,7 +107,7 @@ id = dmumps(id);
 % load a sparse matrix
 load lhr01;
 mat = Problem.A;
-% JOB = 6 means analysis+facto+solve
+% JOB = 6 means analysis+factorization+solve
 id.JOB = 6;
 id.ICNTL(6) = 0;
 % we set the rigth hand side

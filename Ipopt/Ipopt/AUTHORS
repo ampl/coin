@@ -35,15 +35,19 @@ Contributors:
   Test/mytoy.nl
 
 - Peter Carbonetto (University of British Columbia)
-  Matlab interface files in directory (and subdirectories of)
+  Matlab interface
 
-  contrib/MatlabInterface
+  [removed from Ipopt source as unmaintained]
 
 - Rafael de Pelegrini Soares (VRTech Industrial Technologies)
   and Tong Kewei (Beihang University, Beijing)
-  Java interface files in directory (and subdirectories of)
+  Java interface files
 
   contrib/JavaInterface
+  src/Interfaces/IpStdJInterface.cpp
+  src/Interfaces/Ipopt.java
+  examples/hs071_java/HS071.java
+  examples/ScalableProblems_java/*.java
 
 - Lifeng Chen/Zaiwen Wen (Columbia University)
   Changes and additions to the implementation of the Chen-Goldfarb
@@ -67,17 +71,14 @@ Contributors:
 - Stefan Vigerske (GAMS)
   Dynamic loading of linear solver shared libraries
 
-  src/contrib/LinearSolverLoader/HSLLoader.c
-  src/contrib/LinearSolverLoader/HSLLoader.h
-  src/contrib/LinearSolverLoader/LibraryHandler.c
-  src/contrib/LinearSolverLoader/LibraryHandler.h
-  src/contrib/LinearSolverLoader/PardisoLoader.c
-  src/contrib/LinearSolverLoader/PardisoLoader.h
+  src/Common/IpLibraryLoader.hpp
+  src/Common/IpLibraryLoader.cpp
+  HSL and Pardiso interface files
 
 - Marcel Roelofs (AIMMS)
   MSVC project files for Intel Fortran compiler, creating a DLL
 
-  MSVisualStudio/v8-ifort
+  [removed from Ipopt source as unmaintained]
 
 - Jonathan Hogg (STFC Rutherford Appleton Laboratory)
   MA77 interface
@@ -110,17 +111,34 @@ Contributors:
   R interface with examples, all files in directory (and subdirectory of)
 
   contrib/RInterface
-  
+
 - Tony Kelman (Berkeley)
   improvements to Matlab interface
-  
+
   Ipopt/contrib/MatlabInterface
 
 - Gabriel Hackebeil
   improved use compound component spaces
-  
+
 - Nai-Yuan Chiang and Victor M. Zavala Tejeda (Argonne National Laboratory)
   inertia free curvature test in solution of primal-dual system (full approach)
+
+- Brad Bell
+  recursive NLP example
+
+  examples/recursive_nlp/recursive_nlp.cpp
+
+- Mitchell Clement
+  support for use of single-precision floating point number
+
+  many source files affected, see https://github.com/coin-or/Ipopt/pull/428
+
+- Byron Tasseff (LANL, University of Michigan)
+  Spral interface
+
+  src/Algorithm/LinearSolvers/IpSpralSolverInterface.hpp
+  src/Algorithm/LinearSolvers/IpSpralSolverInterface.cpp
+
 
 Contributors of code that is no longer included in Ipopt distribution:
 

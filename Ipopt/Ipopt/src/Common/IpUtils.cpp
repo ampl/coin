@@ -2,86 +2,26 @@
 // All Rights Reserved.
 // This code is published under the Eclipse Public License.
 //
-// $Id$
-//
 // Authors:  Carl Laird, Andreas Waechter    IBM       2005-08-12
 
 #include "IpoptConfig.h"
 #include "IpUtils.hpp"
 
-#ifdef HAVE_CSTDLIB
-# include <cstdlib>
-#else
-# ifdef HAVE_STDLIB_H
-#  include <stdlib.h>
-# endif
+#include <cstdlib>
+#include <cmath>
+#include <cfloat>
+#ifdef HAVE_IEEFP_H
+#include <ieeefp.h>
 #endif
-
-#ifdef HAVE_CMATH
-# include <cmath>
-#else
-# ifdef HAVE_MATH_H
-#  include <math.h>
-# else
-#  error "don't have header file for math"
-# endif
-#endif
-
-#ifdef HAVE_CFLOAT
-# include <cfloat>
-#else
-# ifdef HAVE_FLOAT_H
-#  include <float.h>
-# endif
-#endif
-
-#ifdef HAVE_CIEEEFP
-# include <cieeefp>
-#else
-# ifdef HAVE_IEEEFP_H
-#  include <ieeefp.h>
-# endif
-#endif
-
-#ifdef HAVE_CTIME
-# include <ctime>
-#else
-# ifdef HAVE_TIME_H
-#  include <time.h>
-# else
-#  error "don't have header file for time"
-# endif
-#endif
-
-#ifdef HAVE_CSTDIO
-# include <cstdio>
-//  The special treatment of vsnprintf on SUN has been suggsted by Lou
-//  Hafer 2010/07/04
-# if defined(HAVE_VSNPRINTF) && defined(__SUNPRO_CC)
-namespace std
-{
-#  include <iso/stdio_c99.h>
-}
-# endif
-#else
-# ifdef HAVE_STDIO_H
-#  include <stdio.h>
-# else
-#  error "don't have header file for stdio"
-# endif
-#endif
-
-#ifdef HAVE_CSTDARG
-# include <cstdarg>
-#else
-# ifdef HAVE_STDARG_H
-#  include <stdarg.h>
-# else
-#  error "don't have header file for stdarg"
-# endif
-#endif
-
+#include <ctime>
+#include <cstdio>
+#include <cstdarg>
+#include <csignal>
 #include <limits>
+
+#if defined(_MSC_VER) && _MSC_VER < 1900
+#define vsnprintf _vsnprintf
+#endif
 
 // The following code has been copied from CoinUtils' CoinTime
 
@@ -111,27 +51,30 @@ namespace std
    '#define small char' */
 #undef small
 #endif
+#ifdef max
+#undef max
+#endif
 #define TWO_TO_THE_THIRTYTWO 4294967296.0
 #define DELTA_EPOCH_IN_SECS  11644473600.0
 inline double IpCoinGetTimeOfDay()
 {
-  FILETIME ft;
+   FILETIME ft;
 
-  GetSystemTimeAsFileTime(&ft);
-  double t = ft.dwHighDateTime * TWO_TO_THE_THIRTYTWO + ft.dwLowDateTime;
-  t = t/10000000.0 - DELTA_EPOCH_IN_SECS;
-  return t;
+   GetSystemTimeAsFileTime(&ft);
+   double t = ft.dwHighDateTime * TWO_TO_THE_THIRTYTWO + ft.dwLowDateTime;
+   t = t / 10000000.0 - DELTA_EPOCH_IN_SECS;
+   return t;
 }
 #else
 #include <sys/types.h>
 #include <sys/timeb.h>
 inline double IpCoinGetTimeOfDay()
 {
-  struct _timeb timebuffer;
+   struct _timeb timebuffer;
 #pragma warning(disable:4996)
-  _ftime( &timebuffer ); // C4996
+   _ftime( &timebuffer ); // C4996
 #pragma warning(default:4996)
-  return timebuffer.time + timebuffer.millitm/1000.0;
+   return timebuffer.time + timebuffer.millitm / 1000.0;
 }
 #endif
 
@@ -141,9 +84,9 @@ inline double IpCoinGetTimeOfDay()
 
 inline double IpCoinGetTimeOfDay()
 {
-  struct timeval tv;
-  gettimeofday(&tv, NULL);
-  return static_cast<double>(tv.tv_sec) + static_cast<double>(tv.tv_usec)/1000000.0;
+   struct timeval tv;
+   gettimeofday(&tv, NULL);
+   return static_cast<double>(tv.tv_sec) + static_cast<double>(tv.tv_usec) / 1000000.0;
 }
 
 #endif // _MSC_VER
@@ -153,161 +96,217 @@ inline double IpCoinGetTimeOfDay()
 namespace Ipopt
 {
 
-  bool IsFiniteNumber(Number val)
-  {
-#ifdef COIN_C_FINITE
-    return (bool)COIN_C_FINITE(val);
+bool IsFiniteNumber(
+   Number val
+)
+{
+#ifdef IPOPT_C_FINITE
+   return (bool)IPOPT_C_FINITE(val);
 #else
-
-    return true;
+   return true;
 #endif
 
-  }
+}
 
-  Number IpRandom01()
-  {
-#ifdef HAVE_DRAND48
-    return Number(drand48());
+Number IpRandom01()
+{
+#ifdef IPOPT_HAS_DRAND48
+   return Number(drand48());
 #else
-# ifdef HAVE_RAND
-    return Number(rand())/Number(RAND_MAX);
+# ifdef IPOPT_HAS_RAND
+   return Number(rand()) / Number(RAND_MAX);
 # else
-#  ifdef HAVE_STD__RAND
-    return Number(std::rand())/Number(RAND_MAX);
+#  ifdef IPOPT_HAS_STD__RAND
+   return Number(std::rand()) / Number(RAND_MAX);
 #  else
-    /* this is a workaround for gcc 4.8.x, x >= 2, for which the test for rand() in our old configure does not work */
-#   if defined(__GNUC__) && __GNUC__ == 4 && __GNUC_MINOR__ == 8 && __GNUC_PATCHLEVEL__ >= 2
-      return Number(rand())/Number(RAND_MAX);
-#   else
-#    error "don't have function for random number generator"
-#   endif
+#   error "don't have function for random number generator"
 #  endif
 # endif
 #endif
-  }
+}
 
-  void IpResetRandom01()
-  {
-#ifdef HAVE_DRAND48
-    srand48(1);
+void IpResetRandom01()
+{
+#ifdef IPOPT_HAS_DRAND48
+   srand48(1);
 #else
-# ifdef HAVE_RAND
-    srand(1);
+# ifdef IPOPT_HAS_RAND
+   srand(1);
 # else
-#  ifdef HAVE_STD__RAND
-    std::srand(1);
+#  ifdef IPOPT_HAS_STD__RAND
+   std::srand(1);
 #  else
-#   if defined(__GNUC__) && __GNUC__ == 4 && __GNUC_MINOR__ == 8 && __GNUC_PATCHLEVEL__ >= 2
-    srand(1);
-#   else
-#    error "don't have function for random number generator"
-#   endif
+#   error "don't have function for random number generator"
 #  endif
 # endif
 #endif
-  }
+}
 
+// The following function were taken from CoinTime.hpp in COIN/Coin
+Number CpuTime()
+{
+   double cpu_temp;
 
-  static double Wallclock_firstCall_ = -1.;
-
-  // The following function were taken from CoinTime.hpp in COIN/Coin
-  Number CpuTime()
-  {
-    double cpu_temp;
 #if defined(_MSC_VER) || defined(__MSVCRT__)
+   unsigned int ticksnow;        /* clock_t is same as int */
 
-    unsigned int ticksnow;        /* clock_t is same as int */
+   ticksnow = (unsigned int)clock();
 
-    ticksnow = (unsigned int)clock();
-
-    cpu_temp = (double)((double)ticksnow/CLOCKS_PER_SEC);
+   cpu_temp = (double)((double)ticksnow / CLOCKS_PER_SEC);
 #else
-
-    struct rusage usage;
-    getrusage(RUSAGE_SELF,&usage);
-    cpu_temp = (double)usage.ru_utime.tv_sec;
-    cpu_temp += 1.0e-6*((double) usage.ru_utime.tv_usec);
+   struct rusage usage;
+   getrusage(RUSAGE_SELF, &usage);
+   cpu_temp = (double)usage.ru_utime.tv_sec;
+   cpu_temp += 1.0e-6 * ((double) usage.ru_utime.tv_usec);
 #endif
 
-    return cpu_temp;
-  }
+   return cpu_temp;
+}
 
-  Number SysTime()
-  {
-    double sys_temp;
+Number SysTime()
+{
+   double sys_temp;
+
 #if defined(_MSC_VER) || defined(__MSVCRT__)
-
-    // not yet implemented for Windows
-    sys_temp = 0.;
+   // not yet implemented for Windows
+   sys_temp = 0.;
 #else
-
-    struct rusage usage;
-    getrusage(RUSAGE_SELF,&usage);
-    sys_temp = (double)usage.ru_stime.tv_sec;
-    sys_temp += 1.0e-6*((double) usage.ru_stime.tv_usec);
+   struct rusage usage;
+   getrusage(RUSAGE_SELF, &usage);
+   sys_temp = (double)usage.ru_stime.tv_sec;
+   sys_temp += 1.0e-6 * ((double) usage.ru_stime.tv_usec);
 #endif
 
-    return sys_temp;
-  }
+   return sys_temp;
+}
 
-  Number WallclockTime()
-  {
-    double callTime = IpCoinGetTimeOfDay();
-    if (Wallclock_firstCall_ == -1.) {
-      Wallclock_firstCall_ = callTime;
-    }
-    return callTime - Wallclock_firstCall_;
-  }
+Number WallclockTime()
+{
+   return IpCoinGetTimeOfDay();
+}
 
-  bool Compare_le(Number lhs, Number rhs, Number BasVal)
-  {
-    Number mach_eps = std::numeric_limits<Number>::epsilon();
-    return (lhs - rhs <= 10.*mach_eps*fabs(BasVal));
-  }
+static bool registered_handler = false;
+static unsigned int abortcountdown_ = std::numeric_limits<unsigned int>::max();
+static void (*handle_interrupt_)(void) = NULL;
+static bool* interrupt_flag_ = NULL;
 
-  int Snprintf(char* str, long size, const char* format, ...)
-  {
-#if defined(HAVE_VSNPRINTF) && defined(__SUNPRO_CC)
-    std::va_list ap;
+static void sighandler(
+   int /* signum */
+)
+{
+   if( interrupt_flag_ != NULL )
+   {
+      *interrupt_flag_ = true;
+   }
+
+   if( handle_interrupt_ != NULL )
+   {
+      (*handle_interrupt_)();
+   }
+
+   if( --abortcountdown_ == 0 )
+   {
+      fputs("Ipopt sighandler: Too many interrupt signals. Forcing termination.\n", stderr);
+      exit(1);
+   }
+}
+
+bool RegisterInterruptHandler(
+   void        (*handle_interrupt)(void),
+   bool*         interrupt_flag,
+   unsigned int  abortlimit
+)
+{
+   if( registered_handler )
+   {
+      return false;
+   }
+   registered_handler = true;
+   abortcountdown_ = abortlimit;
+
+   handle_interrupt_ = handle_interrupt;
+   interrupt_flag_ = interrupt_flag;
+
+#ifdef IPOPT_HAS_SIGACTION
+   struct sigaction sa;
+   sa.sa_handler = &sighandler;
+   sa.sa_flags = SA_RESTART;
+   sigfillset(&sa.sa_mask);
+   if( sigaction(SIGINT, &sa, NULL) == -1 )
+   {
+      return false;
+   }
+   if( sigaction(SIGHUP, &sa, NULL) == -1 )
+   {
+      return false;
+   }
+
 #else
-    va_list ap;
+   signal(SIGINT, sighandler);
+   signal(SIGTERM, sighandler);
+   signal(SIGABRT, sighandler);
+
 #endif
-    va_start(ap, format);
-    int ret;
-#ifdef HAVE_VA_COPY
-    va_list apcopy;
-    va_copy(apcopy, ap);
-# ifdef HAVE_VSNPRINTF
-#  ifdef __SUNPRO_CC
-    ret = std::vsnprintf(str, size, format, apcopy);
-#  else
-    ret = vsnprintf(str, size, format, apcopy);
-#  endif
-# else
-#  ifdef HAVE__VSNPRINTF
-    ret = _vsnprintf(str, size, format, apcopy);
-#  else
-    ret = vsprintf(str, format, apcopy);
-#  endif
-    va_end(apcopy);
-# endif
+
+   return true;
+}
+
+bool UnregisterInterruptHandler(void)
+{
+   if( !registered_handler )
+   {
+      return false;
+   }
+
+#ifdef IPOPT_HAS_SIGACTION
+   struct sigaction sa;
+   sa.sa_handler = SIG_DFL;
+   sa.sa_flags = SA_RESTART;
+   sigfillset(&sa.sa_mask);
+   if( sigaction(SIGINT, &sa, NULL) == -1 )
+   {
+      return false;
+   }
+   if( sigaction(SIGHUP, &sa, NULL) == -1 )
+   {
+      return false;
+   }
+
 #else
-# ifdef HAVE_VSNPRINTF
-#  ifdef __SUNPRO_CC
-    ret = std::vsnprintf(str, size, format, ap);
-#  else
-    ret = vsnprintf(str, size, format, ap);
-#  endif
-# else
-#  ifdef HAVE__VSNPRINTF
-    ret = _vsnprintf(str, size, format, ap);
-#  else
-    ret = vsprintf(str, format, ap);
-#  endif
-# endif
+   signal(SIGINT, SIG_DFL);
+   signal(SIGTERM, SIG_DFL);
+   signal(SIGABRT, SIG_DFL);
+
 #endif
-    va_end(ap);
-    return ret;
-  }
+
+   registered_handler = false;
+
+   return true;
+}
+
+bool Compare_le(
+   Number lhs,
+   Number rhs,
+   Number BasVal
+)
+{
+   Number mach_eps = std::numeric_limits<Number>::epsilon();
+   return (lhs - rhs <= 10.*mach_eps * std::abs(BasVal));
+}
+
+int Snprintf(
+   char*       str,
+   long        size,
+   const char* format,
+   ...
+)
+{
+   va_list ap;
+   va_start(ap, format);
+   int ret;
+   ret = vsnprintf(str, size, format, ap);
+   va_end(ap);
+   return ret;
+}
 
 } //namespace Ipopt

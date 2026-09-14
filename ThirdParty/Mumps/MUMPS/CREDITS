@@ -1,0 +1,34 @@
+This version of MUMPS has been developed by employees of 
+CERFACS, CNRS, EDF, ENS Lyon, Toulouse INP-IRIT, Inria, 
+Mumps Technologies, Sorbonne University and University of Bordeaux: 
+Emmanuel Agullo, Patrick Amestoy, Maurice Bremond, Alfredo Buttari, Philippe
+Combes, Marie Durand, Aurelia Fevre, Matthieu Gerest, Abdou Guermouche, 
+Antoine Jego, Guillaume Joslin, Jacko Koster, Jean-Yves L'Excellent, Theo Mary,
+Pierre-Etienne Polet, Stephane Pralet, Chiara Puglisi, Francois-Henry Rouet, 
+Wissam Sid-Lakhdar, Tzvetomila Slavova, Bora Ucar and Clement Weisbecker.
+
+Since January 2019, the MUMPS solver is maintained by Mumps Technologies
+(http://mumps-tech.com).
+
+We are grateful to Caroline Bousquet, Indranil Chowdhury, Christophe Daniel,
+Iain Duff, Vincent Espirat, Gilles Moreau, Gregoire Richard, Alexis Salzman, 
+Miroslav Tuma and Christophe Voemel who have been contributing to this project.
+
+We are also grateful to Juergen Schulze for letting us distribute PORD developed
+at the University of Paderborn. We thank Eddy Caron for the administration of a
+server that has been used during many years for MUMPS.
+
+We want to thank the French ANR programme, the European community, 
+Airbus Group-IW, Altair, ANSYS, CINES, EDF, EMGS, ESI Group, FFT/Hexagon, 
+Keysight, LBNL, LSTC, Michelin, NEC, SAFRAN, SAMTECH, Shell, Siemens, Synopsys, 
+Total and University of Southern California for their support. 
+We also thank LBNL, LSTC, PARALLAB and the Rutherford Appleton Laboratory 
+for research discussions that have certainly influenced this work. 
+
+Finally we want to thank the institutions that have provided access to their
+parallel machines: Centre Informatique National de l'Enseignement Superieur
+(CINES), CERFACS, CALMIP ("Centre Interuniversitaire de Calcul" located 
+in Toulouse), Centre Blaise Pascal de Simulation et de Modélisation Numérique, 
+Institut du Developpement et des Ressources en Informatique Scientifique (IDRIS), 
+Lawrence Berkeley National Laboratory, Laboratoire de l'Informatique du 
+Parallelisme, Inria, and PARALLAB.

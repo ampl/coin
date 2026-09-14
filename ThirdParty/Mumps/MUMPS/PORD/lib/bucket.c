@@ -53,14 +53,14 @@ Methods in lib/bucket.c:
 /******************************************************************************
 ******************************************************************************/
 bucket_t*
-newBucket(int maxbin, int maxitem, int offset)
+newBucket(PORD_INT maxbin, PORD_INT maxitem, PORD_INT offset)
 { bucket_t *bucket;
 
   mymalloc(bucket, 1, bucket_t);
-  mymalloc(bucket->bin, (maxbin+1), int);
-  mymalloc(bucket->next, (maxitem+1), int);
-  mymalloc(bucket->last, (maxitem+1), int);
-  mymalloc(bucket->key, (maxitem+1), int);
+  mymalloc(bucket->bin, (maxbin+1), PORD_INT);
+  mymalloc(bucket->next, (maxitem+1), PORD_INT);
+  mymalloc(bucket->last, (maxitem+1), PORD_INT);
+  mymalloc(bucket->key, (maxitem+1), PORD_INT);
 
   bucket->maxbin = maxbin;
   bucket->maxitem = maxitem;
@@ -88,9 +88,9 @@ freeBucket(bucket_t *bucket)
 /******************************************************************************
 ******************************************************************************/
 bucket_t*
-setupBucket(int maxbin, int maxitem, int offset)
+setupBucket(PORD_INT maxbin, PORD_INT maxitem, PORD_INT offset)
 { bucket_t *bucket;
-  int      i, u;
+  PORD_INT      i, u;
 
   if (offset < 0)
    { fprintf(stderr, "\nError in function setupBucket\n"
@@ -113,10 +113,10 @@ setupBucket(int maxbin, int maxitem, int offset)
 
 /******************************************************************************
 ******************************************************************************/
-int
+PORD_INT
 minBucket(bucket_t *bucket)
-{ int *bin, *next, *key, maxbin, minbin, nobj;
-  int item, bestitem, bestkey;
+{ PORD_INT *bin, *next, *key, maxbin, minbin, nobj;
+  PORD_INT item, bestitem, bestkey;
 
   maxbin = bucket->maxbin;
   nobj = bucket->nobj;
@@ -160,8 +160,8 @@ minBucket(bucket_t *bucket)
 /******************************************************************************
 ******************************************************************************/
 void
-insertBucket(bucket_t *bucket, int k, int item)
-{ int s, nextitem;
+insertBucket(bucket_t *bucket, PORD_INT k, PORD_INT item)
+{ PORD_INT s, nextitem;
 
   /* ------------------------------------
      check whether there are any problems
@@ -211,8 +211,8 @@ insertBucket(bucket_t *bucket, int k, int item)
 /******************************************************************************
 ******************************************************************************/
 void
-removeBucket(bucket_t *bucket, int item)
-{ int s, nextitem, lastitem;
+removeBucket(bucket_t *bucket, PORD_INT item)
+{ PORD_INT s, nextitem, lastitem;
 
   /* ----------------------------
      check whether item in bucket

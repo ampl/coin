@@ -66,9 +66,9 @@ Methods in lib/ddbisect.c:
 ******************************************************************************/
 void
 checkDDSep(domdec_t *dd)
-{ int *xadj, *adjncy, *vwght, *vtype, *color, *cwght;
-  int nvtx, err, u, v, i, istart, istop, nBdom, nWdom;
-  int checkS, checkB, checkW;
+{ PORD_INT *xadj, *adjncy, *vwght, *vtype, *color, *cwght;
+  PORD_INT nvtx, err, u, v, i, istart, istop, nBdom, nWdom;
+  PORD_INT checkS, checkB, checkW;
 
   nvtx = dd->G->nvtx;
   xadj = dd->G->xadj;
@@ -148,10 +148,10 @@ checkDDSep(domdec_t *dd)
 
 /*****************************************************************************
 ******************************************************************************/
-int
-findPseudoPeripheralDomain(domdec_t* dd, int domain)
-{ int *xadj, *adjncy, *vtype, *level, *queue;
-  int nvtx, qhead, qtail, nlev, lastdomain, u, v, i, istart, istop;
+PORD_INT
+findPseudoPeripheralDomain(domdec_t* dd, PORD_INT domain)
+{ PORD_INT *xadj, *adjncy, *vtype, *level, *queue;
+  PORD_INT nvtx, qhead, qtail, nlev, lastdomain, u, v, i, istart, istop;
 
   nvtx = dd->G->nvtx;
   xadj = dd->G->xadj;
@@ -161,8 +161,8 @@ findPseudoPeripheralDomain(domdec_t* dd, int domain)
   /* ------------------------
      allocate working storage
      ------------------------ */
-  mymalloc(level, nvtx, int);
-  mymalloc(queue, nvtx, int);
+  mymalloc(level, nvtx, PORD_INT);
+  mymalloc(queue, nvtx, PORD_INT);
 
   /* ---------------------------------------
      find a domain with maximal excentricity
@@ -205,11 +205,11 @@ findPseudoPeripheralDomain(domdec_t* dd, int domain)
 /*****************************************************************************
 *****************************************************************************/
 void
-constructLevelSep(domdec_t* dd, int domain)
-{ int *xadj, *adjncy, *vwght, *vtype, *color, *cwght;
-  int *queue, *deltaS, *deltaB, *deltaW;
-  int nvtx, bestvalue, weight, qhead, qtail, qopt, q, dS, dB, dW;
-  int u, v, w, i, istart, istop, j, jstart, jstop;
+constructLevelSep(domdec_t* dd, PORD_INT domain)
+{ PORD_INT *xadj, *adjncy, *vwght, *vtype, *color, *cwght;
+  PORD_INT *queue, *deltaS, *deltaB, *deltaW;
+  PORD_INT nvtx, bestvalue, weight, qhead, qtail, qopt, q, dS, dB, dW;
+  PORD_INT u, v, w, i, istart, istop, j, jstart, jstop;
 
   /* ======================================================================
      vtype[u]: (u domain)
@@ -234,10 +234,10 @@ constructLevelSep(domdec_t* dd, int domain)
   /* ------------------------------------------
      allocate working storage + initializations
      ------------------------------------------ */
-  mymalloc(queue, nvtx, int);
-  mymalloc(deltaS, nvtx, int);
-  mymalloc(deltaB, nvtx, int);
-  mymalloc(deltaW, nvtx, int);
+  mymalloc(queue, nvtx, PORD_INT);
+  mymalloc(deltaS, nvtx, PORD_INT);
+  mymalloc(deltaB, nvtx, PORD_INT);
+  mymalloc(deltaW, nvtx, PORD_INT);
   for (u = 0; u < nvtx; u++)
    { deltaS[u] = deltaB[u] = deltaW[u] = 0;
      if (vtype[u] == 2)
@@ -346,8 +346,8 @@ constructLevelSep(domdec_t* dd, int domain)
 ******************************************************************************/
 void
 initialDDSep(domdec_t *dd)
-{  int *vtype, *color, *cwght;
-   int nvtx, totvwght, domain, u;
+{  PORD_INT *vtype, *color, *cwght;
+   PORD_INT nvtx, totvwght, domain, u;
 
    nvtx = dd->G->nvtx;
    totvwght = dd->G->totvwght;
@@ -380,10 +380,10 @@ initialDDSep(domdec_t *dd)
 /*****************************************************************************
 *****************************************************************************/
 void
-updateB2W(bucket_t *w_bucket, bucket_t *b_bucket, domdec_t *dd, int domain,
-          int *tmp_color, int *deltaW, int *deltaB, int *deltaS)
-{ int *xadj, *adjncy, *vwght, *vtype;
-  int weight, u, v, i, istart, istop, j, jstart, jstop;
+updateB2W(bucket_t *w_bucket, bucket_t *b_bucket, domdec_t *dd, PORD_INT domain,
+          PORD_INT *tmp_color, PORD_INT *deltaW, PORD_INT *deltaB, PORD_INT *deltaS)
+{ PORD_INT *xadj, *adjncy, *vwght, *vtype;
+  PORD_INT weight, u, v, i, istart, istop, j, jstart, jstop;
 
   xadj = dd->G->xadj;
   adjncy = dd->G->adjncy;
@@ -492,10 +492,10 @@ updateB2W(bucket_t *w_bucket, bucket_t *b_bucket, domdec_t *dd, int domain,
 /*****************************************************************************
 *****************************************************************************/
 void
-updateW2B(bucket_t *w_bucket, bucket_t *b_bucket, domdec_t *dd, int domain,
-          int *tmp_color, int *deltaW, int *deltaB, int *deltaS)
-{ int *xadj, *adjncy, *vwght, *vtype;
-  int weight, u, v, i, istart, istop, j, jstart, jstop;
+updateW2B(bucket_t *w_bucket, bucket_t *b_bucket, domdec_t *dd, PORD_INT domain,
+          PORD_INT *tmp_color, PORD_INT *deltaW, PORD_INT *deltaB, PORD_INT *deltaS)
+{ PORD_INT *xadj, *adjncy, *vwght, *vtype;
+  PORD_INT weight, u, v, i, istart, istop, j, jstart, jstop;
 
   xadj = dd->G->xadj;
   adjncy = dd->G->adjncy;
@@ -606,11 +606,11 @@ updateW2B(bucket_t *w_bucket, bucket_t *b_bucket, domdec_t *dd, int domain,
 void
 improveDDSep(domdec_t *dd)
 { bucket_t *b_bucket, *w_bucket;
-  int      *xadj, *adjncy, *vwght, *vtype, *color, *cwght;
-  int      *tmp_color, *deltaS, *deltaB, *deltaW;
-  int      nvtx, weight, tmp_S, tmp_B, tmp_W;
-  int      pos, bestglobalpos, badflips, b_domain, w_domain, domain, nxtdomain;
-  int      fhead, ftail, u, v, i, istart, istop;
+  PORD_INT      *xadj, *adjncy, *vwght, *vtype, *color, *cwght;
+  PORD_INT      *tmp_color, *deltaS, *deltaB, *deltaW;
+  PORD_INT      nvtx, weight, tmp_S, tmp_B, tmp_W;
+  PORD_INT      pos, bestglobalpos, badflips, b_domain, w_domain, domain, nxtdomain;
+  PORD_INT      fhead, ftail, u, v, i, istart, istop;
   FLOAT    bestglobalvalue, b_value, w_value, value;
 
   /* ======================================================================
@@ -629,10 +629,10 @@ improveDDSep(domdec_t *dd)
   color = dd->color;
   cwght = dd->cwght;
 
-  mymalloc(tmp_color, nvtx, int);
-  mymalloc(deltaS, nvtx, int);
-  mymalloc(deltaB, nvtx, int);
-  mymalloc(deltaW, nvtx, int);
+  mymalloc(tmp_color, nvtx, PORD_INT);
+  mymalloc(deltaS, nvtx, PORD_INT);
+  mymalloc(deltaB, nvtx, PORD_INT);
+  mymalloc(deltaW, nvtx, PORD_INT);
 
 OUTER_LOOP_START:
 

@@ -1,0 +1,227 @@
+language: cpp
+
+git:
+   depth: 3
+
+matrix:
+  include:
+    - os: linux
+      dist: focal
+      addons:
+        apt:
+          packages:
+            - gfortran
+            - liblapack-dev
+            - libmetis-dev
+            - libhwloc-dev
+            - libudev-dev
+            - cppcheck
+      env: ENABLEDEBUG=true CPPCHECK=true
+    - os: linux
+      dist: focal
+      addons:
+        apt:
+          packages:
+            - gfortran
+            - liblapack64-dev
+            - cppcheck
+      env: INT64=true CPPCHECK=true
+    - os: linux
+      dist: bionic
+      addons:
+        apt:
+          packages:
+            - gfortran
+            - liblapack-dev
+            - libmetis-dev
+      env: SINGLEPRECISION=true
+    - os: linux
+      dist: xenial
+      addons:
+        apt:
+          packages:
+            - gfortran
+            - liblapack-dev
+            - libmetis-dev
+            - libhwloc-dev
+      env: VISHIDDEN=true
+    - os: freebsd
+      env: NOF77=true
+      addons:
+       pkg:
+        - lapack
+        - gcc10-devel
+    - os: linux
+      arch: arm64
+      addons:
+        apt:
+          packages:
+            - gfortran
+            - liblapack-dev
+            - libmetis-dev
+            - libhwloc-dev
+    - os: linux
+      arch: ppc64le
+      addons:
+        apt:
+          packages:
+            - gfortran
+            - liblapack-dev
+            - libmetis-dev
+            - libhwloc-dev
+    - os: linux
+      arch: s390x
+      addons:
+        apt:
+          packages:
+            - gfortran
+            - liblapack-dev
+            - libmetis-dev
+            - libhwloc-dev
+    - os: osx
+      osx_image: xcode11.3
+      env: OSX=10.14 VISHIDDEN=true
+      compiler: clang
+    - os: osx
+      osx_image: xcode11
+      env: OSX=10.14 VISHIDDEN=true NOF77=true
+      compiler: clang
+    - os: osx
+      osx_image: xcode11.6
+      env: OSX=10.15 ENABLEDEBUG=true
+      compiler: clang
+    - os: osx
+      osx_image: xcode12.5
+      env: OSX=11 SINGLEPRECISION=true
+      compiler: clang
+
+before_script:
+  - export VISHIDDEN=${VISHIDDEN:-false}
+  - export NOF77=${NOF77:-false}
+  - export ENABLEDEBUG=${ENABLEDEBUG:-false}
+  - export SINGLEPRECISION=${SINGLEPRECISION:-false}
+  - export INT64=${INT64:-false}
+  - export CPPCHECK=${CPPCHECK:-false}
+  - >
+    if [[ "$TRAVIS_OS_NAME" == "osx" ]] && ! $NOF77; then
+      brew update;
+      brew install bash gcc metis hwloc;
+      $SINGLEPRECISION && brew install lapack;
+      if [[ "$OSX" == 10.14 ]] ; then export CC=gcc-11 ; export CXX=g++-11 ;
+      elif [[ "$OSX" == 10.15 ]] ; then export CC=gcc-11 ; export CXX=g++-11 ;
+      elif [[ "$OSX" == 11 ]] ; then export CC=gcc-11 ; export CXX=g++-11 ; fi ;
+      $CC --version; $CXX --version; gfortran --version;
+    fi ;
+    if [[ "$TRAVIS_OS_NAME" == "freebsd" ]] ; then
+      export CC=gcc ; export CXX=g++ ;
+      $CC --version; $CXX --version
+    fi
+
+script:
+  # macOS VecLib doesn't work for single-precision routines (https://github.com/mcg1969/vecLibFort) - use homebrew lapack instead
+  - >
+    if $NOF77 || $SINGLEPRECISION || $INT64 ; then
+      echo "Skipping Spral build." ;
+    else
+      git clone --depth 1 --branch master https://github.com/ralna/spral.git &&
+      pushd spral &&
+      ./autogen.sh &&
+      if [[ "$TRAVIS_OS_NAME" == "osx" ]] ; then
+        CFLAGS=-fPIC CXXFLAGS=-fPIC FFLAGS=-fPIC FCFLAGS=-fPIC ./configure --prefix ${HOME}/spral --with-metis="-L/usr/local/Cellar/metis/5.1.0/lib -lmetis" --with-metic-inc-dir=/usr/local/Cellar/metis/5.1.0/include ;
+      else
+        CFLAGS=-fPIC CXXFLAGS=-fPIC FFLAGS=-fPIC FCFLAGS=-fPIC ./configure --prefix ${HOME}/spral ;
+      fi &&
+      make install &&
+      popd ;
+    fi
+  - >
+    mkdir -p $HOME/install/share && touch $HOME/install/share/config.site ;
+    ( $NOF77 && echo enable_f77=no ;
+      $ENABLEDEBUG && ( echo enable_debug=yes ; echo with_ipopt_checklevel=5 ; echo with_ipopt_verbosity=5 ) ;
+      $SINGLEPRECISION && echo "with_precision=single" ;
+      $SINGLEPRECISION && [[ "$TRAVIS_OS_NAME" == "osx" ]] && ! $NOF77 && echo "with_lapack=\"-L/usr/local/opt/lapack/lib -llapack -lblas\"" ;
+      $INT64 && echo "with_intsize=64" ;
+      [[ -d $HOME/spral ]] && echo "with_spral_cflags=-I${HOME}/spral/include" ;
+      [[ -d $HOME/spral ]] && [[ "$TRAVIS_OS_NAME" == "linux" ]] && echo "with_spral_lflags=\"-L${HOME}/spral/lib -lspral -lgfortran -lhwloc -lm -lmetis -llapack -lblas -fopenmp\"" ;
+      [[ -d $HOME/spral ]] && [[ "$TRAVIS_OS_NAME" == "osx" ]] && echo "with_spral_lflags=\"-L${HOME}/spral/lib -lspral -lgfortran -L/usr/local/Cellar/hwloc/2.5.0/lib -lhwloc -lm -L/usr/local/Cellar/metis/5.1.0/lib -lmetis -framework Accelerate -fopenmp\"" ;
+      [[ "$TRAVIS_OS_NAME" == "osx" ]] && ( echo "with_metis_cflags=-I/usr/local/Cellar/metis/5.1.0/include" ; echo "with_metis_lflags=\"-L/usr/local/Cellar/metis/5.1.0/lib -lmetis\"" ) ;
+    ) > $HOME/install/share/config.site ;
+    cat $HOME/install/share/config.site
+  - >
+    if [[ "$TRAVIS_OS_NAME" == "freebsd" ]] ; then
+      echo "Skipping ASL build." ;
+    else
+      git clone --depth 1 https://github.com/coin-or-tools/ThirdParty-ASL ;
+      pushd ThirdParty-ASL &&
+      ./get.ASL &&
+      ./configure --prefix=$HOME/install &&
+      make && make install &&
+      popd ;
+    fi
+  - >
+    if $NOF77 ; then
+      echo "Skipping Mumps build." ;
+    else
+      git clone --depth 1 https://github.com/coin-or-tools/ThirdParty-Mumps ;
+      pushd ThirdParty-Mumps &&
+      ./get.Mumps &&
+      ./configure --prefix=$HOME/install &&
+      make && make install &&
+      popd ;
+    fi
+  - mkdir build
+  - pushd build
+  - export ADD_CFLAGS="-Wall -Wextra -Werror"
+  - export ADD_CXXFLAGS="-Wall -Wextra -Werror"
+  - if $VISHIDDEN ; then ADD_CFLAGS="$ADD_CFLAGS -fvisibility=hidden" ; fi
+  - if $VISHIDDEN ; then ADD_CXXFLAGS="$ADD_CXXFLAGS -fvisibility=hidden" ; fi
+  - ../configure --prefix=$HOME/install
+  - make
+  - export OMP_CANCELLATION=TRUE
+  - >
+    if $NOF77 ; then echo "skip test as no linear solver" ;
+    else
+      make test || exit 1 ;
+      if [[ -d $HOME/spral ]] ; then
+        echo "linear_solver mumps" > test/ipopt.opt ;
+        make test ;
+      fi
+    fi
+  - make install
+  - pushd examples/Cpp_example
+  - make
+  - if ! $NOF77 ; then ./cpp_example ; fi
+  - popd
+  - pushd examples/hs071_c
+  - make
+  - if ! $NOF77 ; then ./hs071_c ; fi
+  - popd
+  - pushd examples/hs071_cpp
+  - make
+  - if ! $NOF77 ; then ./hs071_cpp ; fi
+  - popd
+  - if ! $NOF77 ; then pushd examples/hs071_f && make && ./hs071_f && popd ; fi
+  - pushd examples/ScalableProblems
+  - make
+  - if ! $NOF77 ; then ./solve_problem MBndryCntrl1 10 ; fi
+  - popd
+  - pushd examples/recursive_nlp
+  - make
+  - if ! $NOF77 ; then ./recursive_nlp ; fi
+  - popd
+  - pushd contrib/sIPOPT/examples/parametric_cpp
+  - make
+  - if ! $NOF77 ; then ./parametric_driver ; fi
+  - popd
+  - pushd contrib/sIPOPT/examples/parametric_dsdp_cpp
+  - make
+  - if ! $NOF77 ; then ./parametric_dsdp_driver ; fi
+  - popd
+  - pushd contrib/sIPOPT/examples/redhess_cpp
+  - make
+  - if ! $NOF77 ; then ./redhess_cpp ; fi
+  - popd
+  - if $CPPCHECK ; then make cppcheck ; fi
+
+after_failure:
+  - find . -name config.log -exec tail -n 1000 {} \;

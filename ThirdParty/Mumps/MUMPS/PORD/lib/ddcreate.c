@@ -97,13 +97,13 @@ Methods in lib/ddcreate.c:
 /*****************************************************************************
 ******************************************************************************/
 domdec_t*
-newDomainDecomposition(int nvtx, int nedges)
+newDomainDecomposition(PORD_INT nvtx, PORD_INT nedges)
 { domdec_t *dd;
 
   mymalloc(dd, 1, domdec_t);
-  mymalloc(dd->vtype, nvtx, int);
-  mymalloc(dd->color, nvtx, int);
-  mymalloc(dd->map, nvtx, int);
+  mymalloc(dd->vtype, nvtx, PORD_INT);
+  mymalloc(dd->color, nvtx, PORD_INT);
+  mymalloc(dd->map, nvtx, PORD_INT);
 
   dd->G = newGraph(nvtx, nedges);
   dd->ndom = dd->domwght = 0;
@@ -132,7 +132,7 @@ freeDomainDecomposition(domdec_t *dd)
 void
 printDomainDecomposition(domdec_t *dd)
 { graph_t *G;
-  int   count, u, v, i, istart, istop;
+  PORD_INT   count, u, v, i, istart, istop;
 
   G = dd->G;
   printf("\n#nodes %d (#domains %d, weight %d), #edges %d, totvwght %d\n",
@@ -161,8 +161,8 @@ printDomainDecomposition(domdec_t *dd)
 ******************************************************************************/
 void
 checkDomainDecomposition(domdec_t *dd)
-{ int *xadj, *adjncy, *vwght, *vtype;
-  int err, nvtx, ndom, domwght, dom, multi, u, v, i, istart, istop;
+{ PORD_INT *xadj, *adjncy, *vwght, *vtype;
+  PORD_INT err, nvtx, ndom, domwght, dom, multi, u, v, i, istart, istop;
 
   nvtx = dd->G->nvtx;
   xadj = dd->G->xadj;
@@ -221,9 +221,9 @@ checkDomainDecomposition(domdec_t *dd)
 /*****************************************************************************
 ******************************************************************************/
 void
-buildInitialDomains(graph_t *G, int *vtxlist, int *vtype, int *rep)
-{ int *xadj, *adjncy;
-  int nvtx, u, v, w, i, j, jstart, jstop;
+buildInitialDomains(graph_t *G, PORD_INT *vtxlist, PORD_INT *vtype, PORD_INT *rep)
+{ PORD_INT *xadj, *adjncy;
+  PORD_INT nvtx, u, v, w, i, j, jstart, jstop;
 
   xadj = G->xadj;
   adjncy = G->adjncy;
@@ -277,10 +277,10 @@ buildInitialDomains(graph_t *G, int *vtxlist, int *vtype, int *rep)
 /*****************************************************************************
 ******************************************************************************/
 void
-mergeMultisecs(graph_t *G, int *vtype, int *rep)
-{ int *xadj, *adjncy, *tmp, *queue;
-  int nvtx, qhead, qtail, flag, keepon, u, v, w, x;
-  int i, istart, istop, j, jstart, jstop;
+mergeMultisecs(graph_t *G, PORD_INT *vtype, PORD_INT *rep)
+{ PORD_INT *xadj, *adjncy, *tmp, *queue;
+  PORD_INT nvtx, qhead, qtail, flag, keepon, u, v, w, x;
+  PORD_INT i, istart, istop, j, jstart, jstop;
 
   nvtx = G->nvtx;
   xadj = G->xadj;
@@ -289,8 +289,8 @@ mergeMultisecs(graph_t *G, int *vtype, int *rep)
   /* ------------------------
      allocate working storage
      ------------------------ */
-  mymalloc(tmp, nvtx, int);
-  mymalloc(queue, nvtx, int);
+  mymalloc(tmp, nvtx, PORD_INT);
+  mymalloc(queue, nvtx, PORD_INT);
   for (u = 0; u < nvtx; u++)
     tmp[u] = -1;
 
@@ -363,11 +363,11 @@ mergeMultisecs(graph_t *G, int *vtype, int *rep)
 /*****************************************************************************
 ******************************************************************************/
 domdec_t*
-initialDomainDecomposition(graph_t *G, int *map, int *vtype, int *rep)
+initialDomainDecomposition(graph_t *G, PORD_INT *map, PORD_INT *vtype, PORD_INT *rep)
 { domdec_t *dd;
-  int      *xadj, *adjncy, *vwght, *xadjdd, *adjncydd, *vwghtdd, *vtypedd;
-  int      *tmp, *bin, nvtx, nedges, nvtxdd, nedgesdd, ndom, domwght, flag;
-  int      i, j, jstart, jstop, u, v, w;
+  PORD_INT      *xadj, *adjncy, *vwght, *xadjdd, *adjncydd, *vwghtdd, *vtypedd;
+  PORD_INT      *tmp, *bin, nvtx, nedges, nvtxdd, nedgesdd, ndom, domwght, flag;
+  PORD_INT      i, j, jstart, jstop, u, v, w;
 
   nvtx = G->nvtx;
   nedges = G->nedges;
@@ -378,8 +378,8 @@ initialDomainDecomposition(graph_t *G, int *map, int *vtype, int *rep)
   /* ------------------------
      allocate working storage
      ------------------------ */
-  mymalloc(tmp, nvtx, int);
-  mymalloc(bin, nvtx, int);
+  mymalloc(tmp, nvtx, PORD_INT);
+  mymalloc(bin, nvtx, PORD_INT);
   for (u = 0; u < nvtx; u++)
    { tmp[u] = -1;
      bin[u] = -1;
@@ -469,10 +469,10 @@ initialDomainDecomposition(graph_t *G, int *map, int *vtype, int *rep)
 /*****************************************************************************
 ******************************************************************************/
 domdec_t*
-constructDomainDecomposition(graph_t *G, int *map)
+constructDomainDecomposition(graph_t *G, PORD_INT *map)
 { domdec_t *dd;
-  int      *xadj, *adjncy, *vwght, *vtxlist, *vtype, *key, *rep;
-  int      nvtx, deg, u, i, istart, istop;
+  PORD_INT      *xadj, *adjncy, *vwght, *vtxlist, *vtype, *key, *rep;
+  PORD_INT      nvtx, deg, u, i, istart, istop;
 
   nvtx = G->nvtx;
   xadj = G->xadj;
@@ -482,8 +482,8 @@ constructDomainDecomposition(graph_t *G, int *map)
   /* ---------------------------------------------------------
      sort the vertices in G in ascending order of their degree
      --------------------------------------------------------- */
-  mymalloc(vtxlist, nvtx, int);
-  mymalloc(key, nvtx, int);
+  mymalloc(vtxlist, nvtx, PORD_INT);
+  mymalloc(key, nvtx, PORD_INT);
   for (u = 0; u < nvtx; u++)
    { vtxlist[u] = u;
      istart = xadj[u];
@@ -511,8 +511,8 @@ constructDomainDecomposition(graph_t *G, int *map)
       build initial domains and cluster multisecs that do not share
       a common domain
       ------------------------------------------------------------- */
-   mymalloc(vtype, nvtx, int);
-   mymalloc(rep, nvtx, int);
+   mymalloc(vtype, nvtx, PORD_INT);
+   mymalloc(rep, nvtx, PORD_INT);
    for (u = 0; u < nvtx; u++)
     { vtype[u] = 0;
       rep[u] = u;
@@ -533,10 +533,10 @@ constructDomainDecomposition(graph_t *G, int *map)
 /*****************************************************************************
 ******************************************************************************/
 void
-computePriorities(domdec_t *dd, int *msvtxlist, int *key, int scoretype)
-{ int *xadj, *adjncy, *vwght, *marker;
-  int nvtx, nlist, k, weight, deg, u, v, w;
-  int i, istart, istop, j, jstart, jstop;
+computePriorities(domdec_t *dd, PORD_INT *msvtxlist, PORD_INT *key, PORD_INT scoretype)
+{ PORD_INT *xadj, *adjncy, *vwght, *marker;
+  PORD_INT nvtx, nlist, k, weight, deg, u, v, w;
+  PORD_INT i, istart, istop, j, jstart, jstop;
 
   nvtx = dd->G->nvtx;
   xadj = dd->G->xadj;
@@ -603,9 +603,9 @@ computePriorities(domdec_t *dd, int *msvtxlist, int *key, int scoretype)
 /*****************************************************************************
 ******************************************************************************/
 void
-eliminateMultisecs(domdec_t *dd, int *msvtxlist, int *rep)
-{ int *xadj, *adjncy, *vtype;
-  int nvtx, nlist, keepon, u, v, w, k, i, istart, istop;
+eliminateMultisecs(domdec_t *dd, PORD_INT *msvtxlist, PORD_INT *rep)
+{ PORD_INT *xadj, *adjncy, *vtype;
+  PORD_INT nvtx, nlist, keepon, u, v, w, k, i, istart, istop;
 
   nvtx = dd->G->nvtx;
   xadj = dd->G->xadj;
@@ -667,9 +667,9 @@ eliminateMultisecs(domdec_t *dd, int *msvtxlist, int *rep)
 /*****************************************************************************
 ******************************************************************************/
 void
-findIndMultisecs(domdec_t *dd, int *msvtxlist, int *rep)
-{ int *xadj, *adjncy, *vtype, *tmp, *bin, *checksum, *next, *key;
-  int nvtx, nlist, flag, keepon, deg, chk, ulast, u, v, k, i, istart, istop;
+findIndMultisecs(domdec_t *dd, PORD_INT *msvtxlist, PORD_INT *rep)
+{ PORD_INT *xadj, *adjncy, *vtype, *tmp, *bin, *checksum, *next, *key;
+  PORD_INT nvtx, nlist, flag, keepon, deg, chk, ulast, u, v, k, i, istart, istop;
 
   nvtx = dd->G->nvtx;
   xadj = dd->G->xadj;
@@ -681,10 +681,10 @@ findIndMultisecs(domdec_t *dd, int *msvtxlist, int *rep)
   /* ------------------------
      allocate working storage
      ------------------------ */
-  mymalloc(tmp, nvtx, int);
-  mymalloc(bin, nvtx, int);
-  mymalloc(next, nvtx, int);
-  mymalloc(key, nvtx, int);
+  mymalloc(tmp, nvtx, PORD_INT);
+  mymalloc(bin, nvtx, PORD_INT);
+  mymalloc(next, nvtx, PORD_INT);
+  mymalloc(key, nvtx, PORD_INT);
   for (u = 0; u < nvtx; u++)
    { tmp[u] = -1;
      bin[u] = -1;
@@ -775,12 +775,12 @@ findIndMultisecs(domdec_t *dd, int *msvtxlist, int *rep)
 /*****************************************************************************
 ******************************************************************************/
 domdec_t*
-coarserDomainDecomposition(domdec_t* dd1, int *rep)
+coarserDomainDecomposition(domdec_t* dd1, PORD_INT *rep)
 { domdec_t *dd2;
-  int      *xadjdd1, *adjncydd1, *vwghtdd1, *vtypedd1, *mapdd1;
-  int      *xadjdd2, *adjncydd2, *vwghtdd2, *vtypedd2;
-  int      *tmp, *bin, nvtxdd1, nedgesdd1, nvtxdd2, nedgesdd2;
-  int      ndom, domwght, flag, u, v, w, i, istart, istop;
+  PORD_INT      *xadjdd1, *adjncydd1, *vwghtdd1, *vtypedd1, *mapdd1;
+  PORD_INT      *xadjdd2, *adjncydd2, *vwghtdd2, *vtypedd2;
+  PORD_INT      *tmp, *bin, nvtxdd1, nedgesdd1, nvtxdd2, nedgesdd2;
+  PORD_INT      ndom, domwght, flag, u, v, w, i, istart, istop;
 
   nvtxdd1 = dd1->G->nvtx;
   nedgesdd1 = dd1->G->nedges;
@@ -793,8 +793,8 @@ coarserDomainDecomposition(domdec_t* dd1, int *rep)
   /* ------------------------
      allocate working storage
      ------------------------ */
-  mymalloc(tmp, nvtxdd1, int);
-  mymalloc(bin, nvtxdd1, int);
+  mymalloc(tmp, nvtxdd1, PORD_INT);
+  mymalloc(bin, nvtxdd1, PORD_INT);
   for (u = 0; u < nvtxdd1; u++)
    { tmp[u] = -1;
      bin[u] = -1;
@@ -895,15 +895,15 @@ coarserDomainDecomposition(domdec_t* dd1, int *rep)
 /*****************************************************************************
 ******************************************************************************/
 void
-shrinkDomainDecomposition(domdec_t* dd1, int scoretype)
+shrinkDomainDecomposition(domdec_t* dd1, PORD_INT scoretype)
 { domdec_t *dd2;
-  int      *msvtxlist, *rep, *key;
-  int      nvtxdd1, nlist, u;
+  PORD_INT      *msvtxlist, *rep, *key;
+  PORD_INT      nvtxdd1, nlist, u;
 
   nvtxdd1 = dd1->G->nvtx;
-  mymalloc(msvtxlist, nvtxdd1, int);
-  mymalloc(rep, nvtxdd1, int);
-  mymalloc(key, nvtxdd1, int);
+  mymalloc(msvtxlist, nvtxdd1, PORD_INT);
+  mymalloc(rep, nvtxdd1, PORD_INT);
+  mymalloc(key, nvtxdd1, PORD_INT);
 
   /* ---------------
      initializations

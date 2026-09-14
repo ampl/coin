@@ -1,0 +1,83 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?xml-stylesheet type = "text/xsl" href = "http://www.coin-or.org/projects/autoGen.xsl"?>
+<projectData xmlns="coin-or.org" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="coin-or.org http://www.coin-or.org/projects/autoGen.xsd">
+  <projectBasics>
+    <projectName>Ipopt</projectName>
+    <projectDescription>Ipopt is an open-source solver for large-scale nonlinear continuous optimization.
+      It can be used from modeling environments, such as AIMMS, AMPL, GAMS, or Matlab, and it is also available as callable library with interfaces to C++, C, Fortran, Java, and R.
+      Ipopt uses an interior point method, together with a filter linear search procedure.
+    </projectDescription>
+    <projectShortDescription>A solver for general large-scale nonlinear continuous optimization.</projectShortDescription>
+    <projectManager>Andreas Waechter</projectManager>
+    <projectHomePage>https://github.com/coin-or/Ipopt</projectHomePage>
+    <projectLicense> Eclipse Public License</projectLicense>
+    <projectLicenseURL>http://opensource.org/licenses/EPL-2.0</projectLicenseURL>
+    <coinLinkedProjects/>
+    <otherLinkedPackages>
+      <otherPackage>
+        <packageName>Blas</packageName>
+        <packageURL>http://www.netlib.org/blas</packageURL>
+        <requiredOrOptional>Required (any implementation)</requiredOrOptional>
+      </otherPackage>
+      <otherPackage>
+        <packageName>Lapack</packageName>
+        <packageURL>http://www.netlib.org/lapack</packageURL>
+        <requiredOrOptional>Required (any implementation)</requiredOrOptional>
+      </otherPackage>
+      <otherPackage>
+        <packageName>Ampl Solver Library</packageName>
+        <packageURL>http://www.netlib.org/ampl/solvers</packageURL>
+        <requiredOrOptional>Optional</requiredOrOptional>
+      </otherPackage>
+      <otherPackage>
+        <packageName>A sparse linear solver (MA27, MA57, HSL_MA86, HSL_MA97, WSMP, Pardiso, MUMPS, SPRAL)</packageName>
+        <packageURL/>
+        <requiredOrOptional>Required (at least one)</requiredOrOptional>
+      </otherPackage>
+    </otherLinkedPackages>
+    <projectLanguage>C++</projectLanguage>
+    <developmentStatus>
+      <activityStatus>Active</activityStatus>
+      <maturityLevel>5</maturityLevel>
+    </developmentStatus>
+    <testedPlatforms>
+      <platform>
+        <operatingSystem>Microsoft Windows with MSYS2/MinGW</operatingSystem>
+        <compiler>g++</compiler>
+      </platform>
+      <platform>
+        <operatingSystem>Microsoft Windows with MSYS2</operatingSystem>
+        <compiler>cl</compiler>
+      </platform>
+      <platform>
+        <operatingSystem>Microsoft Windows with MSYS2</operatingSystem>
+        <compiler>icl+ifort</compiler>
+      </platform>
+      <platform>
+        <operatingSystem>Linux</operatingSystem>
+        <compiler>g++</compiler>
+      </platform>
+      <platform>
+        <operatingSystem>macOS</operatingSystem>
+        <compiler>g++</compiler>
+      </platform>
+      <platform>
+        <operatingSystem>macOS</operatingSystem>
+        <compiler>clang</compiler>
+      </platform>
+      <!--platform>
+        <operatingSystem>Ipod Linux (no kidding!)</operatingSystem>
+        <compiler>g++</compiler>
+      </platform-->
+    </testedPlatforms>
+    <projectCategories>
+      <category>Optimization deterministic nonlinear</category>
+    </projectCategories>
+  </projectBasics>
+  <leftMenuLinks>
+    <documentation>https://coin-or.github.io/Ipopt</documentation>
+    <sourceCodeDownload>https://github.com/coin-or/Ipopt</sourceCodeDownload>
+    <binaryDownload>https://github.com/coin-or/Ipopt/releases</binaryDownload>
+    <mailingList>https://github.com/coin-or/Ipopt/discussions</mailingList>
+  </leftMenuLinks>
+</projectData>

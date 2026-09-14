@@ -6,16 +6,16 @@
 # To generate the MATLAB interface uncomment the following line
 # ( the use of -largeArrayDims is necessary to work with sparse
 # matrices since R2006b)
-MEX         = /opt/matlab/bin/mex -g -largeArrayDims
+MEX         = /opt/matlab/matlab/bin/mex -g -largeArrayDims
 
 # To generate the Octave interface uncomment the following line
 # MEX         = mkoctfile -g --mex
 
 # Main MUMPS_DIR
-MUMPS_DIR = $(HOME)/MUMPS_4.10.0
+MUMPS_DIR = $(HOME)/MUMPS_5.9.1
 
 # Orderings (see main Makefile.inc file from MUMPS)
-LMETISDIR  = $(HOME)/metis-4.0
+LMETISDIR = ${HOME}/parmetis-4.0.3/build/Linux-x86_64/libmetis
 LMETIS     = -L$(LMETISDIR) -lmetis
 LPORDDIR   = $(MUMPS_DIR)/PORD/lib
 LPORD      = -L$(LPORDDIR) -lpord
@@ -35,15 +35,19 @@ LORDERINGS = $(LPORD) $(LMETIS)
 # Sun
 # LIBFORT = -L/opt2/SUNWspro7/lib -lsunperf -lfminvai -lfai2 -lfsu -lfmaxvai -lfmaxlai -lfai -lfsumai -lLIBFORT = /usr/local/lib/libgfortran.a
 
-# We use gfortran
-  LIBFORT = /usr/lib/gcc/x86_64-linux-gnu/4.3/libgfortran.so
+# gfortran
+  LIBFORT = /usr/lib/gcc/x86_64-linux-gnu/4.7/libgfortran.so
 
 # BLAS library:
 # LIBBLAS = -L/usr/lib/atlas -lblas
 # LIBBLAS = -lsunperf -lf77compat
 # LIBBLAS = -lblas
-  LIBBLAS = /home/jylexcel/libs_courge/libgoto_opteronp-r1.26.a
+LIBBLAS = /home/jylexcel/libs_courge/libgoto_opteronp-r1.26.a
+# LIBBLAS = /home/jylexcel/libs_courge/libblas.a  # -fPIC missing
+# LIBBLAS = /usr/lib/libblas.so
 
 # extra options passed via mex command
-OPTC    = -O 
+# Add -DINTSIZE64 if MUMPS was compiled with 64-bit integers (BLAS
+# library should then have 64-bit integers as well)
+OPTC    = -g
 

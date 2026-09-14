@@ -63,7 +63,7 @@ Methods in lib/gbipart.c:
 /*****************************************************************************
 ******************************************************************************/
 gbipart_t*
-newBipartiteGraph(int nX, int nY, int nedges)
+newBipartiteGraph(PORD_INT nX, PORD_INT nY, PORD_INT nedges)
 { gbipart_t *Gbipart;
 
   mymalloc(Gbipart, 1, gbipart_t);
@@ -90,7 +90,7 @@ freeBipartiteGraph(gbipart_t *Gbipart)
 void
 printGbipart(gbipart_t *Gbipart)
 { graph_t *G;
-  int     count, u, i, istart, istop;
+  PORD_INT     count, u, i, istart, istop;
 
   G = Gbipart->G;
   printf("\n#vertices %d (nX %d, nY %d), #edges %d, type %d, totvwght %d\n",
@@ -115,10 +115,10 @@ printGbipart(gbipart_t *Gbipart)
 /*****************************************************************************
 ******************************************************************************/
 gbipart_t*
-setupBipartiteGraph(graph_t *G, int *bipartvertex, int nX, int nY, int *vtxmap)
+setupBipartiteGraph(graph_t *G, PORD_INT *bipartvertex, PORD_INT nX, PORD_INT nY, PORD_INT *vtxmap)
 { gbipart_t *Gbipart;
-  int       *xadj, *adjncy, *vwght, *xadjGb, *adjncyGb, *vwghtGb;
-  int       nvtx, nedgesGb, totvwght, u, x, y, i, j, jstart, jstop, ptr;
+  PORD_INT       *xadj, *adjncy, *vwght, *xadjGb, *adjncyGb, *vwghtGb;
+  PORD_INT       nvtx, nedgesGb, totvwght, u, x, y, i, j, jstart, jstop, ptr;
 
   nvtx = G->nvtx;
   xadj = G->xadj;
@@ -192,20 +192,20 @@ setupBipartiteGraph(graph_t *G, int *bipartvertex, int nX, int nY, int *vtxmap)
 /*****************************************************************************
 ******************************************************************************/
 void
-maximumMatching(gbipart_t *Gbipart, int *matching)
-{ int *xadj, *adjncy, *level, *marker, *queue, *stack;
-  int top, top2, u, x, x2, y, y2, nX, nY, i, istart, istop;
-  int qhead, qtail, max_level;
+maximumMatching(gbipart_t *Gbipart, PORD_INT *matching)
+{ PORD_INT *xadj, *adjncy, *level, *marker, *queue, *stack;
+  PORD_INT top, top2, u, x, x2, y, y2, nX, nY, i, istart, istop;
+  PORD_INT qhead, qtail, max_level;
 
   xadj = Gbipart->G->xadj;
   adjncy = Gbipart->G->adjncy;
   nX = Gbipart->nX;
   nY = Gbipart->nY;
 
-  mymalloc(level, (nX+nY), int);
-  mymalloc(marker, (nX+nY), int);
-  mymalloc(queue, nX, int);
-  mymalloc(stack, nY, int);
+  mymalloc(level, (nX+nY), PORD_INT);
+  mymalloc(marker, (nX+nY), PORD_INT);
+  mymalloc(queue, nX, PORD_INT);
+  mymalloc(stack, nY, PORD_INT);
 
   /* -------------------
      initialize matching
@@ -319,10 +319,10 @@ maximumMatching(gbipart_t *Gbipart, int *matching)
 /*****************************************************************************
 ******************************************************************************/
 void
-maximumFlow(gbipart_t *Gbipart, int *flow, int *rc)
-{ int *xadj, *adjncy, *vwght, *parent, *marker, *queue;
-  int nedges, u, v, x, y, nX, nY, j, i, istart, istop;
-  int qhead, qtail, capacity;
+maximumFlow(gbipart_t *Gbipart, PORD_INT *flow, PORD_INT *rc)
+{ PORD_INT *xadj, *adjncy, *vwght, *parent, *marker, *queue;
+  PORD_INT nedges, u, v, x, y, nX, nY, j, i, istart, istop;
+  PORD_INT qhead, qtail, capacity;
 
   nedges = Gbipart->G->nedges;
   xadj = Gbipart->G->xadj;
@@ -331,9 +331,9 @@ maximumFlow(gbipart_t *Gbipart, int *flow, int *rc)
   nX = Gbipart->nX;
   nY = Gbipart->nY;
 
-  mymalloc(parent, (nX+nY), int);
-  mymalloc(marker, (nX+nY), int);
-  mymalloc(queue, (nX+nY), int);
+  mymalloc(parent, (nX+nY), PORD_INT);
+  mymalloc(marker, (nX+nY), PORD_INT);
+  mymalloc(queue, (nX+nY), PORD_INT);
 
   /* -------------------------------------
      initialize flow and residual capacity
@@ -432,9 +432,9 @@ maximumFlow(gbipart_t *Gbipart, int *flow, int *rc)
 /*****************************************************************************
 ******************************************************************************/
 void
-DMviaMatching(gbipart_t *Gbipart, int *matching, int *dmflag, int *dmwght)
-{ int *xadj, *adjncy, *vwght, *queue, qhead, qtail;
-  int u, x, nX, y, nY, i, istart, istop;
+DMviaMatching(gbipart_t *Gbipart, PORD_INT *matching, PORD_INT *dmflag, PORD_INT *dmwght)
+{ PORD_INT *xadj, *adjncy, *vwght, *queue, qhead, qtail;
+  PORD_INT u, x, nX, y, nY, i, istart, istop;
 
   xadj = Gbipart->G->xadj;
   adjncy = Gbipart->G->adjncy;
@@ -442,7 +442,7 @@ DMviaMatching(gbipart_t *Gbipart, int *matching, int *dmflag, int *dmwght)
   nX = Gbipart->nX;
   nY = Gbipart->nY;
 
-  mymalloc(queue, (nX+nY), int);
+  mymalloc(queue, (nX+nY), PORD_INT);
 
   /* ----------------------------------------------------------------------
      mark all exposed nodes of X with SI and all exposed nodes of Y with BI
@@ -525,9 +525,9 @@ DMviaMatching(gbipart_t *Gbipart, int *matching, int *dmflag, int *dmwght)
 /*****************************************************************************
 ******************************************************************************/
 void
-DMviaFlow(gbipart_t *Gbipart, int *flow, int *rc, int *dmflag, int *dmwght)
-{ int *xadj, *adjncy, *vwght, *queue, qhead, qtail;
-  int u, v, x, nX, y, nY, i, istart, istop;
+DMviaFlow(gbipart_t *Gbipart, PORD_INT *flow, PORD_INT *rc, PORD_INT *dmflag, PORD_INT *dmwght)
+{ PORD_INT *xadj, *adjncy, *vwght, *queue, qhead, qtail;
+  PORD_INT u, v, x, nX, y, nY, i, istart, istop;
 
   xadj = Gbipart->G->xadj;
   adjncy = Gbipart->G->adjncy;
@@ -535,7 +535,7 @@ DMviaFlow(gbipart_t *Gbipart, int *flow, int *rc, int *dmflag, int *dmwght)
   nX = Gbipart->nX;
   nY = Gbipart->nY;
 
-  mymalloc(queue, (nX+nY), int);
+  mymalloc(queue, (nX+nY), PORD_INT);
 
   /* ----------------------------------------------------------
      mark all nodes reachable from source/sink with SOURCE/SINK

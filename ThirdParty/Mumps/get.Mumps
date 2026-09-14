@@ -2,7 +2,7 @@
 
 # Set the following to the latest MUMPS version.
 #  THERE MUST BE NO SPACE BEFORE AND AFTER THE EQUAL (=) OPERATOR.
-mumps_ver=4.10.0
+mumps_ver=5.9.1
 
 set -e
 

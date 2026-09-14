@@ -57,6 +57,9 @@ of the MUMPS user's guide
       within the interface: id.ICNTL(19) which controls the Schur 
       complement option and id.ICNTL(20) which controls the 
       format of the right-hand side.
+      Some parameters related to distributed environments should not be modifed.
+      For example, the solution should always be centralized and id.ICNTL(21)
+      should thus remain to its default value, 0.
       Note that parameters id.ICNTL(1:4) may not work properly
       depending on your compiler and your environment. In case of
       problem, we recommand to swith printing off by setting
@@ -177,7 +180,9 @@ of the MUMPS user's guide
   <PARAM_NAME>id.SOL</PARAM_NAME>
 <PARAM_DESCRIPTION>
 : dense vector or matrix containing the solution after MUMPS 
-      solution phase.
+      solution phase. Also contains the nullspace in case of
+null space computation, or entries of the inverse, in case of
+computation of inverse entries.
   </PARAM_DESCRIPTION> 
   </PARAM_ITEM>
   </PARAM_INDENT>

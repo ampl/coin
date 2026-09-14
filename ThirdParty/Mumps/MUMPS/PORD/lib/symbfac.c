@@ -53,14 +53,14 @@ Methods in lib/symbfac.c:
 /*****************************************************************************
 ******************************************************************************/
 css_t*
-newCSS(int neqs, int nind, int owned)
+newCSS(PORD_INT neqs, PORD_INT nind, PORD_INT owned)
 { css_t *css;
 
   mymalloc(css, 1, css_t);
-  mymalloc(css->xnzl, (neqs+1), int);
-  mymalloc(css->xnzlsub, neqs, int);
+  mymalloc(css->xnzl, (neqs+1), PORD_INT);
+  mymalloc(css->xnzlsub, neqs, PORD_INT);
   if (owned)
-   { mymalloc(css->nzlsub, nind, int); }
+   { mymalloc(css->nzlsub, nind, PORD_INT); }
   else
    { css->nzlsub = NULL; }
   css->neqs = neqs;
@@ -87,11 +87,11 @@ freeCSS(css_t *css)
 /*****************************************************************************
 ******************************************************************************/
 css_t*
-setupCSSFromGraph(graph_t *G, int *perm, int *invp)
+setupCSSFromGraph(graph_t *G, PORD_INT *perm, PORD_INT *invp)
 { css_t *css;
-  int   *marker, *mergelink, *indices, *tmp, *xnzl, *xnzlsub, *nzlsub;
-  int   neqs, maxmem, u, v, col, mergecol, knz, mrk, beg, end;
-  int   fast, len, k, p, e, i, istart, istop;
+  PORD_INT   *marker, *mergelink, *indices, *tmp, *xnzl, *xnzlsub, *nzlsub;
+  PORD_INT   neqs, maxmem, u, v, col, mergecol, knz, mrk, beg, end;
+  PORD_INT   fast, len, k, p, e, i, istart, istop;
 
   neqs = G->nvtx;
   maxmem = 2 * neqs;
@@ -99,10 +99,10 @@ setupCSSFromGraph(graph_t *G, int *perm, int *invp)
   /* -------------------------
      set up the working arrays
      ------------------------- */
-  mymalloc(marker, neqs, int);
-  mymalloc(indices, neqs, int);
-  mymalloc(mergelink, neqs, int);
-  mymalloc(tmp, neqs, int);
+  mymalloc(marker, neqs, PORD_INT);
+  mymalloc(indices, neqs, PORD_INT);
+  mymalloc(mergelink, neqs, PORD_INT);
+  mymalloc(tmp, neqs, PORD_INT);
   for (k = 0; k < neqs; k++)
     marker[k] = mergelink[k] = -1;
 
@@ -180,7 +180,7 @@ setupCSSFromGraph(graph_t *G, int *perm, int *invp)
         end = beg + knz;
         if (end > maxmem)
          { maxmem += neqs;
-           myrealloc(nzlsub, maxmem, int);
+           myrealloc(nzlsub, maxmem, PORD_INT);
          }
         len = 0;
         for (i = beg; i < end; i++)
@@ -209,7 +209,7 @@ setupCSSFromGraph(graph_t *G, int *perm, int *invp)
      finalize the compressed subscript structure and return
      ------------------------------------------------------ */
   css->nind = xnzlsub[neqs-1] + 1;
-  myrealloc(nzlsub, css->nind, int);
+  myrealloc(nzlsub, css->nind, PORD_INT);
   css->nzlsub = nzlsub;
   return(css);
 }
@@ -221,8 +221,8 @@ css_t*
 setupCSSFromFrontSubscripts(frontsub_t *frontsub)
 { elimtree_t *PTP;
   css_t      *css;
-  int        *xnzf, *nzfsub, *ncolfactor, *xnzl, *xnzlsub;
-  int        nind, nvtx, K, beg, knz, firstcol, col;
+  PORD_INT        *xnzf, *nzfsub, *ncolfactor, *xnzl, *xnzlsub;
+  PORD_INT        nind, nvtx, K, beg, knz, firstcol, col;
 
   PTP = frontsub->PTP;
   xnzf = frontsub->xnzf;
@@ -264,14 +264,14 @@ setupCSSFromFrontSubscripts(frontsub_t *frontsub)
 frontsub_t*
 newFrontSubscripts(elimtree_t *PTP)
 { frontsub_t *frontsub;
-  int        nfronts, nind;
+  PORD_INT        nfronts, nind;
 
   nfronts = PTP->nfronts;
   nind = nFactorIndices(PTP);
 
   mymalloc(frontsub, 1, frontsub_t);
-  mymalloc(frontsub->xnzf, (nfronts+1), int);
-  mymalloc(frontsub->nzfsub, nind, int);
+  mymalloc(frontsub->xnzf, (nfronts+1), PORD_INT);
+  mymalloc(frontsub->nzfsub, nind, PORD_INT);
 
   frontsub->PTP = PTP;
   frontsub->nind = nind;
@@ -297,8 +297,8 @@ freeFrontSubscripts(frontsub_t *frontsub)
 void
 printFrontSubscripts(frontsub_t *frontsub)
 { elimtree_t *PTP;
-  int        *xnzf, *nzfsub, *ncolfactor, *ncolupdate, *parent;
-  int        nfronts, root, K, count, i, istart, istop;
+  PORD_INT        *xnzf, *nzfsub, *ncolfactor, *ncolupdate, *parent;
+  PORD_INT        nfronts, root, K, count, i, istart, istop;
 
   PTP = frontsub->PTP;
   xnzf = frontsub->xnzf;
@@ -333,11 +333,11 @@ printFrontSubscripts(frontsub_t *frontsub)
 frontsub_t*
 setupFrontSubscripts(elimtree_t *PTP, inputMtx_t *PAP)
 { frontsub_t *frontsub;
-  int        *ncolfactor, *ncolupdate, *firstchild, *silbings, *vtx2front;
-  int        *xnza, *nzasub, *xnzf, *nzfsub;
-  int        *marker, *tmp, *first, *indices;
-  int        nvtx, nfronts, col, firstcol, knz;
-  int        u, i, istart, istop, K, J;
+  PORD_INT        *ncolfactor, *ncolupdate, *firstchild, *silbings, *vtx2front;
+  PORD_INT        *xnza, *nzasub, *xnzf, *nzfsub;
+  PORD_INT        *marker, *tmp, *first, *indices;
+  PORD_INT        nvtx, nfronts, col, firstcol, knz;
+  PORD_INT        u, i, istart, istop, K, J;
 
   nvtx = PTP->nvtx;
   nfronts = PTP->nfronts;
@@ -353,9 +353,9 @@ setupFrontSubscripts(elimtree_t *PTP, inputMtx_t *PAP)
   /* -------------------------
      set up the working arrays
      ------------------------- */
-  mymalloc(marker, nvtx, int);
-  mymalloc(tmp, nvtx, int);
-  mymalloc(first, nfronts, int);
+  mymalloc(marker, nvtx, PORD_INT);
+  mymalloc(tmp, nvtx, PORD_INT);
+  mymalloc(first, nfronts, PORD_INT);
   for (i = 0; i < nvtx; i++)
     marker[i] = -1;
 
@@ -444,7 +444,7 @@ setupFrontSubscripts(elimtree_t *PTP, inputMtx_t *PAP)
 /*****************************************************************************
 ******************************************************************************/
 factorMtx_t*
-newFactorMtx(int nelem)
+newFactorMtx(PORD_INT nelem)
 { factorMtx_t *L;
 
   mymalloc(L, 1, factorMtx_t);
@@ -478,8 +478,8 @@ void
 printFactorMtx(factorMtx_t *L)
 { css_t *css;
   FLOAT *nzl;
-  int   *xnzl, *nzlsub, *xnzlsub;
-  int   neqs, nelem, nind, k, ksub, i, istart, istop;
+  PORD_INT   *xnzl, *nzlsub, *xnzlsub;
+  PORD_INT   neqs, nelem, nind, k, ksub, i, istart, istop;
 
   nelem = L->nelem;
   nzl = L->nzl;
@@ -511,11 +511,11 @@ initFactorMtx(factorMtx_t *L, inputMtx_t *PAP)
 { elimtree_t *PTP;
   frontsub_t *frontsub;
   css_t      *css;
-  int        *ncolfactor;
+  PORD_INT        *ncolfactor;
   FLOAT      *nzl, *nza, *diag;
-  int        *xnzl, *nzlsub, *xnzlsub, *xnza, *nzasub, *xnzf, *nzfsub;
-  int        nelem, K, k, kstart, h, hstart, dis, i, istart, istop;
-  int        firstcol, lastcol;
+  PORD_INT        *xnzl, *nzlsub, *xnzlsub, *xnza, *nzasub, *xnzf, *nzfsub;
+  PORD_INT        nelem, K, k, kstart, h, hstart, dis, i, istart, istop;
+  PORD_INT        firstcol, lastcol;
  
   nelem = L->nelem; 
   nzl = L->nzl;
@@ -571,11 +571,11 @@ initFactorMtxNEW(factorMtx_t *L, inputMtx_t *PAP)
 { elimtree_t *PTP;
   frontsub_t *frontsub;
   css_t      *css;
-  int        *ncolfactor;
+  PORD_INT        *ncolfactor;
   FLOAT      *nzl, *nza, *diag, *entriesL;
-  int        *xnzl, *xnza, *nzasub, *xnzf, *nzfsub;
-  int        *tmp, neqs, nelem, K, k, len, row, i, istart, istop;
-  int        firstcol, lastcol;
+  PORD_INT        *xnzl, *xnza, *nzasub, *xnzf, *nzfsub;
+  PORD_INT        *tmp, neqs, nelem, K, k, len, row, i, istart, istop;
+  PORD_INT        firstcol, lastcol;
 
   nelem = L->nelem;
   nzl = L->nzl;
@@ -597,7 +597,7 @@ initFactorMtxNEW(factorMtx_t *L, inputMtx_t *PAP)
   /* ------------------------
      allocate working storage
      ------------------------ */
-  mymalloc(tmp, neqs, int);
+  mymalloc(tmp, neqs, PORD_INT);
 
   /* ------------------------------------
      set all numerical values of L to 0.0

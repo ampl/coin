@@ -72,12 +72,12 @@ Methods in lib/nestdiss.c:
 /*****************************************************************************
 ******************************************************************************/
 nestdiss_t*
-newNDnode(graph_t *G, int *map, int nvint)
+newNDnode(graph_t *G, PORD_INT *map, PORD_INT nvint)
 { nestdiss_t *nd;
 
   mymalloc(nd, 1, nestdiss_t);
-  mymalloc(nd->intvertex, nvint, int);
-  mymalloc(nd->intcolor, nvint, int);
+  mymalloc(nd->intvertex, nvint, PORD_INT);
+  mymalloc(nd->intcolor, nvint, PORD_INT);
 
   nd->G = G;
   nd->map = map;
@@ -104,9 +104,9 @@ freeNDnode(nestdiss_t *nd)
 /*****************************************************************************
 ******************************************************************************/
 nestdiss_t*
-setupNDroot(graph_t *G, int *map)
+setupNDroot(graph_t *G, PORD_INT *map)
 { nestdiss_t *ndroot;
-  int        *intvertex, nvtx, i;
+  PORD_INT        *intvertex, nvtx, i;
 
   nvtx = G->nvtx;
   ndroot = newNDnode(G, map, nvtx);
@@ -126,8 +126,8 @@ splitNDnode(nestdiss_t *nd, options_t *options, timings_t *cpus)
 { nestdiss_t *b_nd, *w_nd;
   graph_t    *Gsub;
   gbisect_t  *Gbisect;
-  int        *map, *intvertex, *intcolor, *b_intvertex, *w_intvertex;
-  int        nvint, b_nvint, w_nvint, u, i;
+  PORD_INT        *map, *intvertex, *intcolor, *b_intvertex, *w_intvertex;
+  PORD_INT        nvint, b_nvint, w_nvint, u, i;
 
   map = nd->map;
   nvint = nd->nvint;
@@ -149,14 +149,14 @@ splitNDnode(nestdiss_t *nd, options_t *options, timings_t *cpus)
   /* ---------------------------------
      compute the bisection for Gbisect
      --------------------------------- */
-  starttimer(cpus[TIME_MULTILEVEL]);
+  pord_starttimer(cpus[TIME_MULTILEVEL]);
   constructSeparator(Gbisect, options, cpus);
-  stoptimer(cpus[TIME_MULTILEVEL]);
+  pord_stoptimer(cpus[TIME_MULTILEVEL]);
 
-  starttimer(cpus[TIME_SMOOTH]);
+  pord_starttimer(cpus[TIME_SMOOTH]);
   if (Gbisect->cwght[GRAY] > 0)
     smoothSeparator(Gbisect, options);
-  stoptimer(cpus[TIME_SMOOTH]);
+  pord_stoptimer(cpus[TIME_SMOOTH]);
 
   /* ----------------------------------------
      copy the bisection back to the nd object
@@ -213,7 +213,7 @@ void
 buildNDtree(nestdiss_t *ndroot, options_t *options, timings_t *cpus)
 { nestdiss_t *nd;
   nestdiss_t *queue[2*MAX_SEPS+1];
-  int        maxseps, seps, domainsize, qhead, qtail;
+  PORD_INT        maxseps, seps, domainsize, qhead, qtail;
 
   maxseps = MAX_SEPS;
   domainsize = options[OPTION_DOMAIN_SIZE];

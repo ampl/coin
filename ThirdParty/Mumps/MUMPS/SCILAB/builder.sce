@@ -1,11 +1,11 @@
-// $Id: builder_source.sce 7139 2011-03-22 22:50:47Z jylexcel $
+// $Id: builder_source.sce 7142 2011-03-22 23:45:59Z jylexcel $
 
 
 //******************* VARIABLE PART TO COSTUMIZE ***************************//
 
 // -- MUMPS:
 
-MUMPS_DIR = home + "/MUMPS_4.10.0";
+MUMPS_DIR = home + "/MUMPS_5.9.1";
 MUMPS_INC_DIR = MUMPS_DIR+"/include"; //path until dmumps_c.h and zmumps_c.h
 MUMPS_LIB_DIR = MUMPS_DIR+"/lib";     //path until libdmumps.a, libzmumps.a and libpord.a
 MUMPS_LIB  = MUMPS_LIB_DIR+"/libmumps_common.a";

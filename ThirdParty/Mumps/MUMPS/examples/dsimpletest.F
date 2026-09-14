@@ -1,5 +1,6 @@
 C
-C  This file is part of MUMPS 4.10.0, built on Tue May 10 12:56:32 UTC 2011
+C  This file is part of MUMPS 5.9.1, released
+C  on Mon Jul 20 09:00:43 UTC 2026
 C
       PROGRAM MUMPS_TEST
       IMPLICIT NONE
@@ -7,6 +8,7 @@ C
       INCLUDE 'dmumps_struc.h'
       TYPE (DMUMPS_STRUC) mumps_par
       INTEGER IERR, I
+      INTEGER(8) I8
       CALL MPI_INIT(IERR)
 C Define a communicator for the package.
       mumps_par%COMM = MPI_COMM_WORLD
@@ -16,16 +18,22 @@ C  for L U factorization (sym = 0, with working host)
       mumps_par%SYM = 0
       mumps_par%PAR = 1
       CALL DMUMPS(mumps_par)
+      IF (mumps_par%INFOG(1).LT.0) THEN
+       WRITE(6,'(A,A,I6,A,I9)') " ERROR RETURN: ",
+     &            "  mumps_par%INFOG(1)= ", mumps_par%INFOG(1), 
+     &            "  mumps_par%INFOG(2)= ", mumps_par%INFOG(2) 
+       GOTO 500
+      END IF
 C  Define problem on the host (processor 0)
       IF ( mumps_par%MYID .eq. 0 ) THEN
         READ(5,*) mumps_par%N
-        READ(5,*) mumps_par%NZ
-        ALLOCATE( mumps_par%IRN ( mumps_par%NZ ) )
-        ALLOCATE( mumps_par%JCN ( mumps_par%NZ ) )
-        ALLOCATE( mumps_par%A( mumps_par%NZ ) )
+        READ(5,*) mumps_par%NNZ
+        ALLOCATE( mumps_par%IRN ( mumps_par%NNZ ) )
+        ALLOCATE( mumps_par%JCN ( mumps_par%NNZ ) )
+        ALLOCATE( mumps_par%A( mumps_par%NNZ ) )
         ALLOCATE( mumps_par%RHS ( mumps_par%N  ) )
-        DO I = 1, mumps_par%NZ
-          READ(5,*) mumps_par%IRN(I),mumps_par%JCN(I),mumps_par%A(I)
+        DO I8 = 1, mumps_par%NNZ
+          READ(5,*) mumps_par%IRN(I8),mumps_par%JCN(I8),mumps_par%A(I8)
         END DO
         DO I = 1, mumps_par%N
           READ(5,*) mumps_par%RHS(I)
@@ -34,6 +42,12 @@ C  Define problem on the host (processor 0)
 C  Call package for solution
       mumps_par%JOB = 6
       CALL DMUMPS(mumps_par)
+      IF (mumps_par%INFOG(1).LT.0) THEN
+       WRITE(6,'(A,A,I6,A,I9)') " ERROR RETURN: ",
+     &            "  mumps_par%INFOG(1)= ", mumps_par%INFOG(1), 
+     &            "  mumps_par%INFOG(2)= ", mumps_par%INFOG(2) 
+       GOTO 500
+      END IF
 C  Solution has been assembled on the host
       IF ( mumps_par%MYID .eq. 0 ) THEN
         WRITE( 6, * ) ' Solution is ',(mumps_par%RHS(I),I=1,mumps_par%N)
@@ -48,6 +62,12 @@ C  Deallocate user data
 C  Destroy the instance (deallocate internal data structures)
       mumps_par%JOB = -2
       CALL DMUMPS(mumps_par)
-      CALL MPI_FINALIZE(IERR)
+      IF (mumps_par%INFOG(1).LT.0) THEN
+       WRITE(6,'(A,A,I6,A,I9)') " ERROR RETURN: ",
+     &            "  mumps_par%INFOG(1)= ", mumps_par%INFOG(1), 
+     &            "  mumps_par%INFOG(2)= ", mumps_par%INFOG(2) 
+       GOTO 500
+      END IF
+ 500  CALL MPI_FINALIZE(IERR)
       STOP
       END

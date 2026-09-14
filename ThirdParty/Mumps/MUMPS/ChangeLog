@@ -2,6 +2,487 @@
 = ChangeLog =
 -------------
 
+Changes from 5.9.0 to 5.9.1
+* GPU: fixed error introduced in 5.9.0 leading to less work exposed on GPU
+* MPI_to_k_OMP: empty module added for Cmake build
+* Print message when MUMPS is compiled with -DUSE_AVX512_VBMI
+* Fixed syntax error detected during compilation with MSVC 14.44
+* OpenMP: add missing !$ OpenMP sentinels to enable compilation without OpenMP
+* Adaptive BLR precision: complete user guide with compiler options to be added
+                          to OPTC to enable using AVX512-VBMI instruction set
+* ICNTL(48)=1: fixed error when calling [SDCZ]MUMPS_DM_FREE_S_WK 
+               introduced since 5.8 releases
+* Combining save/restore and WK_USER: clarify user guide
+* Fixed: restore quantization of off-diagonal non-admissible BLR blocks
+* Fixed: error -20 with single precision factorization and 64-bit integers
+* Introduce compilation flag -Dnrm2_returns_double as a workaround  when
+  snrm2 and scnrm2 BLAS functions return 64-bit instead of 32-bit reals (see INSTALL)
+  
+
+Changes from 5.8.2 to 5.9.0
+* New feature: mixed/adaptive BLR precision feature (ICNTL(40))
+* New feature: possibility to expose activities on GPUs  (ICNTL(51))
+* New feature: Single precision factorization in double precision
+  MUMPS instance (ICNTL(47))
+* Use some MPI processes as OpenMP resources (ICNTL(17)
+* Stop on user request and monitor progress information
+* Cheap re-analysis to recompute statistics (JOB=13)
+* Accessing control parameters from a configuration file
+* Default value for BLR variant ICNTL(36) is 1 (0 in previous releases)
+* Null-pivot: fixed nb_singular_values was not passed to c interface
+*             fixed user guide, pivnul_list of size INFOG(28) and not N
+*             INFOG(51) nb of null pivots detected with ICNTL(24)=1
+* Fixed error introduced in 5.8.0 leading to incorrect value of INFOG(35)
+* Scaling automatically activated with SYM=1 if ICNTL(35)>0 (BLR compression)
+* Fixed overestimation of INFOG(21-22) with ICNTL(35)>0 (BLR compression)
+* Workaround segfault in MUMPS_SETRVAL_ADDR_C on 32-bit address environments
+
+Changes from 5.8.1 to 5.8.2
+* Fixed compilation error with xlf IBM compiler when generating libmpiseq.a
+* Fixed error during multithreaded scaling on unsymmetric matrices
+* Fixed compilation issue with INTSIZE64 and WORKAROUNDINTELILP64OPENMPLIMITATION
+* Fixed documentation: minor inconsistencies with default setting 
+* Fixed valgrind error with Out-Of-Core introduced in 5.8.0 releases
+
+Changes from 5.8.0 to 5.8.1
+* Fixed explicit interface expected in [sdcz]ana_driver.F for ftn compiler
+* Fixed error during MPI communication due to irregular blocks in block format
+* Fixed compiler semantic error detected by amdflang 6.2 in atomic statement
+* Fixed error when rank-revealing (ICNTL(56)) on at analysis and off at facto
+* Fixed performance of ICNTL(56) for highly reducible matrices
+* Fixed valgrind warning in [sdcz]mumps_arrow_treat_recv_buf_1th
+
+Changes from 5.7.3 to 5.8.0
+* Memory estimations in an MPI context improved using stricter proportional mapping
+* Improved multithreading during scaling and reformat/distribute matrix
+* MPI buffer size not anymore constrained by factored panel sizes
+* Fixed a memory leak (COLSCA_LOC) in LDLT with save-restart
+* Enable different numbers of threads per MPI
+* Fixed a case where error -74 was raised instead of -77
+* More OpenMP parallelism when compacting factors of frontal matrices
+* Fixed a minor issue in BLR clustering when size of halo is 0
+* Provide statistics on iterative refinement settings and timings
+* Fixed error with binary format of WRITE_PROBLEM feature under WINDOWS
+* Avoid pivoting with SYM=1 even when user forces CNTL(1)>0 
+* More multithreading in low intensity arithmetic kernels
+* Fixed error with ICNTL(37)=1 
+* Fixed possible access to uninitialized var for SYM=0 + OOC + static pivoting
+* Fixed a valgrind warning in fac_front_*type1.F
+
+Changes from 5.7.2 to 5.7.3
+* Fixed regression for I/O's larger than 2GB during solve (out-of-core)
+* Fixed size of internal workspace in case of OOC+BLR with ICNTL(37)=1
+* Fix: out-of-range values of ICNTL(58) are treated as 2, as documented
+
+Changes from 5.7.1 to 5.7.2
+* Fixed a bound check error with ICNTL(37)=1 in case of symmetric numerically 
+  difficult problems
+* Fixed compilation with -DAVOID_MPI_IN_PLACE
+
+Changes from 5.7.0 to 5.7.1
+* Fixed dynamic library creation for PORD
+* Avoid need to link with deprecated LAPACK routine [csdz]geqpf
+* Fixed a numerical error with ICNTL(37)=1 in case of numerically difficult 
+  problems and very limited workspace
+
+Changes from 5.6.2 to 5.7.0
+* New feature: Evolution of the distributed RHS: exploit sparsity (empty rows)
+* New feature: more efficient multithreading (see ICNTL(48))
+* New feature: Improved null space detection with rank revealing (ICNTL(56))
+* New statistics about pivots and number of swaps
+* Reduced time spent in BLR clustering
+* OOC: add support for files > 2GB to avoid opening too many files
+ (requires -DMUMPS_WINLARGEFILES in Windows environments)
+* Increased various string max sizes: OOC_PREFIX(255), SAVE_PREFIX(255),
+  WRITE_PROBLEM(1023), OOC_TMPDIR(1023), SAVE_DIR(1023),
+* -DMUMPS_SCOTCHIMPORTOMPTHREADS: uses MUMPS OMP threads in SCOTCH
+* Improved size of BLR groups with analysis by blocks 
+* Allow for larger N (avoid need for 2*N to fit in a 32-bit integer)
+* Improved performance on small matrices (avoid costly string
+  comparisons when computing RINFO(7,8) and RINFOG(17,18))
+* -DNO_SAVE_RESTORE: suppress SAVE_RESTORE, RINFO(7,8), RINFOG(17,18)
+* Avoid calling MPI_IPROBE during solve in case of a single MPI process
+* MPI_ALLREDUCE workaround in case it fails for large buffers
+* Raise error -55 in case Nloc_RHS>0 on non-working host
+* Raise new error -88 in case of error during SCOTCH ordering
+* Fixed bound-check error in copies for 64 bit integer orderings and empty graph
+* Raise error -69 in case of installation with incorrect integer sizes
+* Compilation with -DNOSCALAPACK: suppress dependency on NUMROC
+* Fix for METIS > 5.1.0: METIS options indices no longer hardcoded
+* Fixed a bug in solve when restarting (JOB=8) with a new process
+* Fixed error with exploit sparsity during fwd phase on
+  reducible matrices and when Scalapack is used
+* Makefiles: introduced SHARED_OPT=-shared to allow defining different option
+
+Changes from 5.6.1 to 5.6.2
+* Fixed time for symbolic factorization
+* Fixed parallel analysis when PAR=0, 1 MPI per node, #MPI not a power of 2
+* -DAVOID_MPI_IN_PLACE avoids MPI_IN_PLACE usage (in case not supported by MPI)
+* Fixed a bug in case of parallel analysis+analysis by blocks+scalapack off
+* Added missing $(PLAT) for libpord in makefile
+* Fixed message printing with error -17 
+
+Changes from 5.6.0 to 5.6.1
+* Fixed compatibility of parallel analysis with analysis by blocks/out-of-range
+* Minor fix of INFO(2) value in a case of INFO(1)=-7 with parallel analysis
+* WRITE_PROBLEM: avoid leading space when printing "%%MatrixMarket matrix [..]"
+* Fix incorrect error code -74 instead of -76 (save-restore)
+* Avoid a remaining hard-coded Fortran unit (save-restore)
+* Avoid -Wundef warning in case __STDC_VERSION__ is not defined
+* Avoid calling MPI_IPROBE during factorization in case of a single MPI process
+  (performance improvement on matrices with small fronts)
+* During analysis, write time for symbolic factorization
+* Update GEMMT link in INSTALL file
+
+Changes from 5.5.1 to 5.6.0
+* Analysis by blocks and out-of-range entries compatible with parallel analysis 
+* Compact workarray S before solution phase (ICNTL(49)=1,2)
+* JOB=-4 frees data from factorization and keeps results from analysis
+* NEC vector engine version: tuned block low rank and GEMMT usage
+* Reduced memory for symbolic datastructures (order-N arrays, arrowheads)
+* Use new symbolic factorization (column counts) by default (+allow forest
+  in case of Schur)
+* Improved amalgamation algorithm to reduce the number tiny nodes
+* Discard factors option is now compatible with BLR 
+* Discard L factors option in case of LU factorization available for in-core 
+* Count null negative pivots (INFOG(50))
+* Compilation with -DBLR_MT is no longer needed (see also -DBLR_NOOPENMP)
+* Improve performance of A-1 entries computation when #MPI > 1
+* Fixed risk of hanging in case of OOC error (e.g. disk full)
+* Free internal data earlier (e.g., factors in case of failed factorization, etc.)
+* Avoid setenv/unsetenv on MinGW environments (Scotch versions >= 7)
+* Fix error during ordering when processing matrices of order 1
+* Out-Of-Core, values of ICNTL(22) different from 1 are treated as zero (in-core)
+* BLKPTR ignored when ICNTL(15) < 0 (INFO(1:2)=-57 4 no longer occurs)
+* BLR OpenMP fac_lr.F fix for possible non-increasing scheduling of loop indices
+* Fix: id%LRGROUPS was not nullified in CMUMPS_FREE_ONENTRY_ANA_DRIVER
+* Fixed parameter error 1202 in PDGETRS after restoring a factorization
+* Workaround MPI_SSEND intel MPI 2021.6 issue
+* NEC: Fix MUMPS_WRAP_GINP94 offloading to host
+* Shared libraries: minor update in Makefiles
+* Fixed missing printings of preprocessing constants in mumps_print_defined.F
+* -DNOSCALAPACK: compilation without BLACS/ScaLAPACK (reduced performance)
+
+Changes from 5.5.0 to 5.5.1
+* 64-bit default integer version: avoid MPI buffer size > 2^31
+  (could lead to negative counts in MPI_Recv with Intel ilp64 MPI)
+* Use ICNTL(3) unit instead of '*' to print parallel ordering time
+* Output symbolic factorization choice (ICNTL(58)) on ICNTL(3) unit
+* SCOTCH 7.x on Windows: use _putenv instead of setenv
+  (unsymmetric case, #MPI >1)
+* Fixed parallel analysis in case of 64-bit integers in parmetis and -i8 MUMPS
+* Limit recursivity depth in mumps_static_mapping.F (limit stack
+  usage on trees with small nodes at the top and large nodes below)
+* Limit subroutine names to 32 characters
+* -DWORKAROUNDILP64MPICUSTOMREDUCE introduced (platformMPI and 64-bit default integer)
+
+Changes from 5.4.1 to 5.5.0
+* New feature: analysis by blocks with compressed graph (ICNTL(15))
+* New feature: symbolic factorization using column counts (ICNTL(58))
+* Matrix scaling compatible with Schur complement feature
+* Automatic setting of CNTL(3) and CNTL(5) compatible with Schur 
+  complement feature
+* Fixed possible error in memory (INFOG(3)) and FLOPS (RINFOG(1)) 
+  estimations with Schur feature
+* Memory allowed (ICNTL(23)) is per MPI process and compatible with WK_USER
+* More compact storage of L factors for symmetric matrices
+* Exploit multithreading in SCOTCH versions >= 7.0
+* Support for NEC Aurora vector processors
+* Possibility to build shared instead of static libraries
+* Adjustment of BLR cluster size
+* Shorter time for matrix redistribution 
+* Avoid a possible case of overflow in computation of MAXIS
+* Fixed memory estimate of PTRAIW/PTRARW arrays
+* -DDPRINT_BACKTRACE_ON_ABORT added in case of call to MUMPS_ABORT()
+* More usage of dynamic memory to avoid -9 errors
+* Fixed a possible "Internal error 3 in ZMUMPS_BLR_RETRIEVE_PANEL_LORU"
+* Change construction of mumps_int_def.h to allow for cross compilation
+* Fixed a possible error in deficiency detection on unsymmetric matrices
+* Duplicated few loops during solve (OMP / non-OMP) for gfortran performance
+* Fixed compilation issue with -DUPPER and -DMUMPS_WIN32 (5.4.1 regression)
+* Find free Fortan units instead of imposing a choice (WRITE_PROBLEM, 
+  save/restore)
+* Avoid freeing IRN/JCN when not allocated by MUMPS
+* Fixed a potential memory leak in dynamic memory management
+* -DALLOC_FROM_C introduced to fix dynamic memory management 
+  with Cray compilers
+
+Changes from 5.4.0 to 5.4.1
+* Added feature to dump a matrix/rhs in binary form (see id%WRITE_PROBLEM)
+* Fixed error during constrained ordering (ICNTL(12)=3) leading to a segfault
+* Fixed type 2 assembly by pieces in case of huge blocks of delayed pivots
+* Avoid repeated small allocations in MUMPS_BUILD_SORT_INDEX
+* Fixed automatic choice for ICNTL(6) when values are not provided at analysis
+* Avoid an access to an uninitialized value (FLOP_FRFRONTS, MPI only, LDLT)
+* Fixed error printing in case of error -53
+* Fixed an erroneous -9 error in case of large Schur + discard factors
+* -DWORKAROUNDINTELILP64OPENMPLIMITATION avoids -i8 compilation warnings
+* Limited repeated amalgamations of large child with small parent
+
+Changes from 5.3.5 to 5.4.0
+* Modified default threshold for null pivot detection (CNTL(3))
+* Improved performance of Schur complement computations
+* Reduced memory of centralized analysis with distributed matrix
+* Improved BLR clustering time during analysis
+* Improved BLR performance when CNTL(1)=0.0 and ICNTL(36)=0
+* Improved OOC performance in case CNTL(1)=0.0 or SYM=1
+* Improved multitreaded performance on matrices with many 2x2 pivots
+* Fixed a problem with parallel compilation (in case of: make -j all)
+* Fixed some timings during solve that were printed as 0 when PAR=0
+* Avoid possible integer overflow on INFOG(10)
+* Fixed type 1 assembly by pieces in case static CB moves to dynamic storage
+* Use with ITAC: avoid errors (e.g. in DMUMPS_UPPER_PREDICT...) due to
+  MPI returning nonzero error codes when traces are activated
+* Add a JOB=-200 call (no MPI communications, clean local OOC files)
+* Fixed "Start processing the root ..." printing in case of Schur
+* Fixed SYM_PERM in case of Schur on reducible matrices
+
+Changes from 5.3.4 to 5.3.5
+* Fixed 2x2 pivots bug from 5.3.4 release in MPI LDLT factorization
+* Fixed ICNTL(8)=-2 option during analysis (code and documentation)
+* Include basic fix for make -j
+
+Changes from 5.3.3 to 5.3.4
+* Fixed a rare bug (segfault) related to dynamic storage management
+  on numerically difficult matrices
+* Fixed a rare deadlock in BLR for symmetric matrices
+* Fixed an uninitialized variable (which could lead to incorrect -19 error)
+* Minor fix in userguide (CNTL(1) vs. ICNTL(1) in ICNTL(36) description)
+* Fixed a possible runtime issue during solve, related to "TO_PROCESS" array
+
+Changes from 5.3.1 to 5.3.3
+* Assume ilp64 MPI interface only applies to Fortran in c_example.c
+* Note on gfortran-10 compilation added
+* Avoid intent on pointers (F2003-only)
+* More robust multithreading for matrix reformatting (arrowheads)
+* Fixed ICNTL(31) interpretation in case of repeated analysis
+* Fixed multiple mpif.h inclusion (distributed rhs, ifort+openmpi)
+* Fixed computation of effectively used memory statistics
+* Minor fix in userguide
+* Suppressed a !$OMP CRITICAL from solve phase (introduced in 5.3.0)
+
+Changes from 5.3.0 to 5.3.1
+* Improved multithreaded performance of BLR backward solve
+* Fixed return code in build_mumps_int_def.c + openmp compilation (pgi)
+* Forbid a loop vectorization in [sdcz]sol_c.F (segfault with ifort)
+
+Changes from 5.2.1 to 5.3.0
+* New feature: distributed right-hand sides
+* Improved time for arrowheads construction (single MPI case, mainly)
+* C interface: ability to know if MUMPS_INT is 64-bit from include file
+* Improved BLR performance when CNTL(1)=0.0 and ICNTL(36)=1
+* Fixed INFO(34),INFO(35),INFO(37),INFO(38) on processes with rank > 0
+* More portable MPI_IS_IN_PLACE feature in libseq
+* Fixed determinant computation when Cholesky ScaLapack is used
+* Information on advancement (flops done) on each MPI process
+* Allow rhs_sparse and irhs_sparse to be unassociated if nz_rhs=0
+* Fixed INFO(30) and INFO(31) computation on MPI processes with rank > 0
+* OMP collapsed loops: avoid FIRSTPRIVATE on internal loop bound (for pgi)
+* Fix for compilers not freeing local allocatable arrays (64-bit metis)
+* Fixed RINFO(5-6) and RINFOG(15-16) metrics (#entries=>#bytes)
+* C interface: A_ELT/SCHUR/RHS/REDRHS/RHS_loc/SOL_loc may exceed 2^31 entries
+* Local Schur (ICNTL(19)=2 or 3) may now exceed 2^31 entries
+* Fixed internal dynamic storage of blocks with more than 2^31 entries
+* Fixed a bug in the parallel analysis that limited scalability
+
+Changes from 5.2.0 to 5.2.1
+* Fixed a minor "Internal error in CMUMPS_DM_FREEALLDYNAMICCB"
+* Default value of ICNTL(14) for MPI executions independent 
+  of SYM + slightly less aggressive than for 5.2.0
+* Avoided accesses to uninitialized data in symmetric (2D root, BLR)
+* Fixed some incorrect "out" intents for routine arguments
+* Avoided CHUNK=0 in OMP loops even if loop not parallelized (pgi)
+* Fixed COLSCA&ROWSCA declarations in [SDCZ]MUMPS_ANA_F
+* Avoided a possible segfault in presence of NaN's in pivot search
+* Minor update to userguide
+* Fixed MPI_IN_PLACE usage in libseq (preventing compiler optimization)
+
+
+Changes from 5.1.2 to 5.2.0
+* Memory gains due to low-rank factorization are now effective, low-rank solve
+* Internal dynamic storage possible in case static workspace too small
+* Improved distributed memory usage and MPI granularity (some sym. matrices)
+* Improved granularity (and performance) for symmetric matrices; ability to
+  use [DSCZ]GEMMT kernel (BLAS extension) if available (see INSTALL)
+* A-1 functionality: improved performance due to solution gathering 
+* Memory peak for analysis reduced (distributed-entry, 64-bit orderings)
+* Time for analysis reduced by avoiding some preprocessing (when possible) 
+* More exploitation of RHS sparsity during forward substitution
+* Ability to save/restore an instance to/from disk
+* INFO and INFOG dimension extended from 40 to 80
+* METIS_OPTIONS introduced for METIS users to define some specific Metis options
+* MUMPS can be asked to call omp_set_num_threads with a value provided in ICNTL(16)
+* Fixed: INFO(16)/INFOG(21)/INFOG(22) did not take into account the extra memory
+  allocated due to memory allowed (ICNTL(23)>0); INFOG(8) was not correclty set
+* Initialize only lower-diagonal part for workers in symmetric type 2 fronts
+* Workaround a segfault at beg. of facto due to a gfortran-8 bug
+* Fixed a bug in weighted matching algorithm when all matrix values are 0
+* Portability: include stdint.h instead of int_types.h
+* Forced some initializations to make C interface more valgrind-friendly
+* Workaround intel 2017 vectorization bug in pivot search (symmetric+MPI+large matrices)
+* Stop trying to send messages on COMM_LOAD in case of error (risk of deadlock)
+* Avoided most array creation by compiler due to Fortran pointers
+* Avoid two cases of int. overflow (KEEP(66), A-1 with large ICNTL(27))
+* Fixed a bug with compressed ordering (ICNTL(12)=2) (regression from 5.0.0)
+  and suppress compress ordering only in case of automatic setting
+
+
+Changes from 5.1.1 to 5.1.2
+* Corrected an overestimation of memory (regression from 5.1.0)
+* Corrected/extended WORKAROUNDINTELILP64MPI2INTEGER mechanism (see INSTALL)
+* Parallel analysis: fixed a bug, limited number of MPI processes on small
+  problems, and reverted to sequential analysis on tiny problems. This is
+  to avoid erroneous behavior and failures in the parallel ordering tools.
+* Faster BLR clustering on matrices with quasi-dense rows (which are skipped)
+* Improved performance of solve phase on very small matrices
+* Solve phase with a single MPI process is more thread-safe
+* Fixed compilation issue with opensolaris ([SDCZ]MUMPS_TRUNCATED_RRQR)
+* Fixed minor bug in BLR factorization (uninitialized timer)
+* Corrected minor compiler warnings
+* Minor correction to userguide
+* Add -DBLR_MT in Intel example Makefile
+
+
+Changes from 5.1.0 to 5.1.1
+* Fix in parallel analysis
+* Stabilization of 5.1.0:
+  - Improved stability of Block-Low-Rank feature
+  - Corrected an incorrect deallocation of POSINRHSCOMP_COL
+  - Correction of a case of uninitialized data access in type 2 pivoting
+  - Suppressed occasional debug trace "write(6,*) " KEEP265= ", KEEP265"
+
+Changes from 5.0.2 to 5.1.0
+* New feature: selective 64-bit integers (introduced only where needed)
+  to process matrices with more than 2^{31}-1 entries.
+   -mixed 32/64 bit integers for API: NNZ/NNZ_loc 64-bit
+    (NZ/NZ_LOC kept temporarily for backward compatibility)
+   - both 32 or 64 bit integer versions of external orderings 
+    (Metis/ParMetis, SCOTCH/pt-SCOTCH, PORD), can be used
+   - Error -51 when a 32-bit external ordering is invoked on 
+    a graph larger than  2^{31}-1
+* New feature: (experimental) factorization based on Block-Low-Rank format,
+  (ICNTL(35) to activate it and CNTL(7) for low-rank precision)
+* Improved performance on numerically hard matrices (LU and LDLt)
+* "-DALLOW_NON_INIT" flag has disappeared and needs no longer be used
+* Fixed incorrect deallocation in case of JOB=3/ICNTL(26)=1 followed by JOB=2
+* Fixed compilation problem with Intel2017 + openMPI in [sdcz]ana_aux_par.F
+* Minor correction of memory statistics for solve
+* Use 64-bit integers where needed during the solve phase to enable 
+  large number of right-hand-sides (NRHS) in one block
+  (i.e. ICNTL(27)xN can be larger than 2^{31}-1)
+* Improved performance of solve phase
+* Allow pivoting thresholds CNTL(1) equal to 1.0
+* New error -52: when default Fortran integers are 64 bit, external
+  orderings should also have 64-bit default integers
+* New error -22, INFO(2)=16 when IRN_loc or JCN_loc not associated
+  while ICNTL(18) is set to 3
+* Missing O_BINARY flag was added to open binary files on MINGW systems
+* New error -53 that could reflect a matrix structure change between
+analysis and factorization
+
+Changes from 5.0.1 to 5.0.2
+* Suppress error on id%SCHUR_CINTERFACE in mumps_driver.F when bound
+  check is enabled and when using 2D block cyclic Schur complement
+  feature (ICNTL(19)=2 or 3) from C or Matlab interfaces
+* Problem of failed assertion in [SDCZ]MUMPS_TREAT_DESCBAND solved (static variable
+  INODE_WAITED_FOR was not initialized and was not detected by valgrind)
+* Correction of very minor memory leaks and access to uninitialized data
+* A setting of INFO(1)=-1-17 should have been INFO(1)=-17
+* Some settings of INFO(1)=-17 should have been INFO(1)=-20
+* Suppress absolute tolerance 10^-20 in pivot selection for SYM=2;
+  skip 2x2 pivot search if only 1 pivot candidate, avoid pivots
+  that are subnormal numbers (their inverse is equal to infinity)
+* Warning +2 now only occurs when solution is really close to 0
+* Occasional bug in OOC and multiple instances solved
+* Better selection of equations for bwd errors (W1 and W2) and better
+  forward error estimates on some machines with 80-bit registers
+* Improved users' guide (OOC files cleaning, permutation details, usage
+  of multithreading, clarification of MegaByte unit)
+* Cleaning of asynchronous messages after facto/solve was
+  revisited and is more robust
+* More robust suppression of integer overflow risk during
+  solve for huge ICNTL(23)
+* Improved performance of symbolic factorization in case of matrices with
+  relatively dense rows and/or with large number of Lagrange multipliers
+* Improved performance of numerical factorization phase during 
+  pivot search for symmetric indefinite matrices
+* Use of -xcore-avx2 requires !DEC$ NOOPTIMIZE in MUMPS_BIT_GET4PROC
+  with current versions of Intel compilers
+* Suppressed some temporary array creation and implicit conversions
+
+Changes from 5.0.0 to 5.0.1
+* Iterative refinement convergence check corrected (problem
+  introduced in 5.0.0)
+* Used communicator provided by user instead of MPI_COMM_WORLD
+  in two places (parallel analysis only)
+* Matlab interface patched to avoid memory corruption in some
+  situations (Schur, colsca/rowsca management)
+* Corrected a case of error not properly processed which could
+  cause a segfault instead of a standard "-9" error, or an
+  abort on "ERR: ERROR: NBROWS > NBROWF"
+* Amalgamation without fill forced for single children
+* (rare) segfault related to assemblies of delayed columns in
+  scalapack root node corrected
+* Automatic strategy for ordering choice improved
+* Further improvements to userguide (mainly iterative
+  refinement, error analysis, discard factors and forward
+  elimination during factorization)
+* Error -51 also raised in case of integer overflow during
+  parallel analysis
+
+Changes from 4.10.0 to 5.0.0
+* Userguide revisited
+* Compatibility with Metis 5.1.0/ParMetis 4.0.3, and with
+  SCOTCH/pt-SCOTCH 6.0
+* Matlab interface updated (scaling vectors (COLSCA, ROWSCA) and
+  A-1 feature ICNTL(30) are now available)
+* Improved sequential and parallel performance for computing selected entries of 
+  A-1 (ICNTL(30))
+* Workspace for solve phase, of size B x N per processor (B: block
+  size controlled by ICNTL(27)) divided by almost #procs. Default
+  value of B increased.
+* Parallel symmetric indefinite elemental matrices: improved numerical behaviour
+* Performance of solve phase improved 
+* Finer control of error analysis and iterative refinement (ICNTL(11))
+* Memory for analysis phase (mapping) reduced.
+* Better support for 64-bit integers (see INSTALL file)
+* Error raised instead of silent integer overflow during analysis (but
+  not during external orderings)
+* Improvements and corrections to parallel analysis (ICNTL(28)),
+  deterministic graph construction forced with -DDETERMINISTIC_PARALLEL_GRAPH
+* Forward elimination (ICNTL(32)) can be done during factorization
+* Possibility to use a workspace (WK_USER, LWK_USER) allocated by user
+* Very occasional numerical bug in parallel out-of-core case
+  corrected (thanks to EDF and Samtech for the validation)
+* More efficient processing of sparse right-hand-sides (see ICNTL(20))
+* Count for entries in factors now include parallel root node
+* Amalgamation of the assembly tree revisited
+* Scaling arrays (COLSCA, ROWSCA) also returned at C interface level
+* OOC_NB_FILE_TYPE is part of the MUMPS structure, for
+  a better management of multiple OOC instances
+* Warning +2 set only once (could lead to incorrect +4 in
+  case of iterative refinement + error analysis)
+* Warning +4 has disappeared from documentation (since it
+  was never occurring -- JCN never modified on exit)
+* Error code -16 now raised for the case N=0 even on distributed
+  matrices (thanks to P. Jolivet for noticing this)
+* Use BLAS3 routines for efficiency even in case of BLAS2 operations
+  (-DMUMPS_USE_BLAS2 allows the use of BLAS2 routines for such
+  operations)
+* Message "problem with NIV2_FLOPS message" should no more occur
+  (there was still an occasional problem in 4.10.0)
+* Improved determinant computation (ICNTL(33)) in case of singular
+  matrix + scaling (where zero pivots are excluded)
+* Trace ' PANEL: INIT and force STRAT_IO=' suppressed
+* Some OpenMP directives added (multithreaded BLAS still needed)
+* Later allocation of strips of distributed fronts with improved locality
+* Front factorization algorithms redesigned (two levels of panels)
+* Null pivot (ICNTL(24)) and null space detection ICNTL(25)) improved
+  for unsymmetric matrices
+* Fortran automatic arrays (e.g. in mumps_static_mapping.F) suppressed
+  to avoid risks of stack overflows
+* Routine names and filenames changed
+
 Changes from 4.9.2 to 4.10.0
 * Modified variable names and variable contents in Make.inc/Makefile*
   for Windows (Makefile.inc from an older version needs modifications,
@@ -94,7 +575,7 @@ Changes from 4.8.4 to 4.9
   statements (HP-UX compilers)
 * Fixed problem of explicit interface in [SDCZ]MUMPS_521
 * Out-of-core strategy from 4.7.3 can be reactivated with -DOLD_OOC_NOPANEL
-* Message "problem with NIV2_FLOPS message" no more occurs
+* Message "problem with NIV2_FLOPS message" should no more occur
 * Avoid compilation problem with old versions of gfortran
 
 
@@ -282,7 +763,7 @@ Changes from 4.4.0 to 4.5.0
 * improved numerical features for symmetric indefinite matrices
     - two-by-two pivots
     - symmetric scaling
-    - ordering based on compressed graph prserving two by two pivots
+    - ordering based on compressed graph preserving two by two pivots
     - constrained ordering
 * 2D cyclic Schur better validated
 * problems resulting from automatic array copies done by compiler corrected
@@ -293,7 +774,7 @@ Changes from 4.3.4 to 4.4.0
 * symmetric indefinite matrices better handled
 * Right-hand side vectors can be sparse
 * Solution can be kept distributed on the processors
-* METIS allowed for element-entry
+* Metis allowed for element-entry
 * Parallel performance and memory usage improved:
    - load is updated more often for type 2 nodes
    - scheduling under memory constraints
@@ -401,6 +882,36 @@ Changes from 4.0.4 to 4.1.4
 = Release history =
 -------------------
 
+Release 5.9.1            : July 2026
+Release 5.9.0            : April 2026
+Release 5.8.2            : January 2026
+Release 5.8.1            : July 2025
+Release 5.8.0            : May 2025
+Release 5.7.3            : July 2024
+Release 5.7.2            : June 2024
+Release 5.7.1            : May 2024
+Release 5.7.0            : April 2024
+Release 5.6.2            : October 2023
+Release 5.6.1            : July 2023
+Release 5.6.0            : April 2023
+Release 5.5.1            : July 2022
+Release 5.5.0            : April 2022
+Release 5.4.1            : August 2021
+Release 5.4.0            : April 2021
+Release 5.3.5            : October 2020
+Release 5.3.4            : September 2020
+Release 5.3.3            : June 2020
+Release 5.3.2[.x]        : May 2020, internal/experimental
+Release 5.3.1            : April 2020
+Release 5.3.0            : April 2020
+Release 5.2.1            : June 2019
+Release 5.2.0            : April 2019
+Release 5.1.2            : October 2017
+Release 5.1.1            : March 2017
+Release 5.1.0            : Feb 2017, internal release (limited diffusion)
+Release 5.0.2            : July 2016
+Release 5.0.1            : July 2015
+Release 5.0.0            : February 2015
 Release 4.10.0           : May 2011
 Release 4.9.2            : November 2009
 Release 4.9.1            : October 2009

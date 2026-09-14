@@ -152,22 +152,38 @@ function(parse_am filename index keep)
     elseif (line MATCHES "^[ ]*else")
       break ()
     elseif (line MATCHES "^[ ]*if[ \t]*([^ \t]*)")
+      set(cond_expr "${CMAKE_MATCH_1}")
       set(keep_then FALSE)
       set(keep_else TRUE)
-      if (${CMAKE_MATCH_1})
+      # Automake conditionals can be negated ("if !VAR"), but CMake's if()
+      # doesn't recognize a bare "!" prefix as NOT - it just evaluates the
+      # whole literal token "!VAR" as an (always-undefined, so always false)
+      # identifier. So this needs its own explicit variable-name capture.
+      if (cond_expr MATCHES "^!(.*)")
+        if (NOT ${CMAKE_MATCH_1})
+          set(keep_then TRUE)
+          set(keep_else FALSE)
+        endif ()
+      elseif (${cond_expr})
         set(keep_then TRUE)
         set(keep_else FALSE)
       endif ()
       math(EXPR index "${index} + 1")
       parse_am(${filename} ${index} ${keep_then})
       set(index ${out_index})
-      set(lines ${lines} ${out_lines})
+      # A nested if/else is only actually kept when the enclosing block is
+      # also kept - otherwise its condition being true doesn't matter.
+      if (keep)
+        set(lines ${lines} ${out_lines})
+      endif ()
       list(GET in_lines ${index} line)
       if (line MATCHES "^[ ]*else")
         math(EXPR index "${index} + 1")
         parse_am(${filename} ${index} ${keep_else})
         set(index ${out_index})
-        set(lines ${lines} ${out_lines})
+        if (keep)
+          set(lines ${lines} ${out_lines})
+        endif ()
         list(GET in_lines ${index} line)
       endif ()
       if (NOT (line MATCHES "^[ ]*endif"))
@@ -554,8 +570,6 @@ if (COIN_HAS_ASL)
 
 enable_testing()
 
-include_directories(Cbc/BuildTools/headers)
-
 add_coin_library(Cbc/CoinUtils ${COINUTILS_LIBS})
 add_coin_library(Cbc/Clp CoinUtils)
 add_coin_library(Cbc/Clp/src/OsiClp Osi Clp)
@@ -716,29 +730,69 @@ if (EXISTS ${COIN_SOURCE_DIR}/Ipopt)
   endif ()
 endif ()
 
-if (MSVC OR NOT BUILD_IPOPTFORT)
-  set(F77_FUNC "(name,NAME) name##_")
-  set(F77_FUNC_ "${F77_FUNC}")
-endif ()
+# This repo always builds against gfortran (via MSYS2 on Windows, or the
+# system gfortran on Linux/macOS - see azure-pipelines.yml), whose Fortran
+# name-mangling convention is uniformly lowercase-plus-trailing-underscore,
+# so it's safe to hardcode rather than probe for it. On the MSVC path this
+# also needs to be set here since FortranCInterface (which detects the same
+# thing) only runs inside the separate ipoptfort sub-project, not here.
+set(F77_FUNC "(name,NAME) name##_")
+set(F77_FUNC_ "${F77_FUNC}")
 
 if (BUILD_IPOPT)
-  set(HAVE_LINEARSOLVERLOADER 1)
-  set(BUILD_LINEARSOLVERLOADER 1)
-  set(BUILD_PARDISOLOADER 1)
-
   check_symbol_exists(drand48 stdlib.h HAVE_DRAND48)
   check_symbol_exists(rand stdlib.h HAVE_RAND)
   check_symbol_exists(std::rand cstdlib HAVE_STD__RAND)
   check_symbol_exists(snprintf stdio.h HAVE_SNPRINTF)
   check_symbol_exists(_snprintf stdio.h HAVE__SNPRINTF)
   check_symbol_exists(va_copy stdarg.h HAVE_VA_COPY)
+  # Ipopt's own config.h.in (since 3.14) names these IPOPT_HAS_* rather than
+  # the generic HAVE_* the checks above were written for (an older Ipopt
+  # convention) - without this, IpUtils.cpp's IpRandom01() hits a hard
+  # #error "don't have function for random number generator" since none of
+  # IPOPT_HAS_DRAND48/IPOPT_HAS_RAND/IPOPT_HAS_STD__RAND end up defined.
+  # Only set the alias when true: configure()'s "leave undefined" logic only
+  # recognizes names starting with HAVE_, so a falsy-but-defined IPOPT_HAS_*
+  # would otherwise be written out as "#define IPOPT_HAS_X" (present but
+  # empty) instead of properly omitted, wrongly enabling that codepath.
+  foreach (rand_check HAVE_DRAND48 HAVE_RAND HAVE_STD__RAND HAVE_VA_COPY)
+    string(REPLACE "HAVE_" "IPOPT_HAS_" ipopt_has_var ${rand_check})
+    if (${rand_check})
+      set(${ipopt_has_var} 1)
+    endif ()
+  endforeach ()
   check_symbol_exists(vsnprintf "stdio.h;stdarg.h" HAVE_VSNPRINTF)
 
   string(SUBSTRING ${CMAKE_SHARED_LIBRARY_SUFFIX} 1 -1 SHAREDLIBEXT)
 
+  # Since Ipopt 3.14, src/Common, src/LinAlg, src/Algorithm etc. no longer
+  # have their own Makefile.am (and hence no separate libraries); everything
+  # is built into a single libipopt from src/Makefile.am. Its AM_CPPFLAGS
+  # lists these same subdirectories, so they need to be on the include path
+  # for cross-subdirectory includes (e.g. "IpBlas.hpp" from Algorithm/*.cpp).
   include_directories(
-    Ipopt/Ipopt/src/contrib/LinearSolverLoader
+    Ipopt/BuildTools/headers
+    Ipopt/Ipopt/src/Common
+    Ipopt/Ipopt/src/LinAlg
+    Ipopt/Ipopt/src/LinAlg/TMatrices
+    Ipopt/Ipopt/src/Algorithm
+    Ipopt/Ipopt/src/Algorithm/LinearSolvers
+    Ipopt/Ipopt/src/Interfaces
+    Ipopt/Ipopt/src/contrib/CGPenalty
     ThirdParty/Mumps/MUMPS/include ThirdParty/Mumps/MUMPS/libseq)
+
+  # MUMPS (since 5.x) needs an include/mumps_int_def.h generated from one of
+  # two .in templates depending on whether 64-bit integers are requested;
+  # this build always uses the 32-bit default (matching MUMPS_INT = int
+  # elsewhere). Generated here (with explicit absolute paths, into the
+  # source tree) rather than in Ipopt/CMakeLists.txt, since that Fortran
+  # sub-project's relative configure_file() paths resolve against its own
+  # separate binary directory, not the source tree both it and the main
+  # "ipopt" MSVC target read their includes from.
+  configure_file(
+    ${CMAKE_CURRENT_SOURCE_DIR}/ThirdParty/Mumps/MUMPS/src/mumps_int_def32_h.in
+    ${CMAKE_CURRENT_SOURCE_DIR}/ThirdParty/Mumps/MUMPS/include/mumps_int_def.h
+    COPYONLY)
 
   if (BUILD_IPOPTFORT)
     # FORTRAN_CMAKE_FLAGS is used to pass additional CMake arguments to
@@ -771,24 +825,27 @@ if (BUILD_IPOPT)
     add_copy_library_command(${COIN_BINARY_DIR}/Ipopt/bin/libipoptfort.dll)
   endif ()
 
-  add_ipopt_library(ipoptalg Algorithm)
-  add_ipopt_library(linsolvers Algorithm/LinearSolvers)
-  add_ipopt_library(common Common)
-  add_ipopt_library(cgpenalty contrib/CGPenalty)
-  add_ipopt_library(linalg LinAlg)
-  add_ipopt_library(tmatrices LinAlg/TMatrices)
-  add_ipopt_library(ipopt Interfaces
-    ipoptalg linsolvers common cgpenalty linalg tmatrices ${IPOPTFORT})
+  # Since 3.14, Ipopt itself is a single library (libipopt, from
+  # src/Makefile.am) rather than several sub-libraries; add_coin_library
+  # picks up its sources by parsing that one Makefile.am. Its automake
+  # conditionals reference variables such as COIN_HAS_MUMPS (already set to 1
+  # above once ipoptfort is available) to decide whether e.g.
+  # IpMumpsSolverInterface.cpp is included.
+  add_coin_library(Ipopt/Ipopt/src NAME ipopt ${IPOPTFORT})
+  set_target_properties(ipopt PROPERTIES COMPILE_DEFINITIONS IPOPTLIB_BUILD)
+  add_to_folder(ipopt ipopt)
 
   if (COIN_HAS_ASL)
     add_ipopt_library(ipoptamplinterface Apps/AmplSolver ${ASL_LIBRARIES})
+    set_target_properties(ipoptamplinterface PROPERTIES
+      COMPILE_DEFINITIONS IPOPTAMPLINTERFACELIB_BUILD)
     target_link_libraries(ipopt ipoptamplinterface)
-    
+
     add_executable(ipopt-executable
       Ipopt/Ipopt/src/Apps/AmplSolver/ampl_ipopt.cpp ${IPOPT_EXTERNAL_LIBS})
     target_link_libraries(ipopt-executable ipopt)
     set_target_properties(ipopt-executable PROPERTIES
-      COMPILE_DEFINITIONS IPOPT_BUILD OUTPUT_NAME ipopt IMPORT_PREFIX imp)
+      OUTPUT_NAME ipopt IMPORT_PREFIX imp)
     add_to_folder(ipopt ipopt-executable)
     if (NOT WIN32)
       add_test(NAME Ipopt-amplTest
@@ -814,7 +871,42 @@ if (BUILD_IPOPT)
     add_to_folder(ipopt/test Ipopt-unitTest)
   endif ()
   
+  # Use the same autoconf-template approach as Cbc/Bonmin/Couenne (rather
+  # than Ipopt's own config_default.h / configall_system.h fallback headers -
+  # those are documented as being only for builds that skip HAVE_CONFIG_H
+  # entirely, and their configall_system.h has no non-MSVC branch at all, so
+  # it fails outright on Linux/macOS).
+  set(IPOPT_HAS_MUMPS 1)
+  set(IPOPT_HAS_LAPACK 1)
+  set(IPOPT_C_FINITE_C ${COIN_C_FINITE_C})
   configure(Ipopt Ipopt/src/Common/config.h Ipopt/src/Common/config_ipopt.h)
+  # A few entries in Ipopt's config.h.in/config_ipopt.h.in need values the
+  # generic configure() substitution can't produce correctly:
+  #  - the *_EXPORT visibility macros must be defined-but-empty (matching
+  #    what a real `configure` run produces on non-Windows), not left
+  #    undefined entirely - IpoptConfig.h only *conditionally* redefines them
+  #    (when building the library on Windows), so elsewhere they must still
+  #    exist as an empty macro or class declarations using them won't compile.
+  #  - IPOPT_LAPACK_FUNC(_) are function-like macros (like F77_FUNC, which
+  #    configure() already special-cases), but configure() doesn't recognize
+  #    that pattern for anything but F77_FUNC itself, so they'd otherwise come
+  #    out as quoted string literals instead of macros.
+  foreach (config_file Ipopt/Ipopt/src/Common/config.h Ipopt/Ipopt/src/Common/config_ipopt.h)
+    file(READ ${config_file} ipopt_config_contents)
+    foreach (export_macro IPOPTLIB_EXPORT IPOPTAMPLINTERFACELIB_EXPORT
+                           SIPOPTLIB_EXPORT SIPOPTAMPLINTERFACELIB_EXPORT
+                           HSLLIB_EXPORT)
+      string(REPLACE "/* #undef ${export_macro} */" "#define ${export_macro}"
+        ipopt_config_contents "${ipopt_config_contents}")
+    endforeach ()
+    string(REPLACE "/* #undef IPOPT_LAPACK_FUNC */"
+      "#define IPOPT_LAPACK_FUNC(name,NAME) F77_FUNC(name,NAME)"
+      ipopt_config_contents "${ipopt_config_contents}")
+    string(REPLACE "/* #undef IPOPT_LAPACK_FUNC_ */"
+      "#define IPOPT_LAPACK_FUNC_(name,NAME) F77_FUNC_(name,NAME)"
+      ipopt_config_contents "${ipopt_config_contents}")
+    file(WRITE ${config_file} "${ipopt_config_contents}")
+  endforeach ()
 endif()
 
 function(add_coin_test name dir lib)

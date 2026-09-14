@@ -53,7 +53,7 @@ SPACE_ordering(graph_t *G, options_t *options, timings_t *cpus)
   options_t     default_options[] = { SPACE_ORDTYPE, SPACE_NODE_SELECTION1,
                        SPACE_NODE_SELECTION2, SPACE_NODE_SELECTION3,
                        SPACE_DOMAIN_SIZE, SPACE_MSGLVL };
-  int           *vtxmap, istage, totnstep, totnzf;
+  PORD_INT           *vtxmap, istage, totnstep, totnzf;
   FLOAT         totops;
 
   /* --------------------------------------------------
@@ -65,26 +65,26 @@ SPACE_ordering(graph_t *G, options_t *options, timings_t *cpus)
   /* ----------------
      reset all timers
      ---------------- */
-  resettimer(cpusOrd[TIME_COMPRESS]);
-  resettimer(cpusOrd[TIME_MS]);
-  resettimer(cpusOrd[TIME_MULTILEVEL]);
-  resettimer(cpusOrd[TIME_INITDOMDEC]);
-  resettimer(cpusOrd[TIME_COARSEDOMDEC]);
-  resettimer(cpusOrd[TIME_INITSEP]);
-  resettimer(cpusOrd[TIME_REFINESEP]);
-  resettimer(cpusOrd[TIME_SMOOTH]);
-  resettimer(cpusOrd[TIME_BOTTOMUP]);
-  resettimer(cpusOrd[TIME_UPDADJNCY]);
-  resettimer(cpusOrd[TIME_FINDINODES]);
-  resettimer(cpusOrd[TIME_UPDSCORE]);
+  pord_resettimer(cpusOrd[TIME_COMPRESS]);
+  pord_resettimer(cpusOrd[TIME_MS]);
+  pord_resettimer(cpusOrd[TIME_MULTILEVEL]);
+  pord_resettimer(cpusOrd[TIME_INITDOMDEC]);
+  pord_resettimer(cpusOrd[TIME_COARSEDOMDEC]);
+  pord_resettimer(cpusOrd[TIME_INITSEP]);
+  pord_resettimer(cpusOrd[TIME_REFINESEP]);
+  pord_resettimer(cpusOrd[TIME_SMOOTH]);
+  pord_resettimer(cpusOrd[TIME_BOTTOMUP]);
+  pord_resettimer(cpusOrd[TIME_UPDADJNCY]);
+  pord_resettimer(cpusOrd[TIME_FINDINODES]);
+  pord_resettimer(cpusOrd[TIME_UPDSCORE]);
 
   /* ------------------
      compress the graph
      ------------------ */
-  starttimer(cpusOrd[TIME_COMPRESS]);
-  mymalloc(vtxmap, G->nvtx, int);
+  pord_starttimer(cpusOrd[TIME_COMPRESS]);
+  mymalloc(vtxmap, G->nvtx, PORD_INT);
   Gc = compressGraph(G, vtxmap);
-  stoptimer(cpusOrd[TIME_COMPRESS]);
+  pord_stoptimer(cpusOrd[TIME_COMPRESS]);
 
   if (Gc != NULL)
    { if (options[OPTION_MSGLVL] > 0)
@@ -103,9 +103,9 @@ SPACE_ordering(graph_t *G, options_t *options, timings_t *cpus)
      ------------------- */
   
   
-  starttimer(cpusOrd[TIME_MS]);
+  pord_starttimer(cpusOrd[TIME_MS]);
   ms = constructMultisector(Gc, options, cpusOrd);
-  stoptimer(cpusOrd[TIME_MS]);
+  pord_stoptimer(cpusOrd[TIME_MS]);
 	
 
   if (options[OPTION_MSGLVL] > 0)
@@ -115,10 +115,10 @@ SPACE_ordering(graph_t *G, options_t *options, timings_t *cpus)
   /* ---------------------------------
      compute minimum priority ordering
      --------------------------------- */
-  starttimer(cpusOrd[TIME_BOTTOMUP])
+  pord_starttimer(cpusOrd[TIME_BOTTOMUP])
   minprior = setupMinPriority(ms);
   T = orderMinPriority(minprior, options, cpusOrd);
-  stoptimer(cpusOrd[TIME_BOTTOMUP]);
+  pord_stoptimer(cpusOrd[TIME_BOTTOMUP]);
 
   if (options[OPTION_MSGLVL] > 0)
    { totnstep = totnzf = 0;
@@ -182,7 +182,7 @@ SPACE_ordering(graph_t *G, options_t *options, timings_t *cpus)
         setupElimTree) more appropiate for the multifrontal algorithm
 ******************************************************************************/
 elimtree_t*
-SPACE_transformElimTree(elimtree_t *T, int maxzeros)
+SPACE_transformElimTree(elimtree_t *T, PORD_INT maxzeros)
 { elimtree_t *T2, *T3;
 
   /* -----------------------------------------------------
@@ -222,13 +222,13 @@ SPACE_symbFac(elimtree_t *T, inputMtx_t *A)
   css_t       *css;
   inputMtx_t  *PAP;
   elimtree_t  *PTP;
-  int         *perm, neqs, nelem;
+  PORD_INT         *perm, neqs, nelem;
 
   /* ------------------------------------------------------
      extract permutation vectors from T and permute T and A
      ------------------------------------------------------ */
   neqs = A->neqs;
-  mymalloc(perm, neqs, int);
+  mymalloc(perm, neqs, PORD_INT);
   permFromElimTree(T, perm);
   PTP = permuteElimTree(T, perm);
   PAP = permuteInputMtx(A, perm);
@@ -282,10 +282,10 @@ SPACE_numFac(factorMtx_t *L, timings_t *cpus)
   /* ----------------
      reset all timers
      ---------------- */
-  resettimer(cpusFactor[TIME_INITFRONT]);
-  resettimer(cpusFactor[TIME_EXADD]);
-  resettimer(cpusFactor[TIME_KERNEL]);
-  resettimer(cpusFactor[TIME_INITUPD]);
+  pord_resettimer(cpusFactor[TIME_INITFRONT]);
+  pord_resettimer(cpusFactor[TIME_EXADD]);
+  pord_resettimer(cpusFactor[TIME_KERNEL]);
+  pord_resettimer(cpusFactor[TIME_INITUPD]);
 
   /* -------------------------
      compute Cholesky factor L
@@ -317,8 +317,8 @@ SPACE_numFac(factorMtx_t *L, timings_t *cpus)
 void
 SPACE_solveTriangular(factorMtx_t *L, FLOAT *rhs, FLOAT *xvec)
 { FLOAT *yvec;
-  int   *perm;
-  int   neqs, k;
+  PORD_INT   *perm;
+  PORD_INT   neqs, k;
 
   perm = L->perm;
   neqs = L->css->neqs;
@@ -407,19 +407,19 @@ SPACE_solve(inputMtx_t *A, FLOAT *rhs, FLOAT *xvec, options_t *options,
   /* ----------------
      reset all timers
      ---------------- */
-  resettimer(t_graph);
-  resettimer(t_ord);
-  resettimer(t_etree);
-  resettimer(t_symb);
-  resettimer(t_num);
-  resettimer(t_solvetri);
+  pord_resettimer(t_graph);
+  pord_resettimer(t_ord);
+  pord_resettimer(t_etree);
+  pord_resettimer(t_symb);
+  pord_resettimer(t_num);
+  pord_resettimer(t_solvetri);
 
   /* -----------------
      set up graph G(A)
      ----------------- */
-  starttimer(t_graph);
+  pord_starttimer(t_graph);
   G = setupGraphFromMtx(A);
-  stoptimer(t_graph);
+  pord_stoptimer(t_graph);
 
   if (options[OPTION_MSGLVL] > 0)
     printf("\ninduced graph constructed: #vertices %d, #edges %d, #components "
@@ -428,9 +428,9 @@ SPACE_solve(inputMtx_t *A, FLOAT *rhs, FLOAT *xvec, options_t *options,
   /* --------------------------------------------
      construct ordering/elimination tree for G(A)
      -------------------------------------------- */
-  starttimer(t_ord);
+  pord_starttimer(t_ord);
   T = SPACE_ordering(G, options, cpusOrd);
-  stoptimer(t_ord);
+  pord_stoptimer(t_ord);
   freeGraph(G);
 
   if (options[OPTION_MSGLVL] > 0)
@@ -441,9 +441,9 @@ SPACE_solve(inputMtx_t *A, FLOAT *rhs, FLOAT *xvec, options_t *options,
   /* -------------------------------
      elimination tree transformation
      ------------------------------- */
-  starttimer(t_etree);
+  pord_starttimer(t_etree);
   T2 = SPACE_transformElimTree(T, options[OPTION_ETREE_NONZ]);
-  stoptimer(t_etree);
+  pord_stoptimer(t_etree);
   freeElimTree(T);
 
   if (options[OPTION_MSGLVL] > 0)
@@ -454,9 +454,9 @@ SPACE_solve(inputMtx_t *A, FLOAT *rhs, FLOAT *xvec, options_t *options,
   /* ------------------------
      symbolical factorization
      ------------------------ */
-  starttimer(t_symb);
+  pord_starttimer(t_symb);
   L = SPACE_symbFac(T2, A);
-  stoptimer(t_symb);
+  pord_stoptimer(t_symb);
 
   if (options[OPTION_MSGLVL] > 0)
     printf("quality of factor matrix:\n\tneqs %d, #indices %d, nzl %d\n",
@@ -465,9 +465,9 @@ SPACE_solve(inputMtx_t *A, FLOAT *rhs, FLOAT *xvec, options_t *options,
   /* -----------------------
      numerical factorization
      ----------------------- */
-  starttimer(t_num);
+  pord_starttimer(t_num);
   SPACE_numFac(L, cpusFactor);
-  stoptimer(t_num);
+  pord_stoptimer(t_num);
 
   if (options[OPTION_MSGLVL] > 0)
     printf("performance of numerical factorization: %6.2f mflops\n",
@@ -476,9 +476,9 @@ SPACE_solve(inputMtx_t *A, FLOAT *rhs, FLOAT *xvec, options_t *options,
   /* ------------------------------
      solution of triangular systems
      ------------------------------ */
-  starttimer(t_solvetri);
+  pord_starttimer(t_solvetri);
   SPACE_solveTriangular(L, rhs, xvec);
-  stoptimer(t_solvetri);
+  pord_stoptimer(t_solvetri);
 
   if (options[OPTION_MSGLVL] > 0)
     printf("performance of forward/backward solve:  %6.2f mflops\n",
@@ -542,7 +542,7 @@ SPACE_solve(inputMtx_t *A, FLOAT *rhs, FLOAT *xvec, options_t *options,
         using an externally computed permutation vector
 ******************************************************************************/
 void
-SPACE_solveWithPerm(inputMtx_t *A, int *perm, FLOAT *rhs, FLOAT *xvec,
+SPACE_solveWithPerm(inputMtx_t *A, PORD_INT *perm, FLOAT *rhs, FLOAT *xvec,
                     options_t *options, timings_t *cpus)
 { graph_t     *G;
   elimtree_t  *T, *T2;
@@ -550,7 +550,7 @@ SPACE_solveWithPerm(inputMtx_t *A, int *perm, FLOAT *rhs, FLOAT *xvec,
   timings_t   cpusFactor[NUMFAC_TIME_SLOTS], t_graph, t_etree_construct;
   timings_t   t_etree_merge, t_symb, t_num, t_solvetri;
   options_t   default_options[] = { SPACE_MSGLVL, SPACE_ETREE_NONZ };
-  int         *invp, i, msglvl, maxzeros;
+  PORD_INT         *invp, i, msglvl, maxzeros;
 
   /* --------------------------------------------------
      set default options, if no other options specified
@@ -563,19 +563,19 @@ SPACE_solveWithPerm(inputMtx_t *A, int *perm, FLOAT *rhs, FLOAT *xvec,
   /* ----------------
      reset all timers
      ---------------- */
-  resettimer(t_graph);
-  resettimer(t_etree_construct);
-  resettimer(t_etree_merge);
-  resettimer(t_symb);
-  resettimer(t_num);
-  resettimer(t_solvetri);
+  pord_resettimer(t_graph);
+  pord_resettimer(t_etree_construct);
+  pord_resettimer(t_etree_merge);
+  pord_resettimer(t_symb);
+  pord_resettimer(t_num);
+  pord_resettimer(t_solvetri);
 
   /* -----------------
      set up graph G(A)
      ----------------- */
-  starttimer(t_graph);
+  pord_starttimer(t_graph);
   G = setupGraphFromMtx(A);
-  stoptimer(t_graph);
+  pord_stoptimer(t_graph);
 
   if (msglvl > 0)
     printf("\ninduced graph constructed: #vertices %d, #edges %d, #components "
@@ -584,12 +584,12 @@ SPACE_solveWithPerm(inputMtx_t *A, int *perm, FLOAT *rhs, FLOAT *xvec,
   /* ---------------------------------------------------
      construct inital elimination tree according to perm
      --------------------------------------------------- */
-  starttimer(t_etree_construct);
-  mymalloc(invp, G->nvtx, int);
+  pord_starttimer(t_etree_construct);
+  mymalloc(invp, G->nvtx, PORD_INT);
   for (i = 0; i < G->nvtx; i++)
     invp[perm[i]] = i;
   T = setupElimTree(G, perm, invp);
-  stoptimer(t_etree_construct);
+  pord_stoptimer(t_etree_construct);
   freeGraph(G);
   free(invp);
 
@@ -601,9 +601,9 @@ SPACE_solveWithPerm(inputMtx_t *A, int *perm, FLOAT *rhs, FLOAT *xvec,
   /* -------------------------------
      elimination tree transformation
      ------------------------------- */
-  starttimer(t_etree_merge);
+  pord_starttimer(t_etree_merge);
   T2 = SPACE_transformElimTree(T, maxzeros);
-  stoptimer(t_etree_merge);
+  pord_stoptimer(t_etree_merge);
   freeElimTree(T);
 
   if (msglvl > 0)
@@ -614,9 +614,9 @@ SPACE_solveWithPerm(inputMtx_t *A, int *perm, FLOAT *rhs, FLOAT *xvec,
   /* ------------------------
      symbolical factorization
      ------------------------ */
-  starttimer(t_symb);
+  pord_starttimer(t_symb);
   L = SPACE_symbFac(T2, A);
-  stoptimer(t_symb);
+  pord_stoptimer(t_symb);
 
   if (msglvl > 0)
     printf("quality of factor matrix:\n\tneqs %d, #indices %d, nzl %d\n",
@@ -625,9 +625,9 @@ SPACE_solveWithPerm(inputMtx_t *A, int *perm, FLOAT *rhs, FLOAT *xvec,
   /* -----------------------
      numerical factorization
      ----------------------- */
-  starttimer(t_num);
+  pord_starttimer(t_num);
   SPACE_numFac(L, cpusFactor);
-  stoptimer(t_num);
+  pord_stoptimer(t_num);
 
   if (msglvl > 0)
     printf("performance of numerical factorization: %6.2f mflops\n",
@@ -636,9 +636,9 @@ SPACE_solveWithPerm(inputMtx_t *A, int *perm, FLOAT *rhs, FLOAT *xvec,
   /* ------------------------------
      solution of triangular systems
      ------------------------------ */
-  starttimer(t_solvetri);
+  pord_starttimer(t_solvetri);
   SPACE_solveTriangular(L, rhs, xvec);
-  stoptimer(t_solvetri);
+  pord_stoptimer(t_solvetri);
 
   if (msglvl > 0)
     printf("performance of forward/backward solve:  %6.2f mflops\n",
@@ -684,13 +684,13 @@ SPACE_solveWithPerm(inputMtx_t *A, int *perm, FLOAT *rhs, FLOAT *xvec,
         parallel factorization
 ******************************************************************************/
 mapping_t*
-SPACE_mapping(graph_t *G, int *perm, options_t *options, timings_t *cpus)
+SPACE_mapping(graph_t *G, PORD_INT *perm, options_t *options, timings_t *cpus)
 { mapping_t *map;
   elimtree_t *T, *T2;
   timings_t  t_etree_construct, t_etree_merge, t_map;
   options_t  default_options[] = { SPACE_MSGLVL, SPACE_ETREE_NONZ,
                                    SPACE_ETREE_BAL, 2 };
-  int        *invp, i, msglvl, maxzeros, bal, dimQ;
+  PORD_INT        *invp, i, msglvl, maxzeros, bal, dimQ;
 
   /* --------------------------------------------------
      set default options, if no other options specified
@@ -705,19 +705,19 @@ SPACE_mapping(graph_t *G, int *perm, options_t *options, timings_t *cpus)
   /* ----------------
      reset all timers
      ---------------- */
-  resettimer(t_etree_construct);
-  resettimer(t_etree_merge);
-  resettimer(t_map);
+  pord_resettimer(t_etree_construct);
+  pord_resettimer(t_etree_merge);
+  pord_resettimer(t_map);
 
   /* ---------------------------------------------------
      construct inital elimination tree according to perm
      --------------------------------------------------- */
-  starttimer(t_etree_construct);
-  mymalloc(invp, G->nvtx, int);
+  pord_starttimer(t_etree_construct);
+  mymalloc(invp, G->nvtx, PORD_INT);
   for (i = 0; i < G->nvtx; i++)
     invp[perm[i]] = i;
   T = setupElimTree(G, perm, invp);
-  stoptimer(t_etree_construct);
+  pord_stoptimer(t_etree_construct);
   free(invp);
 
   if (msglvl > 0)
@@ -728,9 +728,9 @@ SPACE_mapping(graph_t *G, int *perm, options_t *options, timings_t *cpus)
   /* -------------------------------
      elimination tree transformation
      ------------------------------- */
-  starttimer(t_etree_merge);
+  pord_starttimer(t_etree_merge);
   T2 = SPACE_transformElimTree(T, maxzeros);
-  stoptimer(t_etree_merge);
+  pord_stoptimer(t_etree_merge);
   freeElimTree(T);
 
   if (msglvl > 0)
@@ -741,9 +741,9 @@ SPACE_mapping(graph_t *G, int *perm, options_t *options, timings_t *cpus)
   /* -------------------
      compute the mapping
      ------------------- */
-  starttimer(t_map);
+  pord_starttimer(t_map);
   map = setupMapping(T2, dimQ, bal);
-  stoptimer(t_map);
+  pord_stoptimer(t_map);
 
   /* --------------------------------------------------
      pull back timing results, if vector cpus available

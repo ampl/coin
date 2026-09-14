@@ -1,23 +1,28 @@
 README 
 ************************************************************************
-*  This SCILAB interface to MUMPS is provided to you free of charge.   *
-*  It is part of the MUMPS package (see ../Conditions_of_use) and is   *
-*  public domain. Up-to-date copies can be obtained from the Web       *
-*  pages        http://www.enseeiht.fr/apo/MUMPS/ or                   *
-*  		http://graal.ens-lyon.fr/MUMPS                         *
+*  This SCILAB interface to MUMPS is provided to you free of charge    *
+*  and is part of the MUMPS package (see ../LICENSE for the            *
+*  conditions of use), http://mumps-solver.org                         *
 *                                                                      *
 *  THIS MATERIAL IS PROVIDED AS IS, WITH ABSOLUTELY NO WARRANTY	       *
 *  EXPRESSED OR IMPLIED.  ANY USE IS AT YOUR OWN RISK.                 *
 *                                                                      *
-*  More info is available in the main MUMPS users' guide and in:       *
+*  More information is available in the main MUMPS userguide and in:   *
 *                                                                      *
 *   [2006] Aurelia Fevre, Jean-Yves L'Excellent and Stephane Pralet    *
 *   MATLAB and Scilab interfaces to MUMPS. LIP Report RR2006-06.       *
 *   Also available as an INRIA and an ENSEEIHT-IRIT Technical Report.  *
 *                                                                      *
 ************************************************************************
+*                                                                      *
+*  IMPORTANT NOTICE:  This interface does not include the most recent  *
+*            MUMPS features (e.g., entries of the inverse) and was     *
+*            only tested with Scilab 4 version. We plan to upgrade it  *
+*            in the future.                                            *
+*                                                                      *
+************************************************************************
 
-CONTENT OF THE DIRECTORY:
+CONTENTS OF THE DIRECTORY:
 
 	README               :  this file
 	builder.sce          :  Scilab script to build the makefile, the loader_inc.sce
@@ -47,10 +52,10 @@ CONTENT OF THE DIRECTORY:
 
 ***************************************************************************************
 
-INSTALLATION for Scilab:
+INSTALLATION :
 
 You need:
-        1- scilab version 3.x or 4.x (not tested with scilab 5.x)
+        1- scilab version 3.x or 4.x (not tested with recent versions of scilab)
 	2- to have compiled/linked a sequential version of MUMPS with both double precision
 	   and double complex arithmetics ("make d" and "make z", or "make all")
 	3- to modify the paths in the builder.sce. In particular you will need to give 

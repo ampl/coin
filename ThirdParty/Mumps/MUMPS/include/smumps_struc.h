@@ -1,51 +1,16 @@
 !
-!  This file is part of MUMPS 4.10.0, built on Tue May 10 12:56:32 UTC 2011
+!  This file is part of MUMPS 5.9.1, released
+!  on Mon Jul 20 09:00:43 UTC 2026
 !
 !
-!  This version of MUMPS is provided to you free of charge. It is public
-!  domain, based on public domain software developed during the Esprit IV
-!  European project PARASOL (1996-1999). Since this first public domain
-!  version in 1999, research and developments have been supported by the
-!  following institutions: CERFACS, CNRS, ENS Lyon, INPT(ENSEEIHT)-IRIT,
-!  INRIA, and University of Bordeaux.
+!  Copyright 1991-2026 CERFACS, CNRS, ENS Lyon, INP Toulouse, Inria,
+!  Mumps Technologies, University of Bordeaux.
 !
-!  The MUMPS team at the moment of releasing this version includes
-!  Patrick Amestoy, Maurice Bremond, Alfredo Buttari, Abdou Guermouche,
-!  Guillaume Joslin, Jean-Yves L'Excellent, Francois-Henry Rouet, Bora
-!  Ucar and Clement Weisbecker.
+!  This version of MUMPS is provided to you free of charge. It is
+!  released under the CeCILL-C license 
+!  (see doc/CeCILL-C_V1-en.txt, doc/CeCILL-C_V1-fr.txt, and
+!  https://cecill.info/licences/Licence_CeCILL-C_V1-en.html)
 !
-!  We are also grateful to Emmanuel Agullo, Caroline Bousquet, Indranil
-!  Chowdhury, Philippe Combes, Christophe Daniel, Iain Duff, Vincent Espirat,
-!  Aurelia Fevre, Jacko Koster, Stephane Pralet, Chiara Puglisi, Gregoire
-!  Richard, Tzvetomila Slavova, Miroslav Tuma and Christophe Voemel who
-!  have been contributing to this project.
-!
-!  Up-to-date copies of the MUMPS package can be obtained
-!  from the Web pages:
-!  http://mumps.enseeiht.fr/  or  http://graal.ens-lyon.fr/MUMPS
-!
-!
-!   THIS MATERIAL IS PROVIDED AS IS, WITH ABSOLUTELY NO WARRANTY
-!   EXPRESSED OR IMPLIED. ANY USE IS AT YOUR OWN RISK.
-!
-!
-!  User documentation of any code that uses this software can
-!  include this complete notice. You can acknowledge (using
-!  references [1] and [2]) the contribution of this package
-!  in any scientific publication dependent upon the use of the
-!  package. You shall use reasonable endeavours to notify
-!  the authors of the package of this publication.
-!
-!   [1] P. R. Amestoy, I. S. Duff, J. Koster and  J.-Y. L'Excellent,
-!   A fully asynchronous multifrontal solver using distributed dynamic
-!   scheduling, SIAM Journal of Matrix Analysis and Applications,
-!   Vol 23, No 1, pp 15-41 (2001).
-!
-!   [2] P. R. Amestoy and A. Guermouche and J.-Y. L'Excellent and
-!   S. Pralet, Hybrid scheduling for the parallel solution of linear
-!   systems. Parallel Computing Vol 32 (2), pp 136-156 (2006).
-!
-      INCLUDE 'smumps_root.h'
       TYPE SMUMPS_STRUC
         SEQUENCE
 !
@@ -59,40 +24,50 @@
 !    -----------------
 !    MPI Communicator
 !    -----------------
-        INTEGER COMM
+        INTEGER :: COMM
 !    ------------------
 !    Problem definition
 !    ------------------
 !    Solver (SYM=0 unsymmetric,SYM=1 symmetric Positive Definite, 
 !        SYM=2 general symmetric)
 !    Type of parallelism (PAR=1 host working, PAR=0 host not working)
-        INTEGER SYM, PAR
-        INTEGER JOB 
+        INTEGER ::  SYM, PAR
+        INTEGER ::  JOB 
 !    --------------------
 !    Order of Input matrix 
 !    --------------------
-        INTEGER N
+        INTEGER ::  N
 !
 !    ----------------------------------------
 !    Assembled input matrix : User interface
 !    ----------------------------------------
-        INTEGER NZ
+        INTEGER    :: NZ  ! Standard integer input + bwd. compat.
+        INTEGER(8) :: NNZ ! 64-bit integer input
         REAL, DIMENSION(:), POINTER :: A
         INTEGER, DIMENSION(:), POINTER :: IRN, JCN
-        REAL, DIMENSION(:), POINTER :: COLSCA, ROWSCA, pad0
+!    --------------
+!    Scaling arrays
+!    --------------
+        REAL, DIMENSION(:), POINTER :: COLSCA, ROWSCA
+        REAL, DIMENSION(:), POINTER :: COLSCA_loc
+        REAL, DIMENSION(:), POINTER :: ROWSCA_loc
+        INTEGER, DIMENSION(:), POINTER :: ROWIND, COLIND
+        REAL, DIMENSION(:), POINTER :: PIVOTS
 !
 !       ------------------------------------
 !       Case of distributed assembled matrix
 !       matrix on entry:
 !       ------------------------------------
-        INTEGER NZ_loc, pad1
+        INTEGER    :: NZ_loc  ! Standard integer input + bwd. compat.
+        INTEGER    :: pad1
+        INTEGER(8) :: NNZ_loc ! 64-bit integer input
         INTEGER, DIMENSION(:), POINTER :: IRN_loc, JCN_loc
         REAL, DIMENSION(:), POINTER :: A_loc, pad2
 !
 !    ----------------------------------------
 !    Unassembled input matrix: User interface
 !    ----------------------------------------
-        INTEGER NELT, pad3
+        INTEGER :: NELT, pad3
         INTEGER, DIMENSION(:), POINTER :: ELTPTR
         INTEGER, DIMENSION(:), POINTER :: ELTVAR
         REAL, DIMENSION(:), POINTER :: A_ELT, pad4
@@ -103,6 +78,12 @@
 !    ---------------------------------------------
         INTEGER, DIMENSION(:), POINTER :: PERM_IN
 !
+!    ----------------
+!    Format by blocks
+!    ----------------
+        INTEGER :: NBLK, pad5
+        INTEGER, DIMENSION(:), POINTER :: BLKPTR
+        INTEGER, DIMENSION(:), POINTER :: BLKVAR
 !
 ! ******************
 ! INPUT/OUTPUT data 
@@ -115,35 +96,40 @@
         REAL, DIMENSION(:), POINTER :: RHS, REDRHS
         REAL, DIMENSION(:), POINTER :: RHS_SPARSE
         REAL, DIMENSION(:), POINTER :: SOL_loc
+        REAL, DIMENSION(:), POINTER :: RHS_loc
         INTEGER, DIMENSION(:), POINTER :: IRHS_SPARSE
         INTEGER, DIMENSION(:), POINTER :: IRHS_PTR
         INTEGER, DIMENSION(:), POINTER :: ISOL_loc
-        INTEGER LRHS, NRHS, NZ_RHS, LSOL_loc, LREDRHS
-        INTEGER pad5
+        INTEGER, DIMENSION(:), POINTER :: IRHS_loc
+        INTEGER :: LRHS, NRHS, NZ_RHS, Nloc_RHS, LRHS_loc, LREDRHS
+        INTEGER :: LSOL_loc, NSOL_loc
+        INTEGER :: LD_RHSINTR, pad6
 !    ----------------------------
 !    Control parameters,
 !    statistics and output data
 !    ---------------------------
-        INTEGER ICNTL(40)
-        INTEGER INFO(40) 
-        INTEGER INFOG(40)
-        REAL COST_SUBTREES
-        REAL CNTL(15)
-        REAL RINFO(40)
-        REAL RINFOG(40)
+        INTEGER ::  ICNTL(60)
+        INTEGER ::  INFO(80) 
+        INTEGER :: INFOG(80)
+        REAL ::  COST_SUBTREES
+        REAL ::  CNTL(15)
+        REAL ::  RINFO(40)
+        REAL ::  RINFOG(40)
+! The options array for metis/parmetis
+        INTEGER ::  METIS_OPTIONS(40)
 !    ---------------------------------------------------------
 !    Permutations computed during analysis:
 !       SYM_PERM: Symmetric permutation 
-!       UNS_PERM: Column permutations (optionnal)
+!       UNS_PERM: Column permutation (optional)
 !    ---------------------------------------------------------
         INTEGER, DIMENSION(:), POINTER :: SYM_PERM, UNS_PERM
 ! 
 !    -----
 !    Schur
 !    -----
-        INTEGER NPROW, NPCOL, MBLOCK, NBLOCK
-        INTEGER SCHUR_MLOC, SCHUR_NLOC, SCHUR_LLD
-        INTEGER SIZE_SCHUR
+        INTEGER ::  NPROW, NPCOL, MBLOCK, NBLOCK
+        INTEGER ::  SCHUR_MLOC, SCHUR_NLOC, SCHUR_LLD
+        INTEGER ::  SIZE_SCHUR
         REAL, DIMENSION(:), POINTER :: SCHUR
         REAL, DIMENSION(:), POINTER :: SCHUR_CINTERFACE
         INTEGER, DIMENSION(:), POINTER :: LISTVAR_SCHUR
@@ -155,66 +141,62 @@
 !    --------------
 !    Version number
 !    --------------
-        CHARACTER(LEN=14) VERSION_NUMBER
+        CHARACTER(LEN=30) ::  VERSION_NUMBER
 !    -----------
 !    Out-of-core
 !    -----------
-        CHARACTER(LEN=255) :: OOC_TMPDIR
-        CHARACTER(LEN=63) :: OOC_PREFIX
+        CHARACTER(LEN=1023) :: OOC_TMPDIR
+        CHARACTER(LEN=255) :: OOC_PREFIX
 !    ------------------------------------------
-!    To save the matrix in matrix market format
+!    Name of file to dump a matrix/rhs to disk
 !    ------------------------------------------
-        CHARACTER(LEN=255) WRITE_PROBLEM
-        CHARACTER(LEN=5) :: pad8
+        CHARACTER(LEN=1023) ::  WRITE_PROBLEM
+!    -----------
+!    Save/Restore
+!    -----------
+        CHARACTER(LEN=1023) :: SAVE_DIR
+        CHARACTER(LEN=255)  :: SAVE_PREFIX
+        CHARACTER(LEN=7)   ::  pad7  
 !
 !
 ! **********************
 ! INTERNAL Working data
 ! *********************
         INTEGER(8) :: KEEP8(150), MAX_SURF_MASTER
-        INTEGER INST_Number
+        INTEGER ::  INST_Number
 !       For MPI
-        INTEGER COMM_NODES, MYID_NODES, COMM_LOAD
-        INTEGER  MYID, NPROCS, NSLAVES
-        INTEGER ASS_IRECV
-        INTEGER LBUFR
-        INTEGER LBUFR_BYTES
-        INTEGER, DIMENSION(:), POINTER :: POIDS
-        INTEGER, DIMENSION(:), POINTER ::  BUFR
+        INTEGER ::  COMM_NODES, MYID_NODES, COMM_LOAD
+        INTEGER ::  MYID, NPROCS, NSLAVES
+        INTEGER ::  ASS_IRECV
 !       IS is used for the factors + workspace for contrib. blocks
         INTEGER, DIMENSION(:), POINTER :: IS
-!       IS1 (maxis1) contains working arrays computed 
-!       and used only during analysis
-        INTEGER, DIMENSION(:), POINTER :: IS1
-!       For analysis/facto/solve phases
-        INTEGER MAXIS1, Deficiency
-        INTEGER KEEP(500)
+        INTEGER ::  KEEP(500)
 !       The following data/arrays are computed during the analysis
 !       phase and used during the factorization and solve phases.
-        INTEGER LNA
-        INTEGER NBSA
-        INTEGER,POINTER,DIMENSION(:)::STEP, NE_STEPS, ND_STEPS
-!  Info for pruning tree 
-        INTEGER,POINTER,DIMENSION(:)::Step2node
-!  ---------------------
-        INTEGER,POINTER,DIMENSION(:)::FRERE_STEPS, DAD_STEPS
-        INTEGER,POINTER,DIMENSION(:)::FILS, PTRAR, FRTPTR, FRTELT
-        INTEGER,POINTER,DIMENSION(:)::NA, PROCNODE_STEPS
-!       The two pointer arrays computed in facto and used by the solve
-!          (except the factors) are PTLUST_S and PTRFAC. 
+        INTEGER ::  LNA
+        INTEGER ::  NBSA
+        INTEGER,POINTER,DIMENSION(:) :: STEP, NE_STEPS, ND_STEPS
+        INTEGER,POINTER,DIMENSION(:) :: FRERE_STEPS, DAD_STEPS
+        INTEGER,POINTER,DIMENSION(:) :: FILS, FRTPTR, FRTELT
+        INTEGER(8),POINTER,DIMENSION(:) :: PTRAR, PTR8ARR
+        INTEGER,POINTER,DIMENSION(:) :: NINCOLARR,NINROWARR,PTRDEBARR
+        INTEGER,POINTER,DIMENSION(:) :: NA, PROCNODE_STEPS
+!       Info for pruning tree 
+        INTEGER,POINTER,DIMENSION(:) :: Step2node
+!       PTLUST_S and PTRFAC are two pointer arrays computed during
+!       factorization and used by the solve
         INTEGER, DIMENSION(:), POINTER :: PTLUST_S
         INTEGER(8), DIMENSION(:), POINTER :: PTRFAC
 !       main real working arrays for factorization/solve phases
         REAL, DIMENSION(:), POINTER :: S
+        REAL(kind(0.E0)), DIMENSION(:), POINTER :: LPS
 !       Information on mapping
         INTEGER, DIMENSION(:), POINTER :: PROCNODE
 !       Input matrix ready for numerical assembly 
 !           -arrowhead format in case of assembled matrix
 !           -element format otherwise
-        INTEGER, DIMENSION(:), POINTER :: INTARR
-        REAL, DIMENSION(:), POINTER :: DBLARR
 !       Element entry: internal data
-        INTEGER NELT_loc, LELTVAR, NA_ELT, pad11
+        INTEGER :: NELT_loc, LELTVAR
         INTEGER, DIMENSION(:), POINTER :: ELTPROC
 !       Candidates and node partitionning
         INTEGER, DIMENSION(:,:), POINTER :: CANDIDATES
@@ -225,8 +207,10 @@
 !       For heterogeneous architecture
         INTEGER, DIMENSION(:), POINTER :: MEM_DIST
 !       Compressed RHS
-        INTEGER, DIMENSION(:),   POINTER :: POSINRHSCOMP
-        REAL, DIMENSION(:),   POINTER :: RHSCOMP
+        INTEGER, DIMENSION(:),   POINTER :: GLOB2LOC_RHS
+        LOGICAL  :: GLOB2LOC_SOL_ALLOC, pad8
+        INTEGER, DIMENSION(:),   POINTER :: GLOB2LOC_SOL
+        REAL, DIMENSION(:),   POINTER :: RHSINTR
 !       Info on the subtrees to be used during factorization
         DOUBLE PRECISION, DIMENSION(:), POINTER :: MEM_SUBTREE
         DOUBLE PRECISION, DIMENSION(:), POINTER :: COST_TRAV
@@ -236,30 +220,74 @@
         INTEGER, DIMENSION(:),   POINTER :: DEPTH_FIRST
         INTEGER, DIMENSION(:),   POINTER :: DEPTH_FIRST_SEQ
         INTEGER, DIMENSION(:),   POINTER :: SBTR_ID
-        REAL, DIMENSION(:), POINTER :: WK_USER
+        INTEGER, DIMENSION(:),   POINTER :: SCHED_DEP
+        INTEGER, DIMENSION(:),   POINTER :: SCHED_GRP
+        INTEGER, DIMENSION(:),   POINTER :: SCHED_SBTR
+        INTEGER, DIMENSION(:),   POINTER :: CROIX_MANU
+        REAL, DIMENSION(:),   POINTER :: WK_USER
         INTEGER :: NBSA_LOCAL
         INTEGER :: LWK_USER
 !    Internal control array
-        REAL DKEEP(30)
+        REAL ::  DKEEP(230)
 !    For simulating parallel out-of-core stack.
-        DOUBLE PRECISION, DIMENSION(:),POINTER ::CB_SON_SIZE, pad12
+        DOUBLE PRECISION, DIMENSION(:),POINTER :: CB_SON_SIZE
 !    Instance number used/managed by the C/F77 interface
-        INTEGER INSTANCE_NUMBER
+        INTEGER ::  INSTANCE_NUMBER
 !    OOC management data that must persist from factorization to solve.
-        INTEGER OOC_MAX_NB_NODES_FOR_ZONE
-        INTEGER, DIMENSION(:,:),   POINTER :: OOC_INODE_SEQUENCE, pad13
+        INTEGER ::  OOC_MAX_NB_NODES_FOR_ZONE
+        INTEGER, DIMENSION(:,:),   POINTER :: OOC_INODE_SEQUENCE
         INTEGER(8),DIMENSION(:,:), POINTER :: OOC_SIZE_OF_BLOCK
         INTEGER(8), DIMENSION(:,:),   POINTER :: OOC_VADDR
         INTEGER,DIMENSION(:), POINTER :: OOC_TOTAL_NB_NODES
         INTEGER,DIMENSION(:), POINTER :: OOC_NB_FILES
-        CHARACTER,DIMENSION(:,:), POINTER :: OOC_FILE_NAMES  
+        INTEGER :: OOC_NB_FILE_TYPE,pad9
         INTEGER,DIMENSION(:), POINTER :: OOC_FILE_NAME_LENGTH
+        CHARACTER,DIMENSION(:,:), POINTER :: OOC_FILE_NAMES  
 !    Indices of nul pivots
         INTEGER,DIMENSION(:), POINTER :: PIVNUL_LIST
 !    Array needed to manage additionnal candidate processor 
-        INTEGER, DIMENSION(:,:), POINTER :: SUP_PROC, pad14
-!   ------------------------
-!   Root structure(internal)
-!   ------------------------
-        TYPE (SMUMPS_ROOT_STRUC) :: root
+        INTEGER, DIMENSION(:,:), POINTER :: SUP_PROC, pad10
+!    Lists of nodes where processors work. Built/used in solve phase.
+        INTEGER, DIMENSION(:), POINTER :: IPTR_WORKING, WORKING
+!    Internal data structures accessor
+        CHARACTER, DIMENSION(:), POINTER :: INTR_ENCODING
+!    Low-rank
+        INTEGER, POINTER, DIMENSION(:) :: LRGROUPS
+        INTEGER :: NBGRP,pad11
+!    Pointer encoding for FDM_F data
+        CHARACTER, DIMENSION(:), POINTER :: FDM_F_ENCODING
+!    Pointer array encoding BLR factors pointers
+        CHARACTER, DIMENSION(:), POINTER :: BLRARRAY_ENCODING
+!    Multicore
+        INTEGER :: LPOOL_A_L0_OMP, LPOOL_B_L0_OMP
+        INTEGER :: L_PHYS_L0_OMP
+        INTEGER :: L_VIRT_L0_OMP
+        INTEGER :: LL0_OMP_MAPPING, LL0_OMP_FACTORS
+        INTEGER(8) :: THREAD_LA
+! Estimates before L0_OMP
+        INTEGER, DIMENSION(:,:), POINTER    :: I4_L0_OMP
+        INTEGER(8), DIMENSION(:,:), POINTER :: I8_L0_OMP
+! Pool before L0_OMP
+        INTEGER, DIMENSION(:), POINTER :: IPOOL_B_L0_OMP
+! Pool after L0_OMP
+        INTEGER, DIMENSION(:), POINTER :: IPOOL_A_L0_OMP
+! Subtrees
+        INTEGER, DIMENSION(:), POINTER :: PHYS_L0_OMP
+! Amalgamated subtrees
+        INTEGER, DIMENSION(:), POINTER :: VIRT_L0_OMP
+! Mapping of amalgamated subtrees
+        INTEGER, DIMENSION(:), POINTER :: VIRT_L0_OMP_MAPPING
+! From heaviest to lowest subtree
+        INTEGER, DIMENSION(:), POINTER :: PERM_L0_OMP
+! To get leafs in global pool
+        INTEGER, DIMENSION(:), POINTER :: PTR_LEAFS_L0_OMP
+! Mapping of the subtree nodes
+        INTEGER, DIMENSION(:), POINTER :: L0_OMP_MAPPING
+! Mpi to omp - mumps agile
+        INTEGER, DIMENSION(:), POINTER :: MTKO_PROCS_MAP
+! for Rank-Revealing on root
+        REAL, DIMENSION(:), POINTER :: SINGULAR_VALUES
+        INTEGER ::  NB_SINGULAR_VALUES,pad12
+! To know if OOC files are associated to a saved and so if they should be removed.
+        LOGICAL :: ASSOCIATED_OOC_FILES,pad13
       END TYPE SMUMPS_STRUC

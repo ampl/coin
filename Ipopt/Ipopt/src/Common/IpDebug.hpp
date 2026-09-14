@@ -2,8 +2,6 @@
 // All Rights Reserved.
 // This code is published under the Eclipse Public License.
 //
-// $Id$
-//
 // Authors:  Carl Laird, Andreas Waechter     IBM    2004-08-13
 
 #ifndef __IPDEBUG_HPP__
@@ -12,24 +10,15 @@
 #include "IpoptConfig.h"
 #include "IpTypes.hpp"
 
-#ifdef COIN_IPOPT_CHECKLEVEL
-#ifdef HAVE_CASSERT
-# include <cassert>
-#else
-# ifdef HAVE_ASSERT_H
-#  include <assert.h>
-# else
-#  error "don't have header file for assert"
-# endif
-#endif
-#else
-#define COIN_IPOPT_CHECKLEVEL 0
+#ifndef IPOPT_CHECKLEVEL
+#define IPOPT_CHECKLEVEL 0
 #endif
 
-#if COIN_IPOPT_CHECKLEVEL > 0
+#if IPOPT_CHECKLEVEL > 0
 # ifdef NDEBUG
 #  undef NDEBUG
 # endif
+# include <cassert>
 # define DBG_ASSERT(test) assert(test)
 # define DBG_ASSERT_EXCEPTION(__condition, __except_type, __msg) \
    ASSERT_EXCEPTION( (__condition), __except_type, __msg);
@@ -40,11 +29,11 @@
 # define DBG_DO(__cmd)
 #endif
 
-#ifndef COIN_IPOPT_VERBOSITY
-#define COIN_IPOPT_VERBOSITY 0
+#ifndef IPOPT_VERBOSITY
+#define IPOPT_VERBOSITY 0
 #endif
 
-#if COIN_IPOPT_VERBOSITY < 1
+#if IPOPT_VERBOSITY < 1
 # define DBG_START_FUN(__func_name, __verbose_level)
 # define DBG_START_METH(__func_name, __verbose_level)
 # define DBG_PRINT(__printf_args)
@@ -57,74 +46,103 @@
 
 namespace Ipopt
 {
-  // forward definition
-  class Journalist;
+// forward definition
+class Journalist;
 
-  /** Class that lives throughout the execution of a method or
-  *  function for which debug output is to be generated.  The output
-  *  is sent to the unique debug journalist that is set with
-  *  SetJournalist at the beginning of program execution. */
-  class DebugJournalistWrapper
-  {
-  public:
-    /** @name Constructors/Destructors. */
-    //@{
-    DebugJournalistWrapper(std::string func_name, Index verbose_level);
-    DebugJournalistWrapper(std::string func_name, Index verbose_level,
-                           const void* const method_owner);
-    ~DebugJournalistWrapper();
-    //@}
+/** Class that lives throughout the execution of a method or
+ *  function for which debug output is to be generated.
+ *
+ *  The output
+ *  is sent to the unique debug journalist that is set with
+ *  SetJournalist at the beginning of program execution.
+ */
+class IPOPTLIB_EXPORT DebugJournalistWrapper
+{
+public:
+   /** @name Constructors/Destructors. */
+   ///@{
+   DebugJournalistWrapper(
+      const std::string& func_name,
+      Index              verbose_level
+   );
 
-    /** @name accessor methods */
-    //@{
-    Index Verbosity()
-    {
+   DebugJournalistWrapper(
+      const std::string& func_name,
+      Index              verbose_level,
+      const void* const  method_owner
+   );
+   ~DebugJournalistWrapper();
+   ///@}
+
+   /** @name accessor methods */
+   ///@{
+   Index Verbosity()
+   {
       return verbose_level_;
-    }
-    const Journalist* Jnlst()
-    {
+   }
+   const Journalist* Jnlst()
+   {
       return jrnl_;
-    }
-    Index IndentationLevel()
-    {
+   }
+   Index IndentationLevel()
+   {
       return indentation_level_;
-    }
-    //@}
+   }
+   ///@}
 
-    /** Printing */
-    void DebugPrintf(Index verbosity, const char* pformat, ...);
+   /** Printing */
+#ifdef __GNUC__
+   __attribute__((format(printf, 3, 4)))
+#endif
+   void DebugPrintf(
+      Index       verbosity,
+      const char* pformat,
+      ...
+   );
 
-    /* Method for initialization of the static GLOBAL journalist,
-    * through with all debug printout is to be written.  This needs
-    * to be set before any debug printout can be done. */
-    static void SetJournalist(Journalist* jrnl);
+private:
+   friend class IpoptApplication;
+   /* Method for initialization of the static GLOBAL journalist,
+    * through with all debug printout is to be written.
+    *
+    * This needs to be set before any debug printout can be done.
+    * It is expected that this is only called by the IpoptApplication constructor.
+    */
+   static void SetJournalist(
+      Journalist* jrnl
+   );
 
-  private:
-    /**@name Default Compiler Generated Methods
+   /**@name Default Compiler Generated Methods
     * (Hidden to avoid implicit creation/calling).
+    *
     * These methods are not implemented and
     * we do not want the compiler to implement
     * them for us, so we declare them private
     * and do not define them. This ensures that
-    * they will not be implicitly created/called. */
-    //@{
-    /** default constructor */
-    DebugJournalistWrapper();
+    * they will not be implicitly created/called.
+    */
+   ///@{
+   /** default constructor */
+   DebugJournalistWrapper();
 
-    /** copy contructor */
-    DebugJournalistWrapper(const DebugJournalistWrapper&);
+   /** copy contructor */
+   DebugJournalistWrapper(
+      const DebugJournalistWrapper&
+   );
 
-    /** Overloaded Equals Operator */
-    DebugJournalistWrapper& operator=(const DebugJournalistWrapper&);
-    //@}
+   /** Default Assignment Operator */
+   DebugJournalistWrapper& operator=(
+      const DebugJournalistWrapper&
+   );
+   ///@}
 
-    static Index indentation_level_;
-    std::string func_name_;
-    Index verbose_level_;
-    const void* method_owner_;
+   static Index indentation_level_;
+   std::string func_name_;
+   Index verbose_level_;
+   const void* method_owner_;
 
-    static Journalist* jrnl_;
-  };
+   static Journalist* jrnl_;
+};
 }
 
 # define DBG_START_FUN(__func_name, __verbose_level) \
@@ -145,6 +163,5 @@ namespace Ipopt
   dbg_jrnl.Verbosity()
 
 #endif
-
 
 #endif

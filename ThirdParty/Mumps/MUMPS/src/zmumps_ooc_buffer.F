@@ -1,49 +1,15 @@
 C
-C  This file is part of MUMPS 4.10.0, built on Tue May 10 12:56:32 UTC 2011
+C  This file is part of MUMPS 5.9.1, released
+C  on Mon Jul 20 09:00:43 UTC 2026
 C
 C
-C  This version of MUMPS is provided to you free of charge. It is public
-C  domain, based on public domain software developed during the Esprit IV
-C  European project PARASOL (1996-1999). Since this first public domain
-C  version in 1999, research and developments have been supported by the
-C  following institutions: CERFACS, CNRS, ENS Lyon, INPT(ENSEEIHT)-IRIT,
-C  INRIA, and University of Bordeaux.
+C  Copyright 1991-2026 CERFACS, CNRS, ENS Lyon, INP Toulouse, Inria,
+C  Mumps Technologies, University of Bordeaux.
 C
-C  The MUMPS team at the moment of releasing this version includes
-C  Patrick Amestoy, Maurice Bremond, Alfredo Buttari, Abdou Guermouche,
-C  Guillaume Joslin, Jean-Yves L'Excellent, Francois-Henry Rouet, Bora
-C  Ucar and Clement Weisbecker.
-C
-C  We are also grateful to Emmanuel Agullo, Caroline Bousquet, Indranil
-C  Chowdhury, Philippe Combes, Christophe Daniel, Iain Duff, Vincent Espirat,
-C  Aurelia Fevre, Jacko Koster, Stephane Pralet, Chiara Puglisi, Gregoire
-C  Richard, Tzvetomila Slavova, Miroslav Tuma and Christophe Voemel who
-C  have been contributing to this project.
-C
-C  Up-to-date copies of the MUMPS package can be obtained
-C  from the Web pages:
-C  http://mumps.enseeiht.fr/  or  http://graal.ens-lyon.fr/MUMPS
-C
-C
-C   THIS MATERIAL IS PROVIDED AS IS, WITH ABSOLUTELY NO WARRANTY
-C   EXPRESSED OR IMPLIED. ANY USE IS AT YOUR OWN RISK.
-C
-C
-C  User documentation of any code that uses this software can
-C  include this complete notice. You can acknowledge (using
-C  references [1] and [2]) the contribution of this package
-C  in any scientific publication dependent upon the use of the
-C  package. You shall use reasonable endeavours to notify
-C  the authors of the package of this publication.
-C
-C   [1] P. R. Amestoy, I. S. Duff, J. Koster and  J.-Y. L'Excellent,
-C   A fully asynchronous multifrontal solver using distributed dynamic
-C   scheduling, SIAM Journal of Matrix Analysis and Applications,
-C   Vol 23, No 1, pp 15-41 (2001).
-C
-C   [2] P. R. Amestoy and A. Guermouche and J.-Y. L'Excellent and
-C   S. Pralet, Hybrid scheduling for the parallel solution of linear
-C   systems. Parallel Computing Vol 32 (2), pp 136-156 (2006).
+C  This version of MUMPS is provided to you free of charge. It is
+C  released under the CeCILL-C license 
+C  (see doc/CeCILL-C_V1-en.txt, doc/CeCILL-C_V1-fr.txt, and
+C  https://cecill.info/licences/Licence_CeCILL-C_V1-en.html)
 C
       MODULE ZMUMPS_OOC_BUFFER
       USE MUMPS_OOC_COMMON
@@ -52,7 +18,6 @@ C
       INTEGER FIRST_HBUF,SECOND_HBUF
       PARAMETER (FIRST_HBUF=0, SECOND_HBUF=1)
       INTEGER,SAVE :: OOC_FCT_TYPE_LOC
-      INTEGER IO_STRAT
       COMPLEX(kind=8), DIMENSION(:),ALLOCATABLE :: BUF_IO
       LOGICAL,SAVE :: PANEL_FLAG
       INTEGER,SAVE :: EARLIEST_WRITE_MIN_SIZE
@@ -69,7 +34,7 @@ C
       INTEGER(8), DIMENSION(:),ALLOCATABLE :: NextAddVirtBuffer
       INTEGER(8), DIMENSION(:),ALLOCATABLE :: FIRST_VADDR_IN_BUF
       CONTAINS
-      SUBROUTINE ZMUMPS_689(TYPEF_ARG)
+      SUBROUTINE ZMUMPS_OOC_NEXT_HBUF(TYPEF_ARG)
       IMPLICIT NONE
       INTEGER TYPEF_ARG
       SELECT CASE(CUR_HBUF(TYPEF_ARG))
@@ -88,14 +53,14 @@ C
       ENDIF
       I_REL_POS_CUR_HBUF(TYPEF_ARG) = 1_8
       RETURN
-      END SUBROUTINE ZMUMPS_689
-      SUBROUTINE ZMUMPS_707(TYPEF_ARG,IERR)
+      END SUBROUTINE ZMUMPS_OOC_NEXT_HBUF
+      SUBROUTINE ZMUMPS_OOC_DO_IO_AND_CHBUF(TYPEF_ARG,IERR)
       IMPLICIT NONE
       INTEGER TYPEF_ARG
       INTEGER NEW_IOREQUEST
       INTEGER IERR
       IERR=0
-      CALL ZMUMPS_696(TYPEF_ARG,NEW_IOREQUEST,
+      CALL ZMUMPS_OOC_WRT_CUR_BUF2DISK(TYPEF_ARG,NEW_IOREQUEST,
      &     IERR)
       IF(IERR.LT.0)THEN
          RETURN
@@ -108,13 +73,13 @@ C
          RETURN
       ENDIF
       LAST_IOREQUEST(TYPEF_ARG) = NEW_IOREQUEST
-      CALL ZMUMPS_689(TYPEF_ARG)
+      CALL ZMUMPS_OOC_NEXT_HBUF(TYPEF_ARG)
       IF(PANEL_FLAG)THEN
          NextAddVirtBuffer(TYPEF_ARG)=BufferEmpty
       ENDIF
       RETURN
-      END SUBROUTINE ZMUMPS_707
-      SUBROUTINE ZMUMPS_675(IERR)
+      END SUBROUTINE ZMUMPS_OOC_DO_IO_AND_CHBUF
+      SUBROUTINE ZMUMPS_OOC_BUF_CLEAN_PENDING(IERR)
       IMPLICIT NONE
       INTEGER, intent(out) :: IERR
       INTEGER TYPEF_LAST        
@@ -123,19 +88,19 @@ C
       TYPEF_LAST = OOC_NB_FILE_TYPE
       DO TYPEF_LOC = 1, TYPEF_LAST
          IERR=0
-         CALL  ZMUMPS_707(TYPEF_LOC,IERR)
+         CALL  ZMUMPS_OOC_DO_IO_AND_CHBUF(TYPEF_LOC,IERR)
          IF(IERR.LT.0)THEN
             RETURN
          ENDIF
          IERR=0
-         CALL ZMUMPS_707(TYPEF_LOC,IERR)
+         CALL ZMUMPS_OOC_DO_IO_AND_CHBUF(TYPEF_LOC,IERR)
          IF(IERR.LT.0)THEN
             RETURN
          ENDIF
       ENDDO
       RETURN
-      END SUBROUTINE ZMUMPS_675
-      SUBROUTINE ZMUMPS_696(TYPEF_ARG,IOREQUEST,
+      END SUBROUTINE ZMUMPS_OOC_BUF_CLEAN_PENDING
+      SUBROUTINE ZMUMPS_OOC_WRT_CUR_BUF2DISK(TYPEF_ARG,IOREQUEST,
      &     IERR)
       IMPLICIT NONE
       INTEGER IOREQUEST,IERR
@@ -163,9 +128,9 @@ C
       ENDIF
       FROM_BUFIO_POS=I_SHIFT_CUR_HBUF(TYPEF_ARG)+1_8
       SIZE = I_REL_POS_CUR_HBUF(TYPEF_ARG)-1_8
-      CALL MUMPS_677(ADDR_INT1,ADDR_INT2,
+      CALL MUMPS_OOC_CONVERT_BIGINTTO2INT(ADDR_INT1,ADDR_INT2,
      &     TMP_VADDR)
-      CALL MUMPS_677(SIZE_INT1,SIZE_INT2,
+      CALL MUMPS_OOC_CONVERT_BIGINTTO2INT(SIZE_INT1,SIZE_INT2,
      &     SIZE)
       CALL MUMPS_LOW_LEVEL_WRITE_OOC_C(LOW_LEVEL_STRAT_IO,
      &     BUF_IO(FROM_BUFIO_POS),SIZE_INT1,SIZE_INT2,
@@ -177,8 +142,8 @@ C
          RETURN
       ENDIF
       RETURN
-      END SUBROUTINE ZMUMPS_696
-      SUBROUTINE ZMUMPS_669(I1,I2,IERR)
+      END SUBROUTINE ZMUMPS_OOC_WRT_CUR_BUF2DISK
+      SUBROUTINE ZMUMPS_INIT_OOC_BUF(I1,I2,IERR)
       IMPLICIT NONE
       INTEGER I1,I2,IERR 
       INTEGER allocok
@@ -206,8 +171,9 @@ C
       ALLOCATE(I_SHIFT_FIRST_HBUF(OOC_NB_FILE_TYPE),
      &     stat=allocok)
       IF (allocok > 0) THEN
-         IF (ICNTL1>0)
-     &   WRITE(ICNTL1,*) 'PB allocation in ZMUMPS_INIT_OOC'
+         IF (ICNTL1>0) THEN
+            WRITE(ICNTL1,*) 'PB allocation in ZMUMPS_INIT_OOC'
+         ENDIF
          I1 = -13
          I2 = OOC_NB_FILE_TYPE
          IERR=-1
@@ -216,8 +182,9 @@ C
       ALLOCATE(I_SHIFT_SECOND_HBUF(OOC_NB_FILE_TYPE),
      &     stat=allocok)
       IF (allocok > 0) THEN
-         IF (ICNTL1>0)
-     &   WRITE(ICNTL1,*) 'PB allocation in ZMUMPS_INIT_OOC'
+         IF (ICNTL1>0) THEN
+            WRITE(ICNTL1,*) 'PB allocation in ZMUMPS_INIT_OOC'
+         ENDIF
          I1 = -13
          I2 = OOC_NB_FILE_TYPE
          IERR=-1
@@ -226,8 +193,9 @@ C
       ALLOCATE(I_SHIFT_CUR_HBUF(OOC_NB_FILE_TYPE),
      &     stat=allocok)
       IF (allocok > 0) THEN
-         IF (ICNTL1>0)
-     &   WRITE(ICNTL1,*) 'PB allocation in ZMUMPS_INIT_OOC'
+         IF (ICNTL1>0) THEN
+            WRITE(ICNTL1,*) 'PB allocation in ZMUMPS_INIT_OOC'
+         ENDIF
          I1 = -13
          I2 = OOC_NB_FILE_TYPE
          IERR=-1
@@ -236,8 +204,9 @@ C
       ALLOCATE(I_REL_POS_CUR_HBUF(OOC_NB_FILE_TYPE),
      &     stat=allocok)
       IF (allocok > 0) THEN
-         IF (ICNTL1>0)
-     &   WRITE(ICNTL1,*) 'PB allocation in ZMUMPS_INIT_OOC'
+         IF (ICNTL1>0) THEN
+            WRITE(ICNTL1,*) 'PB allocation in ZMUMPS_INIT_OOC'
+         ENDIF
          I1 = -13
          I2 = OOC_NB_FILE_TYPE
          IERR=-1
@@ -246,8 +215,9 @@ C
       ALLOCATE(LAST_IOREQUEST(OOC_NB_FILE_TYPE),
      &     stat=allocok)
       IF (allocok > 0) THEN
-         IF (ICNTL1>0)
-     &   WRITE(ICNTL1,*) 'PB allocation in ZMUMPS_INIT_OOC'
+         IF (ICNTL1>0) THEN
+            WRITE(ICNTL1,*) 'PB allocation in ZMUMPS_INIT_OOC'
+         ENDIF
          I1 = -13
          I2 = OOC_NB_FILE_TYPE
          IERR=-1
@@ -256,20 +226,22 @@ C
       ALLOCATE(CUR_HBUF(OOC_NB_FILE_TYPE),
      &     stat=allocok)
       IF (allocok > 0) THEN
-         IF (ICNTL1>0)
-     &   WRITE(ICNTL1,*) 'PB allocation in ZMUMPS_INIT_OOC'
+         IF (ICNTL1>0) THEN
+            WRITE(ICNTL1,*) 'PB allocation in ZMUMPS_INIT_OOC'
+         ENDIF
          I1 = -13
          I2 = OOC_NB_FILE_TYPE
          IERR=-1
          RETURN
       ENDIF
       OOC_FCT_TYPE_LOC=OOC_NB_FILE_TYPE
-      ALLOCATE(BUF_IO(DIM_BUF_IO), stat=allocok)
+      ALLOCATE(BUF_IO(DIM_BUF_IO), stat=allocok)      
       IF (allocok > 0) THEN
-         IF (ICNTL1>0)
-     &   WRITE(ICNTL1,*) 'PB allocation in ZMUMPS_INIT_OOC'
+         IF (ICNTL1>0) THEN
+            WRITE(ICNTL1,*) 'PB allocation in ZMUMPS_INIT_OOC'
+         ENDIF
          I1 = -13
-         CALL MUMPS_731(DIM_BUF_IO, I2)
+         CALL MUMPS_SET_IERROR(DIM_BUF_IO, I2)
          RETURN
       ENDIF
       PANEL_FLAG=(KEEP_OOC(201).EQ.1)
@@ -281,8 +253,10 @@ C
          ENDIF
          ALLOCATE(AddVirtLibre(OOC_NB_FILE_TYPE), stat=allocok)
          IF (allocok > 0) THEN
-            IF (ICNTL1>0)
-     &      WRITE(ICNTL1,*) 'PB allocation in ZMUMPS_INIT_OOC_BUF_PANEL'
+            IF (ICNTL1>0) THEN
+               WRITE(ICNTL1,*) 'PB allocation in ',
+     &              'ZMUMPS_INIT_OOC_BUF_PANEL'
+            ENDIF
             IERR=-1
             I1=-13
             I2=OOC_NB_FILE_TYPE
@@ -294,8 +268,10 @@ C
          ENDIF
          ALLOCATE(NextAddVirtBuffer(OOC_NB_FILE_TYPE), stat=allocok)
          IF (allocok > 0) THEN
-            IF (ICNTL1>0)
-     &      WRITE(ICNTL1,*) 'PB allocation in ZMUMPS_INIT_OOC_BUF_PANEL'
+            IF (ICNTL1>0) THEN
+               WRITE(ICNTL1,*) 'PB allocation in ',
+     &              'ZMUMPS_INIT_OOC_BUF_PANEL'
+            ENDIF
             IERR=-1
             I1=-13
             I2=OOC_NB_FILE_TYPE
@@ -307,20 +283,23 @@ C
          ENDIF
          ALLOCATE(FIRST_VADDR_IN_BUF(OOC_NB_FILE_TYPE), stat=allocok)
          IF (allocok > 0) THEN
-            IF (ICNTL1>0)
-     &      WRITE(ICNTL1,*) 'PB allocation in ZMUMPS_INIT_OOC_BUF_PANEL'
+            IF (ICNTL1>0) THEN
+               WRITE(ICNTL1,*) 'PB allocation in ',
+     &              'ZMUMPS_INIT_OOC_BUF_PANEL'
+            ENDIF
             IERR=-1
             I1=-13
             I2=OOC_NB_FILE_TYPE
             RETURN
          ENDIF
-         CALL ZMUMPS_686()   
+         CALL ZMUMPS_OOC_INIT_DB_BUFFER_PANEL()   
       ELSE
-         CALL ZMUMPS_685()
+         CALL ZMUMPS_OOC_INIT_DB_BUFFER()
       ENDIF
+      KEEP_OOC(223)=int(HBUF_SIZE)
       RETURN
-      END SUBROUTINE ZMUMPS_669
-      SUBROUTINE ZMUMPS_659()
+      END SUBROUTINE ZMUMPS_INIT_OOC_BUF
+      SUBROUTINE ZMUMPS_END_OOC_BUF()
       IMPLICIT NONE
       IF(allocated(BUF_IO))THEN
          DEALLOCATE(BUF_IO)
@@ -355,8 +334,8 @@ C
          ENDIF
       ENDIF
       RETURN
-      END SUBROUTINE ZMUMPS_659
-      SUBROUTINE ZMUMPS_685()
+      END SUBROUTINE ZMUMPS_END_OOC_BUF
+      SUBROUTINE ZMUMPS_OOC_INIT_DB_BUFFER()
       IMPLICIT NONE
       OOC_FCT_TYPE_LOC=1
       HBUF_SIZE = DIM_BUF_IO / int(2,kind=kind(DIM_BUF_IO))
@@ -368,9 +347,9 @@ C
       I_CUR_HBUF_FSTPOS = 1
       I_SUB_HBUF_FSTPOS = 1
       CUR_HBUF(OOC_FCT_TYPE_LOC) = SECOND_HBUF
-      CALL ZMUMPS_689(OOC_FCT_TYPE_LOC)
-      END SUBROUTINE ZMUMPS_685
-      SUBROUTINE ZMUMPS_678(BLOCK,SIZE_OF_BLOCK,
+      CALL ZMUMPS_OOC_NEXT_HBUF(OOC_FCT_TYPE_LOC)
+      END SUBROUTINE ZMUMPS_OOC_INIT_DB_BUFFER
+      SUBROUTINE ZMUMPS_OOC_COPY_DATA_TO_BUFFER(BLOCK,SIZE_OF_BLOCK,
      &     IERR)
       IMPLICIT NONE
       INTEGER(8) :: SIZE_OF_BLOCK
@@ -381,7 +360,7 @@ C
       IF (I_REL_POS_CUR_HBUF(OOC_FCT_TYPE_LOC) +
      &    SIZE_OF_BLOCK <= HBUF_SIZE + 1_8) THEN
       ELSE
-        CALL ZMUMPS_707(OOC_FCT_TYPE_LOC,IERR)
+        CALL ZMUMPS_OOC_DO_IO_AND_CHBUF(OOC_FCT_TYPE_LOC,IERR)
         IF(IERR.LT.0)THEN
            RETURN
         ENDIF
@@ -394,8 +373,8 @@ C
       I_REL_POS_CUR_HBUF(OOC_FCT_TYPE_LOC) =
      &     I_REL_POS_CUR_HBUF(OOC_FCT_TYPE_LOC) + SIZE_OF_BLOCK
       RETURN
-      END SUBROUTINE ZMUMPS_678
-      SUBROUTINE ZMUMPS_686()
+      END SUBROUTINE ZMUMPS_OOC_COPY_DATA_TO_BUFFER
+      SUBROUTINE ZMUMPS_OOC_INIT_DB_BUFFER_PANEL()
       IMPLICIT NONE
       INTEGER(8) :: DIM_BUF_IO_L_OR_U
       INTEGER TYPEF, TYPEF_LAST
@@ -423,12 +402,12 @@ C
      &          HBUF_SIZE
         ENDIF
         CUR_HBUF(TYPEF) = SECOND_HBUF
-        CALL ZMUMPS_689(TYPEF)
+        CALL ZMUMPS_OOC_NEXT_HBUF(TYPEF)
       ENDDO
       I_CUR_HBUF_NEXTPOS = 1
       RETURN
-      END SUBROUTINE ZMUMPS_686
-      SUBROUTINE ZMUMPS_706(TYPEF,IERR)
+      END SUBROUTINE ZMUMPS_OOC_INIT_DB_BUFFER_PANEL
+      SUBROUTINE ZMUMPS_OOC_TRYIO_CHBUF_PANEL(TYPEF,IERR)
       IMPLICIT NONE
       INTEGER, INTENT(in)  :: TYPEF
       INTEGER, INTENT(out) :: IERR
@@ -439,14 +418,14 @@ C
      &     IERR)
       IF (IFLAG.EQ.1) THEN
          IERR = 0
-         CALL ZMUMPS_696(TYPEF,
+         CALL ZMUMPS_OOC_WRT_CUR_BUF2DISK(TYPEF,
      &        NEW_IOREQUEST,
      &        IERR)
          IF(IERR.LT.0)THEN
             RETURN
          ENDIF
          LAST_IOREQUEST(TYPEF) = NEW_IOREQUEST
-         CALL ZMUMPS_689(TYPEF)
+         CALL ZMUMPS_OOC_NEXT_HBUF(TYPEF)
          NextAddVirtBuffer(TYPEF)=BufferEmpty
          RETURN
       ELSE IF(IFLAG.LT.0)THEN
@@ -456,8 +435,8 @@ C
          IERR = 1
          RETURN
       ENDIF
-      END SUBROUTINE ZMUMPS_706
-      SUBROUTINE ZMUMPS_709 (TYPEF,VADDR)
+      END SUBROUTINE ZMUMPS_OOC_TRYIO_CHBUF_PANEL
+      SUBROUTINE ZMUMPS_OOC_UPD_VADDR_CUR_BUF (TYPEF,VADDR)
       IMPLICIT NONE
       INTEGER(8), INTENT(in) :: VADDR
       INTEGER, INTENT(in) :: TYPEF
@@ -465,8 +444,8 @@ C
          FIRST_VADDR_IN_BUF(TYPEF)=VADDR
       ENDIF
       RETURN
-      END SUBROUTINE ZMUMPS_709      
-      SUBROUTINE ZMUMPS_653( STRAT, TYPEF, MonBloc,
+      END SUBROUTINE ZMUMPS_OOC_UPD_VADDR_CUR_BUF      
+      SUBROUTINE ZMUMPS_COPY_LU_TO_BUFFER( STRAT, TYPEF, MonBloc,
      &     AFAC, LAFAC,
      &     AddVirtCour, IPIVBEG, IPIVEND, LPANELeff,
      &     IERR)
@@ -484,7 +463,7 @@ C
       INTEGER   :: StrideIPOS
       IERR=0
       IF (STRAT.NE.STRAT_WRITE_MAX.AND.STRAT.NE.STRAT_TRY_WRITE) THEN
-         write(6,*) ' ZMUMPS_653: STRAT Not implemented '
+         write(6,*) ' ZMUMPS_COPY_LU_TO_BUFFER: STRAT Not implemented '
          CALL MUMPS_ABORT()
       ENDIF
       NBPIVeff = IPIVEND - IPIVBEG + 1
@@ -505,19 +484,19 @@ C
      &     (NextAddVirtBuffer(TYPEF).NE.BufferEmpty) )
      &     ) THEN
          IF (STRAT.EQ.STRAT_WRITE_MAX) THEN
-            CALL ZMUMPS_707(TYPEF,IERR) 
+            CALL ZMUMPS_OOC_DO_IO_AND_CHBUF(TYPEF,IERR) 
          ELSE IF (STRAT.EQ.STRAT_TRY_WRITE) THEN
-            CALL ZMUMPS_706(TYPEF,IERR) 
+            CALL ZMUMPS_OOC_TRYIO_CHBUF_PANEL(TYPEF,IERR) 
             IF (IERR.EQ.1) RETURN
          ELSE
-            write(6,*) 'ZMUMPS_653: STRAT Not implemented'
+            write(6,*) 'ZMUMPS_COPY_LU_TO_BUFFER: STRAT Not implemented'
          ENDIF
       ENDIF
       IF (IERR < 0 ) THEN
         RETURN
       ENDIF
       IF (NextAddVirtBuffer(TYPEF).EQ. BufferEmpty) THEN
-         CALL ZMUMPS_709 (TYPEF,AddVirtCour)
+         CALL ZMUMPS_OOC_UPD_VADDR_CUR_BUF (TYPEF,AddVirtCour)
          NextAddVirtBuffer(TYPEF) = AddVirtCour
       ENDIF
       IF (MonBloc%MASTER .AND. MonBloc%Typenode .NE. 3) THEN
@@ -566,5 +545,5 @@ C
       NextAddVirtBuffer(TYPEF) = NextAddVirtBuffer(TYPEF)
      &                         + int(LPANELeff,8)
       RETURN
-      END SUBROUTINE ZMUMPS_653
+      END SUBROUTINE ZMUMPS_COPY_LU_TO_BUFFER
       END MODULE ZMUMPS_OOC_BUFFER

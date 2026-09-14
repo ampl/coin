@@ -69,7 +69,7 @@ newMultisector(graph_t *G)
 { multisector_t *ms;
 
   mymalloc(ms, 1, multisector_t);
-  mymalloc(ms->stage, G->nvtx, int);
+  mymalloc(ms->stage, G->nvtx, PORD_INT);
 
   ms->G = G;
   ms->nstages = 0;
@@ -95,7 +95,7 @@ freeMultisector(multisector_t *ms)
 multisector_t*
 trivialMultisector(graph_t *G)
 { multisector_t *ms;
-  int           *stage, nvtx, u;
+  PORD_INT           *stage, nvtx, u;
   
   /* ----------------------------------------------------------------- 
      allocate memory for the multisector object and init. stage vector
@@ -124,7 +124,7 @@ multisector_t*
 constructMultisector(graph_t *G, options_t* options, timings_t *cpus)
 { multisector_t *ms;
   nestdiss_t    *ndroot;
-  int           *map, nvtx, ordtype;
+  PORD_INT           *map, nvtx, ordtype;
 
   nvtx = G->nvtx;
 
@@ -155,7 +155,7 @@ constructMultisector(graph_t *G, options_t* options, timings_t *cpus)
      case INCOMPLETE_ND:
      case MULTISECTION:
      case TRISTAGE_MULTISECTION:
-       mymalloc(map, nvtx, int);
+       mymalloc(map, nvtx, PORD_INT);
        ndroot = setupNDroot(G, map);
        buildNDtree(ndroot, options, cpus);
        if (ordtype == MULTISECTION)
@@ -182,8 +182,8 @@ multisector_t*
 extractMS2stage(nestdiss_t *ndroot)
 { multisector_t *ms;
   nestdiss_t    *nd, *parent;
-  int           *stage, *intvertex, *intcolor;
-  int           nvint, nnodes, totmswght, i;
+  PORD_INT           *stage, *intvertex, *intcolor;
+  PORD_INT           nvint, nnodes, totmswght, i;
 
   /* ----------------------------------------------------------------- 
      allocate memory for the multisector object and init. stage vector
@@ -238,8 +238,8 @@ multisector_t*
 extractMSmultistage(nestdiss_t *ndroot)
 { multisector_t *ms;
   nestdiss_t    *nd, *parent;
-  int           *stage, *intvertex, *intcolor;
-  int           nvtx, nvint, maxstage, istage, nnodes, totmswght, i, u;
+  PORD_INT           *stage, *intvertex, *intcolor;
+  PORD_INT           nvtx, nvint, maxstage, istage, nnodes, totmswght, i, u;
 
   /* -----------------------------------------------------------------
      allocate memory for the multisector object and init. stage vector

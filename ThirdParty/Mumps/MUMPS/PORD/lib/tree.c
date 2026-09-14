@@ -107,16 +107,16 @@ Methods in lib/tree.c:
 /*****************************************************************************
 ******************************************************************************/
 elimtree_t*
-newElimTree(int nvtx, int nfronts)
+newElimTree(PORD_INT nvtx, PORD_INT nfronts)
 { elimtree_t *T;
 
   mymalloc(T, 1, elimtree_t);
-  mymalloc(T->ncolfactor, nfronts, int);
-  mymalloc(T->ncolupdate, nfronts, int);
-  mymalloc(T->parent, nfronts, int);
-  mymalloc(T->firstchild, nfronts, int);
-  mymalloc(T->silbings, nfronts, int);
-  mymalloc(T->vtx2front, nvtx, int);
+  mymalloc(T->ncolfactor, nfronts, PORD_INT);
+  mymalloc(T->ncolupdate, nfronts, PORD_INT);
+  mymalloc(T->parent, nfronts, PORD_INT);
+  mymalloc(T->firstchild, nfronts, PORD_INT);
+  mymalloc(T->silbings, nfronts, PORD_INT);
+  mymalloc(T->vtx2front, nvtx, PORD_INT);
 
   T->nvtx = nvtx;
   T->nfronts = nfronts;
@@ -145,8 +145,8 @@ freeElimTree(elimtree_t *T)
 ******************************************************************************/
 void
 printElimTree(elimtree_t *T)
-{ int *ncolfactor, *ncolupdate, *parent, *firstchild, *silbings, *vtx2front;
-  int *first, *link, nvtx, nfronts, root, J, K, u, count, child;
+{ PORD_INT *ncolfactor, *ncolupdate, *parent, *firstchild, *silbings, *vtx2front;
+  PORD_INT *first, *link, nvtx, nfronts, root, J, K, u, count, child;
 
   nvtx = T->nvtx;
   nfronts = T->nfronts;
@@ -163,8 +163,8 @@ printElimTree(elimtree_t *T)
   /* -----------------------------------------------------------
      store the vertices/columns of a front in a bucket structure
      ----------------------------------------------------------- */
-  mymalloc(first, nfronts, int);
-  mymalloc(link, nvtx, int);
+  mymalloc(first, nfronts, PORD_INT);
+  mymalloc(link, nvtx, PORD_INT);
 
   for (J = 0; J < nfronts; J++)
     first[J] = -1;
@@ -209,9 +209,9 @@ printElimTree(elimtree_t *T)
 
 /*****************************************************************************
 ******************************************************************************/
-int
+PORD_INT
 firstPostorder(elimtree_t *T)
-{ int *firstchild, J;
+{ PORD_INT *firstchild, J;
 
   firstchild = T->firstchild;
 
@@ -224,9 +224,9 @@ firstPostorder(elimtree_t *T)
 
 /*****************************************************************************
 ******************************************************************************/
-int
-firstPostorder2(elimtree_t *T, int root)
-{ int *firstchild, J;
+PORD_INT
+firstPostorder2(elimtree_t *T, PORD_INT root)
+{ PORD_INT *firstchild, J;
 
   firstchild = T->firstchild;
 
@@ -239,9 +239,9 @@ firstPostorder2(elimtree_t *T, int root)
 
 /*****************************************************************************
 ******************************************************************************/
-int
-nextPostorder(elimtree_t *T, int J)
-{ int *parent, *firstchild, *silbings;
+PORD_INT
+nextPostorder(elimtree_t *T, PORD_INT J)
+{ PORD_INT *parent, *firstchild, *silbings;
 
   parent = T->parent;
   firstchild = T->firstchild;
@@ -259,7 +259,7 @@ nextPostorder(elimtree_t *T, int J)
 
 /*****************************************************************************
 ******************************************************************************/
-int
+PORD_INT
 firstPreorder(elimtree_t *T)
 {
   return(T->root);
@@ -268,9 +268,9 @@ firstPreorder(elimtree_t *T)
 
 /*****************************************************************************
 ******************************************************************************/
-int
-nextPreorder(elimtree_t *T, int J)
-{ int *parent, *firstchild, *silbings;
+PORD_INT
+nextPreorder(elimtree_t *T, PORD_INT J)
+{ PORD_INT *parent, *firstchild, *silbings;
 
   parent = T->parent;
   firstchild = T->firstchild;
@@ -290,14 +290,14 @@ nextPreorder(elimtree_t *T, int J)
 /*****************************************************************************
 ******************************************************************************/
 elimtree_t*
-setupElimTree(graph_t *G, int *perm, int *invp)
+setupElimTree(graph_t *G, PORD_INT *perm, PORD_INT *invp)
 { elimtree_t *T;
   css_t      *css;
-  int        *xadj, *adjncy, *vwght, *ncolfactor, *ncolupdate, *parent;
-  int        *vtx2front, *realroot, *uf_father, *uf_size;
-  int        *xnzl, *nzlsub, *xnzlsub;
-  int        nvtx, front, front2, froot, f, r, u, v, i, istart, istop;
-  int        prevlen, len, h, hsub;
+  PORD_INT        *xadj, *adjncy, *vwght, *ncolfactor, *ncolupdate, *parent;
+  PORD_INT        *vtx2front, *realroot, *uf_father, *uf_size;
+  PORD_INT        *xnzl, *nzlsub, *xnzlsub;
+  PORD_INT        nvtx, front, front2, froot, f, r, u, v, i, istart, istop;
+  PORD_INT        prevlen, len, h, hsub;
 
   nvtx = G->nvtx;
   xadj = G->xadj;
@@ -307,9 +307,9 @@ setupElimTree(graph_t *G, int *perm, int *invp)
   /* --------------------------
      set up the working storage
      -------------------------- */
-  mymalloc(realroot, nvtx, int);
-  mymalloc(uf_father, nvtx, int);
-  mymalloc(uf_size, nvtx, int);
+  mymalloc(realroot, nvtx, PORD_INT);
+  mymalloc(uf_father, nvtx, PORD_INT);
+  mymalloc(uf_size, nvtx, PORD_INT);
 
   /* ------------------------------------------------
      allocate storage for the elimination tree object
@@ -412,7 +412,7 @@ setupElimTree(graph_t *G, int *perm, int *invp)
 ******************************************************************************/
 void
 initFchSilbRoot(elimtree_t *T)
-{ int *parent, *firstchild, *silbings, nfronts, J, pJ;
+{ PORD_INT *parent, *firstchild, *silbings, nfronts, J, pJ;
 
   nfronts = T->nfronts;
   parent = T->parent;
@@ -437,9 +437,9 @@ initFchSilbRoot(elimtree_t *T)
 /*****************************************************************************
 ******************************************************************************/
 void
-permFromElimTree(elimtree_t *T, int *perm)
-{ int *vtx2front, *first, *link;
-  int nvtx, nfronts, K, u, count;
+permFromElimTree(elimtree_t *T, PORD_INT *perm)
+{ PORD_INT *vtx2front, *first, *link;
+  PORD_INT nvtx, nfronts, K, u, count;
 
   nvtx = T->nvtx;
   nfronts = T->nfronts;
@@ -448,8 +448,8 @@ permFromElimTree(elimtree_t *T, int *perm)
   /* -----------------------------------------------------------
      store the vertices/columns of a front in a bucket structure
      ----------------------------------------------------------- */
-  mymalloc(first, nfronts, int);
-  mymalloc(link, nvtx, int);
+  mymalloc(first, nfronts, PORD_INT);
+  mymalloc(link, nvtx, PORD_INT);
 
   for (K = 0; K < nfronts; K++)
     first[K] = -1;
@@ -480,9 +480,9 @@ permFromElimTree(elimtree_t *T, int *perm)
 /*****************************************************************************
 ******************************************************************************/
 elimtree_t*
-permuteElimTree(elimtree_t *T, int *perm)
+permuteElimTree(elimtree_t *T, PORD_INT *perm)
 { elimtree_t *PTP;
-  int        nvtx, nfronts, J, u;
+  PORD_INT        nvtx, nfronts, J, u;
 
   nvtx = T->nvtx;
   nfronts = T->nfronts;
@@ -514,10 +514,10 @@ permuteElimTree(elimtree_t *T, int *perm)
 /*****************************************************************************
 ******************************************************************************/
 elimtree_t*
-expandElimTree(elimtree_t *T, int *vtxmap, int nvtxorg)
+expandElimTree(elimtree_t *T, PORD_INT *vtxmap, PORD_INT nvtxorg)
 { elimtree_t *T2;
-  int        *vtx2front, *vtx2front2;
-  int        nfronts, J, u;
+  PORD_INT        *vtx2front, *vtx2front2;
+  PORD_INT        nfronts, J, u;
 
   nfronts = T->nfronts;
 
@@ -552,8 +552,8 @@ expandElimTree(elimtree_t *T, int *vtxmap, int nvtxorg)
 elimtree_t*
 fundamentalFronts(elimtree_t *T)
 { elimtree_t *T2;
-  int        *ncolfactor, *ncolupdate, *parent, *firstchild, *silbings;
-  int        *frontmap, nfronts, cnfronts, J, child;
+  PORD_INT        *ncolfactor, *ncolupdate, *parent, *firstchild, *silbings;
+  PORD_INT        *frontmap, nfronts, cnfronts, J, child;
 
   nfronts = T->nfronts;
   ncolfactor = T->ncolfactor;
@@ -565,7 +565,7 @@ fundamentalFronts(elimtree_t *T)
   /* -------------------------
      set up the working arrays
      ------------------------- */
-  mymalloc(frontmap, nfronts, int);
+  mymalloc(frontmap, nfronts, PORD_INT);
 
   /* -----------------------------
      search the fundamental fronts
@@ -604,11 +604,11 @@ fundamentalFronts(elimtree_t *T)
 /*****************************************************************************
 ******************************************************************************/
 elimtree_t*
-mergeFronts(elimtree_t *T, int maxzeros)
+mergeFronts(elimtree_t *T, PORD_INT maxzeros)
 { elimtree_t *T2;
-  int        *ncolfactor, *ncolupdate, *firstchild, *silbings;
-  int        *frontmap, *newncolfactor, *nzeros, *rep;
-  int        nfronts, cnfronts, K, ncolfrontK, J, Jall, cost;
+  PORD_INT        *ncolfactor, *ncolupdate, *firstchild, *silbings;
+  PORD_INT        *frontmap, *newncolfactor, *nzeros, *rep;
+  PORD_INT        nfronts, cnfronts, K, ncolfrontK, J, Jall, cost;
 
   nfronts = T->nfronts;
   ncolfactor = T->ncolfactor;
@@ -619,10 +619,10 @@ mergeFronts(elimtree_t *T, int maxzeros)
   /* -------------------------
      set up the working arrays
      ------------------------- */
-  mymalloc(frontmap, nfronts, int);
-  mymalloc(newncolfactor, nfronts, int);
-  mymalloc(nzeros, nfronts, int);
-  mymalloc(rep, nfronts, int);
+  mymalloc(frontmap, nfronts, PORD_INT);
+  mymalloc(newncolfactor, nfronts, PORD_INT);
+  mymalloc(nzeros, nfronts, PORD_INT);
+  mymalloc(rep, nfronts, PORD_INT);
   for (K = 0; K < nfronts; K++)
    { newncolfactor[K] = ncolfactor[K];
      nzeros[K] = 0;
@@ -686,10 +686,10 @@ mergeFronts(elimtree_t *T, int maxzeros)
 /*****************************************************************************
 ******************************************************************************/
 elimtree_t*
-compressElimTree(elimtree_t *T, int *frontmap, int cnfronts)
+compressElimTree(elimtree_t *T, PORD_INT *frontmap, PORD_INT cnfronts)
 { elimtree_t *T2;
-  int        *ncolfactor, *ncolupdate, *parent, *vtx2front;
-  int        nvtx, nfronts, u, K, pK, newfront, pnewfront;
+  PORD_INT        *ncolfactor, *ncolupdate, *parent, *vtx2front;
+  PORD_INT        nvtx, nfronts, u, K, pK, newfront, pnewfront;
 
   nvtx = T->nvtx;
   nfronts = T->nfronts;
@@ -737,11 +737,11 @@ compressElimTree(elimtree_t *T, int *frontmap, int cnfronts)
 
 /*****************************************************************************
 ******************************************************************************/
-int
+PORD_INT
 justifyFronts(elimtree_t *T)
-{ int *ncolfactor, *ncolupdate, *firstchild, *silbings, *minWspace, *list;
-  int nfronts, K, ncolfrontK, frontsizeK, wspace, child, nxtchild;
-  int count, m, s, i;
+{ PORD_INT *ncolfactor, *ncolupdate, *firstchild, *silbings, *minWspace, *list;
+  PORD_INT nfronts, K, ncolfrontK, frontsizeK, wspace, child, nxtchild;
+  PORD_INT count, m, s, i;
 
   nfronts = T->nfronts;
   ncolfactor = T->ncolfactor;
@@ -752,8 +752,8 @@ justifyFronts(elimtree_t *T)
   /* -------------------------
      set up the working arrays
      ------------------------- */
-  mymalloc(minWspace, nfronts, int);
-  mymalloc(list, nfronts, int);
+  mymalloc(minWspace, nfronts, PORD_INT);
+  mymalloc(list, nfronts, PORD_INT);
 
   /* ---------------------------------------------------------
      postorder traversal of the elimination tree to obtain the
@@ -813,10 +813,10 @@ justifyFronts(elimtree_t *T)
 
 /*****************************************************************************
 ******************************************************************************/
-int
+PORD_INT
 nWorkspace(elimtree_t *T)
-{ int *ncolfactor, *ncolupdate, *firstchild, *silbings, *minWspace;
-  int nfronts, K, ncolfrontK, frontsizeK, wspace, child, nxtchild, m, s;
+{ PORD_INT *ncolfactor, *ncolupdate, *firstchild, *silbings, *minWspace;
+  PORD_INT nfronts, K, ncolfrontK, frontsizeK, wspace, child, nxtchild, m, s;
 
   nfronts = T->nfronts;
   ncolfactor = T->ncolfactor;
@@ -827,7 +827,7 @@ nWorkspace(elimtree_t *T)
   /* -------------------------
      set up the working arrays
      ------------------------- */
-  mymalloc(minWspace, nfronts, int);
+  mymalloc(minWspace, nfronts, PORD_INT);
 
   /* -------------------------------------------
      postorder traversal of the elimination tree
@@ -870,10 +870,10 @@ nWorkspace(elimtree_t *T)
 
 /*****************************************************************************
 ******************************************************************************/
-int
+PORD_INT
 nFactorIndices(elimtree_t *T)
-{ int *ncolfactor, *ncolupdate;
-  int nfronts, ind, K;
+{ PORD_INT *ncolfactor, *ncolupdate;
+  PORD_INT nfronts, ind, K;
 
   nfronts = T->nfronts;
   ncolfactor = T->ncolfactor;
@@ -888,10 +888,10 @@ nFactorIndices(elimtree_t *T)
 
 /*****************************************************************************
 ******************************************************************************/
-int
+PORD_INT
 nFactorEntries(elimtree_t *T)
-{ int *ncolfactor, *ncolupdate;
-  int ent, tri, rec, K;
+{ PORD_INT *ncolfactor, *ncolupdate;
+  PORD_INT ent, tri, rec, K;
 
   ncolfactor = T->ncolfactor;
   ncolupdate = T->ncolupdate;
@@ -911,9 +911,9 @@ nFactorEntries(elimtree_t *T)
 ******************************************************************************/
 FLOAT
 nFactorOps(elimtree_t *T)
-{ int   *ncolfactor, *ncolupdate;
+{ PORD_INT   *ncolfactor, *ncolupdate;
   FLOAT ops, tri, rec;
-  int   K;
+  PORD_INT   K;
 
   ncolfactor = T->ncolfactor;
   ncolupdate = T->ncolupdate;
@@ -933,9 +933,9 @@ nFactorOps(elimtree_t *T)
 ******************************************************************************/
 void
 subtreeFactorOps(elimtree_t *T, FLOAT *ops)
-{ int   *ncolfactor, *ncolupdate;
+{ PORD_INT   *ncolfactor, *ncolupdate;
   FLOAT tri, rec;
-  int   J, K;
+  PORD_INT   J, K;
 
   ncolfactor = T->ncolfactor;
   ncolupdate = T->ncolupdate;
@@ -955,9 +955,9 @@ subtreeFactorOps(elimtree_t *T, FLOAT *ops)
 ******************************************************************************/
 FLOAT
 nTriangularOps(elimtree_t *T)
-{ int   *ncolfactor, *ncolupdate;
+{ PORD_INT   *ncolfactor, *ncolupdate;
   FLOAT ops, tri, rec;
-  int   K;
+  PORD_INT   K;
 
   ncolfactor = T->ncolfactor;
   ncolupdate = T->ncolupdate;

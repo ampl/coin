@@ -6,6 +6,7 @@ CMakeFiles
 cmake_install.cmake
 config_*.h
 config.h
+mumps_int_def.h
 CPackConfig.cmake
 CPackSourceConfig.cmake
 CTestTestfile.cmake

@@ -1,12 +1,16 @@
-prefix=@prefix@
+@COIN_RELOCATABLE_FALSE@prefix=@prefix@
+@COIN_RELOCATABLE_TRUE@prefix=${pcfiledir}/../..
 exec_prefix=@exec_prefix@
 libdir=@libdir@
-includedir=@includedir@/coin
+includedir=@includedir@/coin-or
 
-Name: IPOPT
+Name: IPOPT-AMPL
 Description: Ampl Interface TNLP to Ipopt
-URL: https://projects.coin-or.org/Ipopt
+URL: @PACKAGE_URL@
 Version: @PACKAGE_VERSION@
-Libs: -L${libdir} -lipoptamplinterface @IPOPTAMPLINTERFACELIB_PCLIBS@
 Cflags: -I${includedir}
-Requires: ipopt @IPOPTAMPLINTERFACELIB_PCREQUIRES@
+@COIN_STATIC_BUILD_FALSE@Libs: -L${libdir} -lipoptamplinterface
+@COIN_STATIC_BUILD_FALSE@Requires: ipopt
+@COIN_STATIC_BUILD_FALSE@Requires.private: @IPOPTAMPLINTERFACELIB_PCFILES@
+@COIN_STATIC_BUILD_TRUE@Libs: -L${libdir} -lipoptamplinterface @IPOPTAMPLINTERFACELIB_LFLAGS_NOPC@
+@COIN_STATIC_BUILD_TRUE@Requires: ipopt @IPOPTAMPLINTERFACELIB_PCFILES@

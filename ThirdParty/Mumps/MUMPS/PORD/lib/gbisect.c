@@ -60,7 +60,7 @@ newGbisect(graph_t *G)
 { gbisect_t *Gbisect;
 
   mymalloc(Gbisect, 1, gbisect_t);
-  mymalloc(Gbisect->color, G->nvtx, int);
+  mymalloc(Gbisect->color, G->nvtx, PORD_INT);
 
   Gbisect->G = G;
   Gbisect->cwght[GRAY] = 0;
@@ -86,7 +86,7 @@ freeGbisect(gbisect_t *Gbisect)
 void
 printGbisect(gbisect_t *Gbisect)
 { graph_t *G;
-  int     count, u, v, i, istart, istop;
+  PORD_INT     count, u, v, i, istart, istop;
 
   G = Gbisect->G;
   printf("\n#nodes %d, #edges %d, totvwght %d\n", G->nvtx, G->nedges >> 1,
@@ -115,8 +115,8 @@ printGbisect(gbisect_t *Gbisect)
 ******************************************************************************/
 void
 checkSeparator(gbisect_t *Gbisect)
-{ int *xadj, *adjncy, *vwght, *color, *cwght;
-  int nvtx, err, checkS, checkB, checkW, a, b, u, v, i, istart, istop;
+{ PORD_INT *xadj, *adjncy, *vwght, *color, *cwght;
+  PORD_INT nvtx, err, checkS, checkB, checkW, a, b, u, v, i, istart, istop;
 
   nvtx = Gbisect->G->nvtx;
   xadj = Gbisect->G->xadj;
@@ -181,7 +181,7 @@ checkSeparator(gbisect_t *Gbisect)
 void
 constructSeparator(gbisect_t *Gbisect, options_t *options, timings_t *cpus)
 { domdec_t *dd, *dd2;
-  int      *color, *cwght, *map, nvtx, u, i;
+  PORD_INT      *color, *cwght, *map, nvtx, u, i;
 
   nvtx = Gbisect->G->nvtx;
   color = Gbisect->color;
@@ -190,12 +190,12 @@ constructSeparator(gbisect_t *Gbisect, options_t *options, timings_t *cpus)
   /* --------------------------------------------------------------
      map vector identifies vertices of Gbisect->G in domain decomp.
      -------------------------------------------------------------- */
-  mymalloc(map, nvtx, int);
+  mymalloc(map, nvtx, PORD_INT);
 
   /* --------------------------------------
      construct initial domain decomposition
      -------------------------------------- */
-  starttimer(cpus[TIME_INITDOMDEC]);
+  pord_starttimer(cpus[TIME_INITDOMDEC]);
   dd = constructDomainDecomposition(Gbisect->G, map);
 
 #ifdef BE_CAUTIOUS
@@ -205,12 +205,12 @@ constructSeparator(gbisect_t *Gbisect, options_t *options, timings_t *cpus)
   if (options[OPTION_MSGLVL] > 2)
     printf("\t  0. dom.dec.: #nodes %d (#domains %d, weight %d), #edges %d\n",
            dd->G->nvtx, dd->ndom, dd->domwght, dd->G->nedges >> 1);
-  stoptimer(cpus[TIME_INITDOMDEC]);
+  pord_stoptimer(cpus[TIME_INITDOMDEC]);
 
   /* ---------------------------------------------------
      construct sequence of coarser domain decompositions
      --------------------------------------------------- */
-  starttimer(cpus[TIME_COARSEDOMDEC]);
+  pord_starttimer(cpus[TIME_COARSEDOMDEC]);
   i = 0;
   while ((dd->ndom > MIN_DOMAINS) && (i < MAX_COARSENING_STEPS)
          && ((dd->G->nedges >> 1) > dd->G->nvtx))
@@ -225,12 +225,12 @@ constructSeparator(gbisect_t *Gbisect, options_t *options, timings_t *cpus)
        printf("\t %2d. dom.dec.: #nodes %d (#domains %d, weight %d), #edges %d"
               "\n", i, dd->G->nvtx, dd->ndom, dd->domwght, dd->G->nedges >> 1);
    }
-  stoptimer(cpus[TIME_COARSEDOMDEC]);
+  pord_stoptimer(cpus[TIME_COARSEDOMDEC]);
 
   /* -----------------------------------------------
      determine coloring of last domain decomposition
      ------------------------------------------------ */
-  starttimer(cpus[TIME_INITSEP]);
+  pord_starttimer(cpus[TIME_INITSEP]);
   initialDDSep(dd);
   if (dd->cwght[GRAY] > 0)
     improveDDSep(dd);
@@ -243,13 +243,13 @@ constructSeparator(gbisect_t *Gbisect, options_t *options, timings_t *cpus)
     printf("\t %2d. dom.dec. sep.: S %d, B %d, W %d [cost %7.2f]\n",
            i, dd->cwght[GRAY], dd->cwght[BLACK], dd->cwght[WHITE],
            F(dd->cwght[GRAY], dd->cwght[BLACK], dd->cwght[WHITE]));
-  stoptimer(cpus[TIME_INITSEP]);
+  pord_stoptimer(cpus[TIME_INITSEP]);
 
   /* --------------
      refine coloring
      --------------- */
 
-  starttimer(cpus[TIME_REFINESEP]);
+  pord_starttimer(cpus[TIME_REFINESEP]);
   while (dd->prev != NULL)
    { dd2 = dd->prev;
      dd2->cwght[GRAY] = dd->cwght[GRAY];
@@ -272,7 +272,7 @@ constructSeparator(gbisect_t *Gbisect, options_t *options, timings_t *cpus)
               i, dd->cwght[GRAY], dd->cwght[BLACK], dd->cwght[WHITE],
               F(dd->cwght[GRAY], dd->cwght[BLACK], dd->cwght[WHITE]));
    }
-  stoptimer(cpus[TIME_REFINESEP]);
+  pord_stoptimer(cpus[TIME_REFINESEP]);
 
   /* ---------------------------------
      copy coloring to subgraph Gbisect
@@ -289,13 +289,13 @@ constructSeparator(gbisect_t *Gbisect, options_t *options, timings_t *cpus)
 
 /*****************************************************************************
 ******************************************************************************/
-int
-smoothBy2Layers(gbisect_t *Gbisect, int *bipartvertex, int *pnX,
-                int black, int white)
+PORD_INT
+smoothBy2Layers(gbisect_t *Gbisect, PORD_INT *bipartvertex, PORD_INT *pnX,
+                PORD_INT black, PORD_INT white)
 { gbipart_t *Gbipart;
-  int       *xadj, *adjncy, *color, *cwght, *map;
-  int       *flow, *rc, *matching, *dmflag, dmwght[6];
-  int       nvtx, smoothed, nX, nX2, nY, x, y, u, i, j, jstart, jstop;
+  PORD_INT       *xadj, *adjncy, *color, *cwght, *map;
+  PORD_INT       *flow, *rc, *matching, *dmflag, dmwght[6];
+  PORD_INT       nvtx, smoothed, nX, nX2, nY, x, y, u, i, j, jstart, jstop;
 
   nvtx = Gbisect->G->nvtx;
   xadj = Gbisect->G->xadj;
@@ -307,7 +307,7 @@ smoothBy2Layers(gbisect_t *Gbisect, int *bipartvertex, int *pnX,
   /* ----------------------------------------------------
      map vector identifies vertices of Gbisect in Gbipart
      ---------------------------------------------------- */
-  mymalloc(map, nvtx, int);
+  mymalloc(map, nvtx, PORD_INT);
 
   /* ----------------------------------
      construct set Y of bipartite graph
@@ -335,17 +335,17 @@ smoothBy2Layers(gbisect_t *Gbisect, int *bipartvertex, int *pnX,
      -------------------------------------------- */
   Gbipart = setupBipartiteGraph(Gbisect->G, bipartvertex, nX, nY, map);
 
-  mymalloc(dmflag, (nX+nY), int);
+  mymalloc(dmflag, (nX+nY), PORD_INT);
   switch(Gbipart->G->type)
    { case UNWEIGHTED:
-       mymalloc(matching, (nX+nY), int);
+       mymalloc(matching, (nX+nY), PORD_INT);
        maximumMatching(Gbipart, matching);
        DMviaMatching(Gbipart, matching, dmflag, dmwght);
        free(matching);
        break;
      case WEIGHTED:
-       mymalloc(flow, Gbipart->G->nedges, int);
-       mymalloc(rc, (nX+nY), int);
+       mymalloc(flow, Gbipart->G->nedges, PORD_INT);
+       mymalloc(rc, (nX+nY), PORD_INT);
        maximumFlow(Gbipart, flow, rc);
        DMviaFlow(Gbipart, flow, rc, dmflag, dmwght);
        free(flow);
@@ -441,8 +441,8 @@ smoothBy2Layers(gbisect_t *Gbisect, int *bipartvertex, int *pnX,
 ******************************************************************************/
 void
 smoothSeparator(gbisect_t *Gbisect, options_t *options)
-{ int *xadj, *adjncy, *vwght, *color, *cwght, *bipartvertex;
-  int nvtx, nX, nX2, u, x, y, a, b, i, j, jstart, jstop;
+{ PORD_INT *xadj, *adjncy, *vwght, *color, *cwght, *bipartvertex;
+  PORD_INT nvtx, nX, nX2, u, x, y, a, b, i, j, jstart, jstop;
 
   nvtx = Gbisect->G->nvtx;
   xadj = Gbisect->G->xadj;
@@ -451,7 +451,7 @@ smoothSeparator(gbisect_t *Gbisect, options_t *options)
   color = Gbisect->color;
   cwght = Gbisect->cwght;
 
-  mymalloc(bipartvertex, nvtx, int);
+  mymalloc(bipartvertex, nvtx, PORD_INT);
 
   /* ----------------------------------------------------------
      extract the separator (store its vertices in bipartvertex)

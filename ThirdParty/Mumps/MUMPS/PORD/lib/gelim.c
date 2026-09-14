@@ -105,18 +105,18 @@ Methods in lib/gelim.c
 /*****************************************************************************
 ******************************************************************************/
 gelim_t*
-newElimGraph(int nvtx, int nedges)
+newElimGraph(PORD_INT nvtx, PORD_INT nedges)
 { gelim_t *Gelim;
 
   mymalloc(Gelim, 1, gelim_t);
   Gelim->G = newGraph(nvtx, nedges);
   Gelim->maxedges = nedges;
 
-  mymalloc(Gelim->len, nvtx, int);
-  mymalloc(Gelim->elen, nvtx, int);
-  mymalloc(Gelim->parent, nvtx, int);
-  mymalloc(Gelim->degree, nvtx, int);
-  mymalloc(Gelim->score, nvtx, int);
+  mymalloc(Gelim->len, nvtx, PORD_INT);
+  mymalloc(Gelim->elen, nvtx, PORD_INT);
+  mymalloc(Gelim->parent, nvtx, PORD_INT);
+  mymalloc(Gelim->degree, nvtx, PORD_INT);
+  mymalloc(Gelim->score, nvtx, PORD_INT);
 
   return(Gelim);
 }
@@ -142,7 +142,7 @@ freeElimGraph(gelim_t *Gelim)
 void
 printElimGraph(gelim_t *Gelim)
 { graph_t *G;
-  int     count, u, v, i, istart;
+  PORD_INT     count, u, v, i, istart;
 
   G = Gelim->G;
   for (u = 0; u < G->nvtx; u++)
@@ -228,9 +228,9 @@ printElimGraph(gelim_t *Gelim)
 gelim_t*
 setupElimGraph(graph_t *G)
 { gelim_t *Gelim;
-  int     *xadj, *adjncy, *vwght, *xadjGelim, *adjncyGelim, *vwghtGelim;
-  int     *len, *elen, *parent, *degree, *score;
-  int     nvtx, nedges, deg, u, i, istart, istop;
+  PORD_INT     *xadj, *adjncy, *vwght, *xadjGelim, *adjncyGelim, *vwghtGelim;
+  PORD_INT     *len, *elen, *parent, *degree, *score;
+  PORD_INT     nvtx, nedges, deg, u, i, istart, istop;
 
   nvtx = G->nvtx;
   nedges = G->nedges;
@@ -298,10 +298,10 @@ setupElimGraph(graph_t *G)
 
 /*****************************************************************************
 ******************************************************************************/
-int
+PORD_INT
 crunchElimGraph(gelim_t *Gelim)
-{ int *xadj, *adjncy, *len;
-  int nvtx, nedges, u, i, isrc, idest;
+{ PORD_INT *xadj, *adjncy, *len;
+  PORD_INT nvtx, nedges, u, i, isrc, idest;
 
   nvtx = Gelim->G->nvtx;
   nedges = Gelim->G->nedges;
@@ -354,11 +354,11 @@ crunchElimGraph(gelim_t *Gelim)
 /*****************************************************************************
 ******************************************************************************/
 void
-buildElement(gelim_t *Gelim, int me)
+buildElement(gelim_t *Gelim, PORD_INT me)
 { graph_t *G;
-  int     *xadj, *adjncy, *vwght, *len, *elen, *parent, *degree, *score;
-  int     degme, elenme, vlenme, mesrcptr, medeststart, medeststart2;
-  int     medestptr, ln, p, i, j, v, e;
+  PORD_INT     *xadj, *adjncy, *vwght, *len, *elen, *parent, *degree, *score;
+  PORD_INT     degme, elenme, vlenme, mesrcptr, medeststart, medeststart2;
+  PORD_INT     medestptr, ln, p, i, j, v, e;
 
   G = Gelim->G;
   xadj = G->xadj;
@@ -492,10 +492,10 @@ buildElement(gelim_t *Gelim, int me)
 /*****************************************************************************
 ******************************************************************************/
 void
-updateAdjncy(gelim_t *Gelim, int *reachset, int nreach, int *tmp, int *pflag)
-{ int *xadj, *adjncy, *vwght, *len, *elen, *parent, *score;
-  int u, v, e, me, i, j, jj, jdest, jfirstolde, jfirstv, jstart, jstop;
-  int covered, marku;
+updateAdjncy(gelim_t *Gelim, PORD_INT *reachset, PORD_INT nreach, PORD_INT *tmp, PORD_INT *pflag)
+{ PORD_INT *xadj, *adjncy, *vwght, *len, *elen, *parent, *score;
+  PORD_INT u, v, e, me, i, j, jj, jdest, jfirstolde, jfirstv, jstart, jstop;
+  PORD_INT covered, marku;
 
   xadj = Gelim->G->xadj;
   adjncy = Gelim->G->adjncy;
@@ -636,10 +636,10 @@ updateAdjncy(gelim_t *Gelim, int *reachset, int nreach, int *tmp, int *pflag)
 /*****************************************************************************
 ******************************************************************************/
 void
-findIndNodes(gelim_t *Gelim, int *reachset, int nreach, int *bin, int *next,
-             int *tmp, int *pflag)
-{ int *xadj, *adjncy, *vwght, *len, *elen, *parent, *score;
-  int nvtx, chk, keepon, u, v, w, wlast, i, j, jstart, jstop, jstep, jj, jjstop;
+findIndNodes(gelim_t *Gelim, PORD_INT *reachset, PORD_INT nreach, PORD_INT *bin, PORD_INT *next,
+             PORD_INT *tmp, PORD_INT *pflag)
+{ PORD_INT *xadj, *adjncy, *vwght, *len, *elen, *parent, *score;
+  PORD_INT nvtx, chk, keepon, u, v, w, wlast, i, j, jstart, jstop, jstep, jj, jjstop;
   nvtx = Gelim->G->nvtx;
   xadj = Gelim->G->xadj;
   adjncy = Gelim->G->adjncy;
@@ -758,10 +758,10 @@ findIndNodes(gelim_t *Gelim, int *reachset, int nreach, int *bin, int *next,
 /*****************************************************************************
 ******************************************************************************/
 void
-updateDegree(gelim_t *Gelim, int *reachset, int nreach, int *bin)
-{ int *xadj, *adjncy, *vwght, *len, *elen, *degree;
-  int totvwght, deg, vwghtv, u, v, w, e, me, r, i, istart, istop;
-  int j, jstart, jstop;
+updateDegree(gelim_t *Gelim, PORD_INT *reachset, PORD_INT nreach, PORD_INT *bin)
+{ PORD_INT *xadj, *adjncy, *vwght, *len, *elen, *degree;
+  PORD_INT totvwght, deg, vwghtv, u, v, w, e, me, r, i, istart, istop;
+  PORD_INT j, jstart, jstop;
 
   totvwght = Gelim->G->totvwght;
   xadj = Gelim->G->xadj;
@@ -887,16 +887,16 @@ updateDegree(gelim_t *Gelim, int *reachset, int nreach, int *bin)
 /*****************************************************************************
 ******************************************************************************/
 void
-updateScore(gelim_t *Gelim, int *reachset, int nreach, int scoretype, int *bin)
-{ int *xadj, *adjncy, *vwght, *len, *elen, *degree, *score;
-  int vwghtv, deg, degme, u, v, me, r, i, istart, istop;
+updateScore(gelim_t *Gelim, PORD_INT *reachset, PORD_INT nreach, PORD_INT scoretype, PORD_INT *bin)
+{ PORD_INT *xadj, *adjncy, *vwght, *len, *elen, *degree, *score;
+  PORD_INT vwghtv, deg, degme, u, v, me, r, i, istart, istop;
   /* Modified by JYL, 16 march 2005.
    * scr could overflow for quasi dense rows.
    * Use a double instead for large degrees
    * aset it near to MAX_INT in case of problem.
    */
   double scr_dbl;
-  int scr;
+  PORD_INT scr;
 
   xadj = Gelim->G->xadj;
   adjncy = Gelim->G->adjncy;
@@ -961,7 +961,7 @@ updateScore(gelim_t *Gelim, int *reachset, int nreach, int scoretype, int *bin)
                }
               /* Some buckets have offset nvtx / 2.
 	       * Using MAX_INT - nvtx should then be safe */
-              score[v] = (int) (min(scr_dbl,MAX_INT-Gelim->G->nvtx));
+              score[v] = (PORD_INT) (min(scr_dbl,MAX_INT-Gelim->G->nvtx));
 	      }
 	      else
 	      {
@@ -1011,9 +1011,9 @@ updateScore(gelim_t *Gelim, int *reachset, int nreach, int scoretype, int *bin)
 elimtree_t*
 extractElimTree(gelim_t *Gelim)
 { elimtree_t *T;
-  int        *vwght, *par, *degree, *score, *sib, *fch;
-  int        *ncolfactor, *ncolupdate, *parent, *vtx2front;
-  int        nvtx, nfronts, root, u, v, front;
+  PORD_INT        *vwght, *par, *degree, *score, *sib, *fch;
+  PORD_INT        *ncolfactor, *ncolupdate, *parent, *vtx2front;
+  PORD_INT        nvtx, nfronts, root, u, v, front;
 
   nvtx = Gelim->G->nvtx;
   vwght = Gelim->G->vwght;
@@ -1024,8 +1024,8 @@ extractElimTree(gelim_t *Gelim)
   /* ------------------------
      allocate working storage
      ------------------------ */
-  mymalloc(sib, nvtx, int);
-  mymalloc(fch, nvtx, int);
+  mymalloc(sib, nvtx, PORD_INT);
+  mymalloc(fch, nvtx, PORD_INT);
   for (u = 0; u < nvtx; u++)
     sib[u] = fch[u] = -1;
 

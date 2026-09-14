@@ -10,7 +10,7 @@
 %
 % - id.JOB: defines the action that will be realized by MUMPS: initialize, analyze and/or factorize and/or solve and release MUMPS internal C/Fortran data. It has to be set by the user before any call to MUMPS (except after a call to initmumps, which sets its value to -1).
 %
-% - id.ICNTL and id.CNTL: define control parameters that can be set after the initialization call (id.JOB = -1). See Section ``Control parameters'' of the MUMPS user's guide for more details. If the user does not modify an entry in id.ICNTL then MUMPS uses the default parameter. For example, if the user wants to use the AMD ordering, he/she should set id.ICNTL(7) = 0. Note that the following parameters are inhibited because they are automatically set within the interface: id.ICNTL(19) which controls the Schur complement option and id.ICNTL(20) which controls the format of the right-hand side. Note that parameters id.ICNTL(1:4) may not work properly depending on your compiler and your environment. In case of problem, we recommand to swith printing off by setting id.ICNL(1:4)=-1.
+% - id.ICNTL and id.CNTL: define control parameters that can be set after the initialization call (id.JOB = -1). See Section ``Control parameters'' of the MUMPS user's guide for more details. If the user does not modify an entry in id.ICNTL then MUMPS uses the default parameter. For example, if the user wants to use the AMD ordering, he/she should set id.ICNTL(7) = 0. Note that the following parameters are inhibited because they are automatically set within the interface: id.ICNTL(19) which controls the Schur complement option and id.ICNTL(20) which controls the format of the right-hand side. Some parameters related to distributed environments should not be modifed. For example, the solution should always be centralized and id.ICNTL(21) should thus remain to its default value, 0. Note that parameters id.ICNTL(1:4) may not work properly depending on your compiler and your environment. In case of problem, we recommand to swith printing off by setting id.ICNL(1:4)=-1.
 %
 % - id.PERM\_IN: corresponds to the given ordering option (see Section ``Input and output parameters'' of the MUMPS user's guide for more details). Note that this permutation is only accessed if the parameter id.ICNTL(7) is set to 1.
 %
@@ -34,7 +34,7 @@
 %
 % - id.UNS\_PERM: column permutation (if any) on exit from the analysis phase of MUMPS (see discussion regarding ICNTL(6) in Section ``Control parameters'' of the MUMPS user's guide ).
 %
-% - id.SOL: dense vector or matrix containing the solution after MUMPS solution phase.
+% - id.SOL: dense vector or matrix containing the solution after MUMPS solution phase. Also contains the nullspace in case of null space computation, or entries of the inverse, in case of computation of inverse entries.
 %
 %--------------- Internal Parameters ---------------
 %

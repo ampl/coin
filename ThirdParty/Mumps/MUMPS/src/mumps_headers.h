@@ -1,77 +1,93 @@
 C
-C  This file is part of MUMPS 4.10.0, built on Tue May 10 12:56:32 UTC 2011
+C  This file is part of MUMPS 5.9.1, released
+C  on Mon Jul 20 09:00:43 UTC 2026
 C
 C
-C  This version of MUMPS is provided to you free of charge. It is public
-C  domain, based on public domain software developed during the Esprit IV
-C  European project PARASOL (1996-1999). Since this first public domain
-C  version in 1999, research and developments have been supported by the
-C  following institutions: CERFACS, CNRS, ENS Lyon, INPT(ENSEEIHT)-IRIT,
-C  INRIA, and University of Bordeaux.
+C  Copyright 1991-2026 CERFACS, CNRS, ENS Lyon, INP Toulouse, Inria,
+C  Mumps Technologies, University of Bordeaux.
 C
-C  The MUMPS team at the moment of releasing this version includes
-C  Patrick Amestoy, Maurice Bremond, Alfredo Buttari, Abdou Guermouche,
-C  Guillaume Joslin, Jean-Yves L'Excellent, Francois-Henry Rouet, Bora
-C  Ucar and Clement Weisbecker.
-C
-C  We are also grateful to Emmanuel Agullo, Caroline Bousquet, Indranil
-C  Chowdhury, Philippe Combes, Christophe Daniel, Iain Duff, Vincent Espirat,
-C  Aurelia Fevre, Jacko Koster, Stephane Pralet, Chiara Puglisi, Gregoire
-C  Richard, Tzvetomila Slavova, Miroslav Tuma and Christophe Voemel who
-C  have been contributing to this project.
-C
-C  Up-to-date copies of the MUMPS package can be obtained
-C  from the Web pages:
-C  http://mumps.enseeiht.fr/  or  http://graal.ens-lyon.fr/MUMPS
+C  This version of MUMPS is provided to you free of charge. It is
+C  released under the CeCILL-C license 
+C  (see doc/CeCILL-C_V1-en.txt, doc/CeCILL-C_V1-fr.txt, and
+C  https://cecill.info/licences/Licence_CeCILL-C_V1-en.html)
 C
 C
-C   THIS MATERIAL IS PROVIDED AS IS, WITH ABSOLUTELY NO WARRANTY
-C   EXPRESSED OR IMPLIED. ANY USE IS AT YOUR OWN RISK.
+C     Common header positions:
+C 
+C     XXI    ->  size of integer record
+C     XXR    ->  size of real record
+C     XXS    ->  status of the node
+C     XXN    ->  node number
+C     XXP    ->  pointer to previous record
+C     XXA    ->  active fronts data management
+C     XXF    ->  blr data passed from factorization to solve
+C     XXLR   ->  Low rank status of a node 
+C                (0=FR, 
+C                 1=LowRank CB only
+C                 2=LowRank factors/panels only
+C                 3=LowRank CB+factor/panel
+C                 4=FR nodes: FR facto with tiled panels (BFR/tiled FR)
+C                 5=FR nodes: FR facto with tiled panels + compress CB
+C                 values 1, 5 not used 
+C     XXEBF  ->  End of Blocfacto (0=not yet, 1=finished)  
+C     XXD    ->  dynamic data size
+C     XXG    ->  GPU information (currently number of pinned rows 
+C                NFRONT-NBROWS_CPU
+C                for type 1 nodes, pinning status for type 2 strips)
+C REMARK: .h file could be replaced by a module with functions to get node status
+C          added in the module.
+C 
+      INTEGER, PARAMETER :: XXI = 0, XXR = 1, XXS = 3, XXN = 4, XXP = 5
+      INTEGER, PARAMETER :: XXA = 6, XXF = 7 
+      INTEGER, PARAMETER :: XXLR = 8
+      INTEGER, PARAMETER :: XXNBPR = 9
+      INTEGER, PARAMETER :: XXEBF = 10
+      INTEGER, PARAMETER :: XXD = 11
+      INTEGER, PARAMETER :: XXG = 13
+C 
+C     Size of header in incore and out-of-core
 C
-C
-C  User documentation of any code that uses this software can
-C  include this complete notice. You can acknowledge (using
-C  references [1] and [2]) the contribution of this package
-C  in any scientific publication dependent upon the use of the
-C  package. You shall use reasonable endeavours to notify
-C  the authors of the package of this publication.
-C
-C   [1] P. R. Amestoy, I. S. Duff, J. Koster and  J.-Y. L'Excellent,
-C   A fully asynchronous multifrontal solver using distributed dynamic
-C   scheduling, SIAM Journal of Matrix Analysis and Applications,
-C   Vol 23, No 1, pp 15-41 (2001).
-C
-C   [2] P. R. Amestoy and A. Guermouche and J.-Y. L'Excellent and
-C   S. Pralet, Hybrid scheduling for the parallel solution of linear
-C   systems. Parallel Computing Vol 32 (2), pp 136-156 (2006).
-C
-      INTEGER XXI, XXR, XXS, XXN, XXP
-      PARAMETER(XXI=0,XXR=1,XXS=3,XXN=4,XXP=5)
-      INTEGER XXNDIAG2W  
-      PARAMETER(XXNDIAG2W=6)
       INTEGER XSIZE_IC, XSIZE_OOC_SYM, XSIZE_OOC_UNSYM
-      INTEGER XSIZE_OOC_NOPANEL 
-      PARAMETER (XSIZE_IC=6,XSIZE_OOC_SYM=7,XSIZE_OOC_UNSYM=7,
-     *           XSIZE_OOC_NOPANEL=6)
+      INTEGER XSIZE_OOC_NOPANEL ! To store virtual addresses
+C     At the moment, all headers are of the same size because
+C     no OOC specific information are stored in header.
+CM     other OOC specific information directly in the headers.
+      PARAMETER (XSIZE_IC=14,XSIZE_OOC_SYM=14,XSIZE_OOC_UNSYM=14,
+     &           XSIZE_OOC_NOPANEL=14)
+C
+C     -------------------------------------------------------
+C     Position of header size (formerly XSIZE) in KEEP array.
+C     KEEP(IXSZ) is set at the beginning of the factorization
+C     to either XSIZE_IC, XSIZE_OOC_SYM or XSIZE_OOC_UNSYM.
+C     -------------------------------------------------------
       INTEGER IXSZ
-      PARAMETER(IXSZ= 222)    
-      INTEGER S_CB1COMP
-      PARAMETER (S_CB1COMP=314)
+      PARAMETER(IXSZ= 222)    ! KEEP(222) used
+      INTEGER, PARAMETER :: S_CB1COMP = 314
       INTEGER S_ACTIVE, S_ALL, S_NOLCBCONTIG,
-     *        S_NOLCBNOCONTIG, S_NOLCLEANED,
-     *        S_NOLCBNOCONTIG38, S_NOLCBCONTIG38,
-     *        S_NOLCLEANED38, C_FINI
+     &        S_NOLCBNOCONTIG, S_NOLCLEANED,
+     &        S_NOLCBNOCONTIG38, S_NOLCBCONTIG38,
+     &        S_NOLCLEANED38, 
+     &        S_NOLNOCB, S_NOLNOCBCLEANED,
+     &        C_FINI
       PARAMETER(S_ACTIVE=400, S_ALL=401, S_NOLCBCONTIG=402,
-     *          S_NOLCBNOCONTIG=403, S_NOLCLEANED=404,
-     *          S_NOLCBNOCONTIG38=405, S_NOLCBCONTIG38=406,
-     *          S_NOLCLEANED38=407,C_FINI=1)
-      INTEGER S_FREE, S_NOTFREE
-      PARAMETER(S_FREE=54321,S_NOTFREE=-123456)
-      INTEGER TOP_OF_STACK
-      PARAMETER(TOP_OF_STACK=-999999)
+     &          S_NOLCBNOCONTIG=403, S_NOLCLEANED=404,
+     &          S_NOLCBNOCONTIG38=405, S_NOLCBCONTIG38=406,
+     &          S_NOLCLEANED38=407, 
+     &          S_NOLNOCB=408, S_NOLNOCBCLEANED=409,
+     &          C_FINI=1)
+      INTEGER, PARAMETER :: S_FREE = 54321
+      INTEGER, PARAMETER :: S_NOTFREE = -123
+      INTEGER, PARAMETER :: TOP_OF_STACK = -999999
       INTEGER XTRA_SLAVES_SYM, XTRA_SLAVES_UNSYM
-      PARAMETER(XTRA_SLAVES_SYM=3, XTRA_SLAVES_UNSYM=1)
+      PARAMETER(XTRA_SLAVES_SYM=4, XTRA_SLAVES_UNSYM=2)
          INTEGER S_ROOT2SON_CALLED, S_REC_CONTSTATIC, 
      &  S_ROOTBAND_INIT
          PARAMETER(S_ROOT2SON_CALLED=-341,S_REC_CONTSTATIC=1,
      &             S_ROOTBAND_INIT=0)
+C         Node not canidate for GPU
+          INTEGER, PARAMETER :: NotCandidateGPU = 99999
+C         Node candidate to use GPUs, pinning status:
+          INTEGER, PARAMETER :: MemNotPinned = -1
+          INTEGER, PARAMETER :: MemPinned = -2
+          INTEGER, PARAMETER :: PinningOnTheWay = -3
+          INTEGER, PARAMETER :: UnpinningOnTheWay = -4

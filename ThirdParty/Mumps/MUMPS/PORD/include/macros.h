@@ -9,6 +9,7 @@
 /
 ******************************************************************************/
 
+
 /* Some compilers (VC++ for instance) define a min and a max in the stdlib */
 #ifdef min
 # undef min
@@ -40,7 +41,7 @@
            { (tmp) = (a); (a) = (b); (b) = (tmp); }
 
 #define seed() \
-           srand((int)time(0) % 10000);
+           srand((PORD_INT)time(0) % 10000);
 
 #define bit(var, d) \
            ((var) & (1 << (d)))
@@ -51,33 +52,33 @@
 #define waitkey() \
            { char _s[MAX_LINE_LEN]; printf("\n<RETURN>"); gets(_s); }
 
-#define resettimer(var) \
+#define pord_resettimer(var) \
            var = 0;
 
-#define starttimer(var) \
+#define pord_starttimer(var) \
            var -= ((FLOAT)clock()/CLOCKS_PER_SEC);
 
-#define stoptimer(var) \
+#define pord_stoptimer(var) \
            var += ((FLOAT)clock()/CLOCKS_PER_SEC);
 
 #define quit() \
            exit(ERR);
 
 #ifdef PARIX
-#undef starttimer(var)
+#undef pord_starttimer(var)
 #ifdef __EPX
-#define starttimer(var) \
+#define pord_starttimer(var) \
            var -= ((FLOAT)TimeNow()/CLOCK_TICK);
 #else
-#define starttimer(var) \
+#define pord_starttimer(var) \
            var -= ((FLOAT)TimeNowHigh()/CLK_TCK_HIGH);
 #endif
-#undef stoptimer(var)
+#undef pord_stoptimer(var)
 #ifdef __EPX
-#define stoptimer(var) \
+#define pord_stoptimer(var) \
            var += ((FLOAT)TimeNow()/CLOCK_TICK);
 #else
-#define stoptimer(var) \
+#define pord_stoptimer(var) \
            var += ((FLOAT)TimeNowHigh()/CLK_TCK_HIGH);
 #endif
 #undef quit()

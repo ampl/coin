@@ -78,7 +78,7 @@ Methods in lib/minpriority.c:
 /*****************************************************************************
 ******************************************************************************/
 minprior_t*
-newMinPriority(int nvtx, int nstages)
+newMinPriority(PORD_INT nvtx, PORD_INT nstages)
 { minprior_t  *minprior;
   stageinfo_t *stageinfo;
 
@@ -89,10 +89,10 @@ newMinPriority(int nvtx, int nstages)
   minprior->bucket = NULL;
   minprior->stageinfo = stageinfo;
 
-  mymalloc(minprior->reachset, nvtx, int);
-  mymalloc(minprior->auxaux, nvtx, int);
-  mymalloc(minprior->auxbin, nvtx, int);
-  mymalloc(minprior->auxtmp, nvtx, int);
+  mymalloc(minprior->reachset, nvtx, PORD_INT);
+  mymalloc(minprior->auxaux, nvtx, PORD_INT);
+  mymalloc(minprior->auxbin, nvtx, PORD_INT);
+  mymalloc(minprior->auxtmp, nvtx, PORD_INT);
 
   minprior->nreach = 0;
   minprior->flag = 1;
@@ -123,8 +123,8 @@ minprior_t*
 setupMinPriority(multisector_t *ms)
 { minprior_t  *minprior;
   stageinfo_t *stageinfo;
-  int         *auxbin, *auxtmp;
-  int         nvtx, nstages, istage, u;
+  PORD_INT         *auxbin, *auxtmp;
+  PORD_INT         nvtx, nstages, istage, u;
 
   nvtx = ms->G->nvtx;
   nstages = ms->nstages;
@@ -158,7 +158,7 @@ setupMinPriority(multisector_t *ms)
 elimtree_t*
 orderMinPriority(minprior_t *minprior, options_t *options, timings_t *cpus)
 { elimtree_t *T;
-  int        nvtx, nstages, istage, scoretype, ordtype;
+  PORD_INT        nvtx, nstages, istage, scoretype, ordtype;
 
   nvtx = minprior->Gelim->G->nvtx;
   nstages = minprior->ms->nstages;
@@ -229,13 +229,13 @@ orderMinPriority(minprior_t *minprior, options_t *options, timings_t *cpus)
 /*****************************************************************************
 ******************************************************************************/
 void
-eliminateStage(minprior_t *minprior, int istage, int scoretype, timings_t *cpus)
+eliminateStage(minprior_t *minprior, PORD_INT istage, PORD_INT scoretype, timings_t *cpus)
 { gelim_t     *Gelim;
   bucket_t    *bucket;
   stageinfo_t *stageinfo;
-  int         *stage, *reachset, *auxbin, *auxtmp, *auxaux;
-  int         *degree, *score;
-  int         *pflag, nreach, nvtx, r, u, i;
+  PORD_INT         *stage, *reachset, *auxbin, *auxtmp, *auxaux;
+  PORD_INT         *degree, *score;
+  PORD_INT         *pflag, nreach, nvtx, r, u, i;
 
   Gelim = minprior->Gelim;
   bucket = minprior->bucket;
@@ -272,10 +272,10 @@ eliminateStage(minprior_t *minprior, int istage, int scoretype, timings_t *cpus)
   /* ----------------------------------------------------------------
      do an initial update of the vertices in reachset and fill bucket
      ---------------------------------------------------------------- */
-  starttimer(cpus[TIME_UPDSCORE]);
+  pord_starttimer(cpus[TIME_UPDSCORE]);
   updateDegree(Gelim, reachset, nreach, auxbin);
   updateScore(Gelim, reachset, nreach, scoretype, auxbin);
-  stoptimer(cpus[TIME_UPDSCORE]);
+  pord_stoptimer(cpus[TIME_UPDSCORE]);
   for (i = 0; i < nreach; i++)
    { u = reachset[i];
      insertBucket(bucket, score[u], u);
@@ -302,16 +302,16 @@ eliminateStage(minprior_t *minprior, int istage, int scoretype, timings_t *cpus)
      /* ----------------------------------------------------------
         update the adjacency structure of all vertices in reachset
         ---------------------------------------------------------- */
-     starttimer(cpus[TIME_UPDADJNCY]);
+     pord_starttimer(cpus[TIME_UPDADJNCY]);
      updateAdjncy(Gelim, reachset, nreach, auxtmp, pflag);
-     stoptimer(cpus[TIME_UPDADJNCY]);
+     pord_stoptimer(cpus[TIME_UPDADJNCY]);
 
      /* ----------------------------------------
         find indistinguishable nodes in reachset
         ---------------------------------------- */
-     starttimer(cpus[TIME_FINDINODES]);
+     pord_starttimer(cpus[TIME_FINDINODES]);
      findIndNodes(Gelim, reachset, nreach, auxbin, auxaux, auxtmp, pflag);
-     stoptimer(cpus[TIME_FINDINODES]);
+     pord_stoptimer(cpus[TIME_FINDINODES]);
 
 #ifdef BE_CAUTIOUS
      printf("checking arrays auxtmp and auxbin\n");
@@ -337,10 +337,10 @@ eliminateStage(minprior_t *minprior, int istage, int scoretype, timings_t *cpus)
      /* ---------------------------------------------------
         update the degree/score of all vertices in reachset
         --------------------------------------------------- */
-     starttimer(cpus[TIME_UPDSCORE]);
+     pord_starttimer(cpus[TIME_UPDSCORE]);
      updateDegree(Gelim, reachset, nreach, auxbin);
      updateScore(Gelim, reachset, nreach, scoretype, auxbin);
-     stoptimer(cpus[TIME_UPDSCORE]);
+     pord_stoptimer(cpus[TIME_UPDSCORE]);
 
      /* ----------------------------
         re-insert vertices in bucket
@@ -357,14 +357,14 @@ eliminateStage(minprior_t *minprior, int istage, int scoretype, timings_t *cpus)
 
 /*****************************************************************************
 ******************************************************************************/
-int
-eliminateStep(minprior_t *minprior, int istage, int scoretype)
+PORD_INT
+eliminateStep(minprior_t *minprior, PORD_INT istage, PORD_INT scoretype)
 { gelim_t     *Gelim;
   bucket_t    *bucket;
   stageinfo_t *stageinfo;
-  int         *stage, *reachset, *auxtmp;
-  int         *xadj, *adjncy, *vwght, *len, *degree, *score;
-  int         *pflag, *pnreach, nelim, minscr, vwghtu, u, v, i, istart, istop;
+  PORD_INT         *stage, *reachset, *auxtmp;
+  PORD_INT         *xadj, *adjncy, *vwght, *len, *degree, *score;
+  PORD_INT         *pflag, *pnreach, nelim, minscr, vwghtu, u, v, i, istart, istop;
   FLOAT       tri, rec;
 
   Gelim = minprior->Gelim;
@@ -442,8 +442,8 @@ eliminateStep(minprior_t *minprior, int istage, int scoretype)
          --------------------------------------------------------------- */
      tri = vwghtu;
      rec = degree[u];
-     stageinfo->nzf += (int)((tri * (tri+1)) / 2);
-     stageinfo->nzf += (int)(tri * rec);
+     stageinfo->nzf += (PORD_INT)((tri * (tri+1)) / 2);
+     stageinfo->nzf += (PORD_INT)(tri * rec);
      stageinfo->ops += (tri*tri*tri) / 3.0 + (tri*tri) / 2.0 - (5*tri) / 6.0;
      stageinfo->ops += (tri*tri*rec) + (rec*(rec+1)*tri);
 

@@ -14,7 +14,7 @@
 # define dmumps_c       zmumps_c				
 # define dmumps_par     zmumps_par			
 # define DMUMPS_STRUC_C ZMUMPS_STRUC_C	
-# define DMUMPS_alloc   ZMUMPS_alloc     
+# define DMUMPS_alloc   ZMUMPS_alloc
 # define DMUMPS_free    ZMUMPS_free
 # define double2        mumps_double_complex
 
@@ -38,7 +38,7 @@
 if(ptr){	\
   free(ptr);  \
   ptr=0;} 	\
- 
+
 
 #define EXTRACT_FROM_SCILAB_TOPTR(it,ptr_scilab1,ptr_scilab2,mumpspointer,type,length)\
 if(ptr_scilab1[0] != -9999){                                            	\
@@ -69,7 +69,7 @@ for (i=0;i<l;i++){ 								\
     *istk(ptr_scilab+i)=(mumpsptr)[i];}                                         \
  }                                                                              \
 LhsVar(num)=nb_RHS+num;
-    
+
 #define EXTRACT_DOUBLE_FROM_C_TO_SCILAB(num,it,ptr_scilab1,ptr_scilab2,mumpsptr,length1,length2,one)\
 if(mumpsptr == 0){                            					\
 CreateVar(nb_RHS+num,"d",&one,&one,&ptr_scilab1);                		\
@@ -119,7 +119,7 @@ if(ptr_scilab1[0] != -9999){                                                    
   LhsVar(num)=nb_RHS+num;
 
 #endif
-     
+
 
 
 void DMUMPS_free(DMUMPS_STRUC_C **dmumps_par){
@@ -180,7 +180,7 @@ void DMUMPS_alloc(DMUMPS_STRUC_C **dmumps_par){
 
  static int dmumpsc(char *fname){
 
- 
+
   /* RhsVar parameters */
   int njob, mjob, ljob, mint, nint, lint, nsym, msym, lsym, nA, mA, nRHS, nREDRHS, mRHS,lRHS, liRHS;
   int mREDRHS,lREDRHS,liREDRHS;
@@ -192,9 +192,9 @@ void DMUMPS_alloc(DMUMPS_STRUC_C **dmumps_par){
   /* LhsVar parameters */
   int linfog, lrinfog, lrhsout,lrhsouti, linstout, lschurout, lschurouti, ldef;
   int lpivnul_list, lmapp, lsymperm, lunsperm;
-  int one=1, temp1=40, temp2=40, temp3, temp4; 
+  int one=1, temp1=80, temp2=40, temp3, temp4;
   int it, itRHS, itREDRHS; /* parameter for real/complex types */
-  
+
   int i,j,k1,k2, nb_in_row,netrue;
   int *ptr_int;
   double *ptr_double;
@@ -211,8 +211,8 @@ void DMUMPS_alloc(DMUMPS_STRUC_C **dmumps_par){
   /* C pointer for input parameters */
   int inst_address;
   int ne,inst;
-  int *irn_in,*jcn_in; 
- 
+  int *irn_in,*jcn_in;
+
   /* Variable for multiple and sparse RHS*/
   int posrhs, posschur, nz_RHS,col_ind,k;
   int *irhs_ptr;
@@ -228,7 +228,7 @@ void DMUMPS_alloc(DMUMPS_STRUC_C **dmumps_par){
   SciSparse A;
   SciSparse RHS_SPARSE;
   DMUMPS_STRUC_C *dmumps_par;
-  
+
   int dosolve=0;
   int donullspace=0;
   int doanal = 0;
@@ -251,11 +251,11 @@ void DMUMPS_alloc(DMUMPS_STRUC_C **dmumps_par){
     dmumps_par->nz_alloc=-1;
     it=1;
   }else{
-    /* Obtain pointer on instance */ 
+    /* Obtain pointer on instance */
     GetRhsVar(10,"i",&mint,&nint,&lint);
     inst_address=*istk(lint); /* EXTRACT_FROM_SCILAB_TOVAL(INST,inst_address); */
     ptr_int = (int *) inst_address;
-    
+
     dmumps_par = (DMUMPS_STRUC_C *) ptr_int;
     if(*istk(ljob) == -2){
       dmumps_par->job = -2;
@@ -269,7 +269,7 @@ void DMUMPS_alloc(DMUMPS_STRUC_C **dmumps_par){
 	Scierror(999,"%s: Bad dimensions for mat\n",function_name);
 	return 0;
       }
-      
+
       ne=A.nel;
       dmumps_par->n = nA;
 	
@@ -279,10 +279,10 @@ void DMUMPS_alloc(DMUMPS_STRUC_C **dmumps_par){
 	netrue = ne;
       }
 
-      if(dmumps_par->nz_alloc < netrue ||dmumps_par->nz_alloc >= 2*netrue){  
+      if(dmumps_par->nz_alloc < netrue ||dmumps_par->nz_alloc >= 2*netrue){
 	MYFREE(dmumps_par->jcn);
 	MYFREE(dmumps_par->irn);
-	MYFREE(dmumps_par->a);                                         
+	MYFREE(dmumps_par->a);
 	
 	dmumps_par->jcn = (int*)malloc(netrue*sizeof(int));
 	dmumps_par->irn = (int*)malloc(netrue*sizeof(int));
@@ -298,17 +298,17 @@ void DMUMPS_alloc(DMUMPS_STRUC_C **dmumps_par){
 	 * mA : number of rows
 	 */
 
-        if(doanal){ 
+        if(doanal){
 	  for(i=0;i<ne;i++){
 	    (dmumps_par->jcn)[i]=(A.icol)[i];}
 	  k1=0;
 	  for (k2=1;k2<mA+1;k2++){
-	    nb_in_row=0; 
+	    nb_in_row=0;
 	    while(nb_in_row<(A.mnel)[k2-1]){
 	      dmumps_par->irn[k1]=k2; /* matrix indices start at 1 */
 	      k1=k1+1;
 	      nb_in_row=nb_in_row+1;
-	    } 
+	    }
 	  }
         }
 
@@ -326,14 +326,14 @@ void DMUMPS_alloc(DMUMPS_STRUC_C **dmumps_par){
 	for(i=0;i<ne;i++){
           ((dmumps_par->a)[i]) = (A.R)[i];}
 #endif
-	dmumps_par->nz = ne; 
+	dmumps_par->nz = ne;
 	}
       else{
 	/* symmetric case */
 	k1=0;
         i=0;
 	for (k2=1;k2<mA+1;k2++){
-	  nb_in_row=0; 
+	  nb_in_row=0;
 	  while(nb_in_row<(A.mnel)[k2-1]){
             if( k2 >= (A.icol)[i]){
 	      if(k1>=netrue){	
@@ -341,7 +341,7 @@ void DMUMPS_alloc(DMUMPS_STRUC_C **dmumps_par){
 	  	return 0;
 	      }
               (dmumps_par->jcn)[k1]=(A.icol)[i];
-	      (dmumps_par->irn)[k1]=k2; 
+	      (dmumps_par->irn)[k1]=k2;
 #if MUMPS_ARITH == MUMPS_ARITH_z
 	      (dmumps_par->a)[k1].r=(A.R)[i];
               if(A.it == 1){
@@ -355,16 +355,16 @@ void DMUMPS_alloc(DMUMPS_STRUC_C **dmumps_par){
 		
 	      nb_in_row=nb_in_row+1;
 	      i=i+1;
-	     } 
-	  }     
+	     }
+	  }
 	dmumps_par->nz = k1;
-      	}  
+      	}
 	
         GetRhsVar(2,"i",&mjob,&njob,&ljob);
 	dmumps_par->job=*istk(ljob);
 	
 	GetRhsVar(3,"i",&micntl,&nicntl,&licntl);
-	EXTRACT_FROM_SCILAB_TOARR(istk(licntl),dmumps_par->icntl,int,40);
+	EXTRACT_FROM_SCILAB_TOARR(istk(licntl),dmumps_par->icntl,int,60);
 
 	GetRhsVar(4,"d",&mcntl,&ncntl,&lcntl);
 	EXTRACT_FROM_SCILAB_TOARR(stk(lcntl),dmumps_par->cntl,double,15);
@@ -384,10 +384,10 @@ void DMUMPS_alloc(DMUMPS_STRUC_C **dmumps_par){
  * space separately. In that case, we initialize lrhs and nrhs automatically,
  * allocate the space needed, and do not rely on what is provided by the user
  * in component RHS, that is not touched.
- * Note that at the moment the user should not call the solution step combined
+ * At the moment the user should not call the solution step combined
  * with the factorization step when he/she sets icntl[25] to a non-zero value.
  * Hence we suppose infog[28-1] is available and we can use it.
- * 
+ *
  * For users of scilab/matlab, it would still be nice to be able to set ICNTL(25)=-1,
  * and use JOB=6. If we want to make this functionality available, we should
  * call separately job=2 and job=3 even if job=5 or 6 and set nrhs (and allocate
@@ -415,18 +415,18 @@ void DMUMPS_alloc(DMUMPS_STRUC_C **dmumps_par){
       else if(GetType(8)!=5){
 /*        Dense RHS */
           GetRhsCVar(8,"d",&itRHS,&mRHS,&nRHS,&lRHS,&liRHS);
-      
+
           if((!dosolve) || (stk(lRHS)[0]) == -9999){
           /* Could be dangerous ? See comment in Matlab interface */
             EXTRACT_CMPLX_FROM_SCILAB_TOPTR(itRHS,stk(lRHS),stk(liRHS),(dmumps_par->rhs),double2,one);
           }else{
-  
+
             dmumps_par->nrhs = nRHS;
             dmumps_par->lrhs = mRHS;
             if(mRHS!=nA){
 	      Scierror(999,"%s: Incompatible number of rows in RHS\n",function_name);
             }
-            dmumps_par->icntl[19]=0;            
+            dmumps_par->icntl[19]=0;
             EXTRACT_CMPLX_FROM_SCILAB_TOPTR(itRHS,stk(lRHS),stk(liRHS),(dmumps_par->rhs),double2,(nRHS*mRHS));
           }
         }else{
@@ -437,9 +437,9 @@ void DMUMPS_alloc(DMUMPS_STRUC_C **dmumps_par){
           dmumps_par->lrhs = mRHS;
           nz_RHS=RHS_SPARSE.nel;
           dmumps_par->nz_rhs=nz_RHS;
-          
+
           irhs_ptr=(int*)malloc((nRHS+1)*sizeof(int));
-   
+
           dmumps_par->irhs_ptr=(int*)malloc((nRHS+1)*sizeof(int));
           dmumps_par->irhs_sparse=(int*)malloc(nz_RHS*sizeof(int));
           dmumps_par->rhs_sparse=(double2*)malloc(nz_RHS*sizeof(double2));
@@ -456,16 +456,16 @@ void DMUMPS_alloc(DMUMPS_STRUC_C **dmumps_par){
               k++;
               ((dmumps_par->irhs_ptr)[col_ind])++;
             }
-          }  
+          }
           (dmumps_par->irhs_ptr)[0]=1;
           irhs_ptr[0]=(dmumps_par->irhs_ptr)[0];
           for(i=1;i<nRHS+1;i++){
             (dmumps_par->irhs_ptr)[i]=(dmumps_par->irhs_ptr)[i]+(dmumps_par->irhs_ptr)[i-1];
             irhs_ptr[i]= (dmumps_par->irhs_ptr)[i];
-          }  
+          }
           k=RHS_SPARSE.nel-1;
           for(i=mRHS;i>=1;i--){
-       
+
             for(j=0;j<(RHS_SPARSE.mnel)[i-1];j++){
               col_ind=(RHS_SPARSE.icol)[k];
              (dmumps_par->irhs_sparse)[irhs_ptr[col_ind]-2]=i;
@@ -530,17 +530,17 @@ void DMUMPS_alloc(DMUMPS_STRUC_C **dmumps_par){
 
       }
     }
-    
+
     if(*istk(ljob)==-2){
       return 0;
     }else{
-      
-      CheckLhs(11,11);    
-      
+
+      CheckLhs(11,11);
+
       EXTRACT_INT_FROM_C_TO_SCILAB(1,linfog,(dmumps_par->infog),one,temp1,one);
-      
+
       EXTRACT_DOUBLE_FROM_C_TO_SCILAB(2,it,lrinfog,lrinfog,(dmumps_par->rinfog),one,temp2,one);
-      
+
        if(dmumps_par->rhs && dosolve){ /* Just to know if solution step was called */
         it =1;
         EXTRACT_CMPLX_FROM_C_TO_SCILAB(3,it,lrhsout,lrhsouti,(dmumps_par->rhs),nA,nRHS,one);
@@ -553,7 +553,7 @@ void DMUMPS_alloc(DMUMPS_STRUC_C **dmumps_par){
       ptr_int = (int *)dmumps_par;
       inst_address = (int) ptr_int;
       EXTRACT_INT_FROM_C_TO_SCILAB(4,linstout,&inst_address,one,one,one);
-      
+
 
       temp4=dmumps_par->size_schur;
       if(temp4>0){
@@ -592,8 +592,8 @@ void DMUMPS_alloc(DMUMPS_STRUC_C **dmumps_par){
       EXTRACT_INT_FROM_C_TO_SCILAB(8,lsymperm,(dmumps_par->sym_perm),one,nA,one);
 
       EXTRACT_INT_FROM_C_TO_SCILAB(9,lunsperm,(dmumps_par->uns_perm),one,nA,one);
- 
-      nicntl=40;
+
+      nicntl=60;
       EXTRACT_INT_FROM_C_TO_SCILAB(10,licntl,(dmumps_par->icntl),one,nicntl,one);
       ncntl=15;
       EXTRACT_DOUBLE_FROM_C_TO_SCILAB(11,it,lcntl,lcntl,(dmumps_par->cntl),one,ncntl,one);
@@ -613,7 +613,7 @@ static GenericTable Tab[]={
 
 #if MUMPS_ARITH == MUMPS_ARITH_z
 int C2F(scizmumps)()
-#else 
+#else
 int C2F(scidmumps)()
 #endif
 {Rhs = Max(0, Rhs);

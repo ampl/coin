@@ -1,55 +1,22 @@
 /*
  *
- *  This file is part of MUMPS 4.10.0, built on Tue May 10 12:56:32 UTC 2011
+ *  This file is part of MUMPS 5.9.1, released
+ *  on Mon Jul 20 09:00:43 UTC 2026
  *
  *
- *  This version of MUMPS is provided to you free of charge. It is public
- *  domain, based on public domain software developed during the Esprit IV
- *  European project PARASOL (1996-1999). Since this first public domain
- *  version in 1999, research and developments have been supported by the
- *  following institutions: CERFACS, CNRS, ENS Lyon, INPT(ENSEEIHT)-IRIT,
- *  INRIA, and University of Bordeaux.
+ *  Copyright 1991-2026 CERFACS, CNRS, ENS Lyon, INP Toulouse, Inria,
+ *  Mumps Technologies, University of Bordeaux.
  *
- *  The MUMPS team at the moment of releasing this version includes
- *  Patrick Amestoy, Maurice Bremond, Alfredo Buttari, Abdou Guermouche,
- *  Guillaume Joslin, Jean-Yves L'Excellent, Francois-Henry Rouet, Bora
- *  Ucar and Clement Weisbecker.
- *
- *  We are also grateful to Emmanuel Agullo, Caroline Bousquet, Indranil
- *  Chowdhury, Philippe Combes, Christophe Daniel, Iain Duff, Vincent Espirat,
- *  Aurelia Fevre, Jacko Koster, Stephane Pralet, Chiara Puglisi, Gregoire
- *  Richard, Tzvetomila Slavova, Miroslav Tuma and Christophe Voemel who
- *  have been contributing to this project.
- *
- *  Up-to-date copies of the MUMPS package can be obtained
- *  from the Web pages:
- *  http://mumps.enseeiht.fr/  or  http://graal.ens-lyon.fr/MUMPS
- *
- *
- *   THIS MATERIAL IS PROVIDED AS IS, WITH ABSOLUTELY NO WARRANTY
- *   EXPRESSED OR IMPLIED. ANY USE IS AT YOUR OWN RISK.
- *
- *
- *  User documentation of any code that uses this software can
- *  include this complete notice. You can acknowledge (using
- *  references [1] and [2]) the contribution of this package
- *  in any scientific publication dependent upon the use of the
- *  package. You shall use reasonable endeavours to notify
- *  the authors of the package of this publication.
- *
- *   [1] P. R. Amestoy, I. S. Duff, J. Koster and  J.-Y. L'Excellent,
- *   A fully asynchronous multifrontal solver using distributed dynamic
- *   scheduling, SIAM Journal of Matrix Analysis and Applications,
- *   Vol 23, No 1, pp 15-41 (2001).
- *
- *   [2] P. R. Amestoy and A. Guermouche and J.-Y. L'Excellent and
- *   S. Pralet, Hybrid scheduling for the parallel solution of linear
- *   systems. Parallel Computing Vol 32 (2), pp 136-156 (2006).
+ *  This version of MUMPS is provided to you free of charge. It is
+ *  released under the CeCILL-C license 
+ *  (see doc/CeCILL-C_V1-en.txt, doc/CeCILL-C_V1-fr.txt, and
+ *  https://cecill.info/licences/Licence_CeCILL-C_V1-en.html)
  *
  */
 #include "mumps_io.h"
 #include "mumps_io_basic.h"
 #include "mumps_io_err.h"
+#include "mumps_c_types.h"
 #if ! defined (MUMPS_WIN32) && ! defined (WITHOUT_PTHREAD)
 # include "mumps_io_thread.h"
 #endif
@@ -57,23 +24,88 @@
 double mumps_time_spent_in_sync;
 #endif
 double read_op_vol,write_op_vol,total_vol;
-/**
- * Forward declaration. Definition at the end of the file.
- */
-/*MUMPS_INLINE int
-  mumps_convert_2fint_to_longlong( int *, int *, long long *);*/
+void MUMPS_CALL MUMPS_DUMPRHSBINARY_C ( MUMPS_INT *N, MUMPS_INT *NRHS,
+     MUMPS_INT *LRHS, float *RHS, MUMPS_INT *K35,
+     char *filename, mumps_ftnlen l1 )
+{
+   float *RHSshift; /* float: arbitrary, we use binary content */
+   FILE *fd;
+   int icol;
+#if defined(MUMPS_WIN32)
+/* "b" flag is necessary under windows */
+   fd=fopen(filename, "wb");
+#else
+   fd=fopen(filename, "w");
+#endif
+   RHSshift=RHS;
+   for(icol=0;icol<*NRHS;icol++)
+   {
+     fwrite(RHSshift, (size_t)(*K35), (size_t)(*N), fd);
+     RHSshift=RHSshift+(size_t)(*LRHS)*(size_t)(*K35/sizeof(float));
+   }
+   fclose(fd);
+}
+void MUMPS_CALL MUMPS_DUMPMATBINARY_C ( MUMPS_INT *N, MUMPS_INT8 *NNZ,
+     MUMPS_INT* K35, MUMPS_INT *irn, MUMPS_INT *jcn,
+     void *A, MUMPS_INT *is_A_provided,
+     char *filename, mumps_ftnlen l1 )
+{
+   int64_t i8;
+   int32_t myN, tmpi;
+   FILE *fd;
+#if defined(MUMPS_WIN32)
+/* "b" flag is necessary under windows */
+   fd=fopen(filename, "wb");
+#else
+   fd=fopen(filename, "w");
+#endif
+   /* cast to int32_t in case MUMPS_INT is 64-bits */
+   myN=(int32_t)(*N);
+   fwrite( &myN, sizeof(int32_t), 1, fd);
+   fwrite( NNZ, sizeof(int64_t), 1, fd);
+   if (*NNZ > 0)
+   {
+     if ( sizeof(MUMPS_INT) == 4 )
+     {
+       /* write irn and jcn contents directly */
+       fwrite( irn, sizeof(int32_t), (size_t)(*NNZ), fd);
+       fwrite( jcn, sizeof(int32_t), (size_t)(*NNZ), fd);
+     }
+     else
+     {
+       for(i8=0;i8 < *NNZ;i8++)
+       {
+          tmpi=irn[i8];
+          fwrite(&tmpi, sizeof(int32_t), 1, fd);
+       }
+       for(i8=0;i8 < *NNZ;i8++)
+       {
+          tmpi=jcn[i8];
+          fwrite(&tmpi, sizeof(int32_t), 1, fd);
+       }
+     }
+     if (*is_A_provided)
+     {
+       fwrite(A, (size_t)(*K35), (size_t)(*NNZ), fd);
+     }
+   }
+   fclose(fd);
+}
 /* Tests if the request "request_id" has finished. It sets the flag  */
 /* argument to 1 if the request has finished (0 otherwise)           */
 void MUMPS_CALL
 MUMPS_TEST_REQUEST_C(MUMPS_INT *request_id,MUMPS_INT *flag,MUMPS_INT *ierr)
 {
   char buf[64]; /* for error message */
-  int request_id_loc,flag_loc;
+  MUMPS_INT request_id_loc;
+#if ! defined(MUMPS_WIN32) && ! defined(WITHOUT_PTHREAD)
+  MUMPS_INT flag_loc;
+#endif
 #if ! defined(MUMPS_WIN32)
   struct timeval start_time,end_time;
   gettimeofday(&start_time,NULL);
 #endif
-  request_id_loc=(int)*request_id;
+  request_id_loc=(MUMPS_INT)*request_id;
   switch(mumps_io_flag_async){
   case IO_SYNC:
     /* printf("mumps_test_request_c should not be called with strategy %d\n",mumps_io_flag_async);*/
@@ -91,8 +123,8 @@ MUMPS_TEST_REQUEST_C(MUMPS_INT *request_id,MUMPS_INT *flag,MUMPS_INT *ierr)
 #endif
   default:
     *ierr=-92;
-    sprintf(buf,"Error: unknown I/O strategy : %d\n",mumps_io_flag_async);
-    mumps_io_error((int)*ierr,buf);
+    sprintf(buf,"Error: unknown I/O strategy : %d\n",(int)mumps_io_flag_async);
+    mumps_io_error((MUMPS_INT)*ierr,buf);
     return;
   }
 #if ! defined(MUMPS_WIN32)
@@ -106,12 +138,12 @@ void MUMPS_CALL
 MUMPS_WAIT_REQUEST(MUMPS_INT *request_id,MUMPS_INT *ierr)
 {
   char buf[64]; /* for error message */
-  int request_id_loc;
+  MUMPS_INT request_id_loc;
 #if ! defined(MUMPS_WIN32)
   struct timeval start_time,end_time;
   gettimeofday(&start_time,NULL);
 #endif
-  request_id_loc=(int)*request_id;
+  request_id_loc=(MUMPS_INT)*request_id;
   if(*request_id==-1)
     return;
   switch(mumps_io_flag_async){
@@ -125,8 +157,8 @@ MUMPS_WAIT_REQUEST(MUMPS_INT *request_id,MUMPS_INT *ierr)
 #endif
   default:
     *ierr=-92;
-    sprintf(buf,"Error: unknown I/O strategy : %d\n",mumps_io_flag_async);
-    mumps_io_error((int)*ierr,buf);
+    sprintf(buf,"Error: unknown I/O strategy : %d\n",(int)mumps_io_flag_async);
+    mumps_io_error((MUMPS_INT)*ierr,buf);
     return;
     /*    printf("Error: unknown I/O strategy : %d\n",mumps_io_flag_async);
           exit (-3);*/
@@ -150,7 +182,7 @@ MUMPS_WAIT_REQUEST(MUMPS_INT *request_id,MUMPS_INT *ierr)
 void MUMPS_CALL
 MUMPS_LOW_LEVEL_INIT_PREFIX(MUMPS_INT *dim, char *str, mumps_ftnlen l1)
 {
-  int i;
+  MUMPS_INT i;
   MUMPS_OOC_STORE_PREFIXLEN = *dim;
   if( *dim > MUMPS_OOC_PREFIX_MAX_LENGTH )
       MUMPS_OOC_STORE_PREFIXLEN = MUMPS_OOC_PREFIX_MAX_LENGTH;
@@ -162,7 +194,7 @@ MUMPS_LOW_LEVEL_INIT_PREFIX(MUMPS_INT *dim, char *str, mumps_ftnlen l1)
 void MUMPS_CALL
 MUMPS_LOW_LEVEL_INIT_TMPDIR(MUMPS_INT *dim, char *str, mumps_ftnlen l1)
 {
-  int i;
+  MUMPS_INT i;
   MUMPS_OOC_STORE_TMPDIRLEN=*dim;
   if( *dim > MUMPS_OOC_TMPDIR_MAX_LENGTH )
       MUMPS_OOC_STORE_TMPDIRLEN = MUMPS_OOC_TMPDIR_MAX_LENGTH;
@@ -176,27 +208,30 @@ MUMPS_LOW_LEVEL_INIT_TMPDIR(MUMPS_INT *dim, char *str, mumps_ftnlen l1)
 /*   mumps_io_last_file_opened=-1; */
 void MUMPS_CALL
 MUMPS_LOW_LEVEL_INIT_OOC_C(MUMPS_INT *_myid, MUMPS_INT *total_size_io, MUMPS_INT *size_element,
-                           MUMPS_INT *async, MUMPS_INT *k211, MUMPS_INT *nb_file_type,
-                           MUMPS_INT *flag_tab, MUMPS_INT *ierr)
+                           MUMPS_INT *async, MUMPS_INT *keep211, MUMPS_INT *nb_file_type,
+                           MUMPS_INT *flag_tab, MUMPS_INT *keep255, MUMPS_INT *ierr )
 {
-  char buf[64]; /* for error message */
-  int myid_loc,async_loc,ierr_loc,size_element_loc,nb_file_type_loc,*flag_tab_loc;
+  char buf[128]; /* for error message */
+  MUMPS_INT myid_loc,async_loc,size_element_loc,nb_file_type_loc,*flag_tab_loc;
+#if ! defined(MUMPS_WIN32) && ! defined(WITHOUT_PTHREAD)
+  MUMPS_INT ierr_loc;
+#endif
   long long total_size_io_loc;
-  int i;
-  myid_loc=(int)*_myid;
-  async_loc=(int)*async;
+  MUMPS_INT i;
+  myid_loc=(MUMPS_INT)*_myid;
+  async_loc=(MUMPS_INT)*async;
   total_size_io_loc=(long long)*total_size_io;
-  size_element_loc=(int)*size_element;
-  nb_file_type_loc=(int)*nb_file_type;
-  flag_tab_loc=(int *)malloc(nb_file_type_loc*sizeof(int));
+  size_element_loc=(MUMPS_INT)*size_element;
+  nb_file_type_loc=(MUMPS_INT)*nb_file_type;
+  flag_tab_loc=(MUMPS_INT *)malloc(nb_file_type_loc*sizeof(MUMPS_INT));
   for (i=0;i<nb_file_type_loc;i++){
-    flag_tab_loc[i]=(int)flag_tab[i];
+    flag_tab_loc[i]=(MUMPS_INT)flag_tab[i];
   }
 #if defined(MUMPS_WIN32)
   if(async_loc==IO_ASYNC_AIO||async_loc==IO_ASYNC_TH){
     mumps_io_is_init_called=0;
     *ierr=-92;
-    mumps_io_error((int)*ierr,"Error: Forbidden value of Async flag with _WIN32\n");
+    mumps_io_error((MUMPS_INT)*ierr,"Error: Forbidden value of Async flag with _WIN32\n");
     free(flag_tab_loc);
     return;
   }
@@ -205,23 +240,23 @@ MUMPS_LOW_LEVEL_INIT_OOC_C(MUMPS_INT *_myid, MUMPS_INT *total_size_io, MUMPS_INT
   if(async_loc==IO_ASYNC_TH){
     mumps_io_is_init_called=0;
     *ierr=-92;
-    mumps_io_error((int)*ierr,"Error: Forbidden value of Async flag with WITHOUT_PTHREAD\n");
+    mumps_io_error((MUMPS_INT)*ierr,"Error: Forbidden value of Async flag with WITHOUT_PTHREAD\n");
     free(flag_tab_loc);
     return;
   }
 #endif
   total_vol=0;
   mumps_io_flag_async=async_loc;
-  mumps_io_k211=(int)*k211;
+  mumps_io_k211=(MUMPS_INT)*keep211;
   if (MUMPS_OOC_STORE_PREFIXLEN==-1) {
     *ierr=-92;
-    mumps_io_error((int)*ierr,"Error: prefix not initialized\n");
+    mumps_io_error((MUMPS_INT)*ierr,"Error: prefix not initialized\n");
     free(flag_tab_loc);
     return;
   }
   if (MUMPS_OOC_STORE_TMPDIRLEN==-1) {
     *ierr=-92;
-    mumps_io_error((int)*ierr,"Error: tmpdir not initialized\n");
+    mumps_io_error((MUMPS_INT)*ierr,"Error: tmpdir not initialized\n");
     free(flag_tab_loc);
     return;
   }
@@ -236,7 +271,8 @@ MUMPS_LOW_LEVEL_INIT_OOC_C(MUMPS_INT *_myid, MUMPS_INT *total_size_io, MUMPS_INT
    */
   MUMPS_OOC_STORE_PREFIXLEN=-1;
   MUMPS_OOC_STORE_TMPDIRLEN=-1;
-  *ierr=(MUMPS_INT)mumps_init_file_structure(&myid_loc,&total_size_io_loc,&size_element_loc,&nb_file_type_loc,flag_tab_loc);
+  *ierr=(MUMPS_INT)mumps_init_file_structure(&myid_loc,&total_size_io_loc,&size_element_loc,
+		   &nb_file_type_loc,flag_tab_loc,*keep255);
   free(flag_tab_loc);
   if(*ierr<0){
     return;
@@ -247,7 +283,7 @@ MUMPS_LOW_LEVEL_INIT_OOC_C(MUMPS_INT *_myid, MUMPS_INT *total_size_io, MUMPS_INT
   if(async_loc){
     switch(async_loc){
     case IO_SYNC:
-      printf("mumps_low_level_init_ooc_c should not be called with strategy %d\n",mumps_io_flag_async);
+      printf("mumps_low_level_init_ooc_c should not be called with strategy %d\n",(int)mumps_io_flag_async);
       break;
 #if ! defined(MUMPS_WIN32) && ! defined(WITHOUT_PTHREAD)
     case IO_ASYNC_TH:
@@ -261,7 +297,7 @@ MUMPS_LOW_LEVEL_INIT_OOC_C(MUMPS_INT *_myid, MUMPS_INT *total_size_io, MUMPS_INT
     default:
       *ierr=-92;
       sprintf(buf,"Error: unknown I/O strategy : %d\n",(int)*async);
-      mumps_io_error((int)*ierr,buf);
+      mumps_io_error((MUMPS_INT)*ierr,buf);
       return;
     }
   }
@@ -283,19 +319,19 @@ MUMPS_LOW_LEVEL_WRITE_OOC_C(const MUMPS_INT * strat_IO,
                             MUMPS_INT * vaddr_int2,
                             MUMPS_INT * ierr)
 {
-  int ret_code=0;
+  MUMPS_INT ret_code=0;
   long long vaddr,block_size;
   char buf[64]; /* for error message */
-  int inode_loc,request_arg_loc,type_loc,ierr_loc,strat_IO_loc;
+  MUMPS_INT inode_loc,request_arg_loc,type_loc,ierr_loc,strat_IO_loc;
 #if ! defined(MUMPS_WIN32)
   struct timeval start_time,end_time;
   gettimeofday(&start_time,NULL);
 #endif
-  inode_loc=(int)*inode;
-  request_arg_loc=(int)*request_arg;
-  type_loc=(int)*type;
-  ierr_loc=(int)*ierr;
-  strat_IO_loc=(int)*strat_IO;
+  inode_loc=(MUMPS_INT)*inode;
+  request_arg_loc=(MUMPS_INT)*request_arg;
+  type_loc=(MUMPS_INT)*type;
+  ierr_loc=(MUMPS_INT)*ierr;
+  strat_IO_loc=(MUMPS_INT)*strat_IO;
 /* JY 27/2/08: initialize *request_arg to -1 (null request).
  * There were problems of uninitialized requests in the Fortran
  * code. For example when we use the synchronous version, there are
@@ -318,7 +354,7 @@ MUMPS_LOW_LEVEL_WRITE_OOC_C(const MUMPS_INT * strat_IO,
     default:
       *ierr=-91;
       sprintf(buf,"Error: unknown I/O strategy : %d\n",(int)*strat_IO);
-      mumps_io_error((int)*ierr,buf);
+      mumps_io_error((MUMPS_INT)*ierr,buf);
       return;
     }
   } else {
@@ -352,16 +388,16 @@ MUMPS_LOW_LEVEL_READ_OOC_C(const MUMPS_INT * strat_IO,
 {
   char buf[64]; /* for error message */
   long long vaddr,block_size;
-  int inode_loc,request_arg_loc,type_loc,ierr_loc,strat_IO_loc;
+  MUMPS_INT inode_loc,request_arg_loc,type_loc,ierr_loc,strat_IO_loc;
 #if ! defined(MUMPS_WIN32)
   struct timeval start_time,end_time;
   gettimeofday(&start_time,NULL);
 #endif
-  inode_loc=(int)*inode;
-  request_arg_loc=(int)*request_arg;
-  type_loc=(int)*type;
-  ierr_loc=(int)*ierr;
-  strat_IO_loc=(int)*strat_IO;  
+  inode_loc=(MUMPS_INT)*inode;
+  request_arg_loc=(MUMPS_INT)*request_arg;
+  type_loc=(MUMPS_INT)*type;
+  ierr_loc=(MUMPS_INT)*ierr;
+  strat_IO_loc=(MUMPS_INT)*strat_IO;  
   mumps_convert_2fint_to_longlong(vaddr_int1,vaddr_int2,&vaddr);
   mumps_convert_2fint_to_longlong(block_size_int1,block_size_int2,&block_size);
   if(mumps_io_flag_async){
@@ -369,14 +405,14 @@ MUMPS_LOW_LEVEL_READ_OOC_C(const MUMPS_INT * strat_IO,
 #if ! defined(MUMPS_WIN32) && ! defined(WITHOUT_PTHREAD)
       case IO_ASYNC_TH:
         mumps_async_read_th(&strat_IO_loc,address_block,block_size,&inode_loc,&request_arg_loc,&type_loc,vaddr,&ierr_loc);
-	*ierr=(MUMPS_INT)ierr_loc;
-	*request_arg=(MUMPS_INT)request_arg_loc;
+        *ierr=(MUMPS_INT)ierr_loc;
+        *request_arg=(MUMPS_INT)request_arg_loc;
         break;
 #endif
       default:
         *ierr=-91;
         sprintf(buf,"Error: unknown I/O strategy : %d\n",(int)*strat_IO);
-        mumps_io_error((int)*ierr,buf);
+        mumps_io_error((MUMPS_INT)*ierr,buf);
         return;
       }
   }else{
@@ -401,14 +437,14 @@ MUMPS_LOW_LEVEL_DIRECT_READ(void * address_block,
                             MUMPS_INT * vaddr_int2,
                             MUMPS_INT * ierr)
 {
-    /*  int ret_code=0; */
+    /*  MUMPS_INT ret_code=0; */
   long long vaddr,block_size;
-  int type_loc,ierr_loc;
+  MUMPS_INT type_loc,ierr_loc;
 #if ! defined(MUMPS_WIN32)
   struct timeval start_time,end_time;
   gettimeofday(&start_time,NULL);
 #endif
-  type_loc=(int)*type;
+  type_loc=(MUMPS_INT)*type;
   mumps_convert_2fint_to_longlong(vaddr_int1,vaddr_int2,&vaddr);
   mumps_convert_2fint_to_longlong(block_size_int1,block_size_int2,&block_size);
 #if ! defined(MUMPS_WIN32) && ! defined(WITHOUT_PTHREAD)
@@ -422,11 +458,8 @@ MUMPS_LOW_LEVEL_DIRECT_READ(void * address_block,
       if(*ierr<0){
          return;
       }
-    } else {
     }
 #if ! defined(MUMPS_WIN32)
-# if ! defined(WITHOUT_PTHREAD)
-# endif
   gettimeofday(&end_time,NULL);
   mumps_time_spent_in_sync=mumps_time_spent_in_sync+((double)end_time.tv_sec+((double)end_time.tv_usec/1000000))-((double)start_time.tv_sec+((double)start_time.tv_usec/1000000));
 #endif
@@ -438,9 +471,12 @@ void MUMPS_CALL
 MUMPS_CLEAN_IO_DATA_C(MUMPS_INT *myid,MUMPS_INT *step,MUMPS_INT *ierr)
 {
   char buf[64]; /* for error message */
-  int step_loc,myid_loc,ierr_loc;
-  step_loc=(int)*step;
-  myid_loc=(int)*myid;
+  MUMPS_INT step_loc,myid_loc;
+#if !defined(MUMPS_WIN32) && !defined(WITHOUT_PTHREAD)
+  MUMPS_INT ierr_loc;
+#endif
+  step_loc=(MUMPS_INT)*step;
+  myid_loc=(MUMPS_INT)*myid;
   if(!mumps_io_is_init_called){
     return;
   }
@@ -455,8 +491,8 @@ MUMPS_CLEAN_IO_DATA_C(MUMPS_INT *myid,MUMPS_INT *step,MUMPS_INT *ierr)
 #endif
   default:
     *ierr=-91;
-    sprintf(buf,"Error: unknown I/O strategy : %d\n",mumps_io_flag_async);
-    mumps_io_error((int)*ierr,buf);
+    sprintf(buf,"Error: unknown I/O strategy : %d\n",(int)mumps_io_flag_async);
+    mumps_io_error((MUMPS_INT)*ierr,buf);
     return;
   }
   mumps_free_file_pointers(&step_loc);
@@ -467,12 +503,12 @@ void MUMPS_CALL
 MUMPS_OOC_PRINT_STATS()
 {
 #if ! defined(MUMPS_WIN32)
-  printf("%d: total time spent in i/o mode = %lf\n",mumps_io_myid,mumps_time_spent_in_sync);
+  printf("%d: total time spent in i/o mode = %lf\n",(int)mumps_io_myid,mumps_time_spent_in_sync);
 #endif
-  printf("%d: Volume of read i/o = %lf\n",mumps_io_myid,read_op_vol);
-  printf("%d: Volume of write i/o = %lf\n",mumps_io_myid,write_op_vol);
+  printf("%d: Volume of read i/o = %lf\n",(int)mumps_io_myid,read_op_vol);
+  printf("%d: Volume of write i/o = %lf\n",(int)mumps_io_myid,write_op_vol);
   total_vol=total_vol+read_op_vol+write_op_vol;
-  printf("%d: Total i/o volume = %lf\n",mumps_io_myid,total_vol);
+  printf("%d: Total i/o volume = %lf\n",(int)mumps_io_myid,total_vol);
   return;
 }
 void MUMPS_CALL
@@ -491,23 +527,17 @@ MUMPS_GET_MAX_NB_REQ_C(MUMPS_INT *max,MUMPS_INT *ierr)
 #endif
   default:
     *ierr=-91;
-    sprintf(buf,"Error: unknown I/O strategy : %d\n",mumps_io_flag_async);
-    mumps_io_error((int)*ierr,buf);
+    sprintf(buf,"Error: unknown I/O strategy : %d\n",(int)mumps_io_flag_async);
+    mumps_io_error((MUMPS_INT)*ierr,buf);
     return;
   }
   return;
 }
 void MUMPS_CALL
-MUMPS_GET_MAX_FILE_SIZE_C(double * max_ooc_file_size)
-{
-  *max_ooc_file_size=(double)(MAX_FILE_SIZE);
-  return;
-}
-void MUMPS_CALL
 MUMPS_OOC_GET_NB_FILES_C(const MUMPS_INT *type,MUMPS_INT *nb_files)
 {
-  int type_loc,nb_files_loc;
-  type_loc=(int)*type;
+  MUMPS_INT type_loc,nb_files_loc;
+  type_loc=(MUMPS_INT)*type;
   mumps_io_get_nb_files(&nb_files_loc,&type_loc);
   *nb_files=(MUMPS_INT)nb_files_loc;
   return;
@@ -515,9 +545,9 @@ MUMPS_OOC_GET_NB_FILES_C(const MUMPS_INT *type,MUMPS_INT *nb_files)
 void MUMPS_CALL
 MUMPS_OOC_GET_FILE_NAME_C(MUMPS_INT *type,MUMPS_INT *indice,MUMPS_INT *length, char* name, mumps_ftnlen l1)
 {
-  int type_loc,indice_loc,length_loc;
-  type_loc=(int)*type;
-  indice_loc=(int)*indice;
+  MUMPS_INT type_loc,indice_loc,length_loc;
+  type_loc=(MUMPS_INT)*type;
+  indice_loc=(MUMPS_INT)*indice;
   mumps_io_get_file_name(&indice_loc,name,&length_loc,&type_loc);
   *length=(MUMPS_INT)length_loc;
   return;
@@ -526,22 +556,22 @@ void MUMPS_CALL
 MUMPS_OOC_SET_FILE_NAME_C(MUMPS_INT *type, MUMPS_INT *indice, MUMPS_INT *length, MUMPS_INT *ierr,
                           char* name, mumps_ftnlen l1)
 {
-  int type_loc,indice_loc,length_loc;
-  type_loc=(int)*type;
-  indice_loc=(int)*indice;
-  length_loc=(int)*length;
+  MUMPS_INT type_loc,indice_loc,length_loc;
+  type_loc=(MUMPS_INT)*type;
+  indice_loc=(MUMPS_INT)*indice;
+  length_loc=(MUMPS_INT)*length;
   *ierr=(MUMPS_INT)mumps_io_set_file_name(&indice_loc,name,&length_loc,&type_loc);
   return;
 }
 void MUMPS_CALL
 MUMPS_OOC_ALLOC_POINTERS_C(MUMPS_INT *nb_file_type,MUMPS_INT *dim,MUMPS_INT *ierr)
 {
-  int i=0;
-  int nb_file_type_loc, *dim_loc;
-  nb_file_type_loc=(int)*nb_file_type;  
-  dim_loc=(int *)malloc(*nb_file_type*sizeof(int));
+  MUMPS_INT i=0;
+  MUMPS_INT nb_file_type_loc, *dim_loc;
+  nb_file_type_loc=(MUMPS_INT)*nb_file_type;  
+  dim_loc=(MUMPS_INT *)malloc(*nb_file_type*sizeof(MUMPS_INT));
   for(i=0;i<nb_file_type_loc;i++){
-    dim_loc[i]=(int)dim[i];
+    dim_loc[i]=(MUMPS_INT)dim[i];
   }
   *ierr=(MUMPS_INT)mumps_io_alloc_pointers(&nb_file_type_loc,dim_loc);
   for(i=0;i<nb_file_type_loc;i++){
@@ -551,26 +581,26 @@ MUMPS_OOC_ALLOC_POINTERS_C(MUMPS_INT *nb_file_type,MUMPS_INT *dim,MUMPS_INT *ier
   return;
 }
 void MUMPS_CALL
-MUMPS_OOC_INIT_VARS_C(MUMPS_INT *myid_arg,
-                        MUMPS_INT *size_element,MUMPS_INT *async, MUMPS_INT *k211,
-                        MUMPS_INT *ierr)
+MUMPS_OOC_INIT_VARS_C(MUMPS_INT *myid_arg, MUMPS_INT *size_element, MUMPS_INT *async,
+                      MUMPS_INT *keep211, MUMPS_INT *keep255,
+                      MUMPS_INT *ierr)
 {
-  int size_element_loc,async_loc,myid_arg_loc;
+  MUMPS_INT size_element_loc,async_loc,myid_arg_loc;
 #if ! defined(MUMPS_WIN32) && ! defined(WITHOUT_PTHREAD)
   mumps_time_spent_in_sync=0;
 #endif
-  mumps_io_k211=(int)*k211;
-  size_element_loc=(int)*size_element;
-  async_loc=(int)*async;
-  myid_arg_loc=(int)*myid_arg;
-  *ierr=(MUMPS_INT)mumps_io_init_vars(&myid_arg_loc,&size_element_loc,&async_loc);
+  mumps_io_k211=(MUMPS_INT)*keep211;
+  size_element_loc=(MUMPS_INT)*size_element;
+  async_loc=(MUMPS_INT)*async;
+  myid_arg_loc=(MUMPS_INT)*myid_arg;
+  *ierr=(MUMPS_INT)mumps_io_init_vars(&myid_arg_loc,&size_element_loc,&async_loc,*keep255);
   return;
 }
 void MUMPS_CALL
 MUMPS_OOC_START_LOW_LEVEL(MUMPS_INT *ierr)
 {
   char buf[64]; /* for error message */
-  int ierr_loc;
+  MUMPS_INT ierr_loc;
   read_op_vol=0;
   write_op_vol=0;
   *ierr=(MUMPS_INT)mumps_io_open_files_for_read();
@@ -592,8 +622,8 @@ MUMPS_OOC_START_LOW_LEVEL(MUMPS_INT *ierr)
 #endif
     default:
       *ierr=-91;
-      sprintf(buf,"Error: unknown I/O strategy : %d\n",mumps_io_flag_async);
-      mumps_io_error((int)*ierr,buf);
+      sprintf(buf,"Error: unknown I/O strategy : %d\n",(int)mumps_io_flag_async);
+      mumps_io_error((MUMPS_INT)*ierr,buf);
       return;
     }
   }
@@ -603,7 +633,7 @@ MUMPS_OOC_START_LOW_LEVEL(MUMPS_INT *ierr)
 void MUMPS_CALL
 MUMPS_OOC_REMOVE_FILE_C(MUMPS_INT *ierr, char *name, mumps_ftnlen l1)
 {
-  char buf[296]; /* for error message, count 256 chars for name */
+  char buf[256]; /* for error message, count 256 chars for name */
   *ierr=(MUMPS_INT)remove(name);
   if(*ierr<0){
 #if ! defined(MUMPS_WIN32)
@@ -612,7 +642,7 @@ MUMPS_OOC_REMOVE_FILE_C(MUMPS_INT *ierr, char *name, mumps_ftnlen l1)
     sprintf(buf,"Unable to remove OOC file %s with return value %d",name,*ierr);
 #endif
     *ierr = -90;
-    mumps_io_sys_error((int)*ierr,buf);
+    mumps_io_sys_error((MUMPS_INT)*ierr,buf);
     return;
   }
   return;
@@ -639,7 +669,7 @@ MUMPS_OOC_IS_ASYNC_AVAIL(MUMPS_INT *flag)
  *   the corresponding fortran subroutines MUMPS_OOC_CONVERT_2INTTOVADDR
  *   and MUMPS_OOC_CONVERT_VADDRTO2INT
  */
-MUMPS_INLINE int
+MUMPS_INLINE MUMPS_INT
 mumps_convert_2fint_to_longlong( MUMPS_INT *short_int1, MUMPS_INT *short_int2,
                                  long long * long_int )
 {

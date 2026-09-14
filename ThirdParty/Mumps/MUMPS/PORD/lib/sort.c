@@ -18,8 +18,8 @@
 / insertion sort upwards (INTS, without keys)
 ******************************************************************************/
 void
-insertUpInts(int n, int *array)
-{ int i, j, v;
+insertUpInts(PORD_INT n, PORD_INT *array)
+{ PORD_INT i, j, v;
 
   for (i = 1; i < n; i++)
    { v = array[i]; j = i;
@@ -36,9 +36,9 @@ insertUpInts(int n, int *array)
 / insertion sort upwards (INTS, with static INT keys)
 ******************************************************************************/
 void
-insertUpIntsWithStaticIntKeys(int n, int *array, int *key)
-{ int   i, j, ke;
-  int   e;
+insertUpIntsWithStaticIntKeys(PORD_INT n, PORD_INT *array, PORD_INT *key)
+{ PORD_INT   i, j, ke;
+  PORD_INT   e;
 
   for (i = 1; i < n; i++)
    { e = array[i]; ke = key[e]; j = i;
@@ -55,8 +55,8 @@ insertUpIntsWithStaticIntKeys(int n, int *array, int *key)
 / insertion sort downwards (INTS, with static INT keys)
 ******************************************************************************/
 void
-insertDownIntsWithStaticFloatKeys(int n, int *array, FLOAT *key)
-{ int   i, j, e;
+insertDownIntsWithStaticFloatKeys(PORD_INT n, PORD_INT *array, FLOAT *key)
+{ PORD_INT   i, j, e;
   FLOAT ke;
 
   for (i = 1; i < n; i++)
@@ -74,8 +74,8 @@ insertDownIntsWithStaticFloatKeys(int n, int *array, FLOAT *key)
 / insertion sort upwards (FLOATS, with INT keys)
 ******************************************************************************/
 void
-insertUpFloatsWithIntKeys(int n, FLOAT *array, int *key)
-{ int   i, j, ke;
+insertUpFloatsWithIntKeys(PORD_INT n, FLOAT *array, PORD_INT *key)
+{ PORD_INT   i, j, ke;
   FLOAT e;
 
   for (i = 1; i < n; i++)
@@ -95,9 +95,9 @@ insertUpFloatsWithIntKeys(int n, FLOAT *array, int *key)
 / median-of-three quicksort upwards (INTS, without keys)
 ******************************************************************************/
 void
-qsortUpInts(int n, int *array, int *stack)
-{ register int i, j;
-  int t, l, m, r, p;
+qsortUpInts(PORD_INT n, PORD_INT *array, PORD_INT *stack)
+{ register PORD_INT i, j;
+  PORD_INT t, l, m, r, p;
 
   l = 0; r = n-1; p = 2;
   while (p > 0)
@@ -129,7 +129,7 @@ qsortUpInts(int n, int *array, int *stack)
     { r = stack[--p];
       l = stack[--p];
     }
-   if (THRES > 0) insertUpInts(n, array);
+  if (THRES > 0) insertUpInts(n, array);
 }
 
 
@@ -137,9 +137,9 @@ qsortUpInts(int n, int *array, int *stack)
 / median-of-three quicksort upwards (FLOATS, with INT keys)
 ******************************************************************************/
 void
-qsortUpFloatsWithIntKeys(int n, FLOAT *array, int *key, int *stack)
-{ register int i, j;
-  int   t, l, m, r, p;
+qsortUpFloatsWithIntKeys(PORD_INT n, FLOAT *array, PORD_INT *key, PORD_INT *stack)
+{ register PORD_INT i, j;
+  PORD_INT   t, l, m, r, p;
   FLOAT e;
 
   l = 0; r = n-1; p = 2;
@@ -175,7 +175,7 @@ qsortUpFloatsWithIntKeys(int n, FLOAT *array, int *key, int *stack)
     { r = stack[--p];
       l = stack[--p];
     }
-   if (THRES > 0) insertUpFloatsWithIntKeys(n, array, key);
+  if (THRES > 0) insertUpFloatsWithIntKeys(n, array, key);
 }
 
 
@@ -183,9 +183,9 @@ qsortUpFloatsWithIntKeys(int n, FLOAT *array, int *key, int *stack)
 / distribution counting (INTS, with static INT keys)
 ******************************************************************************/
 void
-distributionCounting(int n, int *node, int *key)
-{ register int i;
-  int *tmp, *count, minkey, maxkey, l, u, vk;
+distributionCounting(PORD_INT n, PORD_INT *node, PORD_INT *key)
+{ register PORD_INT i;
+  PORD_INT *tmp, *count, minkey, maxkey, l, u, vk;
 
   /* determine maximal and minimal key */
   minkey = MAX_INT;
@@ -197,8 +197,8 @@ distributionCounting(int n, int *node, int *key)
    }
   l = maxkey-minkey;
   /* printf("minkey %d, maxkey %d, range %d\n", minkey, maxkey, l); */
-  mymalloc(count, (l+1), int);
-  mymalloc(tmp, n, int);
+  mymalloc(count, (l+1), PORD_INT);
+  mymalloc(tmp, n, PORD_INT);
   for (i = 0; i <= l; i++)
     count[i] = 0;
 

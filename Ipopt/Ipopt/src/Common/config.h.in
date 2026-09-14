@@ -3,31 +3,10 @@
 /* Define to 1 if the inexact linear solver option is included */
 #undef BUILD_INEXACT
 
-/* Define to be the name of C-function for Inf check */
-#undef COIN_C_FINITE
+/* Define to 1 if your C++ compiler doesn't accept -c and -o together. */
+#undef CXX_NO_MINUS_C_MINUS_O
 
-/* Define to 1 if the ASL package is available */
-#undef COIN_HAS_ASL
-
-/* If defined, the BLAS Library is available. */
-#undef COIN_HAS_BLAS
-
-/* Define to 1 if the HSL package is available */
-#undef COIN_HAS_HSL
-
-/* If defined, the LAPACK Library is available. */
-#undef COIN_HAS_LAPACK
-
-/* Define to 1 if the Mumps package is available */
-#undef COIN_HAS_MUMPS
-
-/* Define to the debug sanity check level (0 is no test) */
-#undef COIN_IPOPT_CHECKLEVEL
-
-/* Define to the debug verbosity level (0 is no output) */
-#undef COIN_IPOPT_VERBOSITY
-
-/* Define to dummy `main' function (if any) required to link to the Fortran
+/* Define to dummy 'main' function (if any) required to link to the Fortran
    libraries. */
 #undef F77_DUMMY_MAIN
 
@@ -38,20 +17,11 @@
 /* As F77_FUNC, but for C identifiers containing underscores. */
 #undef F77_FUNC_
 
-/* Define if F77 and FC dummy `main' functions are identical. */
+/* Define to 1 if your Fortran compiler doesn't accept -c and -o together. */
+#undef F77_NO_MINUS_C_MINUS_O
+
+/* Define if F77 and FC dummy 'main' functions are identical. */
 #undef FC_DUMMY_MAIN_EQ_F77
-
-/* Define to the C type corresponding to Fortran INTEGER */
-#undef FORTRAN_INTEGER_TYPE
-
-/* Define to 1 if you have the <assert.h> header file. */
-#undef HAVE_ASSERT_H
-
-/* Define to 1 if you have the <cassert> header file. */
-#undef HAVE_CASSERT
-
-/* Define to 1 if you have the <cctype> header file. */
-#undef HAVE_CCTYPE
 
 /* Define to 1 if you have the <cfloat> header file. */
 #undef HAVE_CFLOAT
@@ -62,32 +32,8 @@
 /* Define to 1 if you have the <cmath> header file. */
 #undef HAVE_CMATH
 
-/* Define to 1 if you have the <cstdarg> header file. */
-#undef HAVE_CSTDARG
-
-/* Define to 1 if you have the <cstddef> header file. */
-#undef HAVE_CSTDDEF
-
-/* Define to 1 if you have the <cstdio> header file. */
-#undef HAVE_CSTDIO
-
-/* Define to 1 if you have the <cstdlib> header file. */
-#undef HAVE_CSTDLIB
-
-/* Define to 1 if you have the <cstring> header file. */
-#undef HAVE_CSTRING
-
-/* Define to 1 if you have the <ctime> header file. */
-#undef HAVE_CTIME
-
-/* Define to 1 if you have the <ctype.h> header file. */
-#undef HAVE_CTYPE_H
-
 /* Define to 1 if you have the <dlfcn.h> header file. */
 #undef HAVE_DLFCN_H
-
-/* Define to 1 if function drand48 is available */
-#undef HAVE_DRAND48
 
 /* Define to 1 if you have the <float.h> header file. */
 #undef HAVE_FLOAT_H
@@ -98,42 +44,11 @@
 /* Define to 1 if you have the <inttypes.h> header file. */
 #undef HAVE_INTTYPES_H
 
-/* Define to 1 if the linear solver loader should be compiled to allow dynamic
-   loading of shared libraries with linear solvers */
-#undef HAVE_LINEARSOLVERLOADER
-
 /* Define to 1 if you have the <math.h> header file. */
 #undef HAVE_MATH_H
 
-/* Define to 1 if you have the <memory.h> header file. */
-#undef HAVE_MEMORY_H
-
-/* Define to 1 if you have the `MPI_Initialized' function. */
+/* Define to 1 if you have the 'MPI_Initialized' function. */
 #undef HAVE_MPI_INITIALIZED
-
-/* Define to 1 if Pardiso is available */
-#undef HAVE_PARDISO
-
-/* Define to 1 if you are using Pardiso from MKL */
-#undef HAVE_PARDISO_MKL
-
-/* Define to 1 if you are not using at least a 4.0 version of Pardiso */
-#undef HAVE_PARDISO_OLDINTERFACE
-
-/* Define to 1 if you are using the parallel version of Pardiso */
-#undef HAVE_PARDISO_PARALLEL
-
-/* Define to 1 if function rand is available */
-#undef HAVE_RAND
-
-/* Define to 1 if you have the `snprintf' function. */
-#undef HAVE_SNPRINTF
-
-/* Define to 1 if you have the <stdarg.h> header file. */
-#undef HAVE_STDARG_H
-
-/* Define to 1 if you have the <stddef.h> header file. */
-#undef HAVE_STDDEF_H
 
 /* Define to 1 if you have the <stdint.h> header file. */
 #undef HAVE_STDINT_H
@@ -143,9 +58,6 @@
 
 /* Define to 1 if you have the <stdlib.h> header file. */
 #undef HAVE_STDLIB_H
-
-/* Define to 1 if function std::rand is available */
-#undef HAVE_STD__RAND
 
 /* Define to 1 if you have the <strings.h> header file. */
 #undef HAVE_STRINGS_H
@@ -159,47 +71,124 @@
 /* Define to 1 if you have the <sys/types.h> header file. */
 #undef HAVE_SYS_TYPES_H
 
-/* Define to 1 if you have the <time.h> header file. */
-#undef HAVE_TIME_H
-
 /* Define to 1 if you have the <unistd.h> header file. */
 #undef HAVE_UNISTD_H
 
-/* Define to 1 if va_copy is available */
-#undef HAVE_VA_COPY
-
-/* Define to 1 if you have the `vsnprintf' function. */
-#undef HAVE_VSNPRINTF
-
-/* Define to 1 if you have the <windows.h> header file. */
+/* Define to 1 if windows.h is available. */
 #undef HAVE_WINDOWS_H
 
+/* Library Visibility Attribute */
+#undef HSLLIB_EXPORT
+
+/* Library Visibility Attribute */
+#undef IPOPTAMPLINTERFACELIB_EXPORT
+
+/* Library Visibility Attribute */
+#undef IPOPTLIB_EXPORT
+
+/* Define to the debug sanity check level (0 is no test) */
+#undef IPOPT_CHECKLEVEL
+
+/* Define to be the name of C-function for Inf check */
+#undef IPOPT_C_FINITE
+
+/* Define to 1 if ASL is available. */
+#undef IPOPT_HAS_ASL
+
+/* Define to 1 if function drand48 is available */
+#undef IPOPT_HAS_DRAND48
+
+/* Define to 1 if function feenableexcept is available */
+#undef IPOPT_HAS_FEENABLEEXCEPT
+
+/* Define to 1 if function fopen_s is available */
+#undef IPOPT_HAS_FOPEN_S
+
+/* Define to 1 if function getenv_s is available */
+#undef IPOPT_HAS_GETENV_S
+
+/* Define to 1 if HSL is available. */
+#undef IPOPT_HAS_HSL
+
+/* Define to 1 if the LAPACK package is available */
+#undef IPOPT_HAS_LAPACK
+
+/* Define to 1 if the linear solver loader should be used to load libraries
+   with linear solvers at runtime */
+#undef IPOPT_HAS_LINEARSOLVERLOADER
+
+/* Define to 1 if Mumps is available. */
+#undef IPOPT_HAS_MUMPS
+
+/* Define to 1 if Pardiso from MKL is available */
+#undef IPOPT_HAS_PARDISO_MKL
+
+/* Define to 1 if function rand is available */
+#undef IPOPT_HAS_RAND
+
+/* Define to 1 if function sigaction is available */
+#undef IPOPT_HAS_SIGACTION
+
+/* Define to 1 if the Spral package is available */
+#undef IPOPT_HAS_SPRAL
+
+/* Define to 1 if function std::rand is available */
+#undef IPOPT_HAS_STD__RAND
+
+/* Define to 1 if va_copy is available */
+#undef IPOPT_HAS_VA_COPY
+
 /* Define to 1 if WSMP is available */
-#undef HAVE_WSMP
+#undef IPOPT_HAS_WSMP
 
-/* Define to 1 if you have the `_snprintf' function. */
-#undef HAVE__SNPRINTF
+/* Define to a macro mangling the given C identifier (in lower and upper
+   case). */
+#undef IPOPT_HSL_FUNC
 
-/* Define to 1 if you have the `_vsnprintf' function. */
-#undef HAVE__VSNPRINTF
+/* As IPOPT_HSL_FUNC, but for C identifiers containing underscores. */
+#undef IPOPT_HSL_FUNC_
 
-/* SVN revision number of project */
-#undef IPOPT_SVN_REV
+/* Define to 1 if Ipopt index type is int64_t */
+#undef IPOPT_INT64
+
+/* Define to a macro mangling the given C identifier (in lower and upper
+   case). */
+#undef IPOPT_LAPACK_FUNC
+
+/* As IPOPT_LAPACK_FUNC, but for C identifiers containing underscores. */
+#undef IPOPT_LAPACK_FUNC_
+
+/* Define to 1 if MPI should be initialized (finalized) when Ipopt library is
+   (un)loaded. */
+#undef IPOPT_MPIINIT
+
+/* Define to 1 if using single precision floating point */
+#undef IPOPT_SINGLE
+
+/* Define to the debug verbosity level (0 is no output) */
+#undef IPOPT_VERBOSITY
 
 /* Version number of project */
 #undef IPOPT_VERSION
 
-/* Major Version number of project */
+/* Major version number of project. */
 #undef IPOPT_VERSION_MAJOR
 
-/* Minor Version number of project */
+/* Minor version number of project. */
 #undef IPOPT_VERSION_MINOR
 
-/* Release Version number of project */
+/* Release version number of project. */
 #undef IPOPT_VERSION_RELEASE
 
-/* Name of package */
-#undef PACKAGE
+/* Define to a macro mangling the given C identifier (in lower and upper
+   case). */
+#undef IPOPT_WSMP_FUNC
+
+/* As IPOPT_WSMP_FUNC, but for C identifiers containing underscores. */
+#undef IPOPT_WSMP_FUNC_
+
+/* Define to the sub-directory where libtool stores uninstalled libraries. */
+#undef LT_OBJDIR
 
 /* Define to the address where bug reports for this package should be sent. */
 #undef PACKAGE_BUGREPORT
@@ -213,17 +202,25 @@
 /* Define to the one symbol short name of this package. */
 #undef PACKAGE_TARNAME
 
+/* Define to the home page for this package. */
+#undef PACKAGE_URL
+
 /* Define to the version of this package. */
 #undef PACKAGE_VERSION
 
-/* Set to extension for shared libraries in quotes. */
-#undef SHAREDLIBEXT
+/* Name of Pardiso library from pardiso-project.org */
+#undef PARDISO_LIB
 
-/* The size of a `int *', as computed by sizeof. */
+/* Library Visibility Attribute */
+#undef SIPOPTAMPLINTERFACELIB_EXPORT
+
+/* Library Visibility Attribute */
+#undef SIPOPTLIB_EXPORT
+
+/* The size of 'int *', as computed by sizeof. */
 #undef SIZEOF_INT_P
 
-/* Define to 1 if you have the ANSI C header files. */
+/* Define to 1 if all of the C89 standard headers exist (not just the ones
+   required in a freestanding environment). This macro is provided for
+   backward compatibility; new code need not use it. */
 #undef STDC_HEADERS
-
-/* Version number of package */
-#undef VERSION
