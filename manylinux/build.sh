@@ -17,11 +17,17 @@ elif [ -d "/base/manylinux/" ]; then
     newest_toolset=$(dnf list --available 'gcc-toolset-*-gcc-gfortran' 2>/dev/null \
       | awk '/^gcc-toolset-/{print $1}' | sort -t- -k3 -n -r | head -1)
     if [ -n "$newest_toolset" ]; then
-        dnf install -y "$newest_toolset"
         toolset_name=${newest_toolset%%-gcc-gfortran*}
+        # Install the matching C and C++ compiler subpackages too, not just
+        # -gcc-gfortran: otherwise plain-C code (e.g. ThirdParty/asl) can
+        # silently fall back to the image's own newer default gcc, producing
+        # object files whose LTO bytecode version doesn't match what this
+        # toolset's linker expects ("bytecode stream ... generated with LTO
+        # version X instead of the expected Y").
+        dnf install -y "$toolset_name-gcc" "$toolset_name-gcc-c++" "$newest_toolset"
         source /opt/rh/$toolset_name/enable
     else
-        dnf install -y gcc-gfortran
+        dnf install -y gcc gcc-c++ gcc-gfortran
     fi
     gfortran --version
     BUILD_DIR=/base/manylinux/linux-$ARCH/
@@ -29,7 +35,13 @@ elif [ -d "/base/manylinux/" ]; then
     mkdir -p $BUILD_DIR
     cd $BUILD_DIR
     cp -r /base /tmp/coin
-    cmake /tmp/coin/ -DARCH=$NBITS # -DNO_AVX_HARDWARE=1
+    # ThirdParty/asl enables LTO by default (USE_LTO option, ON for Release);
+    # turn it off - we don't need the optimization, and it's exactly this
+    # kind of cross-toolchain fragility (LTO bytecode is only compatible
+    # between matching compiler versions) that's easiest to just not depend on
+    # in a build that mixes gfortran/gcc/g++ across separately-installed
+    # packages.
+    cmake /tmp/coin/ -DARCH=$NBITS -DUSE_LTO=OFF # -DNO_AVX_HARDWARE=1
     make all coin-versions -j$NPROC
     make test || true
     make package
