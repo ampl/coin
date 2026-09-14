@@ -8,7 +8,7 @@ jobs:
   strategy:
     matrix:
       x64:
-        image: 'fdabrandao/manylinux64:coin_cmake-3.12.4'
+        image: 'quay.io/pypa/manylinux_2_28_x86_64'
         nbits: 64
   variables:
     upload: $(Build.ArtifactStagingDirectory)
