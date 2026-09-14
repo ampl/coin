@@ -7,9 +7,6 @@ jobs:
   pool: {vmImage: 'Ubuntu-latest'}
   strategy:
     matrix:
-      x86:
-        image: 'fdabrandao/manylinux32:coin_cmake-3.12.4'
-        nbits: 32
       x64:
         image: 'fdabrandao/manylinux64:coin_cmake-3.12.4'
         nbits: 64
@@ -47,7 +44,7 @@ jobs:
     - task: PublishBuildArtifacts@1
       inputs: {pathtoPublish: '$(Build.ArtifactStagingDirectory)'}
 - job: macos
-  pool: {vmImage: 'macOS-10.15'}
+  pool: {vmImage: 'macOS-latest'}
   variables:
     upload: $(Build.ArtifactStagingDirectory)
     MACOSX_DEPLOYMENT_TARGET: 10.9
@@ -83,12 +80,9 @@ jobs:
     - task: PublishBuildArtifacts@1
       inputs: {pathtoPublish: '$(Build.ArtifactStagingDirectory)'}
 - job: windows
-  pool: {vmImage: 'windows-2019'}
+  pool: {vmImage: 'windows-latest'}
   strategy:
     matrix:
-      x86:
-        arch: 'win32'
-        nbits: 32
       x64:
         arch: 'x64'
         nbits: 64
