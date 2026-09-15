@@ -43,6 +43,42 @@ jobs:
       displayName: Upload package
     - task: PublishBuildArtifacts@1
       inputs: {pathtoPublish: '$(Build.ArtifactStagingDirectory)'}
+# - job: macos_intel
+#   pool: {vmImage: 'macOS-latest'}
+#   variables:
+#     upload: $(Build.ArtifactStagingDirectory)
+#     MACOSX_DEPLOYMENT_TARGET: 10.9
+#   steps:
+#     - script: |
+#         brew install gcc
+#       displayName: Install gcc (installs gfortran too)
+#     - bash: |
+#         set -ex
+#         git submodule update --init --recursive --remote
+#         mkdir build
+#         cd build
+#         export FC="gfortran-15"
+#         cmake .. -DARCH=64 -DCMAKE_OSX_ARCHITECTURES="arm64;x86_64"
+#         make all coin-versions -j2
+#         make test || true
+#       displayName: Build package
+#     - bash: |
+#         set -ex
+#         UPLOAD_DIR=$UPLOAD/macos/
+#         mkdir -p $UPLOAD_DIR
+#         cp Cbc/Cbc/LICENSE $UPLOAD_DIR/coin-license.txt
+#         cp build/bin/{cbc,bonmin,couenne,ipopt} $UPLOAD_DIR
+#         cp build/coin-versions.txt $UPLOAD_DIR
+#         cd $UPLOAD_DIR
+#         tar czvf coin.macos64.`date +%Y%m%d`.tgz *
+#         mkdir -p $UPLOAD/{cbc,bonmin,couenne,ipopt}
+#         zip $UPLOAD/cbc/cbc-osx.zip cbc coin-license.txt
+#         zip $UPLOAD/bonmin/bonmin-osx.zip bonmin coin-license.txt
+#         zip $UPLOAD/couenne/couenne-osx.zip couenne coin-license.txt
+#         zip $UPLOAD/ipopt/ipopt-osx.zip ipopt coin-license.txt
+#       displayName: Upload package
+#     - task: PublishBuildArtifacts@1
+#       inputs: {pathtoPublish: '$(Build.ArtifactStagingDirectory)'}
 - job: macos
   pool:
     name: ARM64
@@ -50,16 +86,13 @@ jobs:
     upload: $(Build.ArtifactStagingDirectory)
     MACOSX_DEPLOYMENT_TARGET: 10.9
   steps:
-    - script: |
-        brew install gcc
-      displayName: Install gcc (installs gfortran too)
     - bash: |
         set -ex
         git submodule update --init --recursive --remote
         mkdir build
         cd build
         export FC="gfortran-15"
-        cmake .. -DARCH=64 -DCMAKE_OSX_ARCHITECTURES="arm64;x86_64"
+        cmake .. -DARCH=64 -DCMAKE_OSX_ARCHITECTURES="arm64"
         make all coin-versions -j2
         make test || true
       displayName: Build package
