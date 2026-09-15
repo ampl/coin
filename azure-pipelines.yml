@@ -44,7 +44,8 @@ jobs:
     - task: PublishBuildArtifacts@1
       inputs: {pathtoPublish: '$(Build.ArtifactStagingDirectory)'}
 - job: macos
-  pool: {vmImage: 'macOS-latest'}
+  pool:
+    name: ARM64
   variables:
     upload: $(Build.ArtifactStagingDirectory)
     MACOSX_DEPLOYMENT_TARGET: 10.9
