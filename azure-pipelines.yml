@@ -91,8 +91,8 @@ jobs:
         git submodule update --init --recursive --remote
         mkdir build
         cd build
-        export FC="gfortran-15"
-        cmake .. -DARCH=64 -DCMAKE_OSX_ARCHITECTURES="arm64"
+        export FC="gfortran-16"
+        cmake .. -DCMAKE_OSX_ARCHITECTURES="arm64"
         make all coin-versions -j2
         make test || true
       displayName: Build package
