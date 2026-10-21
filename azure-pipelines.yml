@@ -23,6 +23,7 @@ trigger:
 jobs:
 
 - job: windows
+  timeoutInMinutes: 120
   condition: ${{ eq(parameters.BUILD_Windows, true) }}
   pool:
     vmImage: windows-latest
@@ -42,6 +43,7 @@ jobs:
     artifact: ortools-$(ORTOOLS_TAG)-win64
 
 - job: linuxarm
+  timeoutInMinutes: 120
   condition: ${{ eq(parameters.BUILD_Linux, true) }}
   pool: ARM64
   steps:
@@ -61,6 +63,7 @@ jobs:
     artifact: ortools-$(ORTOOLS_TAG)-linux-arm64
 
 - job: linux
+  timeoutInMinutes: 120
   condition: ${{ eq(parameters.BUILD_Linux, true) }}
   pool: {vmImage: 'Ubuntu-22.04'}
   steps:
@@ -80,6 +83,7 @@ jobs:
     artifact: ortools-$(ORTOOLS_TAG)-linux-x64
 
 - job: macos
+  timeoutInMinutes: 120
   condition: ${{ eq(parameters.BUILD_MacOS, true) }}
   pool:
     vmImage: macOS-latest
