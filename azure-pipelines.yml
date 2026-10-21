@@ -1,0 +1,100 @@
+# OR-Tools (CP-SAT only) as static libraries, with the dependencies installed
+# with it (abseil, protobuf, ...); see ortools_cmake_options.sh for the options.
+parameters:
+- name: BUILD_MacOS
+  displayName: Build MacOS
+  type: boolean
+  default: true
+- name: BUILD_Windows
+  displayName: Build Windows
+  type: boolean
+  default: true
+- name: BUILD_Linux
+  displayName: Build Linux
+  type: boolean
+  default: true
+
+variables:
+  ORTOOLS_TAG: v9.15
+
+trigger:
+- ortools
+
+jobs:
+
+- job: windows
+  condition: ${{ eq(parameters.BUILD_Windows, true) }}
+  pool:
+    vmImage: windows-latest
+  steps:
+  - script: |
+      git clone --depth 1 --branch $(ORTOOLS_TAG) https://github.com/google/or-tools.git
+    displayName: Cloning repository
+  - bash: |
+      ./do_build_ortools_win.sh build 2 win64
+    displayName: Compiling and packaging OR-Tools
+  - task: CopyFiles@2
+    inputs:
+        sourceFolder: '$(Build.SourcesDirectory)/or-tools/build'
+        contents: '*.zip'
+        targetFolder: '$(Build.ArtifactStagingDirectory)'
+  - publish: '$(Build.ArtifactStagingDirectory)'
+    artifact: ortools-$(ORTOOLS_TAG)-win64
+
+- job: linuxarm
+  condition: ${{ eq(parameters.BUILD_Linux, true) }}
+  pool: ARM64
+  steps:
+  - script: |
+      git clone --depth 1 --branch $(ORTOOLS_TAG) https://github.com/google/or-tools.git
+    displayName: Cloning repository
+  - bash: |
+      chmod +x build_ortools.sh
+      ./build_ortools.sh arm64
+    displayName: Building and packaging ARM64
+  - task: CopyFiles@2
+    inputs:
+        sourceFolder: '$(Build.SourcesDirectory)/or-tools/build-arm64'
+        contents: '*.zip'
+        targetFolder: '$(Build.ArtifactStagingDirectory)/arm64'
+  - publish: '$(Build.ArtifactStagingDirectory)/arm64'
+    artifact: ortools-$(ORTOOLS_TAG)-linux-arm64
+
+- job: linux
+  condition: ${{ eq(parameters.BUILD_Linux, true) }}
+  pool: {vmImage: 'Ubuntu-22.04'}
+  steps:
+  - script: |
+      git clone --depth 1 --branch $(ORTOOLS_TAG) https://github.com/google/or-tools.git
+    displayName: Cloning repository
+  - bash: |
+      chmod +x build_ortools.sh
+      ./build_ortools.sh x64
+    displayName: Building and packaging Intel 64
+  - task: CopyFiles@2
+    inputs:
+        sourceFolder: '$(Build.SourcesDirectory)/or-tools/build-x64'
+        contents: '*.zip'
+        targetFolder: '$(Build.ArtifactStagingDirectory)/x64'
+  - publish: '$(Build.ArtifactStagingDirectory)/x64'
+    artifact: ortools-$(ORTOOLS_TAG)-linux-x64
+
+- job: macos
+  condition: ${{ eq(parameters.BUILD_MacOS, true) }}
+  pool:
+    vmImage: macOS-latest
+  steps:
+  - script: |
+      git clone --depth 1 --branch $(ORTOOLS_TAG) https://github.com/google/or-tools.git
+    displayName: Cloning repository
+  - bash: |
+      chmod +x do_build_ortools.sh
+      ./do_build_ortools.sh build 2 osx64 -DCMAKE_OSX_ARCHITECTURES='arm64;x86_64'
+    displayName: Compiling and packaging OR-Tools Universal
+  - task: CopyFiles@2
+    inputs:
+        sourceFolder: '$(Build.SourcesDirectory)/or-tools/build'
+        contents: '*.zip'
+        targetFolder: '$(Build.ArtifactStagingDirectory)'
+  - publish: '$(Build.ArtifactStagingDirectory)'
+    artifact: ortools-$(ORTOOLS_TAG)-osx64

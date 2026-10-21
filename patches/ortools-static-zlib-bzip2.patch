@@ -1,0 +1,25 @@
+diff --git a/cmake/dependencies/CMakeLists.txt b/cmake/dependencies/CMakeLists.txt
+index 6621130..29e32d8 100644
+--- a/cmake/dependencies/CMakeLists.txt
++++ b/cmake/dependencies/CMakeLists.txt
+@@ -75,7 +75,10 @@ if(BUILD_ZLIB)
+     SYSTEM
+   )
+   set(ZLIB_BUILD_EXAMPLES OFF)
++  # Static: no zlib1.dll to distribute with a static OR-Tools
++  set(BUILD_SHARED_LIBS OFF)
+   FetchContent_MakeAvailable(ZLIB)
++  set(BUILD_SHARED_LIBS ON)
+   list(POP_BACK CMAKE_MESSAGE_INDENT)
+   message(CHECK_PASS "fetched")
+ endif()
+@@ -99,6 +102,9 @@ if(BUILD_BZip2)
+   )
+   set(ENABLE_LIB_ONLY ON)
+   set(ENABLE_TESTS OFF)
++  # Static: no bz2.dll to distribute with a static OR-Tools
++  set(ENABLE_SHARED_LIB OFF)
++  set(ENABLE_STATIC_LIB ON)
+   FetchContent_MakeAvailable(BZip2)
+   list(POP_BACK CMAKE_MESSAGE_INDENT)
+   message(CHECK_PASS "fetched")

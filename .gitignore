@@ -1,0 +1,6 @@
+or-tools
+build
+build-*
+install
+dist
+*.zip
