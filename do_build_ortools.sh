@@ -35,14 +35,19 @@ git config --global --add safe.directory '*'
 
 cd or-tools
 
-# OR-Tools builds zlib and bzip2 as DLLs even for a static build; make them
-# static so that there are no DLLs for them to distribute
-patchfile=../patches/ortools-static-zlib-bzip2.patch
-if git apply --reverse --check --ignore-whitespace $patchfile 2>/dev/null; then
-    echo "$patchfile already applied"
-else
-    git apply --ignore-whitespace $patchfile
-fi
+# Patches to OR-Tools:
+#  - ortools-static-zlib-bzip2: OR-Tools builds zlib and bzip2 as DLLs even for
+#    a static build; make them static so that there are no DLLs to distribute
+#  - ortools-guard-gurobi: with Gurobi off (it needs MathOpt), v9.15 still
+#    calls the Gurobi functions, which breaks linking its own executables
+#    (solve, sat_runner, ...) on Windows
+for patchfile in ../patches/*.patch; do
+    if git apply --reverse --check --ignore-whitespace $patchfile 2>/dev/null; then
+        echo "$patchfile already applied"
+    else
+        git apply --ignore-whitespace $patchfile
+    fi
+done
 
 mkdir -p $builddirname
 installdir="$PWD/$builddirname/install"

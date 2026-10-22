@@ -1,0 +1,34 @@
+diff --git a/ortools/linear_solver/wrappers/model_builder_helper.cc b/ortools/linear_solver/wrappers/model_builder_helper.cc
+index 64e810c..b6a5790 100644
+--- a/ortools/linear_solver/wrappers/model_builder_helper.cc
++++ b/ortools/linear_solver/wrappers/model_builder_helper.cc
+@@ -550,11 +550,13 @@ bool ModelSolverHelper::SolverIsSupported() const {
+     return true;
+   }
+ #endif  // USE_HIGHS
++#if defined(USE_GUROBI)
+   if (solver_type_.value() ==
+           MPModelRequest::GUROBI_MIXED_INTEGER_PROGRAMMING ||
+       solver_type_.value() == MPModelRequest::GUROBI_LINEAR_PROGRAMMING) {
+     return GurobiIsCorrectlyInstalled();
+   }
++#endif  // defined(USE_GUROBI)
+   return false;
+ }
+ 
+@@ -607,6 +609,7 @@ void ModelSolverHelper::Solve(const ModelBuilderHelper& model) {
+       break;
+     }
+ #endif  // defined(USE_PDLP)
++#if defined(USE_GUROBI)
+     case MPModelRequest::
+         GUROBI_LINEAR_PROGRAMMING:  // ABSL_FALLTHROUGH_INTENDED
+     case MPModelRequest::GUROBI_MIXED_INTEGER_PROGRAMMING: {
+@@ -616,6 +619,7 @@ void ModelSolverHelper::Solve(const ModelBuilderHelper& model) {
+       }
+       break;
+     }
++#endif  // defined(USE_GUROBI)
+ #if defined(USE_HIGHS)
+     case MPModelRequest::HIGHS_LINEAR_PROGRAMMING:  // ABSL_FALLTHROUGH_INTENDED
+     case MPModelRequest::HIGHS_MIXED_INTEGER_PROGRAMMING: {
