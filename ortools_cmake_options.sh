@@ -10,6 +10,10 @@
 #  - other solvers off (SCIP, HiGHS, COIN-OR (CBC, CLP), GLPK, PDLP), also
 #    MathOpt and FlatZinc: none is used by CP-SAT, and some are already
 #    distributed (with other versions) by AMPL.
+#    Gurobi is NOT turned off: it is only loaded at runtime (nothing to
+#    link or distribute), and with USE_GUROBI=OFF v9.15's Windows link of
+#    the solve/sat_runner executables fails on the unresolved
+#    GurobiIsCorrectlyInstalled() / GurobiSolveProto().
 ORTOOLS_CMAKE_OPTIONS="\
  -DBUILD_DEPS=ON \
  -DINSTALL_BUILD_DEPS=ON \
@@ -25,5 +29,4 @@ ORTOOLS_CMAKE_OPTIONS="\
  -DUSE_COINOR=OFF \
  -DUSE_GLPK=OFF \
  -DUSE_PDLP=OFF \
- -DUSE_GUROBI=OFF \
  -DUSE_CPLEX=OFF"
