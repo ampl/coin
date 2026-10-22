@@ -9,8 +9,12 @@ parameters:
   displayName: Build Windows
   type: boolean
   default: true
-- name: BUILD_Linux
-  displayName: Build Linux
+- name: BUILD_LinuxX64
+  displayName: Build Linux x64
+  type: boolean
+  default: true
+- name: BUILD_LinuxARM64
+  displayName: Build Linux ARM64
   type: boolean
   default: true
 
@@ -44,7 +48,7 @@ jobs:
 
 - job: linuxarm
   timeoutInMinutes: 120
-  condition: ${{ eq(parameters.BUILD_Linux, true) }}
+  condition: ${{ eq(parameters.BUILD_LinuxARM64, true) }}
   pool: ARM64
   steps:
   - script: |
@@ -64,7 +68,7 @@ jobs:
 
 - job: linux
   timeoutInMinutes: 120
-  condition: ${{ eq(parameters.BUILD_Linux, true) }}
+  condition: ${{ eq(parameters.BUILD_LinuxX64, true) }}
   pool: {vmImage: 'Ubuntu-22.04'}
   steps:
   - script: |
