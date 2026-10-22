@@ -12,10 +12,14 @@
 #    Gurobi cannot be left on: it needs MathOpt. With it off, v9.15 still
 #    references the Gurobi functions unconditionally; see
 #    patches/ortools-guard-gurobi.patch.
+#  - ABSL_BUILD_MONOLITHIC_SHARED_LIBS=ON: OR-Tools builds Abseil as shared
+#    libraries; on Linux and macOS that is ~90 files, this makes it a single
+#    one (libabseil_dll.so.* / libabseil_dll.*.dylib). Windows already does that.
 ORTOOLS_CMAKE_OPTIONS="\
  -DBUILD_DEPS=ON \
  -DINSTALL_BUILD_DEPS=ON \
  -DBUILD_SHARED_LIBS=OFF \
+ -DABSL_BUILD_MONOLITHIC_SHARED_LIBS=ON \
  -DBUILD_CXX=ON \
  -DBUILD_SAMPLES=OFF \
  -DBUILD_EXAMPLES=OFF \
