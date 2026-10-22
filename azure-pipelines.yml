@@ -32,7 +32,7 @@ jobs:
       git clone --depth 1 --branch $(ORTOOLS_TAG) https://github.com/google/or-tools.git
     displayName: Cloning repository
   - bash: |
-      ./do_build_ortools_win.sh build 2 win64
+      ./do_build_ortools.sh build 2 win64
     displayName: Compiling and packaging OR-Tools
   - task: CopyFiles@2
     inputs:
