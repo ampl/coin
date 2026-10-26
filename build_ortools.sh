@@ -14,7 +14,7 @@ if [ "$1" = "x64" ]; then
 elif [ "$1" = "arm64" ]; then
     image="quay.io/pypa/manylinux_2_28_aarch64"
     builddir="build-arm64"
-    nthreads=4
+    nthreads=2      # 4 parallel compiles get cc1plus killed (out of memory)
     packagename="linux-arm64"
     user="-u $(id -u):$(id -g)"
 else
