@@ -34,7 +34,8 @@ jobs:
     - task: PublishBuildArtifacts@1
       inputs: {pathtoPublish: '$(Build.ArtifactStagingDirectory)'}
 - job: linuxarm64
-  pool: {vmImage: 'ubuntu-24.04-arm'}
+  pool:
+    name: ARM64
   variables:
     upload: $(Build.ArtifactStagingDirectory)
     image: 'quay.io/pypa/manylinux_2_28_aarch64'
@@ -136,7 +137,7 @@ jobs:
         git submodule update --init --recursive --remote
         mkdir build
         cd build
-        cmake .. -G "Visual Studio 17 2022" -A $ARCH -DARCH=$NBITS -DCOIN_DISABLE_WARNINGS=1 -DCMAKE_SH="CMAKE_SH-NOTFOUND"
+        cmake ..  -A $ARCH -DARCH=$NBITS -DCOIN_DISABLE_WARNINGS=1 -DCMAKE_SH="CMAKE_SH-NOTFOUND"
         cmake --build . -t ALL_BUILD coin-versions -j 2 --config Release
         ctest -C Release || true
         ls -l Release
