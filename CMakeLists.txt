@@ -1041,6 +1041,46 @@ if (COIN_HAS_ASL)
   endforeach ()
 endif ()
 
+# AMPL solver-distribution module: "cmake --build . --target ampl-module"
+# writes coin-module.<platform>.zip (Windows) / .tar.gz (everything else)
+# into <build>/ampl-module, containing bonmin, couenne and ipopt plus the
+# README/CHANGES files from docs/. See package/package-ampl.cmake for the
+# layout. Override the platform name with -DAMPL_PLATFORM=... (e.g.
+# macosarm64).
+if (NOT AMPL_PLATFORM)
+  if (WIN32)
+    set(AMPL_PLATFORM mswin64)
+  elseif (APPLE)
+    set(AMPL_PLATFORM macos64)
+  elseif (CMAKE_SYSTEM_PROCESSOR MATCHES "^(aarch64|arm64)$")
+    set(AMPL_PLATFORM linuxarm64)
+  else ()
+    set(AMPL_PLATFORM linux64)
+  endif ()
+endif ()
+set(AMPL_MODULE_SOLVERS )
+foreach (solver bonmin couenne ipopt)
+  if (TARGET ${solver}-executable)
+    set(AMPL_MODULE_SOLVERS ${AMPL_MODULE_SOLVERS} ${solver})
+  endif ()
+endforeach ()
+if (AMPL_MODULE_SOLVERS)
+  list(GET AMPL_MODULE_SOLVERS 0 first_solver)
+  string(REPLACE ";" "," ampl_solvers_arg "${AMPL_MODULE_SOLVERS}")
+  add_custom_target(ampl-module
+    COMMAND ${CMAKE_COMMAND}
+      -DPLATFORM=${AMPL_PLATFORM}
+      -DBINDIR=$<TARGET_FILE_DIR:${first_solver}-executable>
+      -DOUTDIR=${CMAKE_BINARY_DIR}/ampl-module
+      -DSOURCE_DIR=${CMAKE_SOURCE_DIR}
+      -DSOLVERS=${ampl_solvers_arg}
+      -P ${CMAKE_SOURCE_DIR}/package/package-ampl.cmake
+    VERBATIM)
+  foreach (solver ${AMPL_MODULE_SOLVERS})
+    add_dependencies(ampl-module ${solver}-executable)
+  endforeach ()
+endif ()
+
 install(TARGETS ${COIN_INSTALL_TARGETS}
   LIBRARY DESTINATION lib
   RUNTIME DESTINATION bin

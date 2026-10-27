@@ -27,20 +27,31 @@ jobs:
       displayName: Build package
     - bash: |
         set -ex
-        BUILD_DIR=manylinux/linux-intel$NBITS/
-        UPLOAD_DIR=$UPLOAD/linux-intel$NBITS/
-        mkdir -p $UPLOAD_DIR
-        cp Cbc/Cbc/LICENSE $UPLOAD_DIR/coin-license.txt
-        cp $BUILD_DIR/bin/{cbc,bonmin,couenne,ipopt} $UPLOAD_DIR
-        cp $BUILD_DIR/coin-versions.txt $UPLOAD_DIR
-        cd $UPLOAD_DIR
-        tar czvf coin.linux-intel$NBITS.`date +%Y%m%d`.tgz *
-        mkdir -p $UPLOAD/{cbc,bonmin,couenne,ipopt}
-        zip $UPLOAD/cbc/cbc-linux$NBITS.zip cbc coin-license.txt
-        zip $UPLOAD/bonmin/bonmin-linux$NBITS.zip bonmin coin-license.txt
-        zip $UPLOAD/couenne/couenne-linux$NBITS.zip couenne coin-license.txt
-        zip $UPLOAD/ipopt/ipopt-linux$NBITS.zip ipopt coin-license.txt
-      displayName: Upload package
+        # coin-module.linux64.tar.gz, produced by the ampl-module target
+        # (run inside the container by manylinux/build.sh).
+        cp manylinux/linux-intel$NBITS/ampl-module/* $UPLOAD/
+      displayName: Collect package
+    - task: PublishBuildArtifacts@1
+      inputs: {pathtoPublish: '$(Build.ArtifactStagingDirectory)'}
+- job: linuxarm64
+  pool: {vmImage: 'ubuntu-24.04-arm'}
+  variables:
+    upload: $(Build.ArtifactStagingDirectory)
+    image: 'quay.io/pypa/manylinux_2_28_aarch64'
+  steps:
+    - bash: |
+        set -ex
+        BUILD_DIR=manylinux/linux-arm64/
+        git submodule update --init --recursive --remote
+        mkdir -p $BUILD_DIR/*
+        rm -rf $BUILD_DIR/*
+        docker run -v `pwd`:/base --rm $IMAGE /base/manylinux/build.sh `nproc` arm64 64
+      displayName: Build package
+    - bash: |
+        set -ex
+        # coin-module.linuxarm64.tar.gz
+        cp manylinux/linux-arm64/ampl-module/* $UPLOAD/
+      displayName: Collect package
     - task: PublishBuildArtifacts@1
       inputs: {pathtoPublish: '$(Build.ArtifactStagingDirectory)'}
 # - job: macos_intel
@@ -95,22 +106,13 @@ jobs:
         cmake .. -DCMAKE_OSX_ARCHITECTURES="arm64"
         make all coin-versions -j2
         make test || true
+        make ampl-module
       displayName: Build package
     - bash: |
         set -ex
-        UPLOAD_DIR=$UPLOAD/macos/
-        mkdir -p $UPLOAD_DIR
-        cp Cbc/Cbc/LICENSE $UPLOAD_DIR/coin-license.txt
-        cp build/bin/{cbc,bonmin,couenne,ipopt} $UPLOAD_DIR
-        cp build/coin-versions.txt $UPLOAD_DIR
-        cd $UPLOAD_DIR
-        tar czvf coin.macos64.`date +%Y%m%d`.tgz *
-        mkdir -p $UPLOAD/{cbc,bonmin,couenne,ipopt}
-        zip $UPLOAD/cbc/cbc-osx.zip cbc coin-license.txt
-        zip $UPLOAD/bonmin/bonmin-osx.zip bonmin coin-license.txt
-        zip $UPLOAD/couenne/couenne-osx.zip couenne coin-license.txt
-        zip $UPLOAD/ipopt/ipopt-osx.zip ipopt coin-license.txt
-      displayName: Upload package
+        # coin-module.macos64.tar.gz
+        cp build/ampl-module/* $UPLOAD/
+      displayName: Collect package
     - task: PublishBuildArtifacts@1
       inputs: {pathtoPublish: '$(Build.ArtifactStagingDirectory)'}
 - job: windows
@@ -138,21 +140,12 @@ jobs:
         cmake --build . -t ALL_BUILD coin-versions -j 2 --config Release
         ctest -C Release || true
         ls -l Release
+        cmake --build . --target ampl-module --config Release
       displayName: Build package
     - bash: |
         set -ex
-        UPLOAD_DIR=$UPLOAD/win$NBITS/
-        mkdir -p $UPLOAD_DIR
-        cp Cbc/Cbc/LICENSE $UPLOAD_DIR/coin-license.txt
-        cp build/bin/Release/{cbc.exe,bonmin.exe,couenne.exe,ipopt.exe,libipoptfort.dll} $UPLOAD_DIR
-        cp build/coin-versions.txt $UPLOAD_DIR
-        cd $UPLOAD_DIR
-        7z a -tzip coin.mswin$NBITS.`date +%Y%m%d`.zip *
-        mkdir -p $UPLOAD/{cbc,bonmin,couenne,ipopt}
-        7z a -tzip $UPLOAD/cbc/cbc-win$NBITS.zip cbc.exe coin-license.txt
-        7z a -tzip $UPLOAD/bonmin/bonmin-win$NBITS.zip libipoptfort.dll bonmin.exe coin-license.txt
-        7z a -tzip $UPLOAD/couenne/couenne-win$NBITS.zip libipoptfort.dll couenne.exe coin-license.txt
-        7z a -tzip $UPLOAD/ipopt/ipopt-win$NBITS.zip ipopt.exe libipoptfort.dll coin-license.txt
-      displayName: Upload package
+        # coin-module.mswin64.zip
+        cp build/ampl-module/* $UPLOAD/
+      displayName: Collect package
     - task: PublishBuildArtifacts@1
       inputs: {pathtoPublish: '$(Build.ArtifactStagingDirectory)'}

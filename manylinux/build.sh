@@ -44,6 +44,7 @@ elif [ -d "/base/manylinux/" ]; then
     cmake /tmp/coin/ -DARCH=$NBITS -DUSE_LTO=OFF # -DNO_AVX_HARDWARE=1
     make all coin-versions -j$NPROC
     make test || true
+    make ampl-module
     make package
 else
     echo "Must be run inside a docker container."
