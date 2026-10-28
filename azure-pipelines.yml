@@ -108,14 +108,6 @@ jobs:
         keychain: 'temp'
         opensslPkcsArgs: '-legacy'
       displayName: Install Apple signing certificate
-    - task: InstallAppleCertificate@2
-      name: macosInstallerCertificate
-      inputs:
-        certSecureFile: 'Developer ID Installer- AMPL Optimization Inc. (ZNNBG5892S).p12'
-        certPwd: '$(certPwdInstaller)'
-        keychain: 'temp'
-        opensslPkcsArgs: '-legacy'
-      displayName: Install Apple Installer certificate
     - bash: |
         set -e
         security list-keychains -d user
