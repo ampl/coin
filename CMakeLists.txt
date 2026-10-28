@@ -603,15 +603,18 @@ target_link_libraries(Cbc-CInterfaceTest CbcSolver)
 add_coin_library(Cbc/Cbc NAME CbcSolver NOTESTS Cbc Cgl ${ASL_LIBRARIES})
 set_target_properties(CbcSolver PROPERTIES COMPILE_DEFINITIONS CBC_BUILD)
 
-add_executable(cbc-executable Cbc/Cbc/src/CoinSolve.cpp)
-set_target_properties(cbc-executable
-  PROPERTIES OUTPUT_NAME cbc IMPORT_PREFIX imp)
-target_link_libraries(cbc-executable CbcSolver)
+option(BUILD_CBC_EXECUTABLE "Build and package the standalone Cbc solver" OFF)
+if (BUILD_CBC_EXECUTABLE)
+  add_executable(cbc-executable Cbc/Cbc/src/CoinSolve.cpp)
+  set_target_properties(cbc-executable
+    PROPERTIES OUTPUT_NAME cbc IMPORT_PREFIX imp)
+  target_link_libraries(cbc-executable CbcSolver)
+  add_test(Cbc-unitTest bin/cbc -dirSample Cbc/Data/Sample -unitTest)
+endif ()
 
 add_to_folder(cbc/cgl Cgl)
 add_to_folder(cbc CoinUtils Clp OsiClp Osi Cbc OsiCbc CbcSolver cbc-executable)
 add_to_folder(test OsiCommonTests)
-add_test(Cbc-unitTest bin/cbc -dirSample Cbc/Data/Sample -unitTest)
 
 add_definitions(-DHAVE_CONFIG_H)
 
@@ -1073,6 +1076,8 @@ endforeach ()
 if (AMPL_MODULE_SOLVERS)
   list(GET AMPL_MODULE_SOLVERS 0 first_solver)
   string(REPLACE ";" "," ampl_solvers_arg "${AMPL_MODULE_SOLVERS}")
+  # The shell packaging entry point uses the same configured solver selection.
+  file(GENERATE OUTPUT "${CMAKE_BINARY_DIR}/coin-solvers.txt" CONTENT "${ampl_solvers_arg}\n")
   add_custom_target(ampl-module
     COMMAND ${CMAKE_COMMAND}
       -DPLATFORM=${AMPL_PLATFORM}

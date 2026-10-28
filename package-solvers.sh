@@ -22,8 +22,13 @@ BIN_DIR=$BUILD_DIR/bin
 case "$PLATFORM" in
     mswin*) BIN_DIR=$BIN_DIR/Release ;;
 esac
+SOLVERS=bonmin,couenne,ipopt
+if [ -f "$BUILD_DIR/coin-solvers.txt" ]; then
+    SOLVERS=$(cat "$BUILD_DIR/coin-solvers.txt")
+fi
 
 cmake "-DPLATFORM=$PLATFORM" "-DBINDIR=$BIN_DIR" "-DOUTDIR=$2" \
     "-DSOURCE_DIR=$SOURCE_DIR" "-DVERSIONS_FILE=$BUILD_DIR/coin-versions.txt" \
+    "-DSOLVERS=$SOLVERS" \
     "-DSIGNING_IDENTITY=$SIGNING_IDENTITY" "-DSIGNING_KEYCHAIN=${MACOS_SIGNING_KEYCHAIN:-}" \
     -P "$SOURCE_DIR/package/package-ampl.cmake"

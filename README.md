@@ -1,6 +1,6 @@
 ### COIN-OR projects with CMake build support
 
-- [Cbc](https://projects.coin-or.org/Cbc) version 2.10.13 ([source](Cbc/))
+- [Cbc](https://projects.coin-or.org/Cbc) version 2.10.13, built as a dependency of Bonmin and Couenne ([source](Cbc/))
 - [Ipopt](https://projects.coin-or.org/Ipopt) version 3.14.20 ([source](Ipopt/))
 - [Bonmin](https://projects.coin-or.org/Bonmin) version 1.8.9 ([source](Bonmin/))
 - [Couenne](https://projects.coin-or.org/Couenne) version 0.5.8 ([source](Couenne/))
@@ -10,7 +10,7 @@ GitHub repository: https://github.com/ampl/coin/
 
 All binaries are available for download from the [AMPL Open-Source Downloads](http://ampl.com/dl/open/) page.
 
-The build pipeline packages each solver separately as
+By default, the build pipeline builds and packages Bonmin, Couenne, and Ipopt separately as
 `solvers-<solver>.<platform>.<YYYYMMDD>.tar.gz`, for example
 `solvers-ipopt.linux-intel64.20261027.tar.gz`. Each archive contains one
 solver executable, `docs/coin-license.txt`, `docs/coin-versions.txt`, and
@@ -46,8 +46,14 @@ a separate step.
 
 The platform labels used by the pipeline are `linux-intel64`, `linux-arm64`,
 `macos-arm64`, and `mswin64`. Each archive uses the newest `YYYYMMDD` heading in its solver changelog
-as its package version, independent of the build date. Cbc has no changelog
-and uses the newest release date among the solver changelogs.
+as its package version, independent of the build date.
+
+The standalone Cbc solver is disabled by default. To enable it, configure with
+`-DBUILD_CBC_EXECUTABLE=ON`; set it back to `OFF` to disable it again. The Cbc
+libraries required by Bonmin and Couenne are always built. Both packaging entry
+points follow the configured solver list in `<build>/coin-solvers.txt`, so old
+Cbc binaries left in the build directory are excluded when the option is off.
+When enabled, Cbc packages use the newest release date among the solver changelogs.
 
 The CMake target `ampl-module` also creates these individual archives in
 `<build>/ampl-module`, building the solver executables and version metadata
