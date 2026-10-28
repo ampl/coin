@@ -14,7 +14,8 @@ The build pipeline packages each solver separately as
 `solvers-<solver>.<platform>.<YYYYMMDD>.tar.gz`, for example
 `solvers-ipopt.linux-intel64.20261028.tar.gz`. Each archive contains one
 solver executable, the license, `coin-versions.txt`, and
-`docs/README.<solver>.txt` and `docs/CHANGES.<solver>.md`. Changelogs use dated `YYYYMMDD` sections with
+`docs/README.<solver>.txt`. Bonmin, Couenne, and Ipopt packages also contain
+`docs/CHANGES.<solver>.md`. Changelogs use dated `YYYYMMDD` sections with
 bullet lists of updates, newest first. Windows archives
 for Ipopt, Bonmin, and Couenne also include `libipoptfort.dll`.
 

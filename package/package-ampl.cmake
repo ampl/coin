@@ -27,8 +27,10 @@ endif ()
 set(required "${VERSIONS_FILE}" "${SOURCE_DIR}/Cbc/Cbc/LICENSE")
 foreach (solver ${SOLVERS})
   list(APPEND required "${BINDIR}/${solver}${exe}"
-    "${SOURCE_DIR}/docs/README.${solver}.txt"
-    "${SOURCE_DIR}/docs/CHANGES.${solver}.md")
+    "${SOURCE_DIR}/docs/README.${solver}.txt")
+  if (NOT solver STREQUAL "cbc")
+    list(APPEND required "${SOURCE_DIR}/docs/CHANGES.${solver}.md")
+  endif ()
   if (exe AND NOT solver STREQUAL "cbc")
     list(APPEND required "${BINDIR}/libipoptfort.dll")
   endif ()
@@ -49,9 +51,12 @@ foreach (solver ${SOLVERS})
   if (exe AND NOT solver STREQUAL "cbc")
     file(COPY "${BINDIR}/libipoptfort.dll" DESTINATION "${stage}")
   endif ()
-  file(COPY "${SOURCE_DIR}/docs/README.${solver}.txt"
-    "${SOURCE_DIR}/docs/CHANGES.${solver}.md" DESTINATION "${stage}/docs"
+  file(COPY "${SOURCE_DIR}/docs/README.${solver}.txt" DESTINATION "${stage}/docs"
     FILE_PERMISSIONS OWNER_READ OWNER_WRITE GROUP_READ WORLD_READ)
+  if (EXISTS "${SOURCE_DIR}/docs/CHANGES.${solver}.md")
+    file(COPY "${SOURCE_DIR}/docs/CHANGES.${solver}.md" DESTINATION "${stage}/docs"
+      FILE_PERMISSIONS OWNER_READ OWNER_WRITE GROUP_READ WORLD_READ)
+  endif ()
   configure_file("${SOURCE_DIR}/Cbc/Cbc/LICENSE" "${stage}/coin-license.txt" COPYONLY)
   configure_file("${VERSIONS_FILE}" "${stage}/coin-versions.txt" COPYONLY)
 
