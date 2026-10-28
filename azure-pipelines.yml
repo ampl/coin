@@ -106,6 +106,7 @@ jobs:
         certSecureFile: 'Developer ID Application- AMPL Optimization Inc. (ZNNBG5892S).p12'
         certPwd: '$(certPwd)'
         keychain: 'temp'
+        opensslPkcsArgs: '-legacy'
       displayName: Install Apple signing certificate
     - bash: |
         set -e
