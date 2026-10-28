@@ -29,8 +29,10 @@ function(read_package_version changelog output)
 endfunction()
 
 set(exe "")
+set(archive_extension "tar.gz")
 if (PLATFORM MATCHES "^mswin")
   set(exe ".exe")
+  set(archive_extension "zip")
 endif ()
 
 set(package_prefix "")
@@ -131,10 +133,15 @@ foreach (solver ${SOLVERS})
       message(FATAL_ERROR "No solver changelog release versions found")
     endif ()
   endif ()
-  set(archive "${OUTDIR}/${package_prefix}solvers-${solver}.${PLATFORM}.${package_version}.tar.gz")
+  set(archive "${OUTDIR}/${package_prefix}solvers-${solver}.${PLATFORM}.${package_version}.${archive_extension}")
+  if (archive_extension STREQUAL "zip")
+    set(archive_options cf "${archive}" --format=zip)
+  else ()
+    set(archive_options czf "${archive}" --format=gnutar)
+  endif ()
   execute_process(
     COMMAND ${CMAKE_COMMAND} -E env COPYFILE_DISABLE=1
-      ${CMAKE_COMMAND} -E tar czf "${archive}" --format=gnutar .
+      ${CMAKE_COMMAND} -E tar ${archive_options} .
     WORKING_DIRECTORY "${stage}"
     RESULT_VARIABLE result)
   file(REMOVE_RECURSE "${stage}")
