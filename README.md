@@ -26,6 +26,8 @@ and verifies every signature before archiving. Signing operates on staged copies
 The Azure pipeline needs access to the Secure File
 `Developer ID Application- AMPL Optimization Inc. (ZNNBG5892S).p12` and the secret
 `certPwd` variable, as in `misc`.
+It imports Apple's Developer ID intermediate certificates into the temporary
+keychain and validates the signing certificate chain before signing.
 
 To package an existing build locally, run:
 
