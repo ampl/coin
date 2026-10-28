@@ -1,0 +1,101 @@
+# Create individual solver archives from existing binaries.
+# Called by the ampl-module target and package-solvers.sh.
+cmake_minimum_required(VERSION 3.10)
+
+foreach (var PLATFORM BINDIR OUTDIR SOURCE_DIR VERSIONS_FILE)
+  if (NOT DEFINED ${var})
+    message(FATAL_ERROR "package-ampl.cmake: -D${var}=... is required")
+  endif ()
+  if (NOT var STREQUAL "PLATFORM")
+    get_filename_component(${var} "${${var}}" ABSOLUTE)
+  endif ()
+endforeach ()
+if (NOT DEFINED SOLVERS)
+  set(SOLVERS cbc,bonmin,couenne,ipopt)
+endif ()
+string(REPLACE "," ";" SOLVERS "${SOLVERS}")
+# Release versions come from changelogs, never from the build date.
+function(read_package_version changelog output)
+  file(READ "${changelog}" contents)
+  if (NOT contents MATCHES "## ([0-9]+)[\r\n]")
+    message(FATAL_ERROR "Missing dated release heading in ${changelog}")
+  endif ()
+  set(version "${CMAKE_MATCH_1}")
+  string(LENGTH "${version}" length)
+  if (NOT length EQUAL 8)
+    message(FATAL_ERROR "Release heading must use YYYYMMDD in ${changelog}")
+  endif ()
+  set(${output} "${version}" PARENT_SCOPE)
+endfunction()
+
+# Cbc has no changelog; use the newest documented solver release date.
+set(default_package_version "")
+file(GLOB changelogs "${SOURCE_DIR}/docs/CHANGES.*.md")
+foreach (changelog ${changelogs})
+  read_package_version("${changelog}" version)
+  if (version STRGREATER default_package_version)
+    set(default_package_version "${version}")
+  endif ()
+endforeach ()
+if (NOT default_package_version)
+  message(FATAL_ERROR "No solver changelog release versions found")
+endif ()
+
+set(exe "")
+if (PLATFORM MATCHES "^mswin")
+  set(exe ".exe")
+endif ()
+
+# Validate all inputs before writing any release archives.
+set(required "${VERSIONS_FILE}" "${SOURCE_DIR}/Cbc/Cbc/LICENSE")
+foreach (solver ${SOLVERS})
+  list(APPEND required "${BINDIR}/${solver}${exe}"
+    "${SOURCE_DIR}/docs/README.${solver}.txt")
+  if (NOT solver STREQUAL "cbc")
+    list(APPEND required "${SOURCE_DIR}/docs/CHANGES.${solver}.md")
+  endif ()
+  if (exe AND NOT solver STREQUAL "cbc")
+    list(APPEND required "${BINDIR}/libipoptfort.dll")
+  endif ()
+endforeach ()
+foreach (path ${required})
+  if (NOT EXISTS "${path}")
+    message(FATAL_ERROR "Missing ${path}")
+  endif ()
+endforeach ()
+
+file(MAKE_DIRECTORY "${OUTDIR}")
+foreach (solver ${SOLVERS})
+  set(stage "${OUTDIR}/.stage-${solver}")
+  file(REMOVE_RECURSE "${stage}")
+  file(MAKE_DIRECTORY "${stage}/docs")
+  # Preserve executable permissions; distribute documentation as readable files.
+  file(COPY "${BINDIR}/${solver}${exe}" DESTINATION "${stage}")
+  if (exe AND NOT solver STREQUAL "cbc")
+    file(COPY "${BINDIR}/libipoptfort.dll" DESTINATION "${stage}")
+  endif ()
+  file(COPY "${SOURCE_DIR}/docs/README.${solver}.txt" DESTINATION "${stage}/docs"
+    FILE_PERMISSIONS OWNER_READ OWNER_WRITE GROUP_READ WORLD_READ)
+  if (EXISTS "${SOURCE_DIR}/docs/CHANGES.${solver}.md")
+    file(COPY "${SOURCE_DIR}/docs/CHANGES.${solver}.md" DESTINATION "${stage}/docs"
+      FILE_PERMISSIONS OWNER_READ OWNER_WRITE GROUP_READ WORLD_READ)
+  endif ()
+  configure_file("${SOURCE_DIR}/Cbc/Cbc/LICENSE" "${stage}/coin-license.txt" COPYONLY)
+  configure_file("${VERSIONS_FILE}" "${stage}/coin-versions.txt" COPYONLY)
+
+  set(package_version "${default_package_version}")
+  if (EXISTS "${SOURCE_DIR}/docs/CHANGES.${solver}.md")
+    read_package_version("${SOURCE_DIR}/docs/CHANGES.${solver}.md" package_version)
+  endif ()
+  set(archive "${OUTDIR}/solvers-${solver}.${PLATFORM}.${package_version}.tar.gz")
+  execute_process(
+    COMMAND ${CMAKE_COMMAND} -E env COPYFILE_DISABLE=1
+      ${CMAKE_COMMAND} -E tar czf "${archive}" --format=gnutar .
+    WORKING_DIRECTORY "${stage}"
+    RESULT_VARIABLE result)
+  file(REMOVE_RECURSE "${stage}")
+  if (NOT result EQUAL 0)
+    message(FATAL_ERROR "Failed to create ${archive}")
+  endif ()
+  message(STATUS "Created ${archive}")
+endforeach ()

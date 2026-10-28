@@ -20,7 +20,7 @@ jobs:
     - bash: |
         set -ex
         BUILD_DIR=manylinux/linux-intel$NBITS/
-        git submodule update --init --recursive --remote
+        git submodule update --init --recursive
         mkdir -p $BUILD_DIR/*
         rm -rf $BUILD_DIR/*
         docker run -v `pwd`:/base --rm $IMAGE /base/manylinux/build.sh `nproc` intel$NBITS $NBITS
@@ -29,6 +29,28 @@ jobs:
         set -ex
         BUILD_DIR=manylinux/linux-intel$NBITS/
         bash package-solvers.sh "$BUILD_DIR" "$UPLOAD/linux-intel$NBITS" "linux-intel$NBITS"
+      displayName: Upload package
+    - task: PublishBuildArtifacts@1
+      inputs: {pathtoPublish: '$(Build.ArtifactStagingDirectory)'}
+- job: linuxarm64
+  pool:
+    name: ARM64
+  variables:
+    upload: $(Build.ArtifactStagingDirectory)
+    image: 'quay.io/pypa/manylinux_2_28_aarch64'
+  steps:
+    - bash: |
+        set -ex
+        BUILD_DIR=manylinux/linux-arm64/
+        git submodule update --init --recursive
+        mkdir -p "$BUILD_DIR"
+        rm -rf "$BUILD_DIR"/*
+        NPROC=$(getconf _NPROCESSORS_ONLN)
+        docker run -v "$(pwd):/base" --rm "$IMAGE" /base/manylinux/build.sh "$NPROC" arm64 64
+      displayName: Build package
+    - bash: |
+        set -ex
+        bash package-solvers.sh manylinux/linux-arm64 "$UPLOAD/linux-arm64" linux-arm64
       displayName: Upload package
     - task: PublishBuildArtifacts@1
       inputs: {pathtoPublish: '$(Build.ArtifactStagingDirectory)'}
@@ -43,7 +65,7 @@ jobs:
 #       displayName: Install gcc (installs gfortran too)
 #     - bash: |
 #         set -ex
-#         git submodule update --init --recursive --remote
+#         git submodule update --init --recursive
 #         mkdir build
 #         cd build
 #         export FC="gfortran-15"
@@ -66,7 +88,7 @@ jobs:
   steps:
     - bash: |
         set -ex
-        git submodule update --init --recursive --remote
+        git submodule update --init --recursive
         mkdir build
         cd build
         export FC="gfortran-16"
@@ -99,7 +121,7 @@ jobs:
       displayName: Install mingw
     - bash: |
         set -ex
-        git submodule update --init --recursive --remote
+        git submodule update --init --recursive
         mkdir build
         cd build
         cmake .. -G "Visual Studio 17 2022" -A $ARCH -DARCH=$NBITS -DCOIN_DISABLE_WARNINGS=1 -DCMAKE_SH="CMAKE_SH-NOTFOUND"

@@ -1,4 +1,5 @@
 #!/bin/bash
+set -e
 
 if [ "$#" -eq 0 ]; then
     echo "Usage: $0 nproc arch [32|64]"
@@ -44,7 +45,7 @@ elif [ -d "/base/manylinux/" ]; then
     cmake /tmp/coin/ -DARCH=$NBITS -DUSE_LTO=OFF # -DNO_AVX_HARDWARE=1
     make all coin-versions -j$NPROC
     make test || true
-    make package
+    make ampl-module
 else
     echo "Must be run inside a docker container."
 fi

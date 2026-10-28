@@ -31,6 +31,10 @@ endif ()
 
 project(COIN)
 
+if (COIN_HAS_ASL)
+  include(package/verify-versions.cmake)
+endif ()
+
 # Replaces libraries in CMAKE_${lang}_IMPLICIT_LINK_LIBRARIES whose
 # names appear in ARGN with their static counterparts.
 # Usage:
@@ -1038,6 +1042,50 @@ if (COIN_HAS_ASL)
         COMMAND $<TARGET_FILE:${solver}-executable> -v -AMPL >> ${COIN_VERSIONS_FILE})
       add_dependencies(coin-versions ${solver}-executable)
     endif ()
+  endforeach ()
+endif ()
+
+# AMPL solver-distribution module: "cmake --build . --target ampl-module"
+# writes individual solvers-<solver>.<platform>.<YYYYMMDD>.tar.gz archives
+# into <build>/ampl-module, with per-solver docs from docs/.
+# Override the platform name with -DAMPL_PLATFORM=... .
+if (NOT AMPL_PLATFORM)
+  if (WIN32)
+    set(AMPL_PLATFORM mswin64)
+  elseif (APPLE)
+    set(AMPL_PLATFORM macos-arm64)
+    if (NOT CMAKE_OSX_ARCHITECTURES STREQUAL "arm64" AND
+        NOT CMAKE_SYSTEM_PROCESSOR MATCHES "^(aarch64|arm64)$")
+      set(AMPL_PLATFORM macos64)
+    endif ()
+  elseif (CMAKE_SYSTEM_PROCESSOR MATCHES "^(aarch64|arm64)$")
+    set(AMPL_PLATFORM linux-arm64)
+  else ()
+    set(AMPL_PLATFORM linux-intel64)
+  endif ()
+endif ()
+set(AMPL_MODULE_SOLVERS )
+foreach (solver cbc bonmin couenne ipopt)
+  if (TARGET ${solver}-executable)
+    set(AMPL_MODULE_SOLVERS ${AMPL_MODULE_SOLVERS} ${solver})
+  endif ()
+endforeach ()
+if (AMPL_MODULE_SOLVERS)
+  list(GET AMPL_MODULE_SOLVERS 0 first_solver)
+  string(REPLACE ";" "," ampl_solvers_arg "${AMPL_MODULE_SOLVERS}")
+  add_custom_target(ampl-module
+    COMMAND ${CMAKE_COMMAND}
+      -DPLATFORM=${AMPL_PLATFORM}
+      -DBINDIR=$<TARGET_FILE_DIR:${first_solver}-executable>
+      -DOUTDIR=${CMAKE_BINARY_DIR}/ampl-module
+      -DSOURCE_DIR=${CMAKE_SOURCE_DIR}
+      -DVERSIONS_FILE=${CMAKE_BINARY_DIR}/coin-versions.txt
+      -DSOLVERS=${ampl_solvers_arg}
+      -P ${CMAKE_SOURCE_DIR}/package/package-ampl.cmake
+    VERBATIM)
+  add_dependencies(ampl-module coin-versions)
+  foreach (solver ${AMPL_MODULE_SOLVERS})
+    add_dependencies(ampl-module ${solver}-executable)
   endforeach ()
 endif ()
 

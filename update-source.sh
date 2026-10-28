@@ -4,7 +4,7 @@ mkdir -p tmp
 cd tmp
 rm -rf *
 
-Cbc_VERSION=2.10.8
+Cbc_VERSION=2.10.13
 Clp_VERSION=1.17.7
 CoinUtils_VERSION=2.11.6
 Osi_VERSION=0.108.7
