@@ -12,7 +12,7 @@ All binaries are available for download from the [AMPL Open-Source Downloads](ht
 
 The build pipeline packages each solver separately as
 `solvers-<solver>.<platform>.<YYYYMMDD>.tar.gz`, for example
-`solvers-ipopt.linux-intel64.20261028.tar.gz`. Each archive contains one
+`solvers-ipopt.linux-intel64.20261027.tar.gz`. Each archive contains one
 solver executable, the license, `coin-versions.txt`, and
 `docs/README.<solver>.txt`. Bonmin, Couenne, and Ipopt packages also contain
 `docs/CHANGES.<solver>.md`. Changelogs use dated `YYYYMMDD` sections with
@@ -26,8 +26,9 @@ bash package-solvers.sh build dist linux-intel64
 ```
 
 The platform labels used by the pipeline are `linux-intel64`, `linux-arm64`,
-`macos-arm64`, and `mswin64`. An optional fourth argument sets the package date; otherwise
-the script uses the current date.
+`macos-arm64`, and `mswin64`. Each archive uses the newest `YYYYMMDD` heading in its solver changelog
+as its package version, independent of the build date. Cbc has no changelog
+and uses the newest release date among the solver changelogs.
 
 The CMake target `ampl-module` also creates these individual archives in
 `<build>/ampl-module`, building the solver executables and version metadata
