@@ -80,8 +80,8 @@ foreach (solver ${SOLVERS})
     file(COPY "${SOURCE_DIR}/docs/CHANGES.${solver}.md" DESTINATION "${stage}/docs"
       FILE_PERMISSIONS OWNER_READ OWNER_WRITE GROUP_READ WORLD_READ)
   endif ()
-  configure_file("${SOURCE_DIR}/Cbc/Cbc/LICENSE" "${stage}/coin-license.txt" COPYONLY)
-  configure_file("${VERSIONS_FILE}" "${stage}/coin-versions.txt" COPYONLY)
+  configure_file("${SOURCE_DIR}/Cbc/Cbc/LICENSE" "${stage}/docs/coin-license.txt" COPYONLY)
+  configure_file("${VERSIONS_FILE}" "${stage}/docs/coin-versions.txt" COPYONLY)
 
   set(package_version "${default_package_version}")
   if (EXISTS "${SOURCE_DIR}/docs/CHANGES.${solver}.md")
