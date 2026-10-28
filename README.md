@@ -1,10 +1,10 @@
 ### COIN-OR projects with CMake build support
 
-- [Cbc](https://projects.coin-or.org/Cbc) version 2.10.5 ([source](Cbc/))
+- [Cbc](https://projects.coin-or.org/Cbc) version 2.10.13 ([source](Cbc/))
 - [Ipopt](https://projects.coin-or.org/Ipopt) version 3.14.20 ([source](Ipopt/))
-- [Bonmin](https://projects.coin-or.org/Bonmin) version 1.8.8 ([source](Bonmin/))
+- [Bonmin](https://projects.coin-or.org/Bonmin) version 1.8.9 ([source](Bonmin/))
 - [Couenne](https://projects.coin-or.org/Couenne) version 0.5.8 ([source](Couenne/))
-- [ASL](http://netlib.org/ampl/) version 20211109 ([source](https://github.com/ampl/asl))
+- [ASL](http://netlib.org/ampl/) version 20260109 ([source](https://github.com/ampl/asl))
 
 GitHub repository: https://github.com/ampl/coin/
 
@@ -32,3 +32,7 @@ the script uses the current date.
 The CMake target `ampl-module` also creates these individual archives in
 `<build>/ampl-module`, building the solver executables and version metadata
 first. Set `-DAMPL_PLATFORM=...` when configuring to override the platform label.
+
+Release builds use the pinned ASL submodule revision. CMake checks solver,
+MUMPS, and ASL source versions against the latest changelog entries and
+fails configuration if they differ.

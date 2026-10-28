@@ -31,6 +31,10 @@ endif ()
 
 project(COIN)
 
+if (COIN_HAS_ASL)
+  include(package/verify-versions.cmake)
+endif ()
+
 # Replaces libraries in CMAKE_${lang}_IMPLICIT_LINK_LIBRARIES whose
 # names appear in ARGN with their static counterparts.
 # Usage:
