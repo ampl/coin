@@ -107,7 +107,13 @@ jobs:
         certPwd: '$(certPwd)'
         keychain: 'temp'
         opensslPkcsArgs: '-legacy'
+        setUpPartitionIdACLForPrivateKey: true
       displayName: Install Apple signing certificate
+    - bash: bash package/prepare-signing-keychain.sh
+      env:
+        MACOS_SIGNING_IDENTITY: $(macosCertificate.signingIdentity)
+        MACOS_SIGNING_KEYCHAIN: $(macosCertificate.keychainPath)
+      displayName: Install and verify Apple signing certificate chain
     - bash: |
         set -e
         security list-keychains -d user
@@ -118,10 +124,10 @@ jobs:
       displayName: Inspect macOS signing keychains
     - bash: |
         set -e
-        unset MACOS_SIGNING_KEYCHAIN
         bash package-solvers.sh build "$UPLOAD/macos" macos-arm64 --signed
       env:
         MACOS_SIGNING_IDENTITY: $(macosCertificate.signingIdentity)
+        MACOS_SIGNING_KEYCHAIN: $(macosCertificate.keychainPath)
       displayName: Sign and package macOS solvers
     - task: PublishBuildArtifacts@1
       inputs: {pathtoPublish: '$(Build.ArtifactStagingDirectory)'}
