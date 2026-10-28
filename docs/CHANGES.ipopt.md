@@ -1,9 +1,6 @@
-# Summary of recent updates to Ipopt
+Summary of recent updates to Ipopt for AMPL
+===========================================
 
-## 20261028
-
-- First individual release of the Ipopt solver module.
-- Solver version: Ipopt 3.14.20.
 
 ## 20261027
 - Updated to Ipopt 3.14.20 (from 3.12.13).

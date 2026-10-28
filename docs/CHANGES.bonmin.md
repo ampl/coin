@@ -1,9 +1,6 @@
-# Summary of recent updates to Bonmin
+Summary of recent updates to Bonmin for AMPL
+============================================
 
-## 20261028
-
-- First individual release of the Bonmin solver module.
-- Solver version: Bonmin 1.8.9.
 
 ## 20261027
 - Bonmin 1.8.9, now using Cbc 2.10.13 and Ipopt 3.14.20 (previously
