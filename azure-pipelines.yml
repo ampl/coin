@@ -27,10 +27,9 @@ jobs:
       displayName: Build package
     - bash: |
         set -ex
-        # coin-module.linux64.tar.gz, produced by the ampl-module target
-        # (run inside the container by manylinux/build.sh).
-        cp manylinux/linux-intel$NBITS/ampl-module/* $UPLOAD/
-      displayName: Collect package
+        BUILD_DIR=manylinux/linux-intel$NBITS/
+        bash package-solvers.sh "$BUILD_DIR" "$UPLOAD/linux-intel$NBITS" "linux-intel$NBITS"
+      displayName: Upload package
     - task: PublishBuildArtifacts@1
       inputs: {pathtoPublish: '$(Build.ArtifactStagingDirectory)'}
 - job: linuxarm64
@@ -44,15 +43,15 @@ jobs:
         set -ex
         BUILD_DIR=manylinux/linux-arm64/
         git submodule update --init --recursive --remote
-        mkdir -p $BUILD_DIR/*
-        rm -rf $BUILD_DIR/*
-        docker run -v `pwd`:/base --rm $IMAGE /base/manylinux/build.sh `nproc` arm64 64
+        mkdir -p "$BUILD_DIR"
+        rm -rf "$BUILD_DIR"/*
+        NPROC=$(getconf _NPROCESSORS_ONLN)
+        docker run -v "$(pwd):/base" --rm "$IMAGE" /base/manylinux/build.sh "$NPROC" arm64 64
       displayName: Build package
     - bash: |
         set -ex
-        # coin-module.linuxarm64.tar.gz
-        cp manylinux/linux-arm64/ampl-module/* $UPLOAD/
-      displayName: Collect package
+        bash package-solvers.sh manylinux/linux-arm64 "$UPLOAD/linux-arm64" linux-arm64
+      displayName: Upload package
     - task: PublishBuildArtifacts@1
       inputs: {pathtoPublish: '$(Build.ArtifactStagingDirectory)'}
 # - job: macos_intel
@@ -76,18 +75,7 @@ jobs:
 #       displayName: Build package
 #     - bash: |
 #         set -ex
-#         UPLOAD_DIR=$UPLOAD/macos/
-#         mkdir -p $UPLOAD_DIR
-#         cp Cbc/Cbc/LICENSE $UPLOAD_DIR/coin-license.txt
-#         cp build/bin/{cbc,bonmin,couenne,ipopt} $UPLOAD_DIR
-#         cp build/coin-versions.txt $UPLOAD_DIR
-#         cd $UPLOAD_DIR
-#         tar czvf coin.macos64.`date +%Y%m%d`.tgz *
-#         mkdir -p $UPLOAD/{cbc,bonmin,couenne,ipopt}
-#         zip $UPLOAD/cbc/cbc-osx.zip cbc coin-license.txt
-#         zip $UPLOAD/bonmin/bonmin-osx.zip bonmin coin-license.txt
-#         zip $UPLOAD/couenne/couenne-osx.zip couenne coin-license.txt
-#         zip $UPLOAD/ipopt/ipopt-osx.zip ipopt coin-license.txt
+#         bash package-solvers.sh build "$UPLOAD/macos" macos64
 #       displayName: Upload package
 #     - task: PublishBuildArtifacts@1
 #       inputs: {pathtoPublish: '$(Build.ArtifactStagingDirectory)'}
@@ -107,17 +95,16 @@ jobs:
         cmake .. -DCMAKE_OSX_ARCHITECTURES="arm64"
         make all coin-versions -j2
         make test || true
-        make ampl-module
       displayName: Build package
     - bash: |
         set -ex
-        # coin-module.macos64.tar.gz
-        cp build/ampl-module/* $UPLOAD/
-      displayName: Collect package
+        bash package-solvers.sh build "$UPLOAD/macos" macos-arm64
+      displayName: Upload package
     - task: PublishBuildArtifacts@1
       inputs: {pathtoPublish: '$(Build.ArtifactStagingDirectory)'}
 - job: windows
-  pool: {vmImage: 'windows-latest'}
+  # Match the Visual Studio 17 2022 generator used below.
+  pool: {vmImage: 'windows-2022'}
   strategy:
     matrix:
       x64:
@@ -137,16 +124,14 @@ jobs:
         git submodule update --init --recursive --remote
         mkdir build
         cd build
-        cmake ..  -A $ARCH -DARCH=$NBITS -DCOIN_DISABLE_WARNINGS=1 -DCMAKE_SH="CMAKE_SH-NOTFOUND"
+        cmake .. -G "Visual Studio 17 2022" -A $ARCH -DARCH=$NBITS -DCOIN_DISABLE_WARNINGS=1 -DCMAKE_SH="CMAKE_SH-NOTFOUND"
         cmake --build . -t ALL_BUILD coin-versions -j 2 --config Release
         ctest -C Release || true
         ls -l Release
-        cmake --build . --target ampl-module --config Release
       displayName: Build package
     - bash: |
         set -ex
-        # coin-module.mswin64.zip
-        cp build/ampl-module/* $UPLOAD/
-      displayName: Collect package
+        bash package-solvers.sh build "$UPLOAD/win$NBITS" "mswin$NBITS"
+      displayName: Upload package
     - task: PublishBuildArtifacts@1
       inputs: {pathtoPublish: '$(Build.ArtifactStagingDirectory)'}

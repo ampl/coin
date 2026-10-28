@@ -1,4 +1,5 @@
 #!/bin/bash
+set -e
 
 if [ "$#" -eq 0 ]; then
     echo "Usage: $0 nproc arch [32|64]"
@@ -45,7 +46,6 @@ elif [ -d "/base/manylinux/" ]; then
     make all coin-versions -j$NPROC
     make test || true
     make ampl-module
-    make package
 else
     echo "Must be run inside a docker container."
 fi
