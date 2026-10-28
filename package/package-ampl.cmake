@@ -46,6 +46,26 @@ if (PLATFORM MATCHES "^mswin")
   set(exe ".exe")
 endif ()
 
+set(package_prefix "")
+if (SIGNING_IDENTITY)
+  if (NOT CMAKE_HOST_APPLE OR NOT PLATFORM MATCHES "^macos")
+    message(FATAL_ERROR "Code signing requires macOS binaries on a macOS host")
+  endif ()
+  if (SIGNING_IDENTITY STREQUAL "-")
+    message(FATAL_ERROR "Signed release packages require a certificate identity")
+  endif ()
+  find_program(CODESIGN_EXECUTABLE codesign)
+  if (NOT CODESIGN_EXECUTABLE)
+    message(FATAL_ERROR "Cannot find codesign")
+  endif ()
+  set(package_prefix "signed-")
+  set(signing_options --entitlements "${SOURCE_DIR}/package/entitlements.plist"
+    --verbose=4 --force --sign "${SIGNING_IDENTITY}" --options=runtime --timestamp)
+  if (SIGNING_KEYCHAIN)
+    list(APPEND signing_options --keychain "${SIGNING_KEYCHAIN}")
+  endif ()
+endif ()
+
 # Validate all inputs before writing any release archives.
 set(required "${VERSIONS_FILE}" "${SOURCE_DIR}/Cbc/Cbc/LICENSE")
 foreach (solver ${SOLVERS})
@@ -66,7 +86,7 @@ endforeach ()
 
 file(MAKE_DIRECTORY "${OUTDIR}")
 foreach (solver ${SOLVERS})
-  set(stage "${OUTDIR}/.stage-${solver}")
+  set(stage "${OUTDIR}/.stage-${package_prefix}${solver}")
   file(REMOVE_RECURSE "${stage}")
   file(MAKE_DIRECTORY "${stage}/docs")
   # Preserve executable permissions; distribute documentation as readable files.
@@ -83,11 +103,33 @@ foreach (solver ${SOLVERS})
   configure_file("${SOURCE_DIR}/Cbc/Cbc/LICENSE" "${stage}/docs/coin-license.txt" COPYONLY)
   configure_file("${VERSIONS_FILE}" "${stage}/docs/coin-versions.txt" COPYONLY)
 
+  if (SIGNING_IDENTITY)
+    # Sign only the staged copy, preserving the original build and packages.
+    execute_process(COMMAND /usr/bin/xattr -c "${stage}/${solver}"
+      RESULT_VARIABLE result)
+    if (NOT result EQUAL 0)
+      message(FATAL_ERROR "Cannot clear extended attributes on ${solver}")
+    endif ()
+    execute_process(
+      COMMAND "${CODESIGN_EXECUTABLE}" ${signing_options}
+        --identifier "com.ampl.solvers.${solver}" "${stage}/${solver}"
+      RESULT_VARIABLE result)
+    if (NOT result EQUAL 0)
+      message(FATAL_ERROR "Code signing failed for ${solver}")
+    endif ()
+    execute_process(
+      COMMAND "${CODESIGN_EXECUTABLE}" --verify --strict --verbose=2 "${stage}/${solver}"
+      RESULT_VARIABLE result)
+    if (NOT result EQUAL 0)
+      message(FATAL_ERROR "Code signature verification failed for ${solver}")
+    endif ()
+  endif ()
+
   set(package_version "${default_package_version}")
   if (EXISTS "${SOURCE_DIR}/docs/CHANGES.${solver}.md")
     read_package_version("${SOURCE_DIR}/docs/CHANGES.${solver}.md" package_version)
   endif ()
-  set(archive "${OUTDIR}/solvers-${solver}.${PLATFORM}.${package_version}.tar.gz")
+  set(archive "${OUTDIR}/${package_prefix}solvers-${solver}.${PLATFORM}.${package_version}.tar.gz")
   execute_process(
     COMMAND ${CMAKE_COMMAND} -E env COPYFILE_DISABLE=1
       ${CMAKE_COMMAND} -E tar czf "${archive}" --format=gnutar .

@@ -19,11 +19,30 @@ solver executable, `docs/coin-license.txt`, `docs/coin-versions.txt`, and
 bullet lists of updates, newest first. Windows archives
 for Ipopt, Bonmin, and Couenne also include `libipoptfort.dll`.
 
+The macOS job also produces `signed-solvers-<solver>.<platform>.<YYYYMMDD>.tar.gz`
+archives containing code-signed binaries. It uses the same Developer ID Application
+certificate and entitlements as `misc`, with hardened runtime and a secure timestamp,
+and verifies every signature before archiving. Signing operates on staged copies.
+The Azure pipeline needs access to the Secure File
+`Developer ID Application- AMPL Optimization Inc. (ZNNBG5892S).p12` and the secret
+`certPwd` variable, as in `misc`.
+
 To package an existing build locally, run:
 
 ```sh
 bash package-solvers.sh build dist linux-intel64
 ```
+
+On macOS, with the signing certificate installed in your keychain:
+
+```sh
+bash package-solvers.sh build dist macos-arm64 --signed
+```
+
+The default identity is `Developer ID Application: AMPL Optimization Inc. (ZNNBG5892S)`.
+Set `MACOS_SIGNING_IDENTITY` to override it and `MACOS_SIGNING_KEYCHAIN` to select
+a particular keychain. These archives contain signed binaries; notarization is
+a separate step.
 
 The platform labels used by the pipeline are `linux-intel64`, `linux-arm64`,
 `macos-arm64`, and `mswin64`. Each archive uses the newest `YYYYMMDD` heading in its solver changelog

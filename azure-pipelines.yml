@@ -100,6 +100,20 @@ jobs:
         set -ex
         bash package-solvers.sh build "$UPLOAD/macos" macos-arm64
       displayName: Upload package
+    - task: InstallAppleCertificate@2
+      name: macosCertificate
+      inputs:
+        certSecureFile: 'Developer ID Application- AMPL Optimization Inc. (ZNNBG5892S).p12'
+        certPwd: '$(certPwd)'
+        keychain: 'temp'
+      displayName: Install Apple signing certificate
+    - bash: |
+        set -e
+        bash package-solvers.sh build "$UPLOAD/macos" macos-arm64 --signed
+      env:
+        MACOS_SIGNING_IDENTITY: $(macosCertificate.signingIdentity)
+        MACOS_SIGNING_KEYCHAIN: $(macosCertificate.keychainPath)
+      displayName: Sign and package macOS solvers
     - task: PublishBuildArtifacts@1
       inputs: {pathtoPublish: '$(Build.ArtifactStagingDirectory)'}
 - job: windows
