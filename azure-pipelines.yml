@@ -81,7 +81,8 @@ jobs:
     - task: PublishBuildArtifacts@1
       inputs: {pathtoPublish: '$(Build.ArtifactStagingDirectory)'}
 - job: windows
-  pool: {vmImage: 'windows-latest'}
+  # Match the Visual Studio 17 2022 generator used below.
+  pool: {vmImage: 'windows-2022'}
   strategy:
     matrix:
       x64:
