@@ -98,7 +98,7 @@ jobs:
       displayName: Build package
     - bash: |
         set -ex
-        bash package-solvers.sh build "$UPLOAD" macos-arm64
+        bash package-solvers.sh build "$UPLOAD" macos64
       displayName: Upload package
     - task: InstallAppleCertificate@2
       name: macosCertificate
@@ -124,7 +124,7 @@ jobs:
       displayName: Inspect macOS signing keychains
     - bash: |
         set -e
-        bash package-solvers.sh build "$UPLOAD" macos-arm64 --signed
+        bash package-solvers.sh build "$UPLOAD" macos64 --signed
       env:
         MACOS_SIGNING_IDENTITY: $(macosCertificate.signingIdentity)
         MACOS_SIGNING_KEYCHAIN: $(macosCertificate.keychainPath)
