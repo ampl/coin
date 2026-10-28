@@ -11,7 +11,7 @@ jobs:
         image: 'quay.io/pypa/manylinux_2_28_x86_64'
         nbits: 64
   variables:
-    upload: $(Build.ArtifactStagingDirectory)
+    upload: $(Build.ArtifactStagingDirectory)/release/coin
   steps:
     - bash: |
         lscpu | grep -E '^Thread|^Core|^Socket|^CPU\('
@@ -28,15 +28,15 @@ jobs:
     - bash: |
         set -ex
         BUILD_DIR=manylinux/linux-intel$NBITS/
-        bash package-solvers.sh "$BUILD_DIR" "$UPLOAD/linux-intel$NBITS" "linux-intel$NBITS"
+        bash package-solvers.sh "$BUILD_DIR" "$UPLOAD" "linux-intel$NBITS"
       displayName: Upload package
     - task: PublishBuildArtifacts@1
-      inputs: {pathtoPublish: '$(Build.ArtifactStagingDirectory)'}
+      inputs: {pathtoPublish: '$(Build.ArtifactStagingDirectory)/release'}
 - job: linuxarm64
   pool:
     name: ARM64
   variables:
-    upload: $(Build.ArtifactStagingDirectory)
+    upload: $(Build.ArtifactStagingDirectory)/release/coin
     image: 'quay.io/pypa/manylinux_2_28_aarch64'
   steps:
     - bash: |
@@ -50,14 +50,14 @@ jobs:
       displayName: Build package
     - bash: |
         set -ex
-        bash package-solvers.sh manylinux/linux-arm64 "$UPLOAD/linux-arm64" linux-arm64
+        bash package-solvers.sh manylinux/linux-arm64 "$UPLOAD" linux-arm64
       displayName: Upload package
     - task: PublishBuildArtifacts@1
-      inputs: {pathtoPublish: '$(Build.ArtifactStagingDirectory)'}
+      inputs: {pathtoPublish: '$(Build.ArtifactStagingDirectory)/release'}
 # - job: macos_intel
 #   pool: {vmImage: 'macOS-latest'}
 #   variables:
-#     upload: $(Build.ArtifactStagingDirectory)
+#     upload: $(Build.ArtifactStagingDirectory)/release/coin
 #     MACOSX_DEPLOYMENT_TARGET: 10.9
 #   steps:
 #     - script: |
@@ -75,15 +75,15 @@ jobs:
 #       displayName: Build package
 #     - bash: |
 #         set -ex
-#         bash package-solvers.sh build "$UPLOAD/macos" macos64
+#         bash package-solvers.sh build "$UPLOAD" macos64
 #       displayName: Upload package
 #     - task: PublishBuildArtifacts@1
-#       inputs: {pathtoPublish: '$(Build.ArtifactStagingDirectory)'}
+#       inputs: {pathtoPublish: '$(Build.ArtifactStagingDirectory)/release'}
 - job: macos
   pool:
     name: ARM64
   variables:
-    upload: $(Build.ArtifactStagingDirectory)
+    upload: $(Build.ArtifactStagingDirectory)/release/coin
     MACOSX_DEPLOYMENT_TARGET: 10.9
   steps:
     - bash: |
@@ -98,7 +98,7 @@ jobs:
       displayName: Build package
     - bash: |
         set -ex
-        bash package-solvers.sh build "$UPLOAD/macos" macos-arm64
+        bash package-solvers.sh build "$UPLOAD" macos-arm64
       displayName: Upload package
     - task: InstallAppleCertificate@2
       name: macosCertificate
@@ -124,13 +124,13 @@ jobs:
       displayName: Inspect macOS signing keychains
     - bash: |
         set -e
-        bash package-solvers.sh build "$UPLOAD/macos" macos-arm64 --signed
+        bash package-solvers.sh build "$UPLOAD" macos-arm64 --signed
       env:
         MACOS_SIGNING_IDENTITY: $(macosCertificate.signingIdentity)
         MACOS_SIGNING_KEYCHAIN: $(macosCertificate.keychainPath)
       displayName: Sign and package macOS solvers
     - task: PublishBuildArtifacts@1
-      inputs: {pathtoPublish: '$(Build.ArtifactStagingDirectory)'}
+      inputs: {pathtoPublish: '$(Build.ArtifactStagingDirectory)/release'}
 - job: windows
   # Match the Visual Studio 17 2022 generator used below.
   pool: {vmImage: 'windows-2022'}
@@ -140,7 +140,7 @@ jobs:
         arch: 'x64'
         nbits: 64
   variables:
-    upload: $(Build.ArtifactStagingDirectory)
+    upload: $(Build.ArtifactStagingDirectory)/release/coin
   steps:
     - script: |
         choco uninstall mingw
@@ -160,7 +160,39 @@ jobs:
       displayName: Build package
     - bash: |
         set -ex
-        bash package-solvers.sh build "$UPLOAD/win$NBITS" "mswin$NBITS"
+        bash package-solvers.sh build "$UPLOAD" "mswin$NBITS"
       displayName: Upload package
     - task: PublishBuildArtifacts@1
-      inputs: {pathtoPublish: '$(Build.ArtifactStagingDirectory)'}
+      inputs: {pathtoPublish: '$(Build.ArtifactStagingDirectory)/release'}
+- job: release
+  displayName: Publish release artifacts
+  dependsOn:
+    - linux
+    - linuxarm64
+    - macos
+    - windows
+  condition: always()
+  pool: {vmImage: 'ubuntu-latest'}
+  steps:
+    - checkout: none
+    - task: DownloadBuildArtifacts@0
+      inputs:
+        buildType: 'current'
+        downloadType: 'single'
+        artifactName: 'drop'
+        downloadPath: '$(Build.ArtifactStagingDirectory)/release'
+        cleanDestinationFolder: true
+      displayName: Download current pipeline artifacts
+    - bash: |
+        set -e
+        mv "$RELEASE_DIR/drop/coin" "$RELEASE_DIR/coin"
+        rmdir "$RELEASE_DIR/drop"
+      env:
+        RELEASE_DIR: $(Build.ArtifactStagingDirectory)/release
+      displayName: Arrange release/coin directory
+    - task: PublishPipelineArtifact@1
+      inputs:
+        targetPath: '$(Build.ArtifactStagingDirectory)/release'
+        artifact: 'release'
+        artifactType: 'pipeline'
+      displayName: Publish release
