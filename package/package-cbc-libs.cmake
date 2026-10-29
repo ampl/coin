@@ -1,4 +1,5 @@
-# Create the archive with the static libraries needed to link a Cbc driver.
+# Create the archive with the static libraries and headers needed to build a
+# Cbc driver (lib/, include/coin/).
 # Called by package-solvers.sh next to package-ampl.cmake.
 #
 #   cmake -DPLATFORM=<platform> -DLIBDIR=<build dir holding the libs> \
@@ -80,6 +81,33 @@ foreach (i RANGE ${last})
   list(GET names ${i} name)
   configure_file("${source}" "${stage}/lib/${name}" COPYONLY)
 endforeach ()
+
+# Headers, flattened into include/coin like an installed COIN-OR tree.
+file(MAKE_DIRECTORY "${stage}/include/coin")
+foreach (dir Cbc/CoinUtils/src Cbc/Osi/src/Osi Cbc/Clp/src Cbc/Cgl/src Cbc/Cbc/src)
+  if (NOT IS_DIRECTORY "${SOURCE_DIR}/${dir}")
+    message(FATAL_ERROR "Missing ${SOURCE_DIR}/${dir}")
+  endif ()
+  file(GLOB_RECURSE headers "${SOURCE_DIR}/${dir}/*.h" "${SOURCE_DIR}/${dir}/*.hpp")
+  foreach (header ${headers})
+    get_filename_component(header_name "${header}" NAME)
+    # config.h and friends are internal to building each library.
+    if (header_name MATCHES "^(config|configall_system|configall_system_msc)\\.h$")
+      continue ()
+    endif ()
+    set(target "${stage}/include/coin/${header_name}")
+    if (EXISTS "${target}")
+      file(SHA256 "${header}" new_hash)
+      file(SHA256 "${target}" old_hash)
+      if (NOT new_hash STREQUAL old_hash)
+        message(FATAL_ERROR "Conflicting headers named ${header_name}")
+      endif ()
+    else ()
+      configure_file("${header}" "${target}" COPYONLY)
+    endif ()
+  endforeach ()
+endforeach ()
+
 configure_file("${SOURCE_DIR}/Cbc/Cbc/LICENSE" "${stage}/docs/coin-license.txt" COPYONLY)
 configure_file("${VERSIONS_FILE}" "${stage}/docs/coin-versions.txt" COPYONLY)
 
