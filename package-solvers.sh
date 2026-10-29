@@ -32,3 +32,15 @@ cmake "-DPLATFORM=$PLATFORM" "-DBINDIR=$BIN_DIR" "-DOUTDIR=$2" \
     "-DSOLVERS=$SOLVERS" \
     "-DSIGNING_IDENTITY=$SIGNING_IDENTITY" "-DSIGNING_KEYCHAIN=${MACOS_SIGNING_KEYCHAIN:-}" \
     -P "$SOURCE_DIR/package/package-ampl.cmake"
+
+# Static libraries for building a Cbc driver (unsigned builds only, so the
+# signed macOS run doesn't publish them twice).
+if [ -z "$SIGNING_IDENTITY" ]; then
+    LIB_DIR=$BUILD_DIR
+    case "$PLATFORM" in
+        mswin*) LIB_DIR=$LIB_DIR/Release ;;
+    esac
+    cmake "-DPLATFORM=$PLATFORM" "-DLIBDIR=$LIB_DIR" "-DOUTDIR=$2" \
+        "-DSOURCE_DIR=$SOURCE_DIR" "-DVERSIONS_FILE=$BUILD_DIR/coin-versions.txt" \
+        -P "$SOURCE_DIR/package/package-cbc-libs.cmake"
+fi
