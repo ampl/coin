@@ -73,17 +73,17 @@ jobs:
         make all coin-versions -j2
         make test || true
       displayName: Build package
-    - bash: |
-        set -ex
-        bash package-solvers.sh build "$UPLOAD" macos64-intel64
-      displayName: Upload package
-    - task: PublishBuildArtifacts@1
-      inputs: {pathtoPublish: '$(Build.ArtifactStagingDirectory)/release'}
-- job: macos
+    # Packaged (and signed) later, once combined with the arm64 build.
+    - bash: bash package/macos-stage.sh build "$(Build.ArtifactStagingDirectory)/macos-x86_64"
+      displayName: Stage build
+    - task: PublishPipelineArtifact@1
+      inputs:
+        targetPath: '$(Build.ArtifactStagingDirectory)/macos-x86_64'
+        artifact: 'macos-x86_64'
+- job: macos_arm64
   pool:
     name: ARM64
   variables:
-    upload: $(Build.ArtifactStagingDirectory)/release/coin
     MACOSX_DEPLOYMENT_TARGET: 10.9
   steps:
     - bash: |
@@ -96,10 +96,39 @@ jobs:
         make all coin-versions -j2
         make test || true
       displayName: Build package
+    - bash: bash package/macos-stage.sh build "$(Build.ArtifactStagingDirectory)/macos-arm64"
+      displayName: Stage build
+    - task: PublishPipelineArtifact@1
+      inputs:
+        targetPath: '$(Build.ArtifactStagingDirectory)/macos-arm64'
+        artifact: 'macos-arm64'
+- job: macos
+  displayName: Universal macOS package
+  dependsOn:
+    - macos_intel
+    - macos_arm64
+  # Runs on the ARM64 pool, where the signing certificate is available.
+  pool:
+    name: ARM64
+  variables:
+    upload: $(Build.ArtifactStagingDirectory)/release/coin
+  steps:
+    - checkout: self
+    - task: DownloadPipelineArtifact@2
+      inputs:
+        artifactName: 'macos-arm64'
+        targetPath: '$(Pipeline.Workspace)/macos-arm64'
+    - task: DownloadPipelineArtifact@2
+      inputs:
+        artifactName: 'macos-x86_64'
+        targetPath: '$(Pipeline.Workspace)/macos-x86_64'
     - bash: |
         set -ex
-        bash package-solvers.sh build "$UPLOAD" macos64-arm64
-      displayName: Upload package
+        bash package/macos-lipo.sh "$(Pipeline.Workspace)/macos-arm64" \
+          "$(Pipeline.Workspace)/macos-x86_64" "$(Pipeline.Workspace)/macos-universal"
+        # Unsigned archives (including the Cbc libraries), then the signed ones.
+        bash package-solvers.sh "$(Pipeline.Workspace)/macos-universal" "$UPLOAD" macos64
+      displayName: Create universal binaries
     - task: InstallAppleCertificate@2
       name: macosCertificate
       inputs:
@@ -124,7 +153,7 @@ jobs:
       displayName: Inspect macOS signing keychains
     - bash: |
         set -e
-        bash package-solvers.sh build "$UPLOAD" macos64 --signed
+        bash package-solvers.sh "$(Pipeline.Workspace)/macos-universal" "$UPLOAD" macos64 --signed
       env:
         MACOS_SIGNING_IDENTITY: $(macosCertificate.signingIdentity)
         MACOS_SIGNING_KEYCHAIN: $(macosCertificate.keychainPath)
