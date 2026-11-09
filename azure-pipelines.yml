@@ -54,31 +54,31 @@ jobs:
       displayName: Upload package
     - task: PublishBuildArtifacts@1
       inputs: {pathtoPublish: '$(Build.ArtifactStagingDirectory)/release'}
-# - job: macos_intel
-#   pool: {vmImage: 'macOS-latest'}
-#   variables:
-#     upload: $(Build.ArtifactStagingDirectory)/release/coin
-#     MACOSX_DEPLOYMENT_TARGET: 10.9
-#   steps:
-#     - script: |
-#         brew install gcc
-#       displayName: Install gcc (installs gfortran too)
-#     - bash: |
-#         set -ex
-#         git submodule update --init --recursive
-#         mkdir build
-#         cd build
-#         export FC="gfortran-15"
-#         cmake .. -DARCH=64 -DCMAKE_OSX_ARCHITECTURES="arm64;x86_64"
-#         make all coin-versions -j2
-#         make test || true
-#       displayName: Build package
-#     - bash: |
-#         set -ex
-#         bash package-solvers.sh build "$UPLOAD" macos64
-#       displayName: Upload package
-#     - task: PublishBuildArtifacts@1
-#       inputs: {pathtoPublish: '$(Build.ArtifactStagingDirectory)/release'}
+- job: macos_intel
+  pool: {vmImage: 'macOS-latest'}
+  variables:
+    upload: $(Build.ArtifactStagingDirectory)/release/coin
+    MACOSX_DEPLOYMENT_TARGET: 10.9
+  steps:
+    - script: |
+        brew install gcc
+      displayName: Install gcc (installs gfortran too)
+    - bash: |
+        set -ex
+        git submodule update --init --recursive
+        mkdir build
+        cd build
+        export FC="gfortran-15"
+        cmake .. -DARCH=64 -DCMAKE_OSX_ARCHITECTURES="x86_64"
+        make all coin-versions -j2
+        make test || true
+      displayName: Build package
+    - bash: |
+        set -ex
+        bash package-solvers.sh build "$UPLOAD" macos64-intel64
+      displayName: Upload package
+    - task: PublishBuildArtifacts@1
+      inputs: {pathtoPublish: '$(Build.ArtifactStagingDirectory)/release'}
 - job: macos
   pool:
     name: ARM64
@@ -98,7 +98,7 @@ jobs:
       displayName: Build package
     - bash: |
         set -ex
-        bash package-solvers.sh build "$UPLOAD" macos64
+        bash package-solvers.sh build "$UPLOAD" macos64-arm64
       displayName: Upload package
     - task: InstallAppleCertificate@2
       name: macosCertificate
