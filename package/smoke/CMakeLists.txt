@@ -2,23 +2,24 @@
 # be published as JUnit (Azure Pipelines "Tests" tab).
 #
 #   cmake -S package/smoke -B <build> -DPLATFORM=<platform> \
-#         -DARCHIVE_DIR=<dir with the archives> \
-#         -DSOLVERS=cbc,bonmin,couenne,ipopt [-DPREFIX=signed-]
+#         -DARCHIVE_DIR=<dir with the archives> [-DPREFIX=signed-] \
+#         [-DSOLVERS=bonmin,couenne,ipopt]
 #   ctest --test-dir <build> --output-on-failure --output-junit junit.xml
 #
 # Each solver archive is unpacked at configure time and becomes one test that
 # runs the solver from the unpacked copy. Testing the archives, not the build
 # tree, also catches files missing from a package (e.g. libipoptfort.dll).
+# Without SOLVERS, every solvers-<name>.<platform>.* archive found is tested,
+# so optional solvers (cbc, see BUILD_CBC_EXECUTABLE) are covered when built.
 cmake_minimum_required(VERSION 3.20)
 project(solver-smoke-tests NONE)
 enable_testing()
 
-foreach (var PLATFORM ARCHIVE_DIR SOLVERS)
+foreach (var PLATFORM ARCHIVE_DIR)
   if (NOT DEFINED ${var})
     message(FATAL_ERROR "-D${var}=... is required")
   endif ()
 endforeach ()
-string(REPLACE "," ";" SOLVERS "${SOLVERS}")
 get_filename_component(ARCHIVE_DIR "${ARCHIVE_DIR}" ABSOLUTE)
 
 set(exe "")
@@ -27,6 +28,23 @@ if (PLATFORM MATCHES "^mswin")
   set(exe ".exe")
   set(archive_extension "zip")
 endif ()
+
+if (SOLVERS)
+  string(REPLACE "," ";" SOLVERS "${SOLVERS}")
+else ()
+  set(SOLVERS "")
+  file(GLOB found "${ARCHIVE_DIR}/${PREFIX}solvers-*.${PLATFORM}.*.${archive_extension}")
+  foreach (archive ${found})
+    get_filename_component(file "${archive}" NAME)
+    if (file MATCHES "^${PREFIX}solvers-(.+)\.${PLATFORM}\.[0-9]+\.")
+      list(APPEND SOLVERS "${CMAKE_MATCH_1}")
+    endif ()
+  endforeach ()
+  if (NOT SOLVERS)
+    message(FATAL_ERROR "No ${PREFIX}solvers-*.${PLATFORM} archives in ${ARCHIVE_DIR}")
+  endif ()
+endif ()
+message(STATUS "Testing solvers: ${SOLVERS}")
 
 set(model "${CMAKE_CURRENT_LIST_DIR}/../test/camel1.nl")
 if (NOT EXISTS "${model}")

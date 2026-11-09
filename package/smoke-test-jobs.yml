@@ -18,9 +18,6 @@
 parameters:
 - name: machines
   type: object
-- name: solvers
-  type: string
-  default: cbc,bonmin,couenne,ipopt
 
 jobs:
 - ${{ each machine in parameters.machines }}:
@@ -31,7 +28,6 @@ jobs:
     variables:
       platform: ${{ machine.platform }}
       prefix: ${{ coalesce(machine.prefix, '') }}
-      solvers: ${{ parameters.solvers }}
       results: $(Agent.TempDirectory)/smoke/results
     steps:
     - checkout: self
@@ -54,7 +50,7 @@ jobs:
             -v "$SOURCES:/src:ro" -v "$ARCHIVES:/archives:ro" -v "$RESULTS:/results" \
             ${{ machine.image }} sh -ec "dnf install -y cmake
               cmake -S /src/package/smoke -B /results/build -DPLATFORM=$PLATFORM \
-                    -DARCHIVE_DIR=/archives -DSOLVERS=$SOLVERS -DPREFIX=$PREFIX
+                    -DARCHIVE_DIR=/archives -DPREFIX=$PREFIX
               ctest -C Release --test-dir /results/build --output-on-failure \
                     --output-junit /results/junit.xml"
         displayName: Run solvers
@@ -64,7 +60,6 @@ jobs:
           RESULTS: $(results)
           PLATFORM: $(platform)
           PREFIX: $(prefix)
-          SOLVERS: $(solvers)
     - ${{ else }}:
       - bash: |
           set -ex
@@ -72,7 +67,7 @@ jobs:
           cmake --version
           mkdir -p "$RESULTS"
           cmake -S "$SOURCES/package/smoke" -B "$RESULTS/build" -DPLATFORM="$PLATFORM" \
-                -DARCHIVE_DIR="$ARCHIVES" -DSOLVERS="$SOLVERS" -DPREFIX="$PREFIX"
+                -DARCHIVE_DIR="$ARCHIVES" -DPREFIX="$PREFIX"
           ctest -C Release --test-dir "$RESULTS/build" --output-on-failure \
                 --output-junit "$RESULTS/junit.xml"
         displayName: Run solvers
@@ -82,7 +77,6 @@ jobs:
           RESULTS: $(results)
           PLATFORM: $(platform)
           PREFIX: $(prefix)
-          SOLVERS: $(solvers)
     - task: PublishTestResults@2
       condition: succeededOrFailed()
       inputs:
