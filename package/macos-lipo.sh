@@ -23,10 +23,12 @@ merge() {
     fi
     lipo -create "$ARM_DIR/$1" "$INTEL_DIR/$1" -output "$OUT_DIR/$1"
     archs=$(lipo -archs "$OUT_DIR/$1")
-    case " $archs " in
-        *" arm64 "*" x86_64 "*|*" x86_64 "*" arm64 "*) ;;
-        *) echo "$1 is not universal: $archs" >&2; exit 1 ;;
-    esac
+    for arch in arm64 x86_64; do
+        case " $archs " in
+            *" $arch "*) ;;
+            *) echo "$1 is not universal: $archs" >&2; exit 1 ;;
+        esac
+    done
     echo "$1: $archs"
 }
 
