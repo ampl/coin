@@ -193,6 +193,41 @@ jobs:
       displayName: Upload package
     - task: PublishBuildArtifacts@1
       inputs: {pathtoPublish: '$(Build.ArtifactStagingDirectory)/release'}
+# Run the published archives on clean machines, separately from the builds.
+# The Linux ARM64 and macOS arm64 entries both run on the ARM64 pool; the
+# Intel macOS binaries (built on a hosted Intel agent) are tested on one too.
+- template: package/smoke-test-jobs.yml
+  parameters:
+    machines:
+    - name: linux_intel64
+      displayName: Linux x86_64
+      platform: linux-intel64
+      pool: {vmImage: 'ubuntu-latest'}
+      dependsOn: [linux]
+      image: quay.io/pypa/manylinux_2_28_x86_64
+    - name: linux_arm64
+      displayName: Linux arm64
+      platform: linux-arm64
+      pool: {name: ARM64}
+      dependsOn: [linuxarm64]
+      image: quay.io/pypa/manylinux_2_28_aarch64
+    - name: macos_arm64
+      displayName: macOS arm64
+      platform: macos64
+      pool: {name: ARM64}
+      dependsOn: [macos]
+      prefix: signed-
+    - name: macos_intel64
+      displayName: macOS x86_64
+      platform: macos64
+      pool: {vmImage: 'macOS-latest'}
+      dependsOn: [macos]
+      prefix: signed-
+    - name: windows
+      displayName: Windows
+      platform: mswin64
+      pool: {vmImage: 'windows-2022'}
+      dependsOn: [windows]
 - job: release
   displayName: Publish release artifacts
   dependsOn:
@@ -200,6 +235,11 @@ jobs:
     - linuxarm64
     - macos
     - windows
+    - smoke_linux_intel64
+    - smoke_linux_arm64
+    - smoke_macos_arm64
+    - smoke_macos_intel64
+    - smoke_windows
   condition: always()
   pool: {vmImage: 'ubuntu-latest'}
   steps:

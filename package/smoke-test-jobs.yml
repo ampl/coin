@@ -1,0 +1,94 @@
+# Jobs template: smoke-test the published solver archives on real machines,
+# one job per entry in `machines`, separate from the build jobs.
+#
+#   - template: package/smoke-test-jobs.yml
+#     parameters:
+#       machines:
+#       - name: linux_intel64          # job name suffix
+#         displayName: Linux x86_64
+#         platform: linux-intel64      # archive platform (see package-ampl.cmake)
+#         pool: {vmImage: 'ubuntu-latest'}
+#         dependsOn: [linux]           # build job(s) producing the archives
+#         image: quay.io/pypa/...      # optional: run inside this docker image
+#         prefix: signed-              # optional: test the signed archives
+#
+# Each job downloads the `drop` artifact, runs the CTest project in
+# package/smoke on the archives in drop/coin (on a clean machine rather than
+# the build agent) and publishes the results to the Azure "Tests" tab.
+parameters:
+- name: machines
+  type: object
+- name: solvers
+  type: string
+  default: cbc,bonmin,couenne,ipopt
+
+jobs:
+- ${{ each machine in parameters.machines }}:
+  - job: smoke_${{ machine.name }}
+    displayName: Smoke test ${{ machine.displayName }}
+    dependsOn: ${{ machine.dependsOn }}
+    pool: ${{ machine.pool }}
+    variables:
+      platform: ${{ machine.platform }}
+      prefix: ${{ coalesce(machine.prefix, '') }}
+      solvers: ${{ parameters.solvers }}
+      results: $(Agent.TempDirectory)/smoke/results
+    steps:
+    - checkout: self
+      submodules: false
+    - task: DownloadBuildArtifacts@0
+      inputs:
+        buildType: 'current'
+        downloadType: 'single'
+        artifactName: 'drop'
+        downloadPath: '$(Agent.TempDirectory)/smoke'
+      displayName: Download archives
+    - ${{ if machine.image }}:
+      # Plain image with only cmake added: tests the binaries without the
+      # compilers and runtimes installed on the build machines. ctest's JUnit
+      # output needs CMake 3.21+ (the image's cmake package is newer).
+      - bash: |
+          set -ex
+          mkdir -p "$RESULTS"
+          docker run --rm \
+            -v "$SOURCES:/src:ro" -v "$ARCHIVES:/archives:ro" -v "$RESULTS:/results" \
+            ${{ machine.image }} sh -ec "dnf install -y cmake
+              cmake -S /src/package/smoke -B /results/build -DPLATFORM=$PLATFORM \
+                    -DARCHIVE_DIR=/archives -DSOLVERS=$SOLVERS -DPREFIX=$PREFIX
+              ctest -C Release --test-dir /results/build --output-on-failure \
+                    --output-junit /results/junit.xml"
+        displayName: Run solvers
+        env:
+          SOURCES: $(Build.SourcesDirectory)
+          ARCHIVES: $(Agent.TempDirectory)/smoke/drop/coin
+          RESULTS: $(results)
+          PLATFORM: $(platform)
+          PREFIX: $(prefix)
+          SOLVERS: $(solvers)
+    - ${{ else }}:
+      - bash: |
+          set -ex
+          uname -m || true
+          cmake --version
+          mkdir -p "$RESULTS"
+          cmake -S "$SOURCES/package/smoke" -B "$RESULTS/build" -DPLATFORM="$PLATFORM" \
+                -DARCHIVE_DIR="$ARCHIVES" -DSOLVERS="$SOLVERS" -DPREFIX="$PREFIX"
+          ctest -C Release --test-dir "$RESULTS/build" --output-on-failure \
+                --output-junit "$RESULTS/junit.xml"
+        displayName: Run solvers
+        env:
+          SOURCES: $(Build.SourcesDirectory)
+          ARCHIVES: $(Agent.TempDirectory)/smoke/drop/coin
+          RESULTS: $(results)
+          PLATFORM: $(platform)
+          PREFIX: $(prefix)
+          SOLVERS: $(solvers)
+    - task: PublishTestResults@2
+      condition: succeededOrFailed()
+      inputs:
+        testResultsFormat: 'JUnit'
+        testResultsFiles: 'junit.xml'
+        searchFolder: '$(results)'
+        testRunTitle: 'Smoke test ${{ machine.displayName }}'
+        failTaskOnFailedTests: false
+      displayName: Publish test results
