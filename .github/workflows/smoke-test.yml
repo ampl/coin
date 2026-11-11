@@ -1,0 +1,89 @@
+# Reusable workflow: smoke-test the packaged solver archives on a clean machine,
+# separately from the build jobs. Replaces package/smoke-test-jobs.yml.
+#
+# Downloads one archives-* artifact, runs the CTest project in package/smoke on
+# it and publishes the JUnit results to the run.
+name: Smoke test
+
+on:
+  workflow_call:
+    inputs:
+      name:
+        description: Display name, e.g. "Linux x86_64"
+        type: string
+        required: true
+      runs-on:
+        description: Runner label
+        type: string
+        required: true
+      platform:
+        description: Archive platform (see package/package-ampl.cmake)
+        type: string
+        required: true
+      artifact:
+        description: Name of the archives artifact to test
+        type: string
+        required: true
+      image:
+        description: Optional docker image to run the solvers in
+        type: string
+        default: ''
+      prefix:
+        description: Optional archive prefix (signed- to test signed archives)
+        type: string
+        default: ''
+
+jobs:
+  smoke:
+    name: Smoke test ${{ inputs.name }}
+    runs-on: ${{ inputs.runs-on }}
+    defaults:
+      run:
+        shell: bash
+    env:
+      SOURCES: ${{ github.workspace }}
+      PLATFORM: ${{ inputs.platform }}
+      PREFIX: ${{ inputs.prefix }}
+      IMAGE: ${{ inputs.image }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          submodules: false
+      - uses: actions/download-artifact@v4
+        with:
+          name: ${{ inputs.artifact }}
+          path: ${{ runner.temp }}/smoke/drop/coin
+      - name: Run solvers
+        run: |
+          set -ex
+          ARCHIVES=$RUNNER_TEMP/smoke/drop/coin
+          RESULTS=$RUNNER_TEMP/smoke/results
+          mkdir -p "$RESULTS"
+          if [ -n "$IMAGE" ]; then
+            # Plain image with only cmake added: tests the binaries without the
+            # compilers and runtimes installed on the build machines. ctest's
+            # JUnit output needs CMake 3.21+ (the image's cmake package is newer).
+            docker run --rm \
+              -v "$SOURCES:/src:ro" -v "$ARCHIVES:/archives:ro" -v "$RESULTS:/results" \
+              -e PLATFORM -e PREFIX \
+              "$IMAGE" sh -ec 'dnf install -y cmake
+                cmake -S /src/package/smoke -B /results/build -DPLATFORM=$PLATFORM \
+                      -DARCHIVE_DIR=/archives -DPREFIX=$PREFIX
+                ctest -C Release --test-dir /results/build --output-on-failure \
+                      --output-junit /results/junit.xml'
+          else
+            uname -m || true
+            cmake --version
+            cmake -S "$SOURCES/package/smoke" -B "$RESULTS/build" -DPLATFORM="$PLATFORM" \
+                  -DARCHIVE_DIR="$ARCHIVES" -DPREFIX="$PREFIX"
+            ctest -C Release --test-dir "$RESULTS/build" --output-on-failure \
+                  --output-junit "$RESULTS/junit.xml"
+          fi
+      - name: Publish test results
+        if: ${{ !cancelled() }}
+        uses: mikepenz/action-junit-report@v5
+        with:
+          report_paths: ${{ runner.temp }}/smoke/results/junit.xml
+          check_name: Smoke test ${{ inputs.name }}
+          fail_on_failure: false
+          require_tests: false
