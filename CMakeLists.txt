@@ -625,7 +625,17 @@ configure(Cbc/CoinUtils src/config.h src/config_coinutils.h)
 configure(Cbc/Osi src/Osi/config.h src/Osi/config_osi.h)
 configure(Cbc/Clp src/config.h src/config_clp.h)
 configure(Cbc/Cgl src/config.h src/config_cgl.h)
+# Cbc's config.h must not define COIN_HAS_ASL: the ASL-free libraries in
+# package/cbc-noasl share it. The ASL-enabled targets get COIN_HAS_ASL from
+# add_definitions above.
+set(cbc_has_asl ${COIN_HAS_ASL})
+unset(COIN_HAS_ASL)
 configure(Cbc/Cbc src/config.h src/config_cbc.h)
+set(COIN_HAS_ASL ${cbc_has_asl})
+
+if (COIN_HAS_ASL)
+  add_subdirectory(package/cbc-noasl)
+endif ()
 
 function(add_ipopt_library name path)
   add_coin_library(Ipopt/Ipopt/src/${path} NAME ${name} ${ARGN})
@@ -1096,6 +1106,10 @@ if (AMPL_MODULE_SOLVERS)
   endforeach ()
 endif ()
 
+if (COIN_HAS_ASL)
+  # package/cbc-noasl installs the ASL-free Cbc and CbcSolver instead.
+  list(REMOVE_ITEM COIN_INSTALL_TARGETS Cbc CbcSolver)
+endif ()
 install(TARGETS ${COIN_INSTALL_TARGETS}
   LIBRARY DESTINATION lib
   RUNTIME DESTINATION bin
