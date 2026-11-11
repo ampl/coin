@@ -22,6 +22,20 @@ mkdir -p "$OUT_DIR/bin"
 for solver in ${SOLVERS//,/ }; do
     cp -p "$BUILD_DIR/bin/$solver" "$OUT_DIR/bin/"
 done
+
+# The solvers must only depend on libraries every Mac has (not, for example,
+# Homebrew's libgcc_s or libgfortran).
+status=0
+for solver in ${SOLVERS//,/ }; do
+    extra=$(otool -L "$OUT_DIR/bin/$solver" | tail -n +2 | awk '{print $1}' \
+        | grep -v -E '^(/usr/lib/|/System/)' || true)
+    if [ -n "$extra" ]; then
+        echo "$solver depends on non-system libraries:" >&2
+        echo "$extra" >&2
+        status=1
+    fi
+done
+[ "$status" -eq 0 ] || exit 1
 # Static libraries and the files package-solvers.sh reads from the build root.
 cp -p "$BUILD_DIR"/lib*.a "$OUT_DIR/"
 cp -p "$BUILD_DIR/coin-versions.txt" "$BUILD_DIR/coin-solvers.txt" "$OUT_DIR/"

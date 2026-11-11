@@ -733,6 +733,12 @@ if (EXISTS ${COIN_SOURCE_DIR}/Ipopt)
           ${CMAKE_Fortran_IMPLICIT_LINK_LIBRARIES} gcc)
       endif ()
       removegcc_s("CXX")
+      if (APPLE)
+        # On x86_64 the gfortran driver adds -lgcc_s.1.1, which would make the
+        # solvers depend on Homebrew's libgcc_s dylib (absent on user machines).
+        # The static libgcc added above provides what is needed.
+        list(FILTER CMAKE_Fortran_IMPLICIT_LINK_LIBRARIES EXCLUDE REGEX "gcc_s")
+      endif ()
     endif ()
   endif ()
 endif ()
