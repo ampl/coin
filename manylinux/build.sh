@@ -7,29 +7,36 @@ elif [ -d "/base/manylinux/" ]; then
     NPROC=$1
     ARCH=$2
     NBITS=$3
-    # The manylinux images only ship the C/C++ toolchain needed to build
-    # Python extensions; gfortran (needed for Ipopt/Mumps/Lapack) and cmake
-    # aren't preinstalled. Mumps 5.x's Fortran needs a reasonably modern
-    # gfortran (older ones mishandle c_loc() on derived-type array
-    # components), so prefer the newest available gcc-toolset (AlmaLinux's
-    # devtoolset-style newer-GCC packages) over the base distro gcc-gfortran,
-    # which on EL8-based images is a much older GCC 8.
-    dnf install -y cmake
-    newest_toolset=$(dnf list --available 'gcc-toolset-*-gcc-gfortran' 2>/dev/null \
-      | awk '/^gcc-toolset-/{print $1}' | sort -t- -k3 -n -r | head -1)
-    if [ -n "$newest_toolset" ]; then
-        toolset_name=${newest_toolset%%-gcc-gfortran*}
-        # Install the matching C and C++ compiler subpackages too, not just
-        # -gcc-gfortran: otherwise plain-C code (e.g. ThirdParty/asl) can
-        # silently fall back to the image's own newer default gcc, producing
-        # object files whose LTO bytecode version doesn't match what this
-        # toolset's linker expects ("bytecode stream ... generated with LTO
-        # version X instead of the expected Y").
-        dnf install -y "$toolset_name-gcc" "$toolset_name-gcc-c++" "$newest_toolset"
-        source /opt/rh/$toolset_name/enable
+    if ! command -v dnf > /dev/null; then
+        # manylinux2014 (CentOS 7, glibc 2.17): already ships cmake and
+        # devtoolset-10's gcc, g++ and gfortran as the default compilers.
+        command -v gfortran > /dev/null || yum install -y devtoolset-10-gcc-gfortran
     else
-        dnf install -y gcc gcc-c++ gcc-gfortran
+        # The manylinux_2_28 images only ship the C/C++ toolchain needed to
+        # build Python extensions; gfortran (needed for Ipopt/Mumps/Lapack)
+        # and cmake aren't preinstalled. Mumps 5.x's Fortran needs a
+        # reasonably modern gfortran (older ones mishandle c_loc() on
+        # derived-type array components), so prefer the newest available
+        # gcc-toolset (AlmaLinux's devtoolset-style newer-GCC packages) over
+        # the base distro gcc-gfortran, which on EL8 is a much older GCC 8.
+        dnf install -y cmake
+        newest_toolset=$(dnf list --available 'gcc-toolset-*-gcc-gfortran' 2>/dev/null \
+          | awk '/^gcc-toolset-/{print $1}' | sort -t- -k3 -n -r | head -1)
+        if [ -n "$newest_toolset" ]; then
+            toolset_name=${newest_toolset%%-gcc-gfortran*}
+            # Install the matching C and C++ compiler subpackages too, not
+            # just -gcc-gfortran: otherwise plain-C code (e.g. ThirdParty/asl)
+            # can silently fall back to the image's own newer default gcc,
+            # producing object files whose LTO bytecode version doesn't match
+            # what this toolset's linker expects ("bytecode stream ...
+            # generated with LTO version X instead of the expected Y").
+            dnf install -y "$toolset_name-gcc" "$toolset_name-gcc-c++" "$newest_toolset"
+            source /opt/rh/$toolset_name/enable
+        else
+            dnf install -y gcc gcc-c++ gcc-gfortran
+        fi
     fi
+    cmake --version
     gfortran --version
     BUILD_DIR=/base/manylinux/linux-$ARCH/
     rm -rf $BUILD_DIR
@@ -43,6 +50,12 @@ elif [ -d "/base/manylinux/" ]; then
     # in a build that mixes gfortran/gcc/g++ across separately-installed
     # packages.
     cmake /tmp/coin/ -DARCH=$NBITS -DUSE_LTO=OFF # -DNO_AVX_HARDWARE=1
+    # Configuring generates the public config_*.h headers in the source copy;
+    # package-solvers.sh runs outside the container and takes the cbc-libs
+    # headers from /base, so copy them back.
+    (cd /tmp/coin && cp --parents Cbc/CoinUtils/src/config_coinutils.h \
+        Cbc/Osi/src/Osi/config_osi.h Cbc/Clp/src/config_clp.h \
+        Cbc/Cgl/src/config_cgl.h Cbc/Cbc/src/config_cbc.h /base/)
     make all coin-versions -j$NPROC
     make test || true
     make ampl-module

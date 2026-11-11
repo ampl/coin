@@ -64,7 +64,14 @@ if (PLATFORM MATCHES "^mswin")
   list(APPEND names "pthreads.lib")
 endif ()
 
-foreach (path ${sources} "${VERSIONS_FILE}" "${SOURCE_DIR}/Cbc/Cbc/LICENSE")
+# The public config headers are generated when configuring, not checked in;
+# without them the *Config.h headers can't be compiled against.
+set(config_headers
+  Cbc/CoinUtils/src/config_coinutils.h Cbc/Osi/src/Osi/config_osi.h
+  Cbc/Clp/src/config_clp.h Cbc/Cgl/src/config_cgl.h Cbc/Cbc/src/config_cbc.h)
+list(TRANSFORM config_headers PREPEND "${SOURCE_DIR}/")
+
+foreach (path ${sources} ${config_headers} "${VERSIONS_FILE}" "${SOURCE_DIR}/Cbc/Cbc/LICENSE")
   if (NOT EXISTS "${path}")
     message(FATAL_ERROR "Missing ${path}")
   endif ()
