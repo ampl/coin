@@ -3,14 +3,17 @@
 # Called by package-solvers.sh next to package-ampl.cmake.
 #
 #   cmake -DPLATFORM=<platform> -DLIBDIR=<build dir holding the libs> \
+#         -DCONFIG_DIR=<build root>/cbc-libs-include \
 #         -DOUTDIR=<dir> -DSOURCE_DIR=<repo> -DVERSIONS_FILE=<coin-versions.txt> \
 #         -P package-cbc-libs.cmake
 #
 # On Windows the libraries are cbcsolver.lib, cbc.lib, ... (plus
 # pthreads.lib); elsewhere they are libCbc.a, libCbcSolver.a, ...
+# The generated config_*.h headers come from CONFIG_DIR (see
+# package/cbc-libs/CMakeLists.txt), the other headers from SOURCE_DIR.
 cmake_minimum_required(VERSION 3.10)
 
-foreach (var PLATFORM LIBDIR OUTDIR SOURCE_DIR VERSIONS_FILE)
+foreach (var PLATFORM LIBDIR CONFIG_DIR OUTDIR SOURCE_DIR VERSIONS_FILE)
   if (NOT DEFINED ${var})
     message(FATAL_ERROR "package-cbc-libs.cmake: -D${var}=... is required")
   endif ()
@@ -66,10 +69,9 @@ endif ()
 
 # The public config headers are generated when configuring, not checked in;
 # without them the *Config.h headers can't be compiled against.
-set(config_headers
-  Cbc/CoinUtils/src/config_coinutils.h Cbc/Osi/src/Osi/config_osi.h
-  Cbc/Clp/src/config_clp.h Cbc/Cgl/src/config_cgl.h Cbc/Cbc/src/config_cbc.h)
-list(TRANSFORM config_headers PREPEND "${SOURCE_DIR}/")
+set(config_names config_coinutils.h config_osi.h config_clp.h config_cgl.h config_cbc.h)
+set(config_headers ${config_names})
+list(TRANSFORM config_headers PREPEND "${CONFIG_DIR}/")
 
 foreach (path ${sources} ${config_headers} "${VERSIONS_FILE}" "${SOURCE_DIR}/Cbc/Cbc/LICENSE")
   if (NOT EXISTS "${path}")
@@ -98,8 +100,11 @@ foreach (dir Cbc/CoinUtils/src Cbc/Osi/src/Osi Cbc/Clp/src Cbc/Cgl/src Cbc/Cbc/s
   file(GLOB_RECURSE headers "${SOURCE_DIR}/${dir}/*.h" "${SOURCE_DIR}/${dir}/*.hpp")
   foreach (header ${headers})
     get_filename_component(header_name "${header}" NAME)
-    # config.h and friends are internal to building each library.
-    if (header_name MATCHES "^(config|configall_system|configall_system_msc)\\.h$")
+    # config.h and friends are internal to building each library; the
+    # generated public config headers are taken from CONFIG_DIR below.
+    list(FIND config_names "${header_name}" config_index)
+    if (header_name MATCHES "^(config|configall_system|configall_system_msc)\\.h$"
+        OR NOT config_index EQUAL -1)
       continue ()
     endif ()
     set(target "${stage}/include/coin/${header_name}")
@@ -113,6 +118,9 @@ foreach (dir Cbc/CoinUtils/src Cbc/Osi/src/Osi Cbc/Clp/src Cbc/Cgl/src Cbc/Cbc/s
       configure_file("${header}" "${target}" COPYONLY)
     endif ()
   endforeach ()
+endforeach ()
+foreach (header ${config_headers})
+  configure_file("${header}" "${stage}/include/coin/" COPYONLY)
 endforeach ()
 
 configure_file("${SOURCE_DIR}/Cbc/Cbc/LICENSE" "${stage}/docs/coin-license.txt" COPYONLY)

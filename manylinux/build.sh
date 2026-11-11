@@ -50,12 +50,6 @@ elif [ -d "/base/manylinux/" ]; then
     # in a build that mixes gfortran/gcc/g++ across separately-installed
     # packages.
     cmake /tmp/coin/ -DARCH=$NBITS -DUSE_LTO=OFF # -DNO_AVX_HARDWARE=1
-    # Configuring generates the public config_*.h headers in the source copy;
-    # package-solvers.sh runs outside the container and takes the cbc-libs
-    # headers from /base, so copy them back.
-    (cd /tmp/coin && cp --parents Cbc/CoinUtils/src/config_coinutils.h \
-        Cbc/Osi/src/Osi/config_osi.h Cbc/Clp/src/config_clp.h \
-        Cbc/Cgl/src/config_cgl.h Cbc/Cbc/src/config_cbc.h /base/)
     make all coin-versions -j$NPROC
     make test || true
     make ampl-module

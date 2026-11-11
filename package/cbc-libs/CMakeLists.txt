@@ -17,6 +17,18 @@
 # Osi, OsiClp, Clp and Cgl use none of these, so the package takes them as
 # they are.
 
+# The package's public config headers are generated into the source tree when
+# configuring and aren't checked in. Keep a copy in the build directory, where
+# package-solvers.sh (and the macOS stage/lipo scripts) find them even when
+# the build ran somewhere else (in a container, or another macOS job).
+set(config_dir ${PROJECT_BINARY_DIR}/cbc-libs-include)
+file(MAKE_DIRECTORY ${config_dir})
+foreach (header Cbc/CoinUtils/src/config_coinutils.h Cbc/Osi/src/Osi/config_osi.h
+                Cbc/Clp/src/config_clp.h Cbc/Cgl/src/config_cgl.h
+                Cbc/Cbc/src/config_cbc.h)
+  configure_file(${COIN_SOURCE_DIR}/${header} ${config_dir} COPYONLY)
+endforeach ()
+
 get_directory_property(defs COMPILE_DEFINITIONS)
 list(REMOVE_ITEM defs COIN_HAS_ASL)
 set_directory_properties(PROPERTIES COMPILE_DEFINITIONS "${defs}")

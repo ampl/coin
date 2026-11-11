@@ -41,6 +41,7 @@ if [ -z "$SIGNING_IDENTITY" ]; then
         mswin*) LIB_DIR=$LIB_DIR/Release ;;
     esac
     cmake "-DPLATFORM=$PLATFORM" "-DLIBDIR=$LIB_DIR" "-DOUTDIR=$2" \
+        "-DCONFIG_DIR=$BUILD_DIR/cbc-libs-include" \
         "-DSOURCE_DIR=$SOURCE_DIR" "-DVERSIONS_FILE=$BUILD_DIR/coin-versions.txt" \
         -P "$SOURCE_DIR/package/package-cbc-libs.cmake"
 fi
