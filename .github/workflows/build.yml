@@ -16,7 +16,6 @@ jobs:
     env:
       IMAGE: quay.io/pypa/manylinux_2_28_x86_64
       NBITS: 64
-      UPLOAD: ${{ runner.temp }}/release/coin
     steps:
       - uses: actions/checkout@v4
         with:
@@ -33,7 +32,7 @@ jobs:
           rm -rf $BUILD_DIR/*
           docker run -v "$(pwd):/base" --rm "$IMAGE" /base/manylinux/build.sh "$(nproc)" intel$NBITS $NBITS
       - name: Package
-        run: bash package-solvers.sh manylinux/linux-intel$NBITS/ "$UPLOAD" linux-intel$NBITS
+        run: bash package-solvers.sh manylinux/linux-intel$NBITS/ "$RUNNER_TEMP/release/coin" linux-intel$NBITS
       - uses: actions/upload-artifact@v4
         with:
           name: archives-linux-intel64
@@ -44,7 +43,6 @@ jobs:
     runs-on: ubuntu-24.04-arm
     env:
       IMAGE: quay.io/pypa/manylinux_2_28_aarch64
-      UPLOAD: ${{ runner.temp }}/release/coin
     steps:
       - uses: actions/checkout@v4
         with:
@@ -58,7 +56,7 @@ jobs:
           NPROC=$(getconf _NPROCESSORS_ONLN)
           docker run -v "$(pwd):/base" --rm "$IMAGE" /base/manylinux/build.sh "$NPROC" arm64 64
       - name: Package
-        run: bash package-solvers.sh manylinux/linux-arm64 "$UPLOAD" linux-arm64
+        run: bash package-solvers.sh manylinux/linux-arm64 "$RUNNER_TEMP/release/coin" linux-arm64
       - uses: actions/upload-artifact@v4
         with:
           name: archives-linux-arm64
@@ -125,7 +123,6 @@ jobs:
     needs: [macos_intel, macos_arm64]
     runs-on: macos-latest
     env:
-      UPLOAD: ${{ runner.temp }}/release/coin
       # Signing is skipped (unsigned archives only) when these secrets are unset.
       MACOS_CERT_P12: ${{ secrets.MACOS_CERT_P12 }}
       MACOS_CERT_PASSWORD: ${{ secrets.MACOS_CERT_PASSWORD }}
@@ -145,7 +142,7 @@ jobs:
           bash package/macos-lipo.sh "$RUNNER_TEMP/macos-arm64" \
             "$RUNNER_TEMP/macos-x86_64" "$RUNNER_TEMP/macos-universal"
           # Unsigned archives (including the Cbc libraries), then the signed ones.
-          bash package-solvers.sh "$RUNNER_TEMP/macos-universal" "$UPLOAD" macos64
+          bash package-solvers.sh "$RUNNER_TEMP/macos-universal" "$RUNNER_TEMP/release/coin" macos64
       - name: Install Apple signing certificate
         if: ${{ env.MACOS_CERT_P12 != '' }}
         run: |
@@ -172,7 +169,7 @@ jobs:
         run: bash package/prepare-signing-keychain.sh
       - name: Sign and package macOS solvers
         if: ${{ env.MACOS_CERT_P12 != '' }}
-        run: bash package-solvers.sh "$RUNNER_TEMP/macos-universal" "$UPLOAD" macos64 --signed
+        run: bash package-solvers.sh "$RUNNER_TEMP/macos-universal" "$RUNNER_TEMP/release/coin" macos64 --signed
       - uses: actions/upload-artifact@v4
         with:
           name: archives-macos
@@ -187,7 +184,6 @@ jobs:
     env:
       ARCH: x64
       NBITS: 64
-      UPLOAD: ${{ runner.temp }}/release/coin
     steps:
       - uses: actions/checkout@v4
         with:
@@ -202,7 +198,7 @@ jobs:
           ctest -C Release || true
           ls -l Release
       - name: Package
-        run: bash package-solvers.sh build "$UPLOAD" "mswin$NBITS"
+        run: bash package-solvers.sh build "$RUNNER_TEMP/release/coin" "mswin$NBITS"
       - uses: actions/upload-artifact@v4
         with:
           name: archives-windows

@@ -42,8 +42,6 @@ jobs:
         shell: bash
     env:
       SOURCES: ${{ github.workspace }}
-      ARCHIVES: ${{ runner.temp }}/smoke/drop/coin
-      RESULTS: ${{ runner.temp }}/smoke/results
       PLATFORM: ${{ inputs.platform }}
       PREFIX: ${{ inputs.prefix }}
       IMAGE: ${{ inputs.image }}
@@ -58,6 +56,8 @@ jobs:
       - name: Run solvers
         run: |
           set -ex
+          ARCHIVES=$RUNNER_TEMP/smoke/drop/coin
+          RESULTS=$RUNNER_TEMP/smoke/results
           mkdir -p "$RESULTS"
           if [ -n "$IMAGE" ]; then
             # Plain image with only cmake added: tests the binaries without the
