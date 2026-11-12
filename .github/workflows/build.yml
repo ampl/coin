@@ -1,0 +1,70 @@
+# HiGHS shared libraries, with and without GPU (cuPDLP) support.
+# Ported from azure-pipelines.yml. Windows is built by hand (build_highs_win.bat)
+# on a machine with Visual Studio 2022 and the NVIDIA CUDA toolkit.
+name: Build HiGHS
+
+on:
+  push:
+    branches: [highs]
+  pull_request:
+    branches: [highs]
+  workflow_dispatch:
+    inputs:
+      highs_tag:
+        description: HiGHS tag to build
+        type: string
+        default: v1.15.1
+
+permissions:
+  contents: read
+
+env:
+  # inputs are empty on push/pull_request: fall back to the default tag
+  HIGHS_TAG: ${{ inputs.highs_tag || 'v1.15.1' }}
+
+jobs:
+  linux:
+    name: Linux ${{ matrix.variant }}
+    runs-on: ${{ matrix.runner }}
+    timeout-minutes: 180
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          # variant = argument of build_highs.sh, which picks the manylinux_2_28
+          # image (the CUDA ones for -gpu) and the CMake options
+          - variant: x64
+            runner: ubuntu-latest
+          - variant: x64-gpu
+            runner: ubuntu-latest
+          - variant: arm64
+            runner: ubuntu-24.04-arm
+          - variant: arm64-gpu
+            runner: ubuntu-24.04-arm
+    steps:
+      - uses: actions/checkout@v4
+      - name: Clone HiGHS
+        run: git clone --depth 1 --branch "$HIGHS_TAG" https://github.com/ERGO-Code/HiGHS.git
+      - name: Build and package
+        run: bash build_highs.sh ${{ matrix.variant }}
+      - uses: actions/upload-artifact@v4
+        with:
+          name: HiGHS-${{ env.HIGHS_TAG }}-linux-${{ matrix.variant }}
+          path: HiGHS/build-${{ matrix.variant }}/*.zip
+          if-no-files-found: error
+
+  macos:
+    name: macOS universal
+    runs-on: macos-latest
+    timeout-minutes: 180
+    steps:
+      - uses: actions/checkout@v4
+      - name: Clone HiGHS
+        run: git clone --depth 1 --branch "$HIGHS_TAG" https://github.com/ERGO-Code/HiGHS.git
+      - name: Compile and package HiGHS (arm64 + x86_64)
+        run: ./do_build_highs_mac.sh build 2 "-DCMAKE_OSX_ARCHITECTURES=arm64;x86_64"
+      - uses: actions/upload-artifact@v4
+        with:
+          name: HiGHS-${{ env.HIGHS_TAG }}-osx64
+          path: HiGHS/build/*.zip
+          if-no-files-found: error
