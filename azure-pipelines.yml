@@ -8,7 +8,7 @@ jobs:
   strategy:
     matrix:
       x64:
-        image: 'quay.io/pypa/manylinux_2_28_x86_64'
+        image: 'quay.io/pypa/manylinux2014_x86_64'
         nbits: 64
   variables:
     upload: $(Build.ArtifactStagingDirectory)/release/coin
@@ -37,7 +37,7 @@ jobs:
     name: ARM64
   variables:
     upload: $(Build.ArtifactStagingDirectory)/release/coin
-    image: 'quay.io/pypa/manylinux_2_28_aarch64'
+    image: 'quay.io/pypa/manylinux2014_aarch64'
   steps:
     - bash: |
         set -ex
@@ -204,13 +204,13 @@ jobs:
       platform: linux-intel64
       pool: {vmImage: 'ubuntu-latest'}
       dependsOn: [linux]
-      image: quay.io/pypa/manylinux_2_28_x86_64
+      image: quay.io/pypa/manylinux2014_x86_64
     - name: linux_arm64
       displayName: Linux arm64
       platform: linux-arm64
       pool: {name: ARM64}
       dependsOn: [linuxarm64]
-      image: quay.io/pypa/manylinux_2_28_aarch64
+      image: quay.io/pypa/manylinux2014_aarch64
     - name: macos_arm64
       displayName: macOS arm64
       platform: macos64

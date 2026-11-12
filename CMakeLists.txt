@@ -575,6 +575,13 @@ if (COIN_HAS_ASL)
 enable_testing()
 
 add_coin_library(Cbc/CoinUtils ${COINUTILS_LIBS})
+# CoinUtils' config.h leaves out gzip/bzip2 support (see the configure() call
+# below), so the standalone CoinUtils in package/cbc-libs builds without it.
+foreach (lib ZLIB BZLIB)
+  if (COIN_HAS_${lib})
+    set_property(TARGET CoinUtils APPEND PROPERTY COMPILE_DEFINITIONS COIN_HAS_${lib})
+  endif ()
+endforeach ()
 add_coin_library(Cbc/Clp CoinUtils)
 add_coin_library(Cbc/Clp/src/OsiClp Osi Clp)
 add_coin_library(Cbc/Osi/src/Osi CoinUtils)
@@ -621,21 +628,27 @@ add_definitions(-DHAVE_CONFIG_H)
 # Define FORTRAN_INTEGER_TYPE for Ipopt.
 set(FORTRAN_INTEGER_TYPE_C int)
 
+# CoinUtils' and Cbc's config.h are shared with the standalone libraries in
+# package/cbc-libs, so they must not define COIN_HAS_ZLIB, COIN_HAS_BZLIB or
+# COIN_HAS_ASL. The regular CoinUtils gets the first two as target
+# definitions, and the ASL-enabled targets get COIN_HAS_ASL from
+# add_definitions above.
+set(coinutils_has_zlib ${COIN_HAS_ZLIB})
+set(coinutils_has_bzlib ${COIN_HAS_BZLIB})
+unset(COIN_HAS_ZLIB)
+unset(COIN_HAS_BZLIB)
 configure(Cbc/CoinUtils src/config.h src/config_coinutils.h)
+set(COIN_HAS_ZLIB ${coinutils_has_zlib})
+set(COIN_HAS_BZLIB ${coinutils_has_bzlib})
 configure(Cbc/Osi src/Osi/config.h src/Osi/config_osi.h)
 configure(Cbc/Clp src/config.h src/config_clp.h)
 configure(Cbc/Cgl src/config.h src/config_cgl.h)
-# Cbc's config.h must not define COIN_HAS_ASL: the ASL-free libraries in
-# package/cbc-noasl share it. The ASL-enabled targets get COIN_HAS_ASL from
-# add_definitions above.
 set(cbc_has_asl ${COIN_HAS_ASL})
 unset(COIN_HAS_ASL)
 configure(Cbc/Cbc src/config.h src/config_cbc.h)
 set(COIN_HAS_ASL ${cbc_has_asl})
 
-if (COIN_HAS_ASL)
-  add_subdirectory(package/cbc-noasl)
-endif ()
+add_subdirectory(package/cbc-libs)
 
 function(add_ipopt_library name path)
   add_coin_library(Ipopt/Ipopt/src/${path} NAME ${name} ${ARGN})
@@ -1106,10 +1119,9 @@ if (AMPL_MODULE_SOLVERS)
   endforeach ()
 endif ()
 
-if (COIN_HAS_ASL)
-  # package/cbc-noasl installs the ASL-free Cbc and CbcSolver instead.
-  list(REMOVE_ITEM COIN_INSTALL_TARGETS Cbc CbcSolver)
-endif ()
+# package/cbc-libs installs the standalone CoinUtils, Cbc and CbcSolver
+# instead.
+list(REMOVE_ITEM COIN_INSTALL_TARGETS CoinUtils Cbc CbcSolver)
 install(TARGETS ${COIN_INSTALL_TARGETS}
   LIBRARY DESTINATION lib
   RUNTIME DESTINATION bin

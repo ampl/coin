@@ -39,3 +39,4 @@ done
 # Static libraries and the files package-solvers.sh reads from the build root.
 cp -p "$BUILD_DIR"/lib*.a "$OUT_DIR/"
 cp -p "$BUILD_DIR/coin-versions.txt" "$BUILD_DIR/coin-solvers.txt" "$OUT_DIR/"
+cp -Rp "$BUILD_DIR/cbc-libs-include" "$OUT_DIR/"

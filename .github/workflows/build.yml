@@ -14,7 +14,7 @@ jobs:
     name: Linux x86_64
     runs-on: ubuntu-latest
     env:
-      IMAGE: quay.io/pypa/manylinux_2_28_x86_64
+      IMAGE: quay.io/pypa/manylinux2014_x86_64
       NBITS: 64
     steps:
       - uses: actions/checkout@v4
@@ -42,7 +42,7 @@ jobs:
     name: Linux arm64
     runs-on: ubuntu-24.04-arm
     env:
-      IMAGE: quay.io/pypa/manylinux_2_28_aarch64
+      IMAGE: quay.io/pypa/manylinux2014_aarch64
     steps:
       - uses: actions/checkout@v4
         with:
@@ -213,7 +213,7 @@ jobs:
       runs-on: ubuntu-latest
       platform: linux-intel64
       artifact: archives-linux-intel64
-      image: quay.io/pypa/manylinux_2_28_x86_64
+      image: quay.io/pypa/manylinux2014_x86_64
 
   smoke_linux_arm64:
     needs: [linuxarm64]
@@ -223,7 +223,7 @@ jobs:
       runs-on: ubuntu-24.04-arm
       platform: linux-arm64
       artifact: archives-linux-arm64
-      image: quay.io/pypa/manylinux_2_28_aarch64
+      image: quay.io/pypa/manylinux2014_aarch64
 
   smoke_macos_arm64:
     needs: [macos]

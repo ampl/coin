@@ -62,11 +62,11 @@ jobs:
           if [ -n "$IMAGE" ]; then
             # Plain image with only cmake added: tests the binaries without the
             # compilers and runtimes installed on the build machines. ctest's
-            # JUnit output needs CMake 3.21+ (the image's cmake package is newer).
+            # JUnit output needs CMake 3.21+ (manylinux2014 ships CMake 4).
             docker run --rm \
               -v "$SOURCES:/src:ro" -v "$ARCHIVES:/archives:ro" -v "$RESULTS:/results" \
               -e PLATFORM -e PREFIX \
-              "$IMAGE" sh -ec 'dnf install -y cmake
+              "$IMAGE" sh -ec 'command -v cmake > /dev/null || dnf install -y cmake
                 cmake -S /src/package/smoke -B /results/build -DPLATFORM=$PLATFORM \
                       -DARCHIVE_DIR=/archives -DPREFIX=$PREFIX
                 ctest -C Release --test-dir /results/build --output-on-failure \

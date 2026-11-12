@@ -40,3 +40,10 @@ done
 # lipo keeps neither mode bits nor the build metadata; restore what's needed.
 chmod 755 "$OUT_DIR"/bin/*
 cp -p "$ARM_DIR/coin-versions.txt" "$ARM_DIR/coin-solvers.txt" "$OUT_DIR/"
+# The Cbc libraries' generated config headers don't depend on the
+# architecture; check that, and take one copy.
+if ! diff -r "$ARM_DIR/cbc-libs-include" "$INTEL_DIR/cbc-libs-include"; then
+    echo "The arm64 and x86_64 cbc-libs config headers differ" >&2
+    exit 1
+fi
+cp -Rp "$ARM_DIR/cbc-libs-include" "$OUT_DIR/"
