@@ -1,0 +1,19 @@
+# Note: used to create manylinux_2_28_cuda13_aarch64:latest image
+FROM quay.io/pypa/manylinux_2_28_aarch64
+
+RUN dnf -y install wget ca-certificates dnf-plugins-core && \
+    wget -O /etc/yum.repos.d/cuda-rhel8.repo \
+      https://developer.download.nvidia.com/compute/cuda/repos/rhel8/sbsa/cuda-rhel8.repo && \
+    rpm --import https://developer.download.nvidia.com/compute/cuda/repos/rhel8/sbsa/7fa2af80.pub && \
+    dnf clean all && \
+    dnf -y install \
+      cuda-minimal-build-13-3 \
+      cuda-libraries-devel-13-3 && \
+    dnf clean all && \
+    rm -rf /var/cache/dnf
+
+ENV CUDA_HOME=/usr/local/cuda
+ENV PATH=/usr/local/cuda/bin:$PATH
+ENV LD_LIBRARY_PATH=/usr/local/cuda/lib64:$LD_LIBRARY_PATH
+
+RUN nvcc --version
