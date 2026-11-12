@@ -123,3 +123,17 @@ jobs:
           name: HiGHS-${{ env.HIGHS_TAG }}-osx64
           path: HiGHS/build/*.zip
           if-no-files-found: error
+
+  # One download for the whole run: a folder per platform build
+  package:
+    name: Single download
+    needs: [linux, windows, macos]
+    if: ${{ !cancelled() }} # also gather what was built if a build failed
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/upload-artifact/merge@v4
+        with:
+          name: HiGHS-${{ env.HIGHS_TAG }}
+          pattern: HiGHS-${{ env.HIGHS_TAG }}-*
+          separate-directories: true
+          delete-merged: true
