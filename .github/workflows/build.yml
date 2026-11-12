@@ -85,8 +85,24 @@ jobs:
       - uses: actions/checkout@v4
       - name: Clone OR-Tools
         run: git clone --depth 1 --branch "$ORTOOLS_TAG" https://github.com/google/or-tools.git
+      # Peaks of the OR-Tools compilation exhaust the runner's memory, which
+      # kills the runner ("received a shutdown signal"): add swap to absorb them
+      - name: Add swap
+        run: |
+          set -ex
+          free -h; df -h /
+          sudo swapoff -a || true
+          sudo rm -f /swapfile /mnt/swapfile
+          sudo fallocate -l 16G /swapfile
+          sudo chmod 600 /swapfile
+          sudo mkswap /swapfile
+          sudo swapon /swapfile
+          free -h
       - name: Build and package (manylinux_2_28 aarch64)
         run: bash build_ortools.sh arm64
+      - name: Memory and disk usage
+        if: ${{ always() }}
+        run: free -h; df -h /
       - uses: actions/upload-artifact@v4
         with:
           name: ortools-${{ env.ORTOOLS_TAG }}-linux-arm64
