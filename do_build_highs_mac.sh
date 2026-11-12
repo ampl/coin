@@ -30,6 +30,6 @@ cd HiGHS
 mkdir -p $builddirname
 cd $builddirname
 
-cmake .. -DBUILD_EXAMPLES=off -DHIPO=on  -DZLIB=off -DCMAKE_RELEASE_POSTFIX="-ampl" -DCPack_CMake_INCLUDED=0 $preprocdef
+cmake .. -DBUILD_EXAMPLES=off -DHIPO=on -DBUILD_SHARED_EXTRAS_LIB=OFF -DZLIB=off -DCMAKE_RELEASE_POSTFIX="-ampl" -DCPack_CMake_INCLUDED=0 $preprocdef
 cmake --build . --config Release -j$nthreads
 cpack -G ZIP
