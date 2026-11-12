@@ -25,7 +25,6 @@ env:
 jobs:
   linux:
     name: Linux ${{ matrix.variant }}
-    if: false # TEMPORARY: only Windows while setting it up
     runs-on: ${{ matrix.runner }}
     timeout-minutes: 180
     strategy:
@@ -111,7 +110,6 @@ jobs:
 
   macos:
     name: macOS universal
-    if: false # TEMPORARY: only Windows while setting it up
     runs-on: macos-latest
     timeout-minutes: 180
     steps:
