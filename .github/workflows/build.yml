@@ -125,3 +125,18 @@ jobs:
           name: ortools-${{ env.ORTOOLS_TAG }}-osx64
           path: or-tools/build/*.zip
           if-no-files-found: error
+
+  # One download for the whole run: a folder per platform build
+  package:
+    name: Single download
+    needs: [windows, linux, linuxarm64, macos]
+    # also gather what was built if a build failed or was not selected
+    if: ${{ !cancelled() }}
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/upload-artifact/merge@v4
+        with:
+          name: ortools-${{ env.ORTOOLS_TAG }}
+          pattern: ortools-${{ env.ORTOOLS_TAG }}-*
+          separate-directories: true
+          delete-merged: true
