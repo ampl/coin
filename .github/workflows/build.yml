@@ -1,6 +1,6 @@
 # HiGHS shared libraries, with and without GPU (cuPDLP) support.
-# Ported from azure-pipelines.yml. Windows is built by hand (build_highs_win.bat)
-# on a machine with Visual Studio 2022 and the NVIDIA CUDA toolkit.
+# Ported from azure-pipelines.yml; Windows replaces the local
+# build_highs_win.bat builds.
 name: Build HiGHS
 
 on:
@@ -50,6 +50,58 @@ jobs:
       - uses: actions/upload-artifact@v4
         with:
           name: HiGHS-${{ env.HIGHS_TAG }}-linux-${{ matrix.variant }}
+          path: HiGHS/build-${{ matrix.variant }}/*.zip
+          if-no-files-found: error
+
+  # Same configurations as build_highs_win.bat. The GPU build only needs the
+  # CUDA toolkit to compile (no GPU on the runner): it is installed here.
+  windows:
+    name: Windows ${{ matrix.variant }}
+    runs-on: windows-2022 # Visual Studio 2022
+    timeout-minutes: 180
+    defaults:
+      run:
+        shell: bash
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - variant: x64
+            options: -DHIPO=ON -DBUILD_OPENBLAS=ON -DCMAKE_RELEASE_POSTFIX=-ampl
+          - variant: x64-gpu
+            options: -DCUPDLP_GPU=ON -DHIGHS_GPU_LIB=ON -DCMAKE_RELEASE_POSTFIX=-ampl-gpu
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install CUDA toolkit
+        if: ${{ endsWith(matrix.variant, '-gpu') }}
+        id: cuda
+        uses: Jimver/cuda-toolkit@v0.2.36
+        with:
+          cuda: '13.3.1'
+          method: network
+          # compiler, cudart/cuBLAS/cuSPARSE (used by cuPDLP) and the MSBuild
+          # extensions that let the Visual Studio generator compile .cu files
+          sub-packages: '["nvcc", "crt", "nvvm", "cudart", "cublas", "cublas_dev", "cusparse", "cusparse_dev", "nvjitlink", "visual_studio_integration"]'
+      - name: Clone HiGHS
+        run: git clone --depth 1 --branch "$HIGHS_TAG" https://github.com/ERGO-Code/HiGHS.git
+      - name: Compile and package HiGHS
+        env:
+          CUDA_TOOLKIT: ${{ steps.cuda.outputs.CUDA_PATH }}
+        run: |
+          set -ex
+          cudaoptions=()
+          if [ -n "$CUDA_TOOLKIT" ]; then
+            # use this toolkit (and its MSBuild extensions) for the .cu files
+            cudaoptions=(-T "cuda=$CUDA_TOOLKIT" "-DCMAKE_CUDA_PATH=$CUDA_TOOLKIT")
+            nvcc --version || true
+          fi
+          cmake -S HiGHS -B "HiGHS/build-${{ matrix.variant }}" -G "Visual Studio 17 2022" -A x64 \
+            "${cudaoptions[@]}" -DBUILD_SHARED_LIBS=ON -DBUILD_EXAMPLES=OFF -DZLIB=OFF \
+            ${{ matrix.options }}
+          cmake --build "HiGHS/build-${{ matrix.variant }}" --config Release --target package --parallel 4
+      - uses: actions/upload-artifact@v4
+        with:
+          name: HiGHS-${{ env.HIGHS_TAG }}-win-${{ matrix.variant }}
           path: HiGHS/build-${{ matrix.variant }}/*.zip
           if-no-files-found: error
 
