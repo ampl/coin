@@ -67,8 +67,11 @@ jobs:
       fail-fast: false
       matrix:
         include:
+          # ONLY_CBLAS: HiGHS means to set it (FetchContent ignores the CMAKE_ARGS
+          # it uses); without it OpenBLAS also builds its utest, whose post-build
+          # step copies openblas.dll, which the -ampl postfix renamed
           - variant: x64
-            options: -DHIPO=ON -DBUILD_OPENBLAS=ON -DCMAKE_RELEASE_POSTFIX=-ampl
+            options: -DHIPO=ON -DBUILD_OPENBLAS=ON -DONLY_CBLAS=ON -DCMAKE_RELEASE_POSTFIX=-ampl
           - variant: x64-gpu
             options: -DCUPDLP_GPU=ON -DHIGHS_GPU_LIB=ON -DCMAKE_RELEASE_POSTFIX=-ampl-gpu
     steps:
