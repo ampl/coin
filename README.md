@@ -1,4 +1,4 @@
-# ampl/coin
+# ampl/opensource-solvers
 
 Build scripts for open-source solvers and libraries used by AMPL. Each
 solver lives on its own branch; this `master` branch only holds this index.
