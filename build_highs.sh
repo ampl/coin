@@ -9,7 +9,7 @@ if [ "$1" = "x64" ]; then
     user=""
     preprocdef="-DCUPDLP_GPU=off  -DHIPO=ON -DBUILD_SHARED_EXTRAS_LIB=OFF -DBUILD_OPENBLAS=ON  -DTARGET=GENERIC -DDYNAMIC_ARCH=OFF  -DCMAKE_RELEASE_POSTFIX=-ampl"
 elif [ "$1" = "x64-gpu" ]; then
-    image="mapgccv/manylinux_2_28_cuda13:latest"
+    image="mapgccv/manylinux_2_28_cuda12:latest"
     builddir="build-x64-gpu"
     nthreads=2
     user=""
@@ -21,7 +21,7 @@ elif [ "$1" = "arm64" ]; then
     user="-u $(id -u):$(id -g)"
     preprocdef="-DCUPDLP_GPU=off -DHIPO=ON -DBUILD_SHARED_EXTRAS_LIB=OFF -DBUILD_OPENBLAS=ON -DTARGET=GENERIC -DDYNAMIC_ARCH=OFF  -DCMAKE_RELEASE_POSTFIX=-ampl"
 elif [ "$1" = "arm64-gpu" ]; then
-    image="mapgccv/manylinux_2_28_cuda13_aarch64:latest"
+    image="mapgccv/manylinux_2_28_cuda12_aarch64:latest"
     builddir="build-arm64-gpu"
     nthreads=4
     user="-u $(id -u):$(id -g)"

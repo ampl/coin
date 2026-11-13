@@ -80,7 +80,7 @@ jobs:
         id: cuda
         uses: Jimver/cuda-toolkit@v0.2.36
         with:
-          cuda: '13.3.1'
+          cuda: '12.9.1'
           method: network
           # compiler, cudart/cuBLAS/cuSPARSE (used by cuPDLP) and the MSBuild
           # extensions that let the Visual Studio generator compile .cu files

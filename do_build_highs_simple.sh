@@ -31,6 +31,11 @@ cd $builddirname
 
 
 export PATH=/usr/local/cuda/bin:$PATH
+# The CUDA images also carry GCC 13, because CUDA 12.9 can't use the GCC 14
+# of the base image (see docker/dockerfile).
+if [ -f /opt/rh/gcc-toolset-13/enable ]; then
+  source /opt/rh/gcc-toolset-13/enable
+fi
 cmake .. -DBUILD_EXAMPLES=off -DZLIB=off -DCPack_CMake_INCLUDED=0 -DBUILD_SHARED_LIBS=ON  $preprocdef
 cmake --build . --config Release -j$nthreads
 cpack -G ZIP
