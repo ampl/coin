@@ -84,7 +84,7 @@ jobs:
           method: network
           # compiler, cudart/cuBLAS/cuSPARSE (used by cuPDLP) and the MSBuild
           # extensions that let the Visual Studio generator compile .cu files
-          sub-packages: '["nvcc", "crt", "nvvm", "cudart", "cublas", "cublas_dev", "cusparse", "cusparse_dev", "nvjitlink", "visual_studio_integration"]'
+          sub-packages: '["nvcc", "cudart", "cublas", "cublas_dev", "cusparse", "cusparse_dev", "nvjitlink", "visual_studio_integration"]'
       - name: Clone HiGHS
         run: git clone --depth 1 --branch "$HIGHS_TAG" https://github.com/ERGO-Code/HiGHS.git
       - name: Compile and package HiGHS
