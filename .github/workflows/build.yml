@@ -13,14 +13,14 @@ on:
       highs_tag:
         description: HiGHS tag to build
         type: string
-        default: v1.15.1
+        default: v1.16.0
 
 permissions:
   contents: read
 
 env:
   # inputs are empty on push/pull_request: fall back to the default tag
-  HIGHS_TAG: ${{ inputs.highs_tag || 'v1.15.1' }}
+  HIGHS_TAG: ${{ inputs.highs_tag || 'v1.16.0' }}
 
 jobs:
   linux:
@@ -69,8 +69,10 @@ jobs:
           # ONLY_CBLAS: HiGHS means to set it (FetchContent ignores the CMAKE_ARGS
           # it uses); without it OpenBLAS also builds its utest, whose post-build
           # step copies openblas.dll, which the -ampl postfix renamed
+          # REQUIRE_OPTIMIZED: fail rather than silently fall back to the slow
+          # MSVC-built OpenBLAS if clang-cl or Ninja is missing on the runner
           - variant: x64
-            options: -DHIPO=ON -DBUILD_SHARED_EXTRAS_LIB=OFF -DBUILD_OPENBLAS=ON -DONLY_CBLAS=ON -DCMAKE_RELEASE_POSTFIX=-ampl
+            options: -DHIPO=ON -DBUILD_SHARED_EXTRAS_LIB=OFF -DBUILD_OPENBLAS=ON -DONLY_CBLAS=ON -DHIGHS_OPENBLAS_REQUIRE_OPTIMIZED=ON -DCMAKE_RELEASE_POSTFIX=-ampl
           - variant: x64-gpu
             options: -DCUPDLP_GPU=ON -DHIGHS_GPU_LIB=ON -DCMAKE_RELEASE_POSTFIX=-ampl-gpu
     steps:
