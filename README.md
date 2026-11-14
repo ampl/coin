@@ -10,4 +10,4 @@ solver lives on its own branch; this `master` branch only holds this index.
 | [`ortools`](https://github.com/ampl/open-source-solvers/tree/ortools) | Builds of [OR-Tools](https://github.com/google/or-tools) (CP-SAT only) as static libraries, together with its dependencies (abseil, protobuf, ...). |
 
 All AMPL binaries are available for download from the
-[AMPL Open-Source Downloads](http://ampl.com/dl/open/) page.
+[AMPL Open-Source Downloads](https://ampl.com/dl/open/) page.
