@@ -1,4 +1,5 @@
 # Keep LF on files that must not be changed by autocrlf checkouts:
-# shell scripts (run in Docker/bash) and the workflows
+# shell scripts (run in Docker/bash), the workflows and the Dockerfile
 *.sh    text eol=lf
 *.yml   text eol=lf
+dockerfile text eol=lf

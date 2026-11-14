@@ -22,9 +22,11 @@ if [ -z "${HOME:-}" ] || [ ! -w "$HOME" ]; then
 fi
 
 
-# Install gcc 13 because gcc 14 in incompatible with cuda 12.9
-#dnf install -y gcc-toolset-13 gcc-toolset-13-gcc gcc-toolset-13-gcc-c++
-#source /opt/rh/gcc-toolset-13/enable
+# Use gcc 13 because gcc 14 is incompatible with cuda 12.9. The CUDA image
+# has it installed (see docker/dockerfile).
+if [ -f /opt/rh/gcc-toolset-13/enable ]; then
+  source /opt/rh/gcc-toolset-13/enable
+fi
 
 cd HiGHS
 export TAR_OPTIONS="--no-same-owner"

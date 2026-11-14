@@ -1,14 +1,29 @@
-# Note: used to create manylinux_2_28_cuda13_aarch64:latest image
-FROM quay.io/pypa/manylinux_2_28_aarch64
+# manylinux_2_28 with the CUDA toolkit, for the GPU builds of build_highs.sh.
+#
+#   docker build --build-arg ARCH=x86_64  -t mapgccv/manylinux_2_28_cuda12:latest -f docker/dockerfile docker
+#   docker build --build-arg ARCH=aarch64 -t mapgccv/manylinux_2_28_cuda12_aarch64:latest -f docker/dockerfile docker
+#   docker push mapgccv/manylinux_2_28_cuda12:latest
+#   docker push mapgccv/manylinux_2_28_cuda12_aarch64:latest
+#
+# CUDA is the apt/dnf package suffix (12-9 is CUDA 12.9). CUDA 12.9 does not
+# build with the GCC 14 of the base image, so GCC 13 is installed too and
+# enabled by the do_build_highs_simple*.sh scripts when it is present.
+ARG ARCH=x86_64
+FROM quay.io/pypa/manylinux_2_28_${ARCH}
+ARG ARCH
+ARG CUDA=12-9
 
-RUN dnf -y install wget ca-certificates dnf-plugins-core && \
+# The NVIDIA repository directory for aarch64 is called sbsa.
+RUN case "$ARCH" in aarch64) repo=sbsa ;; *) repo=x86_64 ;; esac && \
+    dnf -y install wget ca-certificates dnf-plugins-core && \
     wget -O /etc/yum.repos.d/cuda-rhel8.repo \
-      https://developer.download.nvidia.com/compute/cuda/repos/rhel8/sbsa/cuda-rhel8.repo && \
-    rpm --import https://developer.download.nvidia.com/compute/cuda/repos/rhel8/sbsa/7fa2af80.pub && \
+      https://developer.download.nvidia.com/compute/cuda/repos/rhel8/$repo/cuda-rhel8.repo && \
+    rpm --import https://developer.download.nvidia.com/compute/cuda/repos/rhel8/$repo/7fa2af80.pub && \
     dnf clean all && \
     dnf -y install \
-      cuda-minimal-build-13-3 \
-      cuda-libraries-devel-13-3 && \
+      cuda-minimal-build-$CUDA \
+      cuda-libraries-devel-$CUDA \
+      gcc-toolset-13-gcc gcc-toolset-13-gcc-c++ && \
     dnf clean all && \
     rm -rf /var/cache/dnf
 
